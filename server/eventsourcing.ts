@@ -18,10 +18,17 @@ export function createInMemoryEventStore<TEvent>(): EventStore<TEvent> {
 export interface BaseEvent<TType extends string, TData> {
   id: string;
   type: TType;
+  actor: string; // id of the actor that caused the event
+  time: Date; // date and time the event was created
+  subject: string; // id of the subject that the event is about
   data: TData;
 }
 
-interface Projection<TEvent extends BaseEvent<string, any>, TContext> {
+export type EventFromDataMap<TDataMap extends Record<string, any>> = {
+  [TType in keyof TDataMap]: BaseEvent<TType & string, TDataMap[TType]>;
+}[string];
+
+export interface Projection<TEvent extends BaseEvent<string, any>, TContext> {
   name: string;
   version?: number; // when ever it increases the rejection gets rebuild.
   handlers: {
