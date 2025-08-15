@@ -11,6 +11,8 @@ import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+import "../global.css";
+
 // Create a client
 const queryClient = new QueryClient();
 
