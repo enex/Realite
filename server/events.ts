@@ -10,4 +10,9 @@ export interface RealiteEvents {
     url?: string; // url of the realite
   };
   "realite.plan.cancelled": {};
+  "realite.plan.copied": {
+    fromPlanId: string;
+    toPlanId: string;
+  };
+  "realite.user.registered": {};
 }
