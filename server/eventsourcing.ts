@@ -18,9 +18,9 @@ export function createInMemoryEventStore<TEvent>(): EventStore<TEvent> {
 export interface BaseEvent<TType extends string, TData> {
   id: string;
   type: TType;
+  subject: string; // id of the subject that the event is about
   actor: string; // id of the actor that caused the event
   time: Date; // date and time the event was created
-  subject: string; // id of the subject that the event is about
   data: TData;
 }
 
