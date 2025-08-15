@@ -42,6 +42,55 @@ To learn more about developing your project with Expo, look at the following res
 - [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
 - [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
+## Docker
+
+This project includes Docker support for running the Bun server in a containerized environment.
+
+### Building the Docker Image
+
+```bash
+# Build using the provided script
+./scripts/build-docker.sh
+
+# Or build manually
+docker build -t realite-server .
+```
+
+### Running with Docker
+
+```bash
+# Run the container
+docker run -p 3000:3000 realite-server
+
+# Or use docker-compose for development
+docker-compose up
+```
+
+### Docker Compose
+
+For local development with hot-reload:
+
+```bash
+# Start the service
+docker-compose up
+
+# Start in background
+docker-compose up -d
+
+# Stop the service
+docker-compose down
+```
+
+## GitHub Container Registry
+
+The Docker image is automatically built and published to GitHub Container Registry on:
+
+- Push to `main` or `develop` branches
+- New version tags (e.g., `v1.0.0`)
+- Pull requests to `main` branch
+
+The image will be available at: `ghcr.io/{your-username}/realite`
+
 ## Join the community
 
 Join our community of developers creating universal apps.

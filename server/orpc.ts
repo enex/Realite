@@ -2,6 +2,10 @@ import { ORPCError, os } from "@orpc/server";
 import type { IncomingHttpHeaders } from "node:http";
 import * as z from "zod";
 
+const parseJWT = (token: string) => {
+  return { id: 1, name: "name" };
+};
+
 const PlanetSchema = z.object({
   id: z.number().int().min(1),
   name: z.string(),
@@ -30,7 +34,7 @@ export const findPlanet = os
 export const createPlanet = os
   .$context<{ headers: IncomingHttpHeaders }>()
   .use(({ context, next }) => {
-    const user = parseJWT(context.headers.authorization?.split(" ")[1]);
+    const user = parseJWT(context.headers.authorization?.split(" ")[1] || "");
 
     if (user) {
       return next({ context: { user } });
