@@ -1,0 +1,28 @@
+---
+description: Event-sourcing workflow and constraints for Realite
+globs:
+alwaysApply: true
+---
+
+- Core rule: Do not perform direct writes to domain tables in feature code
+- Instead follow this pipeline:
+  1. Command via ORPC handler (route) is dispatched
+  2. Authorization: ensure the user is allowed to execute the action
+  3. Validation: ensure the command payload is valid
+  4. Event is emitted and persisted to the event store
+  5. Projection(s) react to the event and update read models using Drizzle
+
+- Important files (included for context):
+  - @server/events.ts
+  - @server/eventsourcing.ts
+  - @server/pgEventStore.ts
+  - @server/es.ts
+  - @server/projections.ts
+  - @server/orpc.ts
+  - @shared/validation.ts
+  - @shared/activities.ts
+
+- Implementation guidance
+  - Add new domain behavior by introducing a Command (ORPC route) and one or more Events
+  - Update projections to handle new Events and persist read models via Drizzle
+  - Keep validation logic in shared modules where appropriate; re-use types

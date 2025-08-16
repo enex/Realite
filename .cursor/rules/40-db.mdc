@@ -1,0 +1,18 @@
+---
+description: Database rules (Drizzle) under event-sourcing
+globs:
+  - db/**
+  - drizzle/**
+  - server/projections.ts
+alwaysApply: false
+---
+
+- Do not mutate domain data directly from commands/handlers
+- Only projections write to read models using Drizzle
+- Scripts
+  - Generate SQL from schema: `bun run db:generate`
+  - Push/apply migrations: `bun run db:push` (or project-specific migrate script)
+  - Studio: `bun run db:studio`
+- Files
+  - Schema in `db/schema.ts`
+  - SQL/migrations in `drizzle/`

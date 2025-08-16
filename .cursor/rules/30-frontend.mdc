@@ -1,0 +1,17 @@
+---
+description: Frontend standards (Expo Router, NativeWind, components)
+globs:
+  - app/**
+  - components/**
+alwaysApply: false
+---
+
+- Routing
+  - Use Expo Router file-based routing under `app/`
+- Styling
+  - Use NativeWind (Tailwind) for styling in React Native components
+- Components
+  - Prefer typed props, early returns, and shallow composition
+  - Keep shared UI in `components/`
+- Running the app
+  - `bun run start` (or `bun run ios` / `bun run android` / `bun run web`)

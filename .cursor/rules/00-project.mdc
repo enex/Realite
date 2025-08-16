@@ -1,5 +1,36 @@
 ---
-description:
+description: Realite project overview and core workflows
 globs:
-alwaysApply: false
+alwaysApply: true
 ---
+
+- Stack
+  - App: Expo + React Native (Expo Router)
+  - Styling: Tailwind via NativeWind
+  - Server: Bun/Node TypeScript in `server/`
+  - Data: Postgres with Drizzle ORM (schema in `db/schema.ts`, migrations in `drizzle/`)
+  - RPC: `@orpc/*` with client in `client/orpc.ts`, server glue in `server/orpc.ts`
+  - Containers: Docker + docker-compose for the server
+
+- Package manager and runner
+  - Use Bun for installs and scripts: `bun install`, `bun run <script>`
+  - Common scripts: `bun run start`, `bun run ios`, `bun run android`, `bun run web`
+
+- Event-sourcing model (critical)
+  - Never modify the database directly from feature code
+  - Flow: Command (ORPC route) → authorize + validate → emit Event → Projections update read models
+  - Commands live behind ORPC handlers; events are defined in `server/events.ts`
+  - Event application and store in `server/eventsourcing.ts` / `server/pgEventStore.ts` / `server/es.ts`
+  - Projections in `server/projections.ts` write to Postgres (Drizzle)
+
+- Database (Drizzle)
+  - Generate SQL from schema: `bun run db:generate`
+  - Apply/push migrations as configured: `bun run db:push` (or migrate script if present)
+  - Studio: `bun run db:studio`
+  - Migration files in `drizzle/`; schema in `db/schema.ts`
+
+- Conventions
+  - TypeScript, strict types; avoid `any`
+  - Keep Expo Router screens under `app/`
+  - Use NativeWind for styling in React Native components
+  - Preserve existing indentation and formatting
