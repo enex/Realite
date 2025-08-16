@@ -1,5 +1,7 @@
 // Logic for event sourcing abstract with only in memory storage
 
+import { randomUUIDv7 } from "bun";
+
 /** Central object that controls dispatching of events and retrieval of projections */
 export interface EventStore<TEvent> {
   dispatch(event: TEvent): Promise<void>;
@@ -27,6 +29,22 @@ export interface BaseEvent<TType extends string, TData> {
 export type EventFromDataMap<TDataMap extends Record<string, any>> = {
   [TType in keyof TDataMap]: BaseEvent<TType & string, TDataMap[TType]>;
 }[string];
+
+export type EventInput<TEvent extends BaseEvent<string, any>> = Omit<
+  TEvent,
+  "id" | "time"
+> &
+  Partial<TEvent>;
+
+export function inputToFullEvent<TData, TName extends string>(
+  input: EventInput<BaseEvent<TName, TData>>
+): BaseEvent<TName, TData> {
+  return {
+    id: randomUUIDv7(),
+    time: new Date(),
+    ...input,
+  };
+}
 
 export interface Projection<TEvent extends BaseEvent<string, any>, TContext> {
   name: string;

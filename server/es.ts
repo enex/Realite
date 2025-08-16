@@ -1,8 +1,17 @@
-import { createPgEventStore } from "./pgEventStore";
+import { builder } from "./builder";
 
-export const es = createPgEventStore(process.env.POSTGRES_URL!, {
+export const es = builder.store({
   projections: {
-    inline: {},
+    inline: {
+      plan: builder
+        .projection({
+          async "realite.plan.shared"(ev, ctx) {},
+          async "realite.plan.cancelled"(ev, ctx) {},
+        })
+        .query("getName", async ({ db }, id: string) => {
+          return "asdf";
+        }),
+    },
     async: {},
   },
 });

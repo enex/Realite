@@ -1,7 +1,4 @@
-import { RealiteEvents } from "./events";
-import { Builder } from "./pgEventStore";
-
-const builder = new Builder<RealiteEvents>();
+import { builder } from "./builder";
 
 export const plan = builder
   .projection({
@@ -9,8 +6,6 @@ export const plan = builder
       console.log(ev);
     },
   })
-  .queries({
-    async getRealite(ctx) {
-      return "asdf";
-    },
+  .query("getRealite", async (ctx) => {
+    return "asdf";
   });
