@@ -1,4 +1,4 @@
-import { and, asc, eq, gte } from "drizzle-orm";
+import { and, asc, eq, gte, inArray } from "drizzle-orm";
 import { BunSQLDatabase } from "drizzle-orm/bun-sql";
 import { AnyPgColumn, AnyPgTable } from "drizzle-orm/pg-core";
 import {
@@ -144,7 +144,7 @@ export class Builder<
         return result;
       },
       reduce: async <T>(
-        filter: { subject?: string; actor?: string },
+        filter: { subject?: string; actor?: string; type?: (keyof TEvents)[] },
         fn: (acc: T, event: EventFromDataMap<TEvents>) => T,
         initial: T,
         {
@@ -168,7 +168,8 @@ export class Builder<
                   ? eq(eventsTable.subject, filter.subject)
                   : undefined,
                 filter.actor ? eq(eventsTable.actor, filter.actor) : undefined,
-                gte(eventsTable.time, lastTime)
+                gte(eventsTable.time, lastTime),
+                filter.type ? inArray(eventsTable.type, filter.type) : undefined
               )
             )
             .orderBy(asc(eventsTable.time))

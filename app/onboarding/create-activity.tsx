@@ -1,13 +1,16 @@
 import orpc from "@/client/orpc";
 import OnboardingDateTimePicker from "@/components/OnboardingDateTimePicker";
 import RadiusSelector from "@/components/RadiusSelector";
+import { useLocation } from "@/hooks/useLocation";
+import { useLocationRadius } from "@/hooks/useLocationRadius";
+import { ActivityId, getSearchTermForActivity } from "@/shared/activities";
 import { MaterialIcons } from "@expo/vector-icons";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetScrollView,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useColorScheme } from "nativewind";
 import React, { useCallback, useMemo, useRef, useState } from "react";
@@ -29,37 +32,37 @@ const ACTIVITY_SUGGESTIONS = [
     emoji: "☕",
     title: "Kaffee trinken",
     description: "Entspanntes Gespräch bei einem Kaffee",
-    category: "CAFE" as CategoryId,
+    category: "social/coffee_chat" as ActivityId,
   },
   {
     emoji: "🚶",
     title: "Spaziergang",
     description: "Gemeinsam durch die Stadt oder den Park",
-    category: "WALKING" as CategoryId,
+    category: "social/walking" as ActivityId,
   },
   {
     emoji: "🍽️",
     title: "Essen gehen",
     description: "Neues Restaurant oder Lieblingscafé entdecken",
-    category: "RESTAURANT" as CategoryId,
+    category: "food_drink/restaurant" as ActivityId,
   },
   {
     emoji: "🎳",
     title: "Bowling",
     description: "Zusammen bowlen und Spaß haben",
-    category: "BOWLING" as CategoryId,
+    category: "social/bowling" as ActivityId,
   },
   {
     emoji: "🎨",
     title: "Museum besuchen",
     description: "Kunst und Kultur gemeinsam entdecken",
-    category: "MUSEUM" as CategoryId,
+    category: "arts_culture/museum" as ActivityId,
   },
   {
     emoji: "🏃",
     title: "Laufen/Joggen",
     description: "Gemeinsam laufen und fit bleiben",
-    category: "RUNNING" as CategoryId,
+    category: "sport/running" as ActivityId,
   },
 ];
 
@@ -82,7 +85,7 @@ interface LocationResult {
 interface MeetData {
   title: string;
   description: string;
-  category: CategoryId;
+  category: ActivityId;
   dates: Date[];
   timeRanges: { start: Date; end: Date; day: string }[];
   locations: {
@@ -119,7 +122,7 @@ export default function CreateActivityScreen() {
   const [meetData, setMeetData] = useState<MeetData>({
     title: "",
     description: "",
-    category: "" as CategoryId,
+    category: "social/coffee_chat" as ActivityId,
     dates: [],
     timeRanges: [],
     locations: [],
@@ -146,9 +149,9 @@ export default function CreateActivityScreen() {
   // Radius hook
   const { radiusKm, radiusMeters, updateRadius } = useLocationRadius();
 
-  const { data: searchData, isLoading: isLocationLoading } =
-    api.location.search.useQuery(
-      {
+  const { data: searchData, isLoading: isLocationLoading } = useQuery(
+    orpc.location.search.queryOptions({
+      input: {
         query: searchQuery,
         limit: 25, // Erhöht auf 25 für mehr Ergebnisse
         userLocation: hasPermission
@@ -156,15 +159,16 @@ export default function CreateActivityScreen() {
           : undefined,
         radius: hasPermission ? radiusMeters : undefined,
       },
-      { enabled: searchQuery.length >= 2 }
-    );
+      enabled: searchQuery.length >= 2,
+    })
+  );
 
   // Automatische Suche basierend auf Kategorie
-  const autoSearchTerm = getCategorySearchTerm(meetData.category || "");
+  const autoSearchTerm = getSearchTermForActivity(meetData.category);
 
-  const { data: categorySearchData, isLoading: _isCategoryLoading } =
-    api.location.search.useQuery(
-      {
+  const { data: categorySearchData, isLoading: _isCategoryLoading } = useQuery(
+    orpc.location.search.queryOptions({
+      input: {
         query: autoSearchTerm,
         limit: 25,
         userLocation: hasPermission
@@ -172,8 +176,9 @@ export default function CreateActivityScreen() {
           : undefined,
         radius: hasPermission ? radiusMeters : undefined,
       },
-      { enabled: !!autoSearchTerm && searchQuery.length === 0 }
-    );
+      enabled: !!autoSearchTerm && searchQuery.length === 0,
+    })
+  );
 
   // Update search results when data changes
   React.useEffect(() => {
@@ -261,7 +266,10 @@ export default function CreateActivityScreen() {
   );
 
   const createMeet = useMutation(
-    orpc.realite.create.mutationOptions({
+    orpc.plan.create.mutationOptions({
+      input: {
+        inputText: "Ich möchte mit einem Freund Bowling spielen",
+      },
       onSuccess: (_result) => {
         // Mark onboarding as completed and navigate after cache invalidation
         void completeOnboarding
@@ -801,7 +809,7 @@ export default function CreateActivityScreen() {
                 onPress={() => {
                   // Mark onboarding as completed when choosing to create later
                   void completeOnboarding
-                    .mutateAsync()
+                    .mutateAsync({})
                     .catch(() => {})
                     .finally(() => router.replace("/" as never));
                 }}

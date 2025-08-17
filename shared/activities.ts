@@ -152,3 +152,46 @@ export const activities = {
     },
   },
 };
+
+export const activityGroupIds = Object.keys(activities);
+export const activityIds = Object.values(activities)
+  .flatMap((group) =>
+    Object.values(group.subActivities).map(
+      (subActivity) => `${group.name}/${subActivity.name}`
+    )
+  )
+  .concat(activityGroupIds);
+
+export type ActivityGroupId = keyof typeof activities;
+export type ActivityId =
+  | ActivityGroupId
+  | {
+      [key in ActivityGroupId]: `${key}/${keyof (typeof activities)[key]["subActivities"] & string}`;
+    }[ActivityGroupId];
+
+export const searchTermForActivityMap: Partial<Record<ActivityId, string>> = {
+  "sport/climbing": "Klettern",
+  "food_drink/restaurant": "Restaurant",
+  "arts_culture/museum": "Museum",
+  "social/coffee_chat": "Kaffeeplausch",
+  "social/party": "Party",
+  "social/meetup": "Meetup",
+  social: "Soziales",
+  learning: "Lernen",
+  outdoors: "Draußen",
+  travel: "Reisen",
+  wellness: "Wellness",
+  home: "Zuhause",
+};
+
+export const getSearchTermForActivity = (activityId: ActivityId): string => {
+  const direct = searchTermForActivityMap[activityId];
+  if (direct) return direct;
+  const [groupId, subActivityId] = activityId.split("/");
+  const group = activities[groupId as ActivityGroupId];
+  if (!group) return activityId;
+  const subActivity =
+    group.subActivities[subActivityId as keyof typeof group.subActivities];
+  if (!subActivity) return "";
+  return activityId;
+};

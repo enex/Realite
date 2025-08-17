@@ -93,7 +93,10 @@ export const userRouter = {
         .object({ id: z.string().uuid() })
         .or(z.object({ phoneNumberHash: z.string().uuid() }))
     )
-    .handler(async ({ context, input }) => {
+    .errors({
+      NOT_FOUND: { message: "User not found" },
+    })
+    .handler(async ({ context, input, errors }) => {
       const user = await context.db.query.User.findFirst({
         where:
           "phoneNumberHash" in input
@@ -123,11 +126,7 @@ export const userRouter = {
         },
       });
 
-      if (!user)
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User not found",
-        });
+      if (!user) throw errors.NOT_FOUND();
 
       const res = {
         gender: undefined,

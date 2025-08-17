@@ -1,7 +1,7 @@
 import { Gender, RelationshipStatus } from "@/shared/validation";
 
 export interface RealiteEvents {
-  "realite.plan.shared": {
+  "realite.plan.created": {
     inputText?: string; // text the user typed in to create the plan (if rest was LLM Generated)
     title?: string; // name of the realite
     description?: string; // description of the realite

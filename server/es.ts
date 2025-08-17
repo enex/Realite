@@ -6,7 +6,7 @@ export const es = builder.store({
     inline: {
       plan: builder
         .projection({
-          async "realite.plan.shared"(ev, ctx) {},
+          async "realite.plan.created"(ev, ctx) {},
           async "realite.plan.cancelled"(ev, ctx) {},
         })
         .query("getName", async ({ db }, id: string) => {
