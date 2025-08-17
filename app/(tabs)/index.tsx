@@ -1,23 +1,13 @@
 import { Image } from "expo-image";
 import { Platform, Pressable, StyleSheet } from "react-native";
 
-import orpc, { client } from "@/client/orpc";
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { useQuery } from "@tanstack/react-query";
 import { fetch } from "expo/fetch";
 
 export default function HomeScreen() {
-  const { data } = useQuery(
-    orpc.planet.list.queryOptions({
-      input: { limit: 100 },
-    })
-  );
-
-  console.log(data);
-
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
@@ -59,13 +49,6 @@ export default function HomeScreen() {
                 query: "query { planet { id name } }",
               }),
             });
-            client.planet
-              .list({
-                limit: 100,
-              })
-              .then((res) => {
-                console.log(res);
-              });
           }}
         >
           <ThemedText>DO REQUEST</ThemedText>
