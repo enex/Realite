@@ -1,5 +1,6 @@
+import { useSession } from "@/client/auth";
 import { router } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { Pressable, Text, View } from "react-native";
 
 export default function NativeLanding() {
@@ -13,6 +14,12 @@ export default function NativeLanding() {
     // TODO: Navigate to learn more or open web version
     console.log("Learn more pressed");
   };
+
+  const { session, isLoading } = useSession();
+  useEffect(() => {
+    if (isLoading || !session) return;
+    router.replace("/(tabs)");
+  }, [session, isLoading]);
 
   return (
     <View className="flex-1 bg-white justify-center items-center px-8">

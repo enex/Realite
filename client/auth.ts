@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { usePostHog } from "posthog-react-native";
 import { useEffect } from "react";
 
+import { isDefinedError } from "@orpc/client";
 import orpc, { client } from "./orpc";
 import { deleteToken, getToken, setToken } from "./session-store";
 import { handleInvalidToken } from "./token-refresh";
@@ -78,14 +79,18 @@ export const useSession = () => {
 
   // Automatische Behandlung von ungültigen Tokens
   useEffect(() => {
-    if (error && error.data?.code === "UNAUTHORIZED" && localSession) {
+    if (
+      isDefinedError(error) &&
+      error.code === "UNAUTHORIZED" &&
+      localSession
+    ) {
       console.log("Token is invalid, clearing session and redirecting to auth");
       // Token ist ungültig, lösche ihn und leite zur Anmeldung weiter
-      void handleInvalidToken(router, utils);
+      void handleInvalidToken(router, queryClient);
       // Invalidiere auch die lokale Session Query
       void queryClient.invalidateQueries({ queryKey: ["local-session"] });
     }
-  }, [error, localSession, router, utils, queryClient]);
+  }, [error, localSession, router, queryClient]);
 
   // Optimistische Session-Logik:
   // 1. Verwende lokale Session sofort (optimistisch)
@@ -110,7 +115,6 @@ export const useSignIn = () => {
 };
 
 export const useSignInWithPhone = () => {
-  const utils = useQueryClient();
   const router = useRouter();
   const posthog = usePostHog();
   const queryClient = useQueryClient();
@@ -122,17 +126,14 @@ export const useSignInWithPhone = () => {
         posthog?.identify(data.id);
 
         // Invalidiere lokale Session Query um neue Session zu laden
-        await utils.invalidateQueries();
-
-        // Invalidiere auch die lokale Session Query
-        void queryClient.invalidateQueries({ queryKey: ["local-session"] });
+        await queryClient.invalidateQueries();
 
         // Check onboarding status after successful login
         try {
           const userQuery = await client.auth.me();
           // Defer navigation to avoid ScreenStackFragment error
           setTimeout(() => {
-            if (userQuery.onboarding.completed) {
+            if (userQuery.onboarded) {
               // User has completed onboarding, go to main app
               router.replace("/");
             } else {
@@ -192,8 +193,7 @@ export function useEnsureUser() {
 
   // Automatische Weiterleitung bei Auth-Fehler
   useEffect(() => {
-    console.log("error", error);
-    if (error && error.data?.code === "UNAUTHORIZED") {
+    if (isDefinedError(error) && error.code === "UNAUTHORIZED") {
       // Use the centralized invalid token handler
       void handleInvalidToken(router, utils);
     }

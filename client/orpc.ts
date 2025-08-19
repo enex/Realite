@@ -4,6 +4,7 @@ import { RPCLink } from "@orpc/client/fetch";
 import { createORPCReactQueryUtils } from "@orpc/react-query";
 import { RouterClient } from "@orpc/server";
 import { getBaseUrl } from "./getBaseUrl";
+import { getToken } from "./session-store";
 
 export const link = new RPCLink({
   url: () => {
@@ -14,9 +15,11 @@ export const link = new RPCLink({
     // React Native environment - use localhost for development
     return `${getBaseUrl()}/rpc`;
   },
-  headers: async ({ context }) => ({
-    "x-api-key": context?.something ?? "",
-  }),
+  headers: async ({ context }) => {
+    const token = getToken();
+    if (token) return { Authorization: `Bearer ${token}` };
+    return {};
+  },
   // Let the library use the default fetch for the current environment
 });
 
