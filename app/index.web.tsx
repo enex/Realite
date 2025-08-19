@@ -68,7 +68,7 @@ export default function WebLanding() {
 
         {/* Hero Section with Gradient */}
         <View className="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 px-8 py-20">
-          <View className="max-w-6xl mx-auto items-center">
+          <View className="max-w-6xl w-full mx-auto items-center">
             <View className="items-center mb-8">
               <Text className="text-6xl font-bold text-center bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-6 leading-tight">
                 Die App für echte{"\n"}Verbindungen
@@ -83,7 +83,7 @@ export default function WebLanding() {
               </Text>
             </View>
 
-            <View className="flex-row gap-4 mb-16">
+            <View className="flex-row gap-4 mb-16 flex-wrap justify-center">
               <Pressable
                 className="bg-gradient-to-r from-blue-500 to-blue-600 px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all flex-row items-center"
                 onPress={openAppStore}
@@ -359,7 +359,7 @@ export default function WebLanding() {
               kennenzulernen!
             </Text>
 
-            <View className="flex-row justify-center gap-6 mb-12">
+            <View className="flex-row justify-center gap-6 mb-12 flex-wrap">
               <Pressable
                 className="bg-gradient-to-r from-blue-500 to-blue-600 px-10 py-5 rounded-2xl shadow-2xl hover:shadow-blue-500/25 transition-all hover:scale-105"
                 onPress={openAppStore}
@@ -394,7 +394,7 @@ export default function WebLanding() {
 
         {/* Enhanced Footer */}
         <View className="px-8 py-12 bg-gray-50 border-t border-gray-200">
-          <View className="max-w-6xl mx-auto">
+          <View className="max-w-6xl mx-auto w-full">
             <View className="flex-row justify-between items-center mb-8">
               <View>
                 <Text className="text-2xl font-bold text-gray-800 mb-2">
