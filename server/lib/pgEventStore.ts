@@ -1,5 +1,5 @@
 import { and, asc, eq, gte, inArray } from "drizzle-orm";
-import { BunSQLDatabase } from "drizzle-orm/bun-sql";
+import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { AnyPgColumn, AnyPgTable } from "drizzle-orm/pg-core";
 import {
   BaseEvent,
@@ -14,13 +14,13 @@ type EventInputWithoutActor<TEvent extends BaseEvent<string, any>> = Omit<
 > &
   Partial<TEvent>;
 
-export interface PgProjectionContext<TDatabase extends BunSQLDatabase<any>> {
+export interface PgProjectionContext<TDatabase extends NodePgDatabase<any>> {
   db: TDatabase;
 }
 
 export interface PgProjectionDefinition<
   TEvent extends BaseEvent<string, any>,
-  TDatabase extends BunSQLDatabase<any>,
+  TDatabase extends NodePgDatabase<any>,
 > {
   version?: number;
   handlers: {
@@ -35,9 +35,32 @@ export interface PgProjectionDefinition<
   >;
 }
 
+export type PgLazyProjectionContext<
+  TDatabase extends NodePgDatabase<any>,
+  TEvent extends BaseEvent<string, any>,
+> = PgProjectionContext<TDatabase> & {
+  reduce<T>(
+    filter: { subject?: string; actor?: string; type?: TEvent["type"][] },
+    fn: (acc: T, event: TEvent) => T,
+    initial: T,
+    options?: { batchSize?: number; startTime?: Date }
+  ): Promise<T>;
+};
+
+export type LazyProjectionDefinition<
+  TEvent extends BaseEvent<string, any>,
+  TDatabase extends NodePgDatabase<any>,
+> = Record<
+  string,
+  (
+    ctx: PgLazyProjectionContext<TDatabase, TEvent>,
+    ...args: any[]
+  ) => Promise<any>
+>;
+
 export class Builder<
   TEvents extends Record<string, any>,
-  TDatabase extends BunSQLDatabase<any>,
+  TDatabase extends NodePgDatabase<any>,
 > {
   constructor(
     private readonly db: TDatabase,
@@ -75,7 +98,7 @@ export class Builder<
       >(name: TQueryName, fn: TFn) {
         return {
           ...this,
-          queries: { ...this.queries, [name]: fn },
+          queries: { ...this.queries, [name]: fn } as Record<TQueryName, TFn>,
         };
       },
     };
@@ -87,45 +110,83 @@ export class Builder<
       string,
       PgProjectionDefinition<EventFromDataMap<TEvents>, TDatabase>
     >,
-    TProjections extends Record<
+    TAsyncProjections extends Record<
       string,
       PgProjectionDefinition<EventFromDataMap<TEvents>, TDatabase>
+    >,
+    TLazyProjections extends Record<
+      string,
+      LazyProjectionDefinition<EventFromDataMap<TEvents>, TDatabase>
     >,
   >(options: {
     projections: {
       /** Projections that directly run when an event gets published in the same transaction */
       inline: TInlineProjections;
       /** Projections that run async and thus are only eventually consistent */
-      async: TProjections;
+      async?: TAsyncProjections;
+      /** Projections that are not actually materialized, but that fetch their data on the fly. */
+      lazy?: TLazyProjections;
     };
     /** hook to run after an event is published, can be used to track events in analytics */
     onEvent?: (event: EventFromDataMap<TEvents>) => Promise<void>;
   }) {
-    const ctx = { db: this.db };
+    const ctx: PgLazyProjectionContext<TDatabase, EventFromDataMap<TEvents>> = {
+      db: this.db,
+      reduce(filter, fn, initial, options) {
+        return self.reduce(filter, fn, initial, options);
+      },
+    };
     const self = {
-      projections: Object.fromEntries(
-        Object.entries({
-          ...options.projections.inline,
-          ...options.projections.async,
-        }).map(([name, projection]) => {
-          return [
-            name,
-            {
-              $version: projection.version,
-              ...Object.fromEntries(
-                Object.entries(projection.queries).map(([name, handler]) => {
-                  return [
-                    name,
-                    (...args: any[]) => {
-                      return handler(ctx, ...args);
-                    },
-                  ];
-                })
-              ),
-            },
-          ];
-        })
-      ),
+      projections: {
+        ...Object.fromEntries(
+          Object.entries({
+            ...options.projections.inline,
+            ...options.projections.async,
+          }).map(([name, projection]) => {
+            return [
+              name,
+              {
+                $version: projection.version,
+                ...Object.fromEntries(
+                  Object.entries(projection.queries).map(([name, handler]) => {
+                    return [
+                      name,
+                      (...args: any[]) => {
+                        return handler(ctx, ...args);
+                      },
+                    ];
+                  })
+                ),
+              },
+            ];
+          })
+        ),
+        ...Object.fromEntries(
+          Object.entries(options.projections.lazy ?? []).map(
+            ([name, queries]) => {
+              return [
+                name,
+                Object.fromEntries(
+                  Object.entries(queries).map(([name, handler]) => {
+                    return [
+                      name,
+                      (...args: any[]) => {
+                        return handler(ctx, ...args);
+                      },
+                    ];
+                  })
+                ),
+              ];
+            }
+          )
+        ),
+      } as ProjOut<TAsyncProjections & TInlineProjections> & {
+        [K in keyof TLazyProjections]: {
+          [K2 in keyof TLazyProjections[K]]: (
+            ...args: ParametersExceptFirst<TLazyProjections[K][K2]>
+          ) => Promise<ReturnType<TLazyProjections[K][K2]>>;
+        };
+      },
       add: async (event: EventInput<EventFromDataMap<TEvents>>) => {
         const newEvent = inputToFullEvent(event);
         const result = this.db.transaction(async (tx) => {
@@ -199,3 +260,20 @@ export class Builder<
     return self;
   }
 }
+
+type ProjOut<
+  TProjections extends Record<
+    string,
+    PgProjectionDefinition<EventFromDataMap<any>, any>
+  >,
+> = {
+  [T in keyof TProjections]: { $version: TProjections[T]["version"] } & {
+    [K in keyof TProjections[T]["queries"]]: (
+      ...args: ParametersExceptFirst<TProjections[T]["queries"][K]>
+    ) => Promise<ReturnType<TProjections[T]["queries"][K]>>;
+  };
+};
+
+type ParametersExceptFirst<F> = F extends (arg0: any, ...rest: infer R) => any
+  ? R
+  : never;

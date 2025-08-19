@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 
@@ -5,6 +6,7 @@ export default function NativeLanding() {
   const handleSignIn = () => {
     // TODO: Implement sign in logic
     console.log("Sign in pressed");
+    router.push("/auth/phone");
   };
 
   const handleLearnMore = () => {

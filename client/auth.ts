@@ -119,7 +119,7 @@ export const useSignInWithPhone = () => {
     orpc.auth.verifySMSCode.mutationOptions({
       onSuccess: async (data) => {
         setToken(data.token);
-        posthog.identify(data.id);
+        posthog?.identify(data.id);
 
         // Invalidiere lokale Session Query um neue Session zu laden
         await utils.invalidateQueries();

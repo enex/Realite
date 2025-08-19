@@ -13,7 +13,22 @@ export type ServerContext = {
   };
 };
 
-export const publicRoute = os.$context<ServerContext>();
+export const publicRoute = os
+  .$context<ServerContext>()
+  .use(async ({ next, context }) => {
+    try {
+      return next({
+        context: {
+          ...context,
+          es,
+        },
+      });
+    } catch (error) {
+      // Global ORPC route error logging
+      console.error("[ORPC] Route error:", error);
+      throw error;
+    }
+  });
 export const protectedRoute = publicRoute
   .errors({
     UNAUTHORIZED: { message: "Unauthorized" },

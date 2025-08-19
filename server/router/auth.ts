@@ -1,3 +1,4 @@
+import { PHONE_NUMBER_HASH_NAMESPACE } from "@/shared/validation";
 import {
   phoneNumberSchema,
   validatePhoneNumber,
@@ -7,6 +8,7 @@ import { jwtVerify } from "jose";
 import * as uuid from "uuid";
 import { z } from "zod";
 import { protectedRoute, publicRoute } from "../orpc";
+import { budgetSMS } from "../services/budgetSMS";
 import { signJWT } from "../utils/jwt";
 
 // Demo-Nutzer Konstanten für Store Reviews und lokales Testen
@@ -22,77 +24,24 @@ const DEMO_PHONE_NUMBERS = [
 ];
 const DEMO_CODE = "123456";
 
-function fakeSignJWT(payload: Record<string, unknown>): string {
-  const header = Buffer.from(
-    JSON.stringify({ alg: "none", typ: "JWT" })
-  ).toString("base64url");
-  const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
-  return `${header}.${body}.`;
-}
-
 export const authRouter = {
   getSession: protectedRoute.handler(async ({ context }) => {
     const ctx = context as { session: any };
     return ctx.session ?? null;
   }),
-  me: publicRoute.handler(async ({ context }) => {
-    const ctx = context as { session: any; db: typeof db };
-    const res = await db.query.User.findFirst({
-      where: (t, { eq }) => eq(t.id, ctx.session.id),
-      columns: {
-        id: true,
-        email: true,
-        image: true,
-        name: true,
-      },
-    });
-
-    let ret = { ...res };
-
-    const events = await ctx.db.query.Event.findMany({
-      where: eq(Event.actorId, ctx.session.id),
-      orderBy: [asc(Event.time)],
-    });
-
-    console.log(events, ret);
-
-    for (const ev of events) {
-      const event = ev as EventData;
-      switch (event.type) {
-        case "user-registered":
-          ret = { ...ret, ...event.data };
-          break;
-        case "user-profile-updated":
-          ret = { ...ret, ...event.data };
-          break;
-      }
-    }
-
+  me: protectedRoute.handler(async ({ context }) => {
+    const ret = await context.es.projections.user.getProfile(
+      context.session.id
+    );
     return ret;
   }),
   signOut: protectedRoute.handler(async ({ context }) => {
     return { success: true };
   }),
   refreshToken: protectedRoute.handler(async ({ context }) => {
-    const ctx = context as { session: any; db: typeof db };
-    const { session } = ctx;
-
-    // Check if token should be refreshed
-    if (!shouldRefreshToken(session)) {
-      // Token is still valid and doesn't need refresh yet
-      throw new ORPCError("BAD_REQUEST");
-    }
-
-    // Get user data to generate new token
-    const user = await db.query.User.findFirst({
-      where: (t, { eq }) => eq(t.id, session.id),
-      columns: {
-        id: true,
-        name: true,
-        image: true,
-        phoneNumber: true,
-      },
-    });
+    const user = await context.es.projections.user.getProfile(
+      context.session.id
+    );
 
     if (!user) throw new ORPCError("NOT_FOUND");
 
@@ -104,15 +53,10 @@ export const authRouter = {
       image: user.image,
     });
 
-    // Track token refresh event
-    await saveEventWithAnalytics(ctx.db, {
-      type: "token-refreshed",
-      actorId: user.id,
-      subject: user.id,
-      data: {
-        userId: user.id,
-        phoneNumber: user.phoneNumber,
-      },
+    context.es.add({
+      type: "realite.auth.token-refreshed",
+      subject: context.session.id,
+      data: {},
     });
 
     return { token: newToken };
@@ -120,36 +64,27 @@ export const authRouter = {
   requestSMSCode: publicRoute
     .input(z.object({ phoneNumber: phoneNumberSchema }))
     .handler(async ({ context, input }) => {
-      const ctx = context as { db: typeof db };
       try {
         // Standardisiere die eingegebene Telefonnummer
         const validation = validatePhoneNumber(input.phoneNumber);
         const standardizedNumber = validation.standardizedNumber;
 
-        // Track verification code request event
-        await saveEventWithAnalytics(ctx.db, {
-          type: "verification-code-requested",
-          subject: "tel:+" + standardizedNumber,
-          data: {
-            phoneNumber: standardizedNumber,
-            deviceInfo: {}, // Could be enhanced with actual device info
-          },
-        });
+        const phoneHash = uuid.v5(
+          standardizedNumber,
+          PHONE_NUMBER_HASH_NAMESPACE
+        );
 
         // Demo-Nutzer: Code direkt in DB speichern, keine SMS senden
         if (DEMO_PHONE_NUMBERS.includes(standardizedNumber)) {
-          await ctx.db.insert(VerificationCode).values({
-            code: DEMO_CODE,
-            phoneNumber: standardizedNumber,
-            expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
-          });
-          await saveEventWithAnalytics(ctx.db, {
-            type: "verification-code-sent",
-            subject: "tel:+" + standardizedNumber,
+          await context.es.add({
+            actor: phoneHash,
+            subject: phoneHash,
+            type: "realite.auth.phone-code-requested",
             data: {
               phoneNumber: standardizedNumber,
+              deviceInfo: {}, // Could be enhanced with actual device info
               code: DEMO_CODE,
-              expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+              expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
             },
           });
 
@@ -159,22 +94,18 @@ export const authRouter = {
         // Normaler Nutzer: Code generieren und SMS senden
         const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-        await ctx.db.insert(VerificationCode).values({
-          code,
-          phoneNumber: standardizedNumber,
-          expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
-        });
-
         const message = `Ihr Verifizierungscode für realite.app lautet: ${code}`;
         await budgetSMS.sendSMS(standardizedNumber, message);
 
-        await saveEventWithAnalytics(ctx.db, {
-          type: "verification-code-sent",
-          subject: "tel:+" + standardizedNumber,
+        await context.es.add({
+          actor: phoneHash,
+          subject: phoneHash,
+          type: "realite.auth.phone-code-requested",
           data: {
             phoneNumber: standardizedNumber,
+            deviceInfo: {}, // Could be enhanced with actual device info
             code,
-            expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+            expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
           },
         });
 
@@ -185,139 +116,104 @@ export const authRouter = {
       }
     }),
   verifySMSCode: publicRoute
+    .errors({
+      BAD_REQUEST: {
+        message: "Der Code ist ungültig oder abgelaufen",
+      },
+    })
     .input(
       z.object({
         phoneNumber: phoneNumberSchema,
         code: z.string().length(6, "Der Code muss 6 Ziffern lang sein"),
       })
     )
-    .handler(async ({ context, input }) => {
-      const ctx = context as { db: typeof db; session?: any };
+    .handler(async ({ context, input, errors }) => {
+      console.log("verifySMSCode", input);
       // Standardisiere die eingegebene Telefonnummer für die Verifizierung
       const validation = validatePhoneNumber(input.phoneNumber);
       const standardizedNumber = validation.standardizedNumber;
+      const phoneHash = uuid.v5(
+        standardizedNumber,
+        PHONE_NUMBER_HASH_NAMESPACE
+      );
 
-      const verificationCode = await ctx.db.query.VerificationCode.findFirst({
-        where: eq(VerificationCode.phoneNumber, standardizedNumber),
-        orderBy: (vc) => [desc(vc.createdAt)],
-      });
+      const verificationCode =
+        await context.es.projections.auth.getVerificationCode(phoneHash);
 
       const isValidCode =
         verificationCode &&
         verificationCode.code === input.code &&
-        verificationCode.expiresAt >= new Date() &&
+        new Date(verificationCode.expiresAt) >= new Date() &&
         verificationCode.attempts < 3;
 
-      // Track verification attempt
-      await saveEventWithAnalytics(ctx.db, {
-        type: "verification-code-verified",
-        subject: standardizedNumber,
-        data: {
-          phoneNumber: standardizedNumber,
-          success: !!isValidCode,
-          attemptCount: (verificationCode?.attempts ?? 0) + 1,
-        },
-      });
+      console.log("isValidCode", isValidCode);
+      console.log("verificationCode", verificationCode);
+      console.log("input.code", input.code);
 
-      if (!isValidCode) throw new ORPCError("BAD_REQUEST");
+      if (!isValidCode) {
+        // Track verification attempt
 
-      let user = await ctx.db.query.User.findFirst({
-        where: (t, { eq }) => eq(t.phoneNumber, standardizedNumber),
-        columns: {
-          id: true,
-          name: true,
-          email: true,
-          image: true,
-        },
-      });
+        const reason =
+          !verificationCode || verificationCode.code !== input.code
+            ? "code-invalid"
+            : "code-expired";
 
-      const session = ctx.session;
-      if (!user && session) {
-        user = await ctx.db.query.User.findFirst({
-          where: (t, { eq }) => eq(t.id, session.id),
-          columns: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
+        await context.es.add({
+          actor: phoneHash,
+          subject: phoneHash,
+          type: "realite.auth.phone-code-invalid",
+          data: {
+            phoneNumber: standardizedNumber,
+            reason,
           },
         });
-        if (user) {
-          await ctx.db
-            .update(User)
-            .set({
-              phoneNumber: standardizedNumber,
-              phoneNumberHash: uuid.v5(
-                standardizedNumber,
-                PHONE_NUMBER_HASH_NAMESPACE
-              ),
-            })
-            .where(eq(User.id, user.id));
-        }
+        throw errors.BAD_REQUEST({
+          message: reason,
+        });
       }
 
-      if (!user) {
-        // create user
-        [user] = await ctx.db
-          .insert(User)
-          .values({
-            phoneNumber: standardizedNumber,
-            phoneNumberHash: uuid.v5(
-              standardizedNumber,
-              PHONE_NUMBER_HASH_NAMESPACE
-            ),
-          })
-          .returning({
-            id: User.id,
-            name: User.name,
-            email: User.email,
-            image: User.image,
-          });
+      let userId =
+        await context.es.projections.auth.getUserIdByPhoneNumber(phoneHash);
 
-        if (user) {
-          await ctx.db.insert(PhoneNumber).values({
-            userId: user.id,
+      if (context.session?.id) {
+        // make the currently signed in user the owner of the phone number
+        await context.es.add({
+          actor: phoneHash,
+          subject: phoneHash,
+          type: "realite.auth.phone-code-verified",
+          data: {
             phoneNumber: standardizedNumber,
-            phoneNumberHash: uuid.v5(
-              standardizedNumber,
-              PHONE_NUMBER_HASH_NAMESPACE
-            ),
-          });
-
-          // Track user registration
-          await saveEventWithAnalytics(ctx.db, {
-            type: "user-registered",
-            actorId: user.id,
-            subject: user.id,
-            data: {
-              phoneNumber: standardizedNumber,
-              name: user.name ?? "",
-              deviceInfo: {}, // Could be enhanced with actual device info
-            },
-          });
-        }
+            userId: context.session.id,
+          },
+        });
+        userId = context.session.id;
       }
 
-      if (!user) throw new ORPCError("INTERNAL_SERVER_ERROR");
+      if (!userId) {
+        // user is not registered yet, create a new user
+        userId = uuid.v7();
+        await context.es.add({
+          actor: phoneHash,
+          subject: phoneHash,
+          type: "realite.user.registered",
+          data: {
+            phoneNumber: standardizedNumber,
+            name: "",
+            deviceInfo: {},
+          },
+        });
+        await context.es.add({
+          actor: phoneHash,
+          subject: phoneHash,
+          type: "realite.auth.phone-code-verified",
+          data: {
+            phoneNumber: standardizedNumber,
+            userId,
+          },
+        });
+      }
 
-      await ctx.db.delete(VerificationCode).where(
-        or(
-          eq(VerificationCode.phoneNumber, standardizedNumber),
-          // remove all verification codes that are no longer valid
-          lt(VerificationCode.expiresAt, new Date())
-        )
-      );
-
-      // Track phone number verification success
-      await saveEventWithAnalytics(ctx.db, {
-        type: "phone-number-verified",
-        actorId: user.id,
-        subject: user.id,
-        data: {
-          phoneNumber: standardizedNumber,
-          userId: user.id,
-        },
-      });
+      const user = await context.es.projections.user.getProfile(userId);
 
       // Generate JWT token after successful verification
       const token = await signJWT({
@@ -338,8 +234,7 @@ export const authRouter = {
       })
     )
     .handler(async ({ context, input }) => {
-      const ctx = context as { db: typeof db; session?: any };
-      const userId = ctx.session?.id ?? uuid.v7();
+      const userId = context.session?.id ?? uuid.v7();
       // Generate JWT token after successful verification
       const token = await signJWT({
         phoneNumber: "",
@@ -353,22 +248,13 @@ export const authRouter = {
           new TextEncoder().encode(process.env.JWT_SECRET!)
         );
         // Track user registration
-        await saveEventWithAnalytics(ctx.db, {
-          type: "user-registered",
-          actorId: userId,
+        await context.es.add({
+          type: "realite.user.registered",
+          actor: userId,
           subject: userId,
           data: {
             name: input.name ?? "",
             deviceInfo: {}, // Could be enhanced with actual device info
-          },
-        });
-        await saveEventWithAnalytics(ctx.db, {
-          type: "session-created",
-          subject: userId,
-          data: {
-            sessionToken: token,
-            userId,
-            expires: new Date(decoded.payload.exp! * 1000),
             invitation: {
               user: decoded.payload.iss!,
               createdAt: decoded.payload.iat!,

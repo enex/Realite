@@ -13,7 +13,79 @@ export const es = builder.store({
           return "asdf";
         }),
     },
-    async: {},
+    lazy: {
+      user: {
+        getProfile: async (ctx, id: string) =>
+          ctx.reduce(
+            { subject: id },
+            (acc, event) => {
+              switch (event.type) {
+                case "realite.user.registered":
+                  acc.name = event.data.name;
+                  if (event.data.phoneNumber)
+                    acc.phoneNumber = event.data.phoneNumber;
+                  return acc;
+                case "realite.user.onboarded":
+                  acc.onboarded = true;
+                  return acc;
+                case "realite.profile.updated":
+                  Object.assign(acc, event.data);
+                  return acc;
+                default:
+                  return acc;
+              }
+            },
+            {
+              id,
+              name: "",
+              phoneNumber: "",
+              image: "",
+              gender: "",
+              birthDate: "asdf",
+              relationshipStatus: "asdf",
+              onboarded: false,
+            }
+          ),
+      },
+      auth: {
+        getVerificationCode: async (ctx, phoneNumberHash: string) => {
+          return ctx.reduce(
+            {
+              subject: phoneNumberHash,
+              type: [
+                "realite.auth.phone-code-requested",
+                "realite.auth.phone-code-invalid",
+              ],
+            },
+            (acc, event) => {
+              if (event.type === "realite.auth.phone-code-requested") {
+                return { ...event.data, attempts: 0 };
+              }
+              if (event.type === "realite.auth.phone-code-invalid" && acc) {
+                acc.attempts = (acc.attempts ?? 0) + 1;
+                return acc;
+              }
+              return acc;
+            },
+            null as null | { code: string; expiresAt: string; attempts: number }
+          );
+        },
+        getUserIdByPhoneNumber: async (ctx, phoneNumberHash: string) => {
+          return ctx.reduce(
+            {
+              subject: phoneNumberHash,
+              type: ["realite.auth.phone-code-verified"],
+            },
+            (acc, event) => {
+              if (event.type === "realite.auth.phone-code-verified")
+                return event.data.userId;
+              return acc;
+            },
+            null as null | string
+          );
+        },
+      },
+    },
   },
   onEvent: async (event) => {
     const client = getPostHogClient();
@@ -29,7 +101,7 @@ export const es = builder.store({
     });
 
     if (event.type === "realite.user.registered" && !isSystemEvent) {
-      client.identify({
+      client?.identify({
         distinctId,
         properties: {
           phoneNumber: event.data.phoneNumber,

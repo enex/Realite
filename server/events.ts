@@ -37,11 +37,33 @@ export interface RealiteEvents {
   };
 
   "realite.user.registered": {
-    phoneNumber: string;
+    phoneNumber?: string;
+    email?: string;
     name: string;
     deviceInfo: Record<string, unknown>;
+    invitation?: {
+      user: string;
+      createdAt: number;
+    };
   };
   "realite.user.onboarded": {};
+
+  "realite.auth.token-refreshed": {};
+  "realite.auth.phone-code-requested": {
+    phoneNumber: string;
+    deviceInfo?: Record<string, unknown>;
+    code: string;
+    expiresAt: string;
+    userId?: string; // If the id ist known because it is for example added as a second factor
+  };
+  "realite.auth.phone-code-verified": {
+    phoneNumber: string;
+    userId: string;
+  };
+  "realite.auth.phone-code-invalid": {
+    phoneNumber: string;
+    reason: "code-invalid" | "code-expired" | "code-used";
+  };
 
   "realite.profile.updated": {
     gender?: Gender;

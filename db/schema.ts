@@ -1,5 +1,4 @@
-import { relations } from "drizzle-orm";
-import { AnyPgColumn, pgTable } from "drizzle-orm/pg-core";
+import { pgTable } from "drizzle-orm/pg-core";
 
 export const events = pgTable("events", (t) => ({
   id: t.uuid("id").primaryKey(),
@@ -9,7 +8,7 @@ export const events = pgTable("events", (t) => ({
   time: t.timestamp("created_at").notNull().defaultNow(),
   data: t.jsonb("data").notNull(),
 }));
-
+/*
 export const gatherings = pgTable("gatherings", (t) => ({
   id: t.uuid().primaryKey(),
   name: t.text().notNull(),
@@ -124,3 +123,4 @@ export const planTimeRelations = relations(planTimes, ({ one }) => ({
 }));
 
 // #endregion
+*/

@@ -1,6 +1,6 @@
 // Logic for event sourcing abstract with only in memory storage
 
-import { randomUUIDv7 } from "bun";
+import { v7 as uuidv7 } from "uuid";
 
 /** Central object that controls dispatching of events and retrieval of projections */
 export interface EventStore<TEvent> {
@@ -40,7 +40,7 @@ export function inputToFullEvent<TData, TName extends string>(
   input: EventInput<BaseEvent<TName, TData>>
 ): BaseEvent<TName, TData> {
   return {
-    id: randomUUIDv7(),
+    id: uuidv7(),
     time: new Date(),
     ...input,
   };
