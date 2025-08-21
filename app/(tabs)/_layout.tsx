@@ -5,7 +5,6 @@ import { Platform } from "react-native";
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
-import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function TabLayout() {
@@ -14,25 +13,46 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: "#007AFF",
+        tabBarInactiveTintColor: "#8E8E93",
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: "absolute",
+            borderTopWidth: 0,
+            backgroundColor: "transparent",
+            elevation: 0,
+            shadowOpacity: 0,
+            height: 88,
+            paddingTop: 8,
+            paddingBottom: 34,
           },
-          default: {},
+          default: {
+            borderTopWidth: 0,
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
+            elevation: 0,
+            shadowOpacity: 0,
+            height: 68,
+            paddingTop: 8,
+            paddingBottom: 8,
+          },
         }),
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: "500",
+          marginTop: 4,
+        },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Plans",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+          title: "My Plans",
+          headerTitle: "My Plans",
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol size={24} name={"calendar"} color={color} />
           ),
         }}
       />
@@ -40,8 +60,13 @@ export default function TabLayout() {
         name="explore"
         options={{
           title: "Explore",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="map.fill" color={color} />
+          headerTitle: "Explore",
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol
+              size={24}
+              name={focused ? "location.fill" : "location"}
+              color={color}
+            />
           ),
         }}
       />
@@ -49,8 +74,13 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+          headerTitle: "Profile",
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol
+              size={24}
+              name={focused ? "person.fill" : "person"}
+              color={color}
+            />
           ),
         }}
       />
