@@ -3,6 +3,7 @@ import {
   genderSchema,
   relationshipStatusSchema,
 } from "@/shared/validation";
+import { pick } from "radash";
 import { z } from "zod";
 import { protectedRoute } from "../orpc";
 
@@ -90,76 +91,29 @@ export const userRouter = {
   get: protectedRoute
     .input(
       z
-        .object({ id: z.string().uuid() })
+        .object({ id: z.uuid() })
         .or(z.object({ phoneNumberHash: z.string().uuid() }))
     )
     .errors({
       NOT_FOUND: { message: "User not found" },
     })
     .handler(async ({ context, input, errors }) => {
-      const user = await context.db.query.User.findFirst({
-        where:
-          "phoneNumberHash" in input
-            ? or(
-                eq(User.phoneNumberHash, input.phoneNumberHash),
-                exists(
-                  db
-                    .select()
-                    .from(PhoneNumber)
-                    .where(
-                      and(
-                        eq(User.id, PhoneNumber.userId),
-                        eq(PhoneNumber.phoneNumberHash, input.phoneNumberHash)
-                      )
-                    )
-                )
-              )
-            : eq(User.id, input.id),
-        columns: {
-          id: true,
-          name: true,
-          image: true,
-          phoneNumberHash: true,
-        },
-        with: {
-          phoneNumbers: { columns: { phoneNumberHash: true } },
-        },
-      });
-
+      let id = "id" in input ? input.id : null;
+      if ("phoneNumberHash" in input) {
+        id = await context.es.projections.auth.getUserIdByPhoneNumber(
+          input.phoneNumberHash
+        );
+      }
+      if (!id) throw errors.NOT_FOUND();
+      const user = await context.es.projections.user.getProfile(id);
       if (!user) throw errors.NOT_FOUND();
-
-      const res = {
-        gender: undefined,
-        birthDate: undefined,
-        ...user,
-        phoneNumbers: user.phoneNumbers.map((v) => v.phoneNumberHash),
-      };
-
-      const events = await ctx.db.query.Event.findMany({
-        where: eq(Event.actorId, user.id),
-        orderBy: [asc(Event.time)],
-      });
-
-      for (const event of events) {
-        switch (event.type) {
-          case "user-profile-updated":
-            Object.assign(res, event.data);
-            break;
-          case "user-registered":
-            Object.assign(res, event.data);
-            break;
-        }
-      }
-      if (ctx.session.id === user.id) {
-        return res;
-      }
-      return {
-        gender: res.gender,
-        name: res.name,
-        image: res.image,
-        phoneNumbers: res.phoneNumbers,
-        phoneNumberHash: res.phoneNumberHash,
-        id: res.id,
-      };
+      return pick(user, [
+        "id",
+        "name",
+        "image",
+        "gender",
+        "birthDate",
+        "relationshipStatus",
+      ]);
     }),
 };

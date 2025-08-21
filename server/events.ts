@@ -109,4 +109,12 @@ export interface RealiteEvents {
     state?: string;
   };
   "realite.location.deleted": {};
+
+  "realite.contacts.imported": {
+    hashes: string[];
+  };
+  "realite.contacts.unlinked": {
+    userA: string;
+    userB: string;
+  };
 }

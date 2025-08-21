@@ -46,6 +46,7 @@ export const es = builder.store({
               onboarded: false,
             }
           ),
+        getContacts: async (ctx, id: string) => {},
       },
       auth: {
         getVerificationCode: async (ctx, phoneNumberHash: string) => {
