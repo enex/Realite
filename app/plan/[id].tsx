@@ -1,7 +1,14 @@
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useSession } from "@/client/auth";
@@ -10,11 +17,11 @@ import { shadows } from "@/components/PlanCard";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import {
   activities,
-  activityIds,
   type ActivityGroupId,
   type ActivityId,
 } from "@/shared/activities";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import tinycolor from "tinycolor2";
 
 const typography = {
@@ -33,21 +40,24 @@ const spacing = {
   xl: 32,
 };
 
-const getGroupIdFromActivity = (activityId: ActivityId): ActivityGroupId => {
+const getGroupIdFromActivity = (
+  activityId?: ActivityId
+): ActivityGroupId | undefined => {
+  if (!activityId) return undefined;
   const [groupId] = (activityId as string).split("/");
-  return (groupId as ActivityGroupId) ?? (activityId as ActivityGroupId);
+  return groupId as ActivityGroupId;
 };
 
-const getActivityGradient = (activityId: ActivityId) => {
+const getActivityGradient = (activityId?: ActivityId) => {
   const groupId = getGroupIdFromActivity(activityId);
-  const base = activities[groupId]?.color ?? "#94a3b8";
+  const base = (groupId && activities[groupId]?.color) || "#94a3b8";
   const c1 = tinycolor(base).lighten(35).toHexString();
   const c2 = tinycolor(base).lighten(15).toHexString();
   const c3 = tinycolor(base).toHexString();
   return [c1, c2, c3] as const;
 };
 
-const getActivityIcon = (activityId: ActivityId) => {
+const getActivityIcon = (activityId?: ActivityId) => {
   const groupId = getGroupIdFromActivity(activityId);
   switch (groupId) {
     case "food_drink":
@@ -91,22 +101,30 @@ export default function PlanDetails() {
     })
   );
 
-  if (!plan) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F7" }}>
-        <View style={{ padding: spacing.lg }}>
-          <Text style={{ ...typography.subheadline, color: "#8E8E93" }}>
-            Plan not found
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  const activity = plan.activity as ActivityId;
+  const activity = (plan?.activity ?? undefined) as ActivityId | undefined;
   const [c1, c2, c3] = getActivityGradient(activity);
   const icon = getActivityIcon(activity);
-  const isOwner = plan.creatorId === session?.id;
+  const isOwner = plan?.creatorId === session?.id;
+  const [showLocationSearch, setShowLocationSearch] = useState(false);
+  const [locationQuery, setLocationQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [showActivityPicker, setShowActivityPicker] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(locationQuery.trim()), 250);
+    return () => clearTimeout(t);
+  }, [locationQuery]);
+
+  const { data: locationSearch } = useQuery(
+    orpc.location.search.queryOptions({
+      input: {
+        query: debouncedQuery || "",
+        includePhotos: false,
+        limit: 10,
+      },
+      enabled: showLocationSearch && debouncedQuery.length >= 2,
+    })
+  );
 
   const promptEdit = (
     title: string,
@@ -132,14 +150,14 @@ export default function PlanDetails() {
 
   const handleEditTitle = () => {
     if (!isOwner) return;
-    promptEdit("Titel bearbeiten", plan.title ?? "", (value) => {
+    promptEdit("Titel bearbeiten", plan?.title ?? "", (value) => {
       changePlan.mutate({ id, plan: { title: value } });
     });
   };
 
   const handleEditDescription = () => {
     if (!isOwner) return;
-    promptEdit("Beschreibung bearbeiten", plan.description ?? "", (value) => {
+    promptEdit("Beschreibung bearbeiten", plan?.description ?? "", (value) => {
       changePlan.mutate({ id, plan: { description: value } });
     });
   };
@@ -148,7 +166,7 @@ export default function PlanDetails() {
     if (!isOwner) return;
     promptEdit(
       "Startzeit bearbeiten",
-      new Date(plan.startDate as unknown as string).toISOString(),
+      new Date(plan?.startDate as unknown as string).toISOString(),
       (value) => {
         const d = new Date(value);
         if (isNaN(d.getTime())) return;
@@ -161,8 +179,8 @@ export default function PlanDetails() {
     if (!isOwner) return;
     promptEdit(
       "Endzeit bearbeiten",
-      plan.endDate
-        ? new Date(plan.endDate as unknown as string).toISOString()
+      plan?.endDate
+        ? new Date(plan?.endDate as unknown as string).toISOString()
         : "",
       (value) => {
         if (!value) {
@@ -178,12 +196,20 @@ export default function PlanDetails() {
 
   const handleEditActivity = () => {
     if (!isOwner) return;
-    promptEdit("Aktivität bearbeiten", String(plan.activity), (value) => {
-      if ((activityIds as readonly string[]).includes(value)) {
-        changePlan.mutate({ id, plan: { activity: value as ActivityId } });
-      }
-    });
+    setShowActivityPicker(true);
   };
+
+  if (!plan) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F7" }}>
+        <View style={{ padding: spacing.lg }}>
+          <Text style={{ ...typography.subheadline, color: "#8E8E93" }}>
+            Plan not found
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: c1 }}>
@@ -281,9 +307,156 @@ export default function PlanDetails() {
               <InfoRow
                 icon="tag"
                 label="Activity"
-                value={String(plan.activity)}
+                value={getActivityLabel(plan?.activity as ActivityId)}
                 onPress={isOwner ? handleEditActivity : undefined}
               />
+              {/* Locations */}
+              <View
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.85)",
+                  borderRadius: 14,
+                  paddingHorizontal: spacing.md,
+                  paddingVertical: spacing.sm,
+                  ...shadows.small,
+                  gap: spacing.sm,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <IconSymbol name="location" size={16} color="#1C1C1E" />
+                    <Text
+                      style={{
+                        marginLeft: 8,
+                        ...typography.subheadline,
+                        color: "#1C1C1E",
+                      }}
+                    >
+                      Locations
+                    </Text>
+                  </View>
+                  {isOwner && (
+                    <Pressable onPress={() => setShowLocationSearch((v) => !v)}>
+                      <Text
+                        style={{ color: "#007AFF", ...typography.subheadline }}
+                      >
+                        {showLocationSearch ? "Fertig" : "Hinzufügen"}
+                      </Text>
+                    </Pressable>
+                  )}
+                </View>
+
+                {/* Selected locations */}
+                <View style={{ gap: 8 }}>
+                  {!plan.locations && (
+                    <Text style={{ ...typography.caption1, color: "#3C3C43" }}>
+                      Keine Orte hinzugefügt
+                    </Text>
+                  )}
+                  {plan.locations && (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Text
+                        style={{ ...typography.subheadline, color: "#1C1C1E" }}
+                      >
+                        {plan.locations.title ||
+                          plan.locations.address ||
+                          "Ort"}
+                      </Text>
+                      {isOwner && (
+                        <Pressable
+                          onPress={() => {
+                            changePlan.mutate({
+                              id,
+                              plan: { locations: [] as any },
+                            });
+                          }}
+                        >
+                          <Text style={{ color: "#FF3B30" }}>Entfernen</Text>
+                        </Pressable>
+                      )}
+                    </View>
+                  )}
+                </View>
+
+                {/* Search UI */}
+                {isOwner && showLocationSearch && (
+                  <View style={{ gap: 8 }}>
+                    <TextInput
+                      placeholder="Ort suchen (mind. 2 Zeichen)"
+                      placeholderTextColor="#8E8E93"
+                      value={locationQuery}
+                      onChangeText={setLocationQuery}
+                      style={{
+                        backgroundColor: "rgba(0,0,0,0.05)",
+                        borderRadius: 10,
+                        paddingHorizontal: 12,
+                        paddingVertical: 10,
+                        color: "#1C1C1E",
+                      }}
+                    />
+                    {debouncedQuery.length >= 2 && (
+                      <View style={{ gap: 8 }}>
+                        {(locationSearch?.locations ?? []).map((l) => (
+                          <Pressable
+                            key={l.id}
+                            onPress={() => {
+                              const next = [
+                                {
+                                  name: l.name,
+                                  address: l.address,
+                                  latitude: l.latitude,
+                                  longitude: l.longitude,
+                                  url: l.photoUrl,
+                                },
+                              ];
+                              changePlan.mutate({
+                                id,
+                                plan: { locations: next as any },
+                              });
+                            }}
+                            style={{
+                              backgroundColor: "rgba(0,0,0,0.04)",
+                              borderRadius: 10,
+                              paddingHorizontal: 12,
+                              paddingVertical: 10,
+                            }}
+                          >
+                            <Text
+                              style={{
+                                ...typography.subheadline,
+                                color: "#1C1C1E",
+                              }}
+                            >
+                              {l.name}
+                            </Text>
+                            {l.address && (
+                              <Text
+                                style={{
+                                  ...typography.caption1,
+                                  color: "#3C3C43",
+                                }}
+                              >
+                                {l.address}
+                              </Text>
+                            )}
+                          </Pressable>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                )}
+              </View>
               {plan.url && (
                 <InfoRow icon="link" label="Link" value={plan.url} />
               )}
@@ -298,6 +471,16 @@ export default function PlanDetails() {
           </LinearGradient>
         </ScrollView>
       </SafeAreaView>
+      {showActivityPicker && plan && (
+        <ActivityBottomSheet
+          selected={plan.activity as ActivityId}
+          onClose={() => setShowActivityPicker(false)}
+          onSelect={(value) => {
+            setShowActivityPicker(false);
+            changePlan.mutate({ id, plan: { activity: value } });
+          }}
+        />
+      )}
     </View>
   );
 }
@@ -308,7 +491,7 @@ function InfoRow({
   value,
   onPress,
 }: {
-  icon: string;
+  icon: Parameters<typeof IconSymbol>[0]["name"];
   label: string;
   value: string;
   onPress?: () => void;
@@ -339,5 +522,139 @@ function InfoRow({
         {value}
       </Text>
     </Pressable>
+  );
+}
+
+function getActivityLabel(id?: ActivityId) {
+  if (!id) return "";
+  const [groupId, subId] = (id as string).split("/");
+  const group = activities[groupId as keyof typeof activities];
+  if (!group) return id as string;
+  if (!subId) return group.name;
+  const sub: any =
+    group.subActivities[subId as keyof typeof group.subActivities];
+  return sub ? `${group.name}/${sub.name}` : (id as string);
+}
+
+function ActivityBottomSheet({
+  selected,
+  onClose,
+  onSelect,
+}: {
+  selected: ActivityId;
+  onClose: () => void;
+  onSelect: (id: ActivityId) => void;
+}) {
+  return (
+    <View
+      style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        top: 0,
+        backgroundColor: "rgba(0,0,0,0.2)",
+        justifyContent: "flex-end",
+      }}
+    >
+      <Pressable style={{ flex: 1 }} onPress={onClose} />
+      <View
+        style={{
+          backgroundColor: "#fff",
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          paddingBottom: 24,
+          paddingTop: 8,
+        }}
+      >
+        <View
+          style={{
+            height: 4,
+            width: 44,
+            backgroundColor: "#D1D1D6",
+            borderRadius: 2,
+            alignSelf: "center",
+            marginBottom: 8,
+          }}
+        />
+        <ScrollView style={{ maxHeight: 420 }}>
+          {Object.entries(activities).map(([groupId, group]) => (
+            <View
+              key={groupId}
+              style={{ paddingHorizontal: 16, paddingTop: 12 }}
+            >
+              <Text
+                style={{
+                  ...typography.caption1,
+                  color: "#8E8E93",
+                  textTransform: "uppercase",
+                  marginBottom: 6,
+                }}
+              >
+                {group.name}
+              </Text>
+              <View style={{ gap: 8 }}>
+                <Pressable
+                  onPress={() => onSelect(groupId as ActivityId)}
+                  style={{
+                    backgroundColor:
+                      (selected as string) === groupId ? "#E5F2FF" : "#F2F2F7",
+                    paddingHorizontal: 12,
+                    paddingVertical: 12,
+                    borderRadius: 12,
+                  }}
+                >
+                  <Text style={{ color: "#1C1C1E" }}>{group.name}</Text>
+                </Pressable>
+                {(() => {
+                  const subs = group.subActivities as Record<
+                    string,
+                    { name: string }
+                  >;
+                  return Object.keys(subs).map((subId) => {
+                    const sub = (subs as Record<string, { name: string }>)[
+                      subId
+                    ] as { name: string };
+                    const value = `${groupId}/${subId}` as ActivityId;
+                    const isSelected =
+                      (selected as string) === (value as string);
+                    return (
+                      <Pressable
+                        key={value}
+                        onPress={() => onSelect(value)}
+                        style={{
+                          backgroundColor: isSelected ? "#E5F2FF" : "#F2F2F7",
+                          paddingHorizontal: 12,
+                          paddingVertical: 12,
+                          borderRadius: 12,
+                        }}
+                      >
+                        <Text style={{ color: "#1C1C1E" }}>{sub.name}</Text>
+                      </Pressable>
+                    );
+                  });
+                })()}
+              </View>
+            </View>
+          ))}
+          <View style={{ height: 16 }} />
+        </ScrollView>
+        <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
+          <Pressable
+            onPress={onClose}
+            style={{
+              backgroundColor: "#E5E5EA",
+              borderRadius: 12,
+              paddingVertical: 12,
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "#1C1C1E", ...typography.subheadline }}>
+              Abbrechen
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    </View>
   );
 }

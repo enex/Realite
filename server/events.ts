@@ -11,7 +11,15 @@ export interface RealiteEvents {
     description?: string; // description of the realite
     url?: string; // url to information about the realite
     gathering?: string; // id of the gathering this plan is to participate in
-    location?: string[]; // id of the location this plan is to participate in
+    locations?: {
+      name: string;
+      address?: string;
+      latitude: number;
+      longitude: number;
+      url?: string;
+      description?: string;
+      category?: string;
+    }[]; // selected locations
     repetition?: CoreRepetition;
     maybe?: boolean; // if true, the user has not fully confirmed the plan yet
   };
@@ -21,7 +29,15 @@ export interface RealiteEvents {
     url?: string; // url of the realite
     activity?: string;
     gathering?: string | null; // id of the gathering this plan is to participate in
-    location?: string[]; // id of the location this plan is to participate in
+    locations?: {
+      name: string;
+      address?: string;
+      latitude: number;
+      longitude: number;
+      url?: string;
+      description?: string;
+      category?: string;
+    }[]; // selected locations
     repetition?: CoreRepetition;
     maybe?: boolean; // if true, the user has not fully confirmed the plan yet
   };

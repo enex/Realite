@@ -41,6 +41,30 @@ export const es = builder.store({
                 ...ev.data,
               })
               .where(eq(schema.plans.id, ev.subject));
+
+            if (ev.data?.locations) {
+              // naive replace strategy for now: delete existing and insert first location
+              // TODO: support multiple and proper upsert
+              await ctx.db
+                .delete(schema.planLocations)
+                .where(eq(schema.planLocations.planId, ev.subject));
+
+              const first = ev.data.locations[0];
+              if (first) {
+                await ctx.db.insert(schema.planLocations).values({
+                  planId: ev.subject,
+                  location: {
+                    type: "Point",
+                    coordinates: [first.longitude, first.latitude],
+                  } as any,
+                  address: first.address,
+                  title: first.name,
+                  url: first.url,
+                  description: first.description,
+                  category: first.category,
+                });
+              }
+            }
           },
         },
         queries: {

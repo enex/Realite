@@ -23,6 +23,12 @@ const MAPPING = {
   "chevron.right": "chevron-right",
   "person.fill": "person",
   "map.fill": "explore",
+  // added mappings
+  location: "location-on",
+  calendar: "calendar-today",
+  clock: "access-time",
+  tag: "sell",
+  "questionmark.circle": "help-outline",
 } as IconMapping;
 
 /**

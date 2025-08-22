@@ -14,6 +14,19 @@ const planSchema = z.object({
   activity: z.enum(activityIds),
   startDate: z.string(),
   endDate: z.string().optional(),
+  locations: z
+    .array(
+      z.object({
+        name: z.string(),
+        address: z.string().optional(),
+        latitude: z.number(),
+        longitude: z.number(),
+        url: z.string().optional(),
+        description: z.string().optional(),
+        category: z.string().optional(),
+      })
+    )
+    .optional(),
   repetition: coreRepetitionSchema
     .optional()
     .describe(
@@ -49,7 +62,7 @@ export const planRouter = {
         description: input.description,
         url: input.url,
         gathering: undefined,
-        location: undefined,
+        locations: input.locations,
         repetition: input.repetition,
         maybe: input.maybe,
       };
