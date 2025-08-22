@@ -154,10 +154,10 @@ export const activities = {
 };
 
 export const activityGroupIds = Object.keys(activities);
-export const activityIds = Object.values(activities)
-  .flatMap((group) =>
-    Object.values(group.subActivities).map(
-      (subActivity) => `${group.name}/${subActivity.name}`
+export const activityIds = Object.entries(activities)
+  .flatMap(([groupId, group]) =>
+    Object.entries(group.subActivities).map(
+      ([subActivityId]) => `${groupId}/${subActivityId}`
     )
   )
   .concat(activityGroupIds);

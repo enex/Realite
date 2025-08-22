@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-
-import { genderSchema, relationshipStatusSchema } from "./user";
+import { genderSchema, relationshipStatusSchema } from ".";
 
 export const categories = [
   // Hauptkategorien
@@ -74,7 +73,7 @@ export type CategoryId = (typeof categories)[number]["id"];
 export type Category = (typeof categories)[number];
 
 export const categoryIdSchema = z.enum(
-  categories.map((c) => c.id) as [CategoryId, ...CategoryId[]],
+  categories.map((c) => c.id) as [CategoryId, ...CategoryId[]]
 );
 
 export const whatSchema = z.object({
@@ -92,7 +91,7 @@ export const getAllSubcategories = (categoryId: CategoryId): Category[] => {
 };
 
 export const getAllCategoriesInHierarchy = (
-  categoryId: CategoryId,
+  categoryId: CategoryId
 ): Category[] => {
   const result: Category[] = [categories.find((c) => c.id === categoryId)!];
   const subcategories = getAllSubcategories(categoryId);

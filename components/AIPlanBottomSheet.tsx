@@ -1,9 +1,10 @@
-import { client } from "@/client/orpc";
+import orpc, { client } from "@/client/orpc";
 import {
   BottomSheetModal,
   BottomSheetTextInput,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
+import { useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import React, { forwardRef, useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
@@ -51,6 +52,7 @@ const AIPlanBottomSheet = forwardRef<
     [handlePresentModalPress, handleDismissModalPress]
   );
 
+  const queryClient = useQueryClient();
   const handleSubmit = useCallback(async () => {
     if (!text.trim()) {
       Alert.alert("Please enter what you want to do");
@@ -70,6 +72,8 @@ const AIPlanBottomSheet = forwardRef<
         onPlanCreated?.(result.plan);
         setText("");
         handleDismissModalPress();
+
+        queryClient.invalidateQueries(orpc.plan.myPlans.queryOptions({}));
 
         Alert.alert(
           "Success!",

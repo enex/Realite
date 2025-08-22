@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import * as schema from "../db/schema";
 import { builder } from "./builder";
 import { getPostHogClient } from "./utils/posthog";
@@ -8,16 +9,56 @@ export const es = builder.store({
       plan: builder.projection({
         handlers: {
           async "realite.plan.created"(ev, ctx) {
-            await ctx.db.insert(schema.plans);
+            console.log(ev, "will be added");
+            await ctx.db
+              .insert(schema.plans)
+              .values({
+                id: ev.subject,
+                creatorId: ev.actor,
+                activity: ev.data.activity,
+                startDate: new Date(ev.data.startDate),
+                endDate: ev.data.endDate ? new Date(ev.data.endDate) : null,
+                title: ev.data.title ?? "",
+                description: ev.data.description,
+                url: ev.data.url,
+                repetition: ev.data.repetition,
+              } satisfies schema.InsertPlan)
+              .onConflictDoNothing();
           },
-          async "realite.plan.cancelled"(ev, ctx) {},
+          async "realite.plan.cancelled"(ev, ctx) {
+            await ctx.db
+              .update(schema.plans)
+              .set({
+                endDate: ev.time,
+              })
+              .where(eq(schema.plans.id, ev.subject));
+          },
+          async "realite.plan.changed"(ev, ctx) {
+            await ctx.db
+              .update(schema.plans)
+              .set({
+                updatedAt: ev.time,
+                ...ev.data,
+              })
+              .where(eq(schema.plans.id, ev.subject));
+          },
         },
         queries: {
-          async getName(ctx, id: string) {
-            return "asdf";
+          async listMyPlans(ctx, actor: string) {
+            return ctx.db.query.plans.findMany({
+              where: (t, { eq }) => eq(t.creatorId, actor),
+              with: {
+                locations: true,
+              },
+            });
           },
-          async list(ctx, actor: string) {
-            return [];
+          async get(ctx, id: string) {
+            return ctx.db.query.plans.findFirst({
+              where: (t, { eq }) => eq(t.id, id),
+              with: {
+                locations: true,
+              },
+            });
           },
         },
       }),

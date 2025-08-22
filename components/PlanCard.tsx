@@ -5,6 +5,13 @@ import { useCallback, useMemo, useRef } from "react";
 import { Animated, ColorValue, Pressable, Text, View } from "react-native";
 
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import {
+  activities,
+  type ActivityGroupId,
+  type ActivityId,
+} from "@/shared/activities";
+import { useRouter } from "expo-router";
+import tinycolor from "tinycolor2";
 
 // iOS Design System
 const typography = {
@@ -42,7 +49,7 @@ type PlanListItem = {
   title: string;
   date: string;
   status: "committed" | "pending";
-  activity: "food" | "outdoor" | "social" | "sports" | "culture";
+  activity: ActivityId;
   location?: string;
   participants?: string[];
 };
@@ -52,54 +59,49 @@ interface PlanCardProps {
   index: number;
 }
 
+const getGroupIdFromActivity = (activityId: ActivityId): ActivityGroupId => {
+  const [groupId] = (activityId as string).split("/");
+  return (groupId as ActivityGroupId) ?? (activityId as ActivityGroupId);
+};
+
 const getActivityGradient = (
-  activity: string
+  activityId: ActivityId
 ): [ColorValue, ColorValue, ColorValue] => {
-  switch (activity) {
-    case "food":
-      return ["#fed7aa", "#fdba74", "#fb923c"]; // stronger orange gradient
-    case "outdoor":
-      return ["#bbf7d0", "#86efac", "#4ade80"]; // stronger green gradient
-    case "social":
-      return ["#bfdbfe", "#93c5fd", "#3b82f6"]; // stronger blue gradient
-    case "sports":
-      return ["#e9d5ff", "#c4b5fd", "#8b5cf6"]; // stronger purple gradient
-    case "culture":
-      return ["#fce7f3", "#fbcfe8", "#f472b6"]; // stronger pink gradient
-    default:
-      return ["#f1f5f9", "#e2e8f0", "#94a3b8"]; // stronger gray gradient
-  }
+  const groupId = getGroupIdFromActivity(activityId);
+  const base = activities[groupId]?.color ?? "#94a3b8";
+  const c1 = tinycolor(base).lighten(35).toHexString();
+  const c2 = tinycolor(base).lighten(15).toHexString();
+  const c3 = tinycolor(base).toHexString();
+  return [c1, c2, c3];
 };
 
-const getActivityIconColor = (activity: string) => {
-  switch (activity) {
-    case "food":
-      return "#ea580c"; // orange-600
-    case "outdoor":
-      return "#059669"; // emerald-600
-    case "social":
-      return "#2563eb"; // blue-600
-    case "sports":
-      return "#9333ea"; // purple-600
-    case "culture":
-      return "#ec4899"; // pink-600
-    default:
-      return "#4b5563"; // gray-600
-  }
+const getActivityIconColor = (activityId: ActivityId) => {
+  const groupId = getGroupIdFromActivity(activityId);
+  const base = activities[groupId]?.color ?? "#64748b";
+  return tinycolor(base).darken(10).toHexString();
 };
 
-const getActivityIcon = (activity: string) => {
-  switch (activity) {
-    case "food":
+const getActivityIcon = (activityId: ActivityId) => {
+  const groupId = getGroupIdFromActivity(activityId);
+  switch (groupId) {
+    case "food_drink":
       return "fork.knife";
-    case "outdoor":
+    case "outdoors":
       return "mountain.2";
     case "social":
       return "person.2";
-    case "sports":
+    case "sport":
       return "figure.run";
-    case "culture":
+    case "arts_culture":
       return "theatermasks";
+    case "learning":
+      return "book";
+    case "travel":
+      return "airplane";
+    case "wellness":
+      return "heart";
+    case "home":
+      return "house";
     default:
       return "calendar";
   }
@@ -108,6 +110,7 @@ const getActivityIcon = (activity: string) => {
 export const PlanCard = ({ item, index }: PlanCardProps) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const router = useRouter();
 
   // Staggered entrance animation
   useMemo(() => {
@@ -149,6 +152,9 @@ export const PlanCard = ({ item, index }: PlanCardProps) => {
       <Pressable
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
+        onPress={() =>
+          router.push({ pathname: "/plan/[id]", params: { id: item.id } })
+        }
         style={{ borderRadius: 20 }}
       >
         <LinearGradient

@@ -1,27 +1,28 @@
 import { Gender, RelationshipStatus } from "@/shared/validation";
+import { CoreRepetition } from "@/shared/validation/plan";
 
 export interface RealiteEvents {
   "realite.plan.created": {
-    inputText?: string; // text the user typed in to create the plan (if rest was LLM Generated)
+    activity: string;
+    startDate: string; // ISO date string
+    endDate?: string; // ISO date string
     title?: string; // name of the realite
+    inputText?: string; // text the user typed in to create the plan (if rest was LLM Generated)
     description?: string; // description of the realite
     url?: string; // url to information about the realite
-    activity: string;
     gathering?: string; // id of the gathering this plan is to participate in
-    location?: string; // id of the location this plan is to participate in
-    alternativeLocations?: string[]; // ids of alternative locations this plan is to participate in
-    times: { start: string; end: string }[];
+    location?: string[]; // id of the location this plan is to participate in
+    repetition?: CoreRepetition;
     maybe?: boolean; // if true, the user has not fully confirmed the plan yet
   };
-  "realite.plan.refined": {
+  "realite.plan.changed": {
     name?: string; // name of the realite
     description?: string; // description of the realite
     url?: string; // url of the realite
     activity?: string;
     gathering?: string | null; // id of the gathering this plan is to participate in
-    location?: string; // id of the location this plan is to participate in
-    alternativeLocations?: string[]; // ids of alternative locations this plan is to participate in
-    times: { start: string; end: string }[];
+    location?: string[]; // id of the location this plan is to participate in
+    repetition?: CoreRepetition;
     maybe?: boolean; // if true, the user has not fully confirmed the plan yet
   };
   // this plan is no longer my plan

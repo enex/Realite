@@ -4,11 +4,15 @@ import { useCallback, useMemo, useRef } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import orpc from "@/client/orpc";
 import AIPlanBottomSheet, {
   AIPlanBottomSheetRef,
 } from "@/components/AIPlanBottomSheet";
 import { PlanCard, shadows } from "@/components/PlanCard";
+import { ThemedText } from "@/components/ThemedText";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import type { ActivityId } from "@/shared/activities";
+import { useQuery } from "@tanstack/react-query";
 
 // iOS Design System (reduced to what's needed for this screen)
 const typography = {
@@ -31,7 +35,7 @@ type PlanListItem = {
   title: string;
   date: string;
   status: "committed" | "pending";
-  activity: "food" | "outdoor" | "social" | "sports" | "culture";
+  activity: ActivityId;
   location?: string;
   participants?: string[];
 };
@@ -44,58 +48,22 @@ type GroupedPlans = {
 
 export default function PlansScreen() {
   const aiPlanBottomSheetRef = useRef<AIPlanBottomSheetRef>(null);
+  const { data: plans, error } = useQuery(orpc.plan.myPlans.queryOptions({}));
 
   // TODO: Replace with data from ORPC once endpoint is available
-  const data = useMemo<PlanListItem[]>(
-    () => [
-      {
-        id: "1",
-        title: "Takama/Honkai-Karate",
-        date: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
-        status: "committed",
-        activity: "sports",
-        location: "SV 1945 Königshofen",
-        participants: ["S"],
-      },
-      {
-        id: "2",
-        title: "Sunday Coffee Run - Green Fit",
-        date: new Date(Date.now() + 1000 * 60 * 60 * 48).toISOString(),
-        status: "pending",
-        activity: "food",
-        location: "Café - Bar Human",
-        participants: ["S"],
-      },
-      {
-        id: "3",
-        title: "Museumssuferfest Frankfurt",
-        date: new Date(Date.now() + 1000 * 60 * 60 * 72).toISOString(),
-        status: "committed",
-        activity: "culture",
-        location: "Frankfurt am Main",
-        participants: ["S", "A"],
-      },
-      {
-        id: "4",
-        title: "Morning Hike at Taunus",
-        date: new Date(Date.now() + 1000 * 60 * 60 * 96).toISOString(),
-        status: "pending",
-        activity: "outdoor",
-        location: "Feldberg, Taunus",
-        participants: ["S", "M", "L"],
-      },
-      {
-        id: "5",
-        title: "Game Night with Friends",
-        date: new Date(Date.now() + 1000 * 60 * 60 * 120).toISOString(),
-        status: "committed",
-        activity: "social",
-        location: "My Place",
-        participants: ["S", "J", "K", "T"],
-      },
-    ],
-    []
-  );
+  const data = useMemo<PlanListItem[]>(() => {
+    if (!plans) return [];
+
+    return plans.map((plan) => ({
+      id: plan.id,
+      title: plan.title,
+      date: plan.startDate.toISOString(),
+      status: "committed",
+      activity: plan.activity as ActivityId,
+      location: "",
+      participants: [],
+    }));
+  }, [plans]);
 
   const groupedPlans = useMemo(() => {
     const groups: Record<string, PlanListItem[]> = {};
@@ -215,7 +183,7 @@ export default function PlansScreen() {
               marginBottom: spacing.xs,
             }}
           >
-            My Plans
+            Meine Pläne
           </Text>
           <Text
             style={{
@@ -223,9 +191,17 @@ export default function PlansScreen() {
               color: "#8E8E93",
             }}
           >
-            Organized by day, sorted by time
+            Alle deine Pläne
           </Text>
         </Animated.View>
+
+        {error && (
+          <View style={{ padding: spacing.lg }}>
+            <ThemedText style={{ ...typography.subheadline, color: "#8E8E93" }}>
+              {error.message}
+            </ThemedText>
+          </View>
+        )}
 
         {/* Scrollable Content */}
         <Animated.ScrollView

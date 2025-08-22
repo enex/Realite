@@ -27,7 +27,9 @@ export interface BaseEvent<TType extends string, TData> {
 }
 
 export type EventFromDataMap<TDataMap extends Record<string, any>> = {
-  [TType in keyof TDataMap]: BaseEvent<TType & string, TDataMap[TType]>;
+  [TType in keyof TDataMap]: BaseEvent<string, TDataMap[TType]> & {
+    type: TType;
+  };
 }[keyof TDataMap];
 
 export type EventInput<TEvent extends BaseEvent<string, any>> = Omit<

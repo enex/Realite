@@ -65,16 +65,19 @@ export class Builder<
   constructor(
     private readonly db: TDatabase,
     private readonly schema: {
-      events: AnyPgTable<{
-        columns: {
-          id: AnyPgColumn<{ isPrimaryKey: true }>;
-          type: AnyPgColumn<{ notNull: true }>;
-          data: AnyPgColumn<{ notNull: true }>;
-          actor: AnyPgColumn<{}>;
-          subject: AnyPgColumn<{}>;
-          time: AnyPgColumn<{ notNull: true }>;
-        };
-      }>;
+      events: AnyPgTable & {
+        id: AnyPgColumn<{ isPrimaryKey: true }>;
+        type: AnyPgColumn<{ notNull: true }>;
+        data: AnyPgColumn<{ notNull: true }>;
+        actor: AnyPgColumn<{}>;
+        subject: AnyPgColumn<{}>;
+        time: AnyPgColumn<{ notNull: true }>;
+      };
+      consumers: AnyPgTable & {
+        id: AnyPgColumn<{ isPrimaryKey: true }>;
+        name: AnyPgColumn<{ notNull: true }>;
+        version: AnyPgColumn<{ notNull: true }>;
+      };
     }
   ) {}
 
@@ -119,11 +122,10 @@ export class Builder<
     /** hook to run after an event is published, can be used to track events in analytics */
     onEvent?: (event: EventFromDataMap<TEvents>) => Promise<void>;
   }) {
-    const ctx: PgLazyProjectionContext<TDatabase, EventFromDataMap<TEvents>> = {
+    type CTX = PgLazyProjectionContext<TDatabase, EventFromDataMap<TEvents>>;
+    const ctx: CTX = {
       db: this.db,
-      reduce(filter, fn, initial, options) {
-        return self.reduce(filter, fn, initial, options);
-      },
+      reduce: reducer(this.db, this.schema),
     };
     const self = {
       projections: {
@@ -182,8 +184,18 @@ export class Builder<
           await this.db.insert(this.schema.events).values(newEvent);
 
           for (const name in options.projections.inline) {
-            const projection = options.projections.inline[name];
-            await projection.handlers[event.type]?.(newEvent, ctx);
+            try {
+              const projection = options.projections.inline[name];
+              await projection.handlers[event.type]?.(newEvent, ctx);
+            } catch (err) {
+              console.error("Error in inline projection:", err);
+              throw new Error(
+                `Error in inline projection ${name} while processing event ${event.type}`,
+                {
+                  cause: err,
+                }
+              );
+            }
           }
         });
         if (options.onEvent) {
@@ -193,46 +205,55 @@ export class Builder<
         }
         return result;
       },
-      reduce: async <T>(
-        filter: { subject?: string; actor?: string; type?: (keyof TEvents)[] },
-        fn: (acc: T, event: EventFromDataMap<TEvents>) => T,
-        initial: T,
-        {
-          batchSize = 100,
-          startTime = new Date(0),
-        }: { batchSize?: number; startTime?: Date } = {}
-      ): Promise<T> => {
-        const eventsTable = this.schema.events as any as Record<
-          string,
-          AnyPgColumn<any>
-        >;
-        let result = initial;
-        let lastTime = startTime;
-        while (true) {
-          const events = await this.db
-            .select()
-            .from(this.schema.events)
-            .where(
-              and(
-                filter.subject
-                  ? eq(eventsTable.subject, filter.subject)
-                  : undefined,
-                filter.actor ? eq(eventsTable.actor, filter.actor) : undefined,
-                gte(eventsTable.time, lastTime),
-                filter.type ? inArray(eventsTable.type, filter.type) : undefined
-              )
-            )
-            .orderBy(asc(eventsTable.time))
-            .limit(batchSize);
-          for (const event of events) {
-            result = fn(result, event as any);
+      reduce: reducer(this.db, this.schema),
+      migrate: async () => {
+        const report = {
+          unchanged: [] as string[],
+          updated: [] as string[],
+          numEvents: 0,
+        };
+        const projections = {
+          ...options.projections.inline,
+          ...options.projections.async,
+        };
+        return this.db.transaction(async (tx) => {
+          const ctx: CTX = {
+            db: tx as any,
+            reduce: reducer(tx, this.schema),
+          };
+          for (const name in projections) {
+            const projection = projections[name];
+            const consumer = await tx
+              .select()
+              .from(this.schema.consumers)
+              .where(eq(this.schema.consumers.name, name));
+            const version =
+              consumer.length === 0 ? -1 : (consumer[0].version as number);
+            const needsUpdate = version < (projection.version ?? 0);
+            if (!needsUpdate) {
+              report.unchanged.push(name);
+              continue;
+            }
+            report.updated.push(name);
+            const types = Object.keys(projection.handlers);
+            const events = await tx
+              .select()
+              .from(this.schema.events)
+              .where(inArray(this.schema.events.type, types));
+            console.log("applying", events.length, "events");
+            for (const event of events) {
+              console.log("applying event", event);
+              report.numEvents++;
+              const handler =
+                projection.handlers[
+                  event.type as keyof typeof projection.handlers
+                ];
+              if (handler) await handler(event as any, ctx);
+            }
           }
-          if (events.length < batchSize) break;
-          lastTime = events[events.length - 1].time as any;
-        }
-        return result;
+          return report;
+        });
       },
-      migrate: async () => {},
       withActor: (actor: string) => {
         return {
           ...self,
@@ -266,3 +287,48 @@ type ProjOut<
 type ParametersExceptFirst<F> = F extends (arg0: any, ...rest: infer R) => any
   ? R
   : never;
+
+function reducer<TEvents extends Record<string, any>>(
+  db: NodePgDatabase<any>,
+  schema: { events: AnyPgTable }
+) {
+  return async <T>(
+    filter: { subject?: string; actor?: string; type?: (keyof TEvents)[] },
+    fn: (acc: T, event: EventFromDataMap<TEvents>) => T,
+    initial: T,
+    {
+      batchSize = 100,
+      startTime = new Date(0),
+    }: { batchSize?: number; startTime?: Date } = {}
+  ): Promise<T> => {
+    const eventsTable = schema.events as any as Record<
+      string,
+      AnyPgColumn<any>
+    >;
+    let result = initial;
+    let lastTime = startTime;
+    while (true) {
+      const events = await db
+        .select()
+        .from(schema.events)
+        .where(
+          and(
+            filter.subject
+              ? eq(eventsTable.subject, filter.subject)
+              : undefined,
+            filter.actor ? eq(eventsTable.actor, filter.actor) : undefined,
+            gte(eventsTable.time, lastTime),
+            filter.type ? inArray(eventsTable.type, filter.type) : undefined
+          )
+        )
+        .orderBy(asc(eventsTable.time))
+        .limit(batchSize);
+      for (const event of events) {
+        result = fn(result, event as any);
+      }
+      if (events.length < batchSize) break;
+      lastTime = events[events.length - 1].time as any;
+    }
+    return result;
+  };
+}

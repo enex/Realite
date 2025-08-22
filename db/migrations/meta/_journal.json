@@ -8,6 +8,27 @@
       "when": 1755294395684,
       "tag": "0000_smart_dexter_bennett",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1755882624281,
+      "tag": "0001_open_smasher",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1755887894072,
+      "tag": "0002_condemned_ikaris",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1755888007921,
+      "tag": "0003_cute_marrow",
+      "breakpoints": true
     }
   ]
 }

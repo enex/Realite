@@ -1,3 +1,4 @@
+import { relations, sql } from "drizzle-orm";
 import { index, pgTable } from "drizzle-orm/pg-core";
 
 export const events = pgTable("events", (t) => ({
@@ -9,20 +10,40 @@ export const events = pgTable("events", (t) => ({
   data: t.jsonb("data").notNull(),
 }));
 
-export const plans = pgTable("plans", (t) => ({
-  id: t.uuid().primaryKey(),
-  title: t.text().notNull(),
-  description: t.text(),
-  url: t.text(),
-  activity: t.text().notNull(),
-  seriesId: t.uuid(), // if this is a series, this is the id of the series, every instance is materialized but the app allows editing multiple events in one series together (like google calendar for example)
-  //gatheringId: t.uuid().references(() => gatherings.id),
-  createdAt: t.timestamp().notNull().defaultNow(),
-  updatedAt: t.timestamp().notNull().defaultNow(),
-  creatorId: t.uuid().notNull(),
-  startDate: t.timestamp().notNull(),
-  endDate: t.timestamp().notNull(),
+export const consumers = pgTable("consumers", (t) => ({
+  id: t.uuid("id").primaryKey(),
+  name: t.text("name").notNull(),
+  version: t.integer("version").notNull(),
 }));
+
+export const plans = pgTable(
+  "plans",
+  (t) => ({
+    id: t.uuid().primaryKey(),
+    title: t.text().notNull(),
+    description: t.text(),
+    url: t.text(),
+    activity: t.text().notNull(),
+    seriesId: t.uuid(), // if this is a series, this is the id of the series, every instance is materialized but the app allows editing multiple events in one series together (like google calendar for example)
+    //gatheringId: t.uuid().references(() => gatherings.id),
+    createdAt: t.timestamp().notNull().defaultNow(),
+    updatedAt: t.timestamp().notNull().defaultNow(),
+    creatorId: t.uuid().notNull(),
+    startDate: t.timestamp().notNull(),
+    endDate: t.timestamp(), // if something repeats for ever this mey be set to infinity
+    repetition: t.jsonb(), // repetition rule if it is a series
+    maybe: t.boolean().notNull().default(false),
+  }),
+  (t) => [
+    index().on(t.creatorId),
+    index("plans_time_range").using(
+      "gist",
+      sql`tsrange(${t.startDate}, ${t.endDate})`
+    ),
+  ]
+);
+
+export type InsertPlan = typeof plans.$inferInsert;
 
 export const planLocations = pgTable(
   "plan_locations",
@@ -33,6 +54,12 @@ export const planLocations = pgTable(
       .references(() => plans.id),
     // https://orm.drizzle.team/docs/guides/postgis-geometry-point
     location: t.geometry({ type: "point", mode: "xy", srid: 4326 }).notNull(),
+    address: t.text(),
+    url: t.text(),
+    title: t.text(),
+    description: t.text(),
+    imageUrl: t.text(),
+    category: t.text(),
   }),
   (t) => [index("spatial_index").using("gist", t.location)]
 );
@@ -101,9 +128,9 @@ export const profiles = pgTable("profiles", (t) => ({
   birthDate: t.timestamp(),
   relationshipStatus: t.text(),
 }));
-
+*/
 // #region relations
-
+/*
 export const profileRelations = relations(profiles, ({ one }) => ({
   user: one(users, {
     fields: [profiles.id],
@@ -121,18 +148,22 @@ export const planRelations = relations(plans, ({ one }) => ({
     references: [users.id],
   }),
 }));
+*/
 
 export const planLocationRelations = relations(planLocations, ({ one }) => ({
   plan: one(plans, {
     fields: [planLocations.planId],
     references: [plans.id],
   }),
-  location: one(locations, {
-    fields: [planLocations.locationId],
-    references: [locations.id],
-  }),
 }));
 
+export const planRelations = relations(plans, ({ one }) => ({
+  locations: one(planLocations, {
+    fields: [plans.id],
+    references: [planLocations.planId],
+  }),
+}));
+/*
 export const planTimeRelations = relations(planTimes, ({ one }) => ({
   plan: one(plans, {
     fields: [planTimes.planId],
