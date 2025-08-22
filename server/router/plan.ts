@@ -1,7 +1,7 @@
 import { activityIds } from "@/shared/activities";
 import { openai } from "@ai-sdk/openai";
-import { generateObject } from "ai";
-import { randomUUIDv7 } from "bun";
+import { generateText, stepCountIs, tool } from "ai";
+import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
 import { protectedRoute } from "../orpc";
 
@@ -28,26 +28,7 @@ export const planRouter = {
       INCOMPLETE: { message: "Incomplete plan" },
     })
     .handler(async ({ context, input, errors, signal }) => {
-      if (input.inputText) {
-        let aiResult = await generateObject({
-          model: openai("gpt-4o-mini"),
-          schema: planSchema,
-          abortSignal: signal,
-          system:
-            "You receive the input of a user that mentions what he or she wants to do. You create a plan out of this input.",
-          prompt: input.inputText,
-        });
-        if (aiResult.object) {
-          if (!input.title) input.title = aiResult.object.title;
-          if (!input.description)
-            input.description = aiResult.object.description;
-          if (!input.times) input.times = aiResult.object.times;
-        }
-        //TODO: search for possible locations
-        //TODO: allow retrieval of information from the web
-      }
-
-      const id = randomUUIDv7();
+      const id = uuidv7();
 
       if (!input.activity) throw errors.INCOMPLETE();
 
@@ -58,4 +39,60 @@ export const planRouter = {
       });
       return input;
     }),
+  withAI: protectedRoute
+    .input(z.object({ text: z.string() }))
+    .handler(async ({ context, input, signal }) => {
+      //TODO: pass location properly
+      //TODO: integrate location search properly
+      let aiResult = await generateText({
+        model: openai("gpt-4o-mini"),
+        abortSignal: signal,
+        system:
+          "You receive the input of a user that mentions what he or she wants to do. You create a plan out of this input.",
+        prompt: input.text,
+        toolChoice: "required",
+        prepareStep: ({ stepNumber }) => {
+          if (stepNumber > 3) {
+            return { toolChoice: "required", activeTools: ["createPlan"] };
+          }
+        },
+        stopWhen: stepCountIs(5),
+        tools: {
+          createPlan: tool({
+            inputSchema: planSchema,
+            description: "Create a plan",
+          }),
+          web_search: openai.tools.webSearchPreview({
+            // optional configuration:
+            searchContextSize: "high",
+            userLocation: {
+              type: "approximate",
+              city: "San Francisco",
+              region: "California",
+            },
+          }),
+          /*searchLocation: tool({
+            inputSchema: locationRouter.search["~orpc"].inputSchema!,
+            description: "Search for a location",
+            execute: async ({ query }) => {
+              const locations = await context.es.projections.location.search(query);
+              return locations;
+            },
+          }),*/
+        },
+      });
+      console.log(JSON.stringify(aiResult.toolCalls, null, 2));
+      const res = {
+        answer: aiResult.text,
+        plan: aiResult.toolCalls.find((r) => r.toolName === "createPlan")
+          ?.input as z.infer<typeof planSchema>,
+      };
+      console.log(res);
+      return res;
+    }),
+  list: protectedRoute.handler(async ({ context, signal }) => {
+    const plans = await context.es.projections.plan.list();
+
+    return plans;
+  }),
 };

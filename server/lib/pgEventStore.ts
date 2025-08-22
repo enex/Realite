@@ -85,23 +85,12 @@ export class Builder<
         ctx: PgProjectionContext<TDatabase>
       ) => Promise<void>;
     },
-  >(handlers: TInput) {
-    return {
-      handlers,
-      queries: {},
-      query<
-        TQueryName extends string,
-        TFn extends (
-          ctx: PgProjectionContext<TDatabase>,
-          input: any
-        ) => Promise<any>,
-      >(name: TQueryName, fn: TFn) {
-        return {
-          ...this,
-          queries: { ...this.queries, [name]: fn } as Record<TQueryName, TFn>,
-        };
-      },
-    };
+    TQueries extends Record<
+      string,
+      (ctx: PgProjectionContext<TDatabase>, ...args: any[]) => Promise<any>
+    > = Record<string, never>,
+  >(obj: { handlers: TInput; queries: TQueries; version?: number }) {
+    return obj;
   }
 
   /** create a event store with the specified database */

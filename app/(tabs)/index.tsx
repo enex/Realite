@@ -1,10 +1,12 @@
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import { Link } from "expo-router";
 import { useCallback, useMemo, useRef } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import AIPlanBottomSheet, {
+  AIPlanBottomSheetRef,
+} from "@/components/AIPlanBottomSheet";
 import { PlanCard, shadows } from "@/components/PlanCard";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 
@@ -41,6 +43,8 @@ type GroupedPlans = {
 };
 
 export default function PlansScreen() {
+  const aiPlanBottomSheetRef = useRef<AIPlanBottomSheetRef>(null);
+
   // TODO: Replace with data from ORPC once endpoint is available
   const data = useMemo<PlanListItem[]>(
     () => [
@@ -236,9 +240,11 @@ export default function PlansScreen() {
             paddingBottom: 140,
           }}
         >
-          {groupedPlans.map((group, index) =>
-            renderDayGroup({ item: group, index })
-          )}
+          {groupedPlans.map((group, index) => (
+            <View key={group.date}>
+              {renderDayGroup({ item: group, index })}
+            </View>
+          ))}
         </Animated.ScrollView>
 
         {/* Navigation Bar Overlay */}
@@ -277,14 +283,23 @@ export default function PlansScreen() {
         </Animated.View>
 
         {/* Native iOS FAB */}
-        <NativeFAB />
+        <NativeFAB onPress={() => aiPlanBottomSheetRef.current?.present()} />
+
+        {/* AI Plan Bottom Sheet */}
+        <AIPlanBottomSheet
+          ref={aiPlanBottomSheetRef}
+          onPlanCreated={(plan) => {
+            console.log("Plan created:", plan);
+            // TODO: Refresh the plans list or add the new plan to the state
+          }}
+        />
       </SafeAreaView>
     </View>
   );
 }
 
 // Native iOS FAB Component
-function NativeFAB() {
+function NativeFAB({ onPress }: { onPress: () => void }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = useCallback(() => {
@@ -295,7 +310,7 @@ function NativeFAB() {
       tension: 200,
       friction: 10,
     }).start();
-  }, []);
+  }, [scaleAnim]);
 
   const handlePressOut = useCallback(() => {
     Animated.spring(scaleAnim, {
@@ -304,40 +319,39 @@ function NativeFAB() {
       tension: 200,
       friction: 10,
     }).start();
-  }, []);
+  }, [scaleAnim]);
 
   return (
-    <Link href="/onboarding/create-activity" asChild>
-      <Pressable
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
+    <Pressable
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      style={{
+        position: "absolute",
+        bottom: 110,
+        right: spacing.lg,
+        zIndex: 1000,
+      }}
+    >
+      <Animated.View
         style={{
-          position: "absolute",
-          bottom: 110,
-          right: spacing.lg,
-          zIndex: 1000,
+          transform: [{ scale: scaleAnim }],
         }}
       >
-        <Animated.View
+        <View
           style={{
-            transform: [{ scale: scaleAnim }],
+            width: 52,
+            height: 52,
+            borderRadius: 26,
+            backgroundColor: "#007AFF",
+            alignItems: "center",
+            justifyContent: "center",
+            ...shadows.medium,
           }}
         >
-          <View
-            style={{
-              width: 52,
-              height: 52,
-              borderRadius: 26,
-              backgroundColor: "#007AFF",
-              alignItems: "center",
-              justifyContent: "center",
-              ...shadows.medium,
-            }}
-          >
-            <IconSymbol name="plus" size={22} color="white" />
-          </View>
-        </Animated.View>
-      </Pressable>
-    </Link>
+          <IconSymbol name="plus" size={22} color="white" />
+        </View>
+      </Animated.View>
+    </Pressable>
   );
 }

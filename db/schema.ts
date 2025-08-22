@@ -1,4 +1,4 @@
-import { pgTable } from "drizzle-orm/pg-core";
+import { index, pgTable } from "drizzle-orm/pg-core";
 
 export const events = pgTable("events", (t) => ({
   id: t.uuid("id").primaryKey(),
@@ -8,6 +8,35 @@ export const events = pgTable("events", (t) => ({
   time: t.timestamp("created_at").notNull().defaultNow(),
   data: t.jsonb("data").notNull(),
 }));
+
+export const plans = pgTable("plans", (t) => ({
+  id: t.uuid().primaryKey(),
+  title: t.text().notNull(),
+  description: t.text(),
+  url: t.text(),
+  activity: t.text().notNull(),
+  seriesId: t.uuid(), // if this is a series, this is the id of the series, every instance is materialized but the app allows editing multiple events in one series together (like google calendar for example)
+  //gatheringId: t.uuid().references(() => gatherings.id),
+  createdAt: t.timestamp().notNull().defaultNow(),
+  updatedAt: t.timestamp().notNull().defaultNow(),
+  creatorId: t.uuid().notNull(),
+  startDate: t.timestamp().notNull(),
+  endDate: t.timestamp().notNull(),
+}));
+
+export const planLocations = pgTable(
+  "plan_locations",
+  (t) => ({
+    planId: t
+      .uuid()
+      .notNull()
+      .references(() => plans.id),
+    // https://orm.drizzle.team/docs/guides/postgis-geometry-point
+    location: t.geometry({ type: "point", mode: "xy", srid: 4326 }).notNull(),
+  }),
+  (t) => [index("spatial_index").using("gist", t.location)]
+);
+
 /*
 export const gatherings = pgTable("gatherings", (t) => ({
   id: t.uuid().primaryKey(),
@@ -24,17 +53,6 @@ export const gatherings = pgTable("gatherings", (t) => ({
   recurringPattern: t.text(),
   createdAt: t.timestamp().notNull().defaultNow(),
   updatedAt: t.timestamp().notNull().defaultNow(),
-}));
-
-export const plans = pgTable("plans", (t) => ({
-  id: t.uuid().primaryKey(),
-  title: t.text().notNull(),
-  description: t.text(),
-  url: t.text(),
-  gatheringId: t.uuid().references(() => gatherings.id),
-  createdAt: t.timestamp().notNull().defaultNow(),
-  updatedAt: t.timestamp().notNull().defaultNow(),
-  creatorId: t.uuid().notNull(),
 }));
 
 export const planLocations = pgTable("plan_locations", (t) => ({

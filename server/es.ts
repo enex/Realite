@@ -1,17 +1,26 @@
+import * as schema from "../db/schema";
 import { builder } from "./builder";
 import { getPostHogClient } from "./utils/posthog";
 
 export const es = builder.store({
   projections: {
     inline: {
-      plan: builder
-        .projection({
-          async "realite.plan.created"(ev, ctx) {},
+      plan: builder.projection({
+        handlers: {
+          async "realite.plan.created"(ev, ctx) {
+            await ctx.db.insert(schema.plans);
+          },
           async "realite.plan.cancelled"(ev, ctx) {},
-        })
-        .query("getName", async ({ db }, id: string) => {
-          return "asdf";
-        }),
+        },
+        queries: {
+          async getName(ctx, id: string) {
+            return "asdf";
+          },
+          async list(ctx, actor: string) {
+            return [];
+          },
+        },
+      }),
     },
     lazy: {
       user: {
@@ -49,7 +58,7 @@ export const es = builder.store({
         getContacts: async (ctx, id: string) => {},
       },
       auth: {
-        getVerificationCode: async (ctx, phoneNumberHash: string) => {
+        async getVerificationCode(ctx, phoneNumberHash: string) {
           return ctx.reduce(
             {
               subject: phoneNumberHash,
@@ -71,7 +80,7 @@ export const es = builder.store({
             null as null | { code: string; expiresAt: string; attempts: number }
           );
         },
-        getUserIdByPhoneNumber: async (ctx, phoneNumberHash: string) => {
+        async getUserIdByPhoneNumber(ctx, phoneNumberHash: string) {
           return ctx.reduce(
             {
               subject: phoneNumberHash,
