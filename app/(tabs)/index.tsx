@@ -85,16 +85,16 @@ export default function PlansScreen() {
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        let dayLabel = date.toLocaleDateString("en-US", {
+        let dayLabel = date.toLocaleDateString("de-DE", {
           weekday: "long",
           month: "short",
           day: "numeric",
         });
 
         if (date.toDateString() === today.toDateString()) {
-          dayLabel = "Today";
+          dayLabel = "Heute";
         } else if (date.toDateString() === tomorrow.toDateString()) {
-          dayLabel = "Tomorrow";
+          dayLabel = "Morgen";
         }
 
         return {
@@ -252,7 +252,7 @@ export default function PlansScreen() {
                   fontWeight: "600",
                 }}
               >
-                My Plans
+                Meine Pläne
               </Text>
             </BlurView>
           </SafeAreaView>
