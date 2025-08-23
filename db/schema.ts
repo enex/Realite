@@ -53,7 +53,9 @@ export const planLocations = pgTable(
       .notNull()
       .references(() => plans.id),
     // https://orm.drizzle.team/docs/guides/postgis-geometry-point
-    location: t.geometry({ type: "point", mode: "xy", srid: 4326 }).notNull(),
+    location: t
+      .geometry({ type: "point", mode: "tuple", srid: 4326 })
+      .notNull(),
     address: t.text(),
     url: t.text(),
     title: t.text(),
@@ -63,6 +65,7 @@ export const planLocations = pgTable(
   }),
   (t) => [index("spatial_index").using("gist", t.location)]
 );
+export type PlanLocation = typeof planLocations.$inferInsert;
 
 /*
 export const gatherings = pgTable("gatherings", (t) => ({
@@ -152,15 +155,15 @@ export const planRelations = relations(plans, ({ one }) => ({
 
 export const planLocationRelations = relations(planLocations, ({ one }) => ({
   plan: one(plans, {
+    relationName: "planLocations",
     fields: [planLocations.planId],
     references: [plans.id],
   }),
 }));
 
-export const planRelations = relations(plans, ({ one }) => ({
-  locations: one(planLocations, {
-    fields: [plans.id],
-    references: [planLocations.planId],
+export const planRelations = relations(plans, ({ many }) => ({
+  locations: many(planLocations, {
+    relationName: "planLocations",
   }),
 }));
 /*

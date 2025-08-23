@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import * as schema from "../db/schema";
 import { builder } from "./builder";
 import { getPostHogClient } from "./utils/posthog";
@@ -24,6 +24,21 @@ export const es = builder.store({
                 repetition: ev.data.repetition,
               } satisfies schema.InsertPlan)
               .onConflictDoNothing();
+            for (const location of ev.data.locations ?? []) {
+              console.log("location", location);
+              await ctx.db
+                .insert(schema.planLocations)
+                .values({
+                  planId: ev.subject,
+                  location: [location.longitude, location.latitude],
+                  address: location.address,
+                  title: location.title,
+                  url: location.url,
+                  description: location.description,
+                  category: location.category,
+                } as schema.PlanLocation)
+                .onConflictDoNothing();
+            }
           },
           async "realite.plan.cancelled"(ev, ctx) {
             await ctx.db
@@ -34,11 +49,12 @@ export const es = builder.store({
               .where(eq(schema.plans.id, ev.subject));
           },
           async "realite.plan.changed"(ev, ctx) {
+            const { locations, ...rest } = ev.data;
             await ctx.db
               .update(schema.plans)
               .set({
                 updatedAt: ev.time,
-                ...ev.data,
+                ...rest,
               })
               .where(eq(schema.plans.id, ev.subject));
 
@@ -49,20 +65,16 @@ export const es = builder.store({
                 .delete(schema.planLocations)
                 .where(eq(schema.planLocations.planId, ev.subject));
 
-              const first = ev.data.locations[0];
-              if (first) {
+              for (const location of ev.data.locations) {
                 await ctx.db.insert(schema.planLocations).values({
                   planId: ev.subject,
-                  location: {
-                    type: "Point",
-                    coordinates: [first.longitude, first.latitude],
-                  } as any,
-                  address: first.address,
-                  title: first.name,
-                  url: first.url,
-                  description: first.description,
-                  category: first.category,
-                });
+                  location: [location.longitude, location.latitude],
+                  address: location.address,
+                  title: location.title,
+                  url: location.url,
+                  description: location.description,
+                  category: location.category,
+                } as schema.PlanLocation);
               }
             }
           },
@@ -72,7 +84,26 @@ export const es = builder.store({
             return ctx.db.query.plans.findMany({
               where: (t, { eq }) => eq(t.creatorId, actor),
               with: {
-                locations: true,
+                locations: {
+                  columns: {
+                    title: true,
+                    address: true,
+                    category: true,
+                    description: true,
+                    imageUrl: true,
+                    url: true,
+                  },
+                  extras: {
+                    latitude:
+                      sql<number>`ST_Y(${schema.planLocations.location})`.as(
+                        "latitude"
+                      ),
+                    longitude:
+                      sql<number>`ST_X(${schema.planLocations.location})`.as(
+                        "longitude"
+                      ),
+                  },
+                },
               },
             });
           },
@@ -80,7 +111,26 @@ export const es = builder.store({
             return ctx.db.query.plans.findFirst({
               where: (t, { eq }) => eq(t.id, id),
               with: {
-                locations: true,
+                locations: {
+                  columns: {
+                    title: true,
+                    address: true,
+                    category: true,
+                    description: true,
+                    imageUrl: true,
+                    url: true,
+                  },
+                  extras: {
+                    latitude:
+                      sql<number>`ST_Y(${schema.planLocations.location})`.as(
+                        "latitude"
+                      ),
+                    longitude:
+                      sql<number>`ST_X(${schema.planLocations.location})`.as(
+                        "longitude"
+                      ),
+                  },
+                },
               },
             });
           },

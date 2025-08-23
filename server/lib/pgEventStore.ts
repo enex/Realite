@@ -180,6 +180,7 @@ export class Builder<
       },
       add: async (event: EventInput<EventFromDataMap<TEvents>>) => {
         const newEvent = inputToFullEvent(event);
+        console.log("newEvent", JSON.stringify(newEvent, null, 2));
         const result = this.db.transaction(async (tx) => {
           await this.db.insert(this.schema.events).values(newEvent);
 
@@ -191,9 +192,7 @@ export class Builder<
               console.error("Error in inline projection:", err);
               throw new Error(
                 `Error in inline projection ${name} while processing event ${event.type}`,
-                {
-                  cause: err,
-                }
+                { cause: err }
               );
             }
           }

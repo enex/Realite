@@ -160,7 +160,7 @@ export const activityIds = Object.entries(activities)
       ([subActivityId]) => `${groupId}/${subActivityId}`
     )
   )
-  .concat(activityGroupIds);
+  .concat(activityGroupIds) as ActivityId[];
 
 export type ActivityGroupId = keyof typeof activities;
 export type ActivityId =

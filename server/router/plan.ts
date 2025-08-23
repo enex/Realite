@@ -17,7 +17,7 @@ const planSchema = z.object({
   locations: z
     .array(
       z.object({
-        name: z.string(),
+        title: z.string(),
         address: z.string().optional(),
         latitude: z.number(),
         longitude: z.number(),

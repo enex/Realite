@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useSession } from "@/client/auth";
 import orpc from "@/client/orpc";
 import { shadows } from "@/components/PlanCard";
+import SmartDateTimePicker from "@/components/SmartDateTimePicker";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import {
   activities,
@@ -108,7 +109,12 @@ export default function PlanDetails() {
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [locationQuery, setLocationQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
   const [showActivityPicker, setShowActivityPicker] = useState(false);
+
+  // Ensure locations is always an array to prevent runtime errors
+  const safeLocations = Array.isArray(plan?.locations) ? plan.locations : [];
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(locationQuery.trim()), 250);
@@ -119,7 +125,7 @@ export default function PlanDetails() {
     orpc.location.search.queryOptions({
       input: {
         query: debouncedQuery || "",
-        includePhotos: false,
+        includePhotos: true,
         limit: 10,
       },
       enabled: showLocationSearch && debouncedQuery.length >= 2,
@@ -164,34 +170,12 @@ export default function PlanDetails() {
 
   const handleEditStart = () => {
     if (!isOwner) return;
-    promptEdit(
-      "Startzeit bearbeiten",
-      new Date(plan?.startDate as unknown as string).toISOString(),
-      (value) => {
-        const d = new Date(value);
-        if (isNaN(d.getTime())) return;
-        changePlan.mutate({ id, plan: { startDate: d.toISOString() } });
-      }
-    );
+    setShowStartPicker(true);
   };
 
   const handleEditEnd = () => {
     if (!isOwner) return;
-    promptEdit(
-      "Endzeit bearbeiten",
-      plan?.endDate
-        ? new Date(plan?.endDate as unknown as string).toISOString()
-        : "",
-      (value) => {
-        if (!value) {
-          changePlan.mutate({ id, plan: { endDate: undefined } });
-          return;
-        }
-        const d = new Date(value);
-        if (isNaN(d.getTime())) return;
-        changePlan.mutate({ id, plan: { endDate: d.toISOString() } });
-      }
-    );
+    setShowEndPicker(true);
   };
 
   const handleEditActivity = () => {
@@ -294,16 +278,18 @@ export default function PlanDetails() {
                 ).toLocaleString()}
                 onPress={isOwner ? handleEditStart : undefined}
               />
-              {plan.endDate && (
-                <InfoRow
-                  icon="clock"
-                  label="Ends"
-                  value={new Date(
-                    plan.endDate as unknown as string
-                  ).toLocaleString()}
-                  onPress={isOwner ? handleEditEnd : undefined}
-                />
-              )}
+              <InfoRow
+                icon="clock"
+                label="Ends"
+                value={
+                  plan?.endDate
+                    ? new Date(
+                        plan.endDate as unknown as string
+                      ).toLocaleString()
+                    : "—"
+                }
+                onPress={isOwner ? handleEditEnd : undefined}
+              />
               <InfoRow
                 icon="tag"
                 label="Activity"
@@ -353,40 +339,43 @@ export default function PlanDetails() {
 
                 {/* Selected locations */}
                 <View style={{ gap: 8 }}>
-                  {!plan.locations && (
+                  {safeLocations.length === 0 && (
                     <Text style={{ ...typography.caption1, color: "#3C3C43" }}>
                       Keine Orte hinzugefügt
                     </Text>
                   )}
-                  {plan.locations && (
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Text
-                        style={{ ...typography.subheadline, color: "#1C1C1E" }}
+                  {safeLocations.length > 0 &&
+                    safeLocations.map((location, index) => (
+                      <View
+                        key={index}
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                        }}
                       >
-                        {plan.locations.title ||
-                          plan.locations.address ||
-                          "Ort"}
-                      </Text>
-                      {isOwner && (
-                        <Pressable
-                          onPress={() => {
-                            changePlan.mutate({
-                              id,
-                              plan: { locations: [] as any },
-                            });
+                        <Text
+                          style={{
+                            ...typography.subheadline,
+                            color: "#1C1C1E",
                           }}
                         >
-                          <Text style={{ color: "#FF3B30" }}>Entfernen</Text>
-                        </Pressable>
-                      )}
-                    </View>
-                  )}
+                          {location.title || location.address || "Ort"}
+                        </Text>
+                        {isOwner && (
+                          <Pressable
+                            onPress={() => {
+                              changePlan.mutate({
+                                id,
+                                plan: { locations: [] as any },
+                              });
+                            }}
+                          >
+                            <Text style={{ color: "#FF3B30" }}>Entfernen</Text>
+                          </Pressable>
+                        )}
+                      </View>
+                    ))}
                 </View>
 
                 {/* Search UI */}
@@ -411,18 +400,24 @@ export default function PlanDetails() {
                           <Pressable
                             key={l.id}
                             onPress={() => {
-                              const next = [
-                                {
-                                  name: l.name,
-                                  address: l.address,
-                                  latitude: l.latitude,
-                                  longitude: l.longitude,
-                                  url: l.photoUrl,
-                                },
-                              ];
                               changePlan.mutate({
                                 id,
-                                plan: { locations: next as any },
+                                plan: {
+                                  locations: [
+                                    ...(plan?.locations.map((l) => ({
+                                      title: l.title ?? "",
+                                      address: l.address ?? undefined,
+                                      latitude: l.latitude,
+                                      longitude: l.longitude,
+                                    })) ?? []),
+                                    {
+                                      title: l.name,
+                                      address: l.address ?? undefined,
+                                      latitude: l.latitude,
+                                      longitude: l.longitude,
+                                    },
+                                  ],
+                                },
                               });
                             }}
                             style={{
@@ -478,6 +473,38 @@ export default function PlanDetails() {
           onSelect={(value) => {
             setShowActivityPicker(false);
             changePlan.mutate({ id, plan: { activity: value } });
+          }}
+        />
+      )}
+      {showStartPicker && (
+        <DateTimeBottomSheet
+          title="Startzeit wählen"
+          accentColor={c3}
+          initialDate={
+            plan?.startDate
+              ? new Date(plan.startDate as unknown as string)
+              : new Date()
+          }
+          onClose={() => setShowStartPicker(false)}
+          onSelect={(d) => {
+            setShowStartPicker(false);
+            changePlan.mutate({ id, plan: { startDate: d.toISOString() } });
+          }}
+        />
+      )}
+      {showEndPicker && (
+        <DateTimeBottomSheet
+          title="Endzeit wählen"
+          accentColor={c3}
+          initialDate={
+            plan?.endDate
+              ? new Date(plan.endDate as unknown as string)
+              : new Date()
+          }
+          onClose={() => setShowEndPicker(false)}
+          onSelect={(d) => {
+            setShowEndPicker(false);
+            changePlan.mutate({ id, plan: { endDate: d.toISOString() } });
           }}
         />
       )}
@@ -639,6 +666,78 @@ function ActivityBottomSheet({
           ))}
           <View style={{ height: 16 }} />
         </ScrollView>
+        <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
+          <Pressable
+            onPress={onClose}
+            style={{
+              backgroundColor: "#E5E5EA",
+              borderRadius: 12,
+              paddingVertical: 12,
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "#1C1C1E", ...typography.subheadline }}>
+              Abbrechen
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function DateTimeBottomSheet({
+  title,
+  initialDate,
+  onClose,
+  onSelect,
+  accentColor,
+}: {
+  title: string;
+  initialDate: Date;
+  onClose: () => void;
+  onSelect: (d: Date) => void;
+  accentColor: string;
+}) {
+  const [selected, setSelected] = useState<Date[]>([initialDate]);
+  return (
+    <View
+      style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        top: 0,
+        backgroundColor: "rgba(0,0,0,0.2)",
+        justifyContent: "flex-end",
+      }}
+    >
+      <Pressable style={{ flex: 1 }} onPress={onClose} />
+      <View
+        style={{
+          backgroundColor: "#fff",
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          paddingBottom: 12,
+          paddingTop: 8,
+        }}
+      >
+        <View style={{ alignItems: "center", paddingVertical: 6 }}>
+          <Text style={{ ...typography.subheadline, color: "#1C1C1E" }}>
+            {title}
+          </Text>
+        </View>
+        <View style={{ height: 420 }}>
+          <SmartDateTimePicker
+            selectedDates={selected}
+            onDateSelect={(d) => {
+              setSelected([d]);
+              onSelect(d);
+            }}
+            onDateRemove={() => {}}
+            accentColor={accentColor}
+          />
+        </View>
         <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
           <Pressable
             onPress={onClose}

@@ -1,9 +1,10 @@
+import { ActivityId } from "@/shared/activities";
 import { Gender, RelationshipStatus } from "@/shared/validation";
 import { CoreRepetition } from "@/shared/validation/plan";
 
 export interface RealiteEvents {
   "realite.plan.created": {
-    activity: string;
+    activity: ActivityId;
     startDate: string; // ISO date string
     endDate?: string; // ISO date string
     title?: string; // name of the realite
@@ -12,7 +13,7 @@ export interface RealiteEvents {
     url?: string; // url to information about the realite
     gathering?: string; // id of the gathering this plan is to participate in
     locations?: {
-      name: string;
+      title: string;
       address?: string;
       latitude: number;
       longitude: number;
@@ -27,10 +28,10 @@ export interface RealiteEvents {
     name?: string; // name of the realite
     description?: string; // description of the realite
     url?: string; // url of the realite
-    activity?: string;
+    activity?: ActivityId;
     gathering?: string | null; // id of the gathering this plan is to participate in
     locations?: {
-      name: string;
+      title: string;
       address?: string;
       latitude: number;
       longitude: number;

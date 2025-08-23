@@ -57,7 +57,7 @@ export default function PlansScreen() {
     return plans.map((plan) => ({
       id: plan.id,
       title: plan.title,
-      date: plan.startDate.toISOString(),
+      date: plan.startDate?.toISOString?.() ?? "",
       status: "committed",
       activity: plan.activity as ActivityId,
       location: "",

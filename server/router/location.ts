@@ -19,7 +19,7 @@ export interface Location {
 }
 
 const placesService = new PlacesService(
-  process.env.GOOGLE_PLACES_API_KEY ?? ""
+  process.env.GOOGLE_PLACES_API_KEY ?? process.env.GOOGLE_MAPS_API_KEY ?? ""
 );
 
 export const locationRouter = {
