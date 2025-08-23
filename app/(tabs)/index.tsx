@@ -60,7 +60,7 @@ export default function PlansScreen() {
       date: plan.startDate?.toISOString?.() ?? "",
       status: "committed",
       activity: plan.activity as ActivityId,
-      location: "",
+      locations: plan.locations,
       participants: [],
     }));
   }, [plans]);

@@ -29,7 +29,26 @@ const MAPPING = {
   clock: "access-time",
   tag: "sell",
   "questionmark.circle": "help-outline",
-} as IconMapping;
+  close: "close",
+  add: "add",
+  check: "checkmark",
+  "check-circle": "checkmark-circle",
+  "location-on": "location",
+  place: "location",
+  event: "calendar",
+  schedule: "time",
+  description: "document-text",
+  people: "people",
+  group: "people",
+  verified: "checkmark-circle",
+  "add-circle": "add-circle",
+  notifications: "notifications",
+  contacts: "people-circle",
+  "chevron-right": "chevron-forward",
+  "bug-report": "bug",
+  "event-busy": "calendar",
+  "system-update": "refresh",
+} as Partial<IconMapping>;
 
 /**
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.

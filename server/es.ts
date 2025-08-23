@@ -1,3 +1,4 @@
+import { ActivityId } from "@/shared/activities";
 import { eq, sql } from "drizzle-orm";
 import * as schema from "../db/schema";
 import { builder } from "./builder";
@@ -133,6 +134,63 @@ export const es = builder.store({
                 },
               },
             });
+          },
+          async findPlans(
+            ctx,
+            input: {
+              startDate: Date;
+              endDate: Date;
+              activity?: ActivityId;
+              location: string;
+            }
+          ) {
+            // TODO: only show plans visible to the user
+            // TODO: group all plans that are approximately at the same place and with overlapping time
+            // TODO: Only group if activity is the same
+            const plans = await ctx.db
+              .select({
+                id: schema.plans.id,
+                title: schema.plans.title,
+                startDate: schema.plans.startDate,
+                endDate: schema.plans.endDate,
+                activity: schema.plans.activity,
+                latitude:
+                  sql<number>`ST_Y(${schema.planLocations.location})`.as(
+                    "latitude"
+                  ),
+                longitude:
+                  sql<number>`ST_X(${schema.planLocations.location})`.as(
+                    "longitude"
+                  ),
+                address: schema.planLocations.address,
+                locationTitle: schema.planLocations.title,
+                locationUrl: schema.planLocations.url,
+                locationDescription: schema.planLocations.description,
+                locationCategory: schema.planLocations.category,
+                creatorId: schema.plans.creatorId,
+              })
+              .from(schema.plans)
+              .leftJoin(
+                schema.planLocations,
+                eq(schema.plans.id, schema.planLocations.planId)
+              );
+
+            const res: {
+              earliestStartDate: Date;
+              latestEndDate: Date;
+              activity: ActivityId;
+              plans: {
+                id: string;
+                title: string;
+                startDate: Date;
+                endDate: Date;
+                creatorId: string;
+              }[];
+            }[] = [];
+            for (const plan of plans) {
+            }
+
+            return plans;
           },
         },
       }),

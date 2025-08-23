@@ -1,4 +1,8 @@
+import orpc from "@/client/orpc";
+import type { UpdateUserInput } from "@/server/router/user";
+import { genders } from "@/shared/validation";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useColorScheme } from "nativewind";
 import React, { useState } from "react";
@@ -30,14 +34,16 @@ export default function ProfileSetupScreen() {
     gender: undefined,
   });
 
-  const updateProfile = api.user.update.useMutation({
-    onSuccess: () => {
-      router.push("/onboarding/create-activity" as never);
-    },
-    onError: (error) => {
-      Alert.alert("Fehler", error.message);
-    },
-  });
+  const updateProfile = useMutation(
+    orpc.user.update.mutationOptions({
+      onSuccess: () => {
+        router.push("/onboarding/create-activity" as never);
+      },
+      onError: (error) => {
+        Alert.alert("Fehler", error.message);
+      },
+    })
+  );
 
   const handleSubmit = () => {
     if (!formData.name?.trim()) {

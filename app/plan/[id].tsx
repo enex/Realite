@@ -141,9 +141,9 @@ export default function PlanDetails() {
       title,
       undefined,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: "Abbrechen", style: "cancel" },
         {
-          text: "Save",
+          text: "Speichern",
           onPress: (value) => {
             if (value !== undefined) onSubmit(value);
           },
@@ -188,7 +188,7 @@ export default function PlanDetails() {
       <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F7" }}>
         <View style={{ padding: spacing.lg }}>
           <Text style={{ ...typography.subheadline, color: "#8E8E93" }}>
-            Plan not found
+            Plan nicht gefunden
           </Text>
         </View>
       </SafeAreaView>
@@ -243,7 +243,9 @@ export default function PlanDetails() {
               >
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <IconSymbol name="chevron.left" size={14} color="#1C1C1E" />
-                  <Text style={{ marginLeft: 4, color: "#1C1C1E" }}>Back</Text>
+                  <Text style={{ marginLeft: 4, color: "#1C1C1E" }}>
+                    Zurück
+                  </Text>
                 </View>
               </BlurView>
             </Pressable>
@@ -272,27 +274,57 @@ export default function PlanDetails() {
             <View style={{ gap: spacing.sm }}>
               <InfoRow
                 icon="calendar"
-                label="Date"
-                value={new Date(
-                  plan.startDate as unknown as string
-                ).toLocaleString()}
+                label="Datum"
+                value={(() => {
+                  const date = new Date(plan.startDate as unknown as string);
+                  const weekday = date.toLocaleDateString("de-DE", {
+                    weekday: "long",
+                  });
+                  const dateStr = date.toLocaleDateString("de-DE", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                  });
+                  const timeStr = date.toLocaleTimeString("de-DE", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  });
+                  return `${weekday}, ${dateStr} ${timeStr}`;
+                })()}
                 onPress={isOwner ? handleEditStart : undefined}
               />
               <InfoRow
                 icon="clock"
-                label="Ends"
+                label="Endet"
                 value={
                   plan?.endDate
-                    ? new Date(
-                        plan.endDate as unknown as string
-                      ).toLocaleString()
+                    ? (() => {
+                        const date = new Date(
+                          plan.endDate as unknown as string
+                        );
+                        const weekday = date.toLocaleDateString("de-DE", {
+                          weekday: "long",
+                        });
+                        const dateStr = date.toLocaleDateString("de-DE", {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                        });
+                        const timeStr = date.toLocaleTimeString("de-DE", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        });
+                        return `${weekday}, ${dateStr} ${timeStr}`;
+                      })()
                     : "—"
                 }
                 onPress={isOwner ? handleEditEnd : undefined}
               />
               <InfoRow
                 icon="tag"
-                label="Activity"
+                label="Aktivität"
                 value={getActivityLabel(plan?.activity as ActivityId)}
                 onPress={isOwner ? handleEditActivity : undefined}
               />
@@ -323,7 +355,7 @@ export default function PlanDetails() {
                         color: "#1C1C1E",
                       }}
                     >
-                      Locations
+                      Orte
                     </Text>
                   </View>
                   {isOwner && (
@@ -453,13 +485,13 @@ export default function PlanDetails() {
                 )}
               </View>
               {plan.url && (
-                <InfoRow icon="link" label="Link" value={plan.url} />
+                <InfoRow icon="link" label="Verknüpfung" value={plan.url} />
               )}
               {plan.maybe !== undefined && (
                 <InfoRow
                   icon="questionmark.circle"
-                  label="Maybe"
-                  value={plan.maybe ? "Yes" : "No"}
+                  label="Vielleicht"
+                  value={plan.maybe ? "Ja" : "Nein"}
                 />
               )}
             </View>
@@ -557,10 +589,12 @@ function getActivityLabel(id?: ActivityId) {
   const [groupId, subId] = (id as string).split("/");
   const group = activities[groupId as keyof typeof activities];
   if (!group) return id as string;
-  if (!subId) return group.name;
+  if (!subId) return group.nameDe || group.name;
   const sub: any =
     group.subActivities[subId as keyof typeof group.subActivities];
-  return sub ? `${group.name}/${sub.name}` : (id as string);
+  return sub
+    ? `${group.nameDe || group.name}/${sub.nameDe || sub.name}`
+    : (id as string);
 }
 
 function ActivityBottomSheet({
@@ -618,7 +652,7 @@ function ActivityBottomSheet({
                   marginBottom: 6,
                 }}
               >
-                {group.name}
+                {group.nameDe || group.name}
               </Text>
               <View style={{ gap: 8 }}>
                 <Pressable
@@ -631,7 +665,9 @@ function ActivityBottomSheet({
                     borderRadius: 12,
                   }}
                 >
-                  <Text style={{ color: "#1C1C1E" }}>{group.name}</Text>
+                  <Text style={{ color: "#1C1C1E" }}>
+                    {group.nameDe || group.name}
+                  </Text>
                 </Pressable>
                 {(() => {
                   const subs = group.subActivities as Record<
@@ -641,7 +677,7 @@ function ActivityBottomSheet({
                   return Object.keys(subs).map((subId) => {
                     const sub = (subs as Record<string, { name: string }>)[
                       subId
-                    ] as { name: string };
+                    ] as { name: string; nameDe?: string };
                     const value = `${groupId}/${subId}` as ActivityId;
                     const isSelected =
                       (selected as string) === (value as string);
@@ -656,7 +692,9 @@ function ActivityBottomSheet({
                           borderRadius: 12,
                         }}
                       >
-                        <Text style={{ color: "#1C1C1E" }}>{sub.name}</Text>
+                        <Text style={{ color: "#1C1C1E" }}>
+                          {sub.nameDe || sub.name}
+                        </Text>
                       </Pressable>
                     );
                   });

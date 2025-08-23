@@ -50,7 +50,12 @@ type PlanListItem = {
   date: string;
   status: "committed" | "pending";
   activity: ActivityId;
-  location?: string;
+  locations?: {
+    title: string;
+    address?: string;
+    latitude: number;
+    longitude: number;
+  }[];
   participants?: string[];
 };
 
@@ -107,7 +112,7 @@ const getActivityIcon = (activityId: ActivityId) => {
   }
 };
 
-export const PlanCard = ({ item, index }: PlanCardProps) => {
+export function PlanCard({ item, index }: PlanCardProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const router = useRouter();
@@ -198,34 +203,36 @@ export const PlanCard = ({ item, index }: PlanCardProps) => {
               >
                 {item.title}
               </Text>
-              {item.location && (
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: spacing.sm,
-                  }}
-                >
-                  <BlurView
-                    intensity={60}
+              {item.locations &&
+                item.locations.map((location, index) => (
+                  <View
+                    key={index}
                     style={{
-                      borderRadius: 12,
-                      padding: 6,
-                      overflow: "hidden",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: spacing.sm,
                     }}
                   >
-                    <IconSymbol name="location" size={12} color="#8E8E93" />
-                  </BlurView>
-                  <Text
-                    style={{
-                      ...typography.subheadline,
-                      color: "#3C3C43",
-                    }}
-                  >
-                    {item.location}
-                  </Text>
-                </View>
-              )}
+                    <BlurView
+                      intensity={60}
+                      style={{
+                        borderRadius: 12,
+                        padding: 6,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <IconSymbol name="location" size={12} color="#8E8E93" />
+                    </BlurView>
+                    <Text
+                      style={{
+                        ...typography.subheadline,
+                        color: "#3C3C43",
+                      }}
+                    >
+                      {location.title}
+                    </Text>
+                  </View>
+                ))}
             </View>
 
             <View
@@ -310,4 +317,4 @@ export const PlanCard = ({ item, index }: PlanCardProps) => {
       </Pressable>
     </Animated.View>
   );
-};
+}

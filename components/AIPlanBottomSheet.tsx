@@ -1,4 +1,5 @@
 import orpc, { client } from "@/client/orpc";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 import {
   BottomSheetModal,
   BottomSheetTextInput,
@@ -8,7 +9,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import React, { forwardRef, useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
-import { IconSymbol } from "./ui/IconSymbol";
 
 type AIPlanBottomSheetProps = {
   onPlanCreated?: (plan: any) => void;

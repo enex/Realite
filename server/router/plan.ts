@@ -102,6 +102,7 @@ export const planRouter = {
           hour: "2-digit",
           minute: "2-digit",
         })} Uhr.`,
+        "Every plan must be in the future.",
       ].join("\n");
 
       //TODO: pass location properly
