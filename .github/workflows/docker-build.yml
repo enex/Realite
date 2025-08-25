@@ -42,6 +42,8 @@ jobs:
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+            type=raw,value={{branch}}-{{date 'YYYYMMDD-HHmmss' tz='Europe/Berlin'}}
+            type=raw,value={{branch}}-{{sha}}-{{date 'YYYYMMDD-HHmmss' tz='Europe/Berlin'}}
             type=sha,prefix={{branch}}-
 
       - name: Build and push Docker image
