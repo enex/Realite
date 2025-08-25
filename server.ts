@@ -1,5 +1,4 @@
 import { createRequestHandler } from "@expo/server/adapter/bun";
-import { ImageResponse } from "@vercel/og";
 import * as React from "react";
 
 import { RPCHandler } from "@orpc/server/websocket";
@@ -20,6 +19,7 @@ Bun.serve({
     console.log("Request URL:", url.pathname);
 
     if (url.pathname === "/api/image") {
+      const { ImageResponse } = await import("@vercel/og");
       const element = React.createElement(Test, {}, []);
       return new ImageResponse(element, { width: 1200, height: 630 });
     }
