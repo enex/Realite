@@ -1,18 +1,13 @@
 import { useSession } from "@/client/auth";
 import { router } from "expo-router";
 import React, { useEffect } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Linking, Pressable, Text, View } from "react-native";
 
 export default function NativeLanding() {
   const handleSignIn = () => {
     // TODO: Implement sign in logic
     console.log("Sign in pressed");
     router.push("/auth/phone");
-  };
-
-  const handleLearnMore = () => {
-    // TODO: Navigate to learn more or open web version
-    console.log("Learn more pressed");
   };
 
   const { session, isLoading } = useSession();
@@ -47,6 +42,10 @@ export default function NativeLanding() {
         <Text className="text-base text-center text-gray-600 leading-relaxed max-w-sm">
           Finde neue Freunde, entdecke Aktivitäten und teile Erlebnisse – alles
           in einer App.
+        </Text>
+        <Text className="mt-4 text-center text-amber-700 bg-amber-50 px-4 py-2 rounded-xl border border-amber-200">
+          Geschlossene Beta – Apps derzeit nicht verfügbar. Abonniere unseren
+          WhatsApp-Kanal für Updates.
         </Text>
       </View>
 
@@ -83,20 +82,25 @@ export default function NativeLanding() {
       {/* Action Buttons */}
       <View className="w-full max-w-sm gap-4">
         <Pressable
-          className="bg-blue-600 py-5 rounded-2xl shadow-2xl active:scale-95 transition-all border-2 border-blue-600"
+          className="bg-gray-300 py-5 rounded-2xl shadow-2xl active:scale-95 transition-all border-2 border-gray-300"
           onPress={handleSignIn}
+          disabled
         >
           <Text className="text-white font-bold text-xl text-center">
-            Jetzt einloggen
+            Login während Beta geschlossen
           </Text>
         </Pressable>
 
         <Pressable
-          className="bg-transparent py-4 rounded-2xl border border-gray-300 active:scale-95 transition-all"
-          onPress={handleLearnMore}
+          className="bg-green-600 py-4 rounded-2xl active:scale-95 transition-all"
+          onPress={() =>
+            Linking.openURL(
+              "https://whatsapp.com/channel/0029Vb5w20yKwqSOem15d11O"
+            )
+          }
         >
-          <Text className="text-gray-600 font-medium text-base text-center">
-            Mehr erfahren
+          <Text className="text-white font-semibold text-base text-center">
+            🟢 WhatsApp-Kanal abonnieren
           </Text>
         </Pressable>
       </View>
@@ -106,7 +110,7 @@ export default function NativeLanding() {
         <View className="flex-row items-center">
           <Text className="text-xl mr-2">🔒</Text>
           <Text className="text-gray-800 font-semibold text-center">
-            Invite-only • Sicher • Vertrauenswürdig
+            Invite-only • Geschlossene Beta • Sicher
           </Text>
         </View>
       </View>
