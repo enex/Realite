@@ -56,7 +56,7 @@ export default function WebLanding() {
               <Text className="font-medium">Sicherheit</Text>
             </Pressable>
             <Pressable
-              className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all hover:scale-105"
+              className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all hover:brightness-110"
               onPress={openWhatsAppChannel}
             >
               <Text className="text-white font-semibold">🔔 Updates</Text>
@@ -120,7 +120,7 @@ export default function WebLanding() {
             {/* CTA Section */}
             <View className="flex-row gap-6 justify-center items-center flex-wrap mb-16">
               <Pressable
-                className="bg-gradient-to-r from-green-500 to-emerald-600 px-10 py-5 rounded-2xl shadow-2xl hover:shadow-emerald-500/25 transition-all hover:scale-105 flex-row items-center"
+                className="bg-gradient-to-r from-green-500 to-emerald-600 px-10 py-5 rounded-2xl shadow-2xl hover:shadow-emerald-500/25 transition-all hover:brightness-110 flex-row items-center"
                 onPress={openWhatsAppChannel}
               >
                 <Text className="text-white text-2xl mr-3">🔔</Text>
@@ -275,7 +275,7 @@ export default function WebLanding() {
               ].map((category, index) => (
                 <Pressable
                   key={index}
-                  className="group transform transition-all duration-300 hover:scale-110 hover:-translate-y-2"
+                  className="group transition-all duration-300 hover:shadow-2xl"
                 >
                   <View
                     className={`${category.bg} p-8 rounded-3xl items-center shadow-lg hover:shadow-2xl transition-all border border-white/50 backdrop-blur-sm`}
@@ -346,7 +346,7 @@ export default function WebLanding() {
                 },
               ].map((item, index) => (
                 <View key={index} className="relative">
-                  <View className="bg-white p-10 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 border border-gray-100 hover:border-gray-200 transform hover:-translate-y-2">
+                  <View className="bg-white p-10 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 border border-gray-100 hover:border-blue-200">
                     <View className="relative mb-8">
                       <View
                         className={`w-20 h-20 bg-gradient-to-br ${item.color} rounded-3xl items-center justify-center shadow-xl mx-auto`}
@@ -431,10 +431,10 @@ export default function WebLanding() {
               ].map((item, index) => (
                 <View key={index} className="group">
                   <View
-                    className={`${item.bgColor} backdrop-blur-sm p-10 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 border border-white/50 hover:border-white/80 transform hover:-translate-y-2`}
+                    className={`${item.bgColor} backdrop-blur-sm p-10 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 border border-white/50 hover:border-white/80`}
                   >
                     <View
-                      className={`w-20 h-20 bg-gradient-to-br ${item.color} rounded-3xl items-center justify-center mx-auto mb-8 shadow-xl group-hover:scale-110 transition-transform`}
+                      className={`w-20 h-20 bg-gradient-to-br ${item.color} rounded-3xl items-center justify-center mx-auto mb-8 shadow-xl transition-all duration-300`}
                     >
                       <Text className="text-4xl">{item.icon}</Text>
                     </View>
@@ -814,7 +814,7 @@ export default function WebLanding() {
               ].map((benefit, i) => (
                 <View
                   key={i}
-                  className="flex-row items-start bg-gradient-to-br from-gray-50 to-blue-50/30 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100/50 hover:border-blue-200/50 transform hover:-translate-y-1"
+                  className="flex-row items-start bg-gradient-to-br from-gray-50 to-blue-50/30 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100/50 hover:border-blue-200/50"
                 >
                   <View className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl items-center justify-center mr-6 shadow-lg">
                     <Text className="text-xl">{benefit.icon}</Text>
@@ -877,7 +877,7 @@ export default function WebLanding() {
             {/* Main CTA */}
             <View className="mb-12">
               <Pressable
-                className="bg-gradient-to-r from-green-500 to-emerald-600 px-12 py-6 rounded-3xl shadow-2xl hover:shadow-emerald-500/25 transition-all hover:scale-105 inline-flex flex-row items-center"
+                className="bg-gradient-to-r from-green-500 to-emerald-600 px-12 py-6 rounded-3xl shadow-2xl hover:shadow-emerald-500/25 transition-all hover:brightness-110 inline-flex flex-row items-center"
                 onPress={openWhatsAppChannel}
               >
                 <View className="w-8 h-8 bg-white/20 rounded-full items-center justify-center mr-4">
@@ -917,7 +917,7 @@ export default function WebLanding() {
                   zusammenbringen.
                 </Text>
                 <Pressable
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all inline-flex flex-row items-center"
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all hover:brightness-110 inline-flex flex-row items-center"
                   onPress={openWhatsAppChannel}
                 >
                   <Text className="text-white text-lg mr-2">🔔</Text>

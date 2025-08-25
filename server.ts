@@ -1,7 +1,10 @@
 import { createRequestHandler } from "@expo/server/adapter/bun";
-import { router } from "./server/orpc";
+import { ImageResponse } from "@vercel/og";
+import * as React from "react";
 
 import { RPCHandler } from "@orpc/server/websocket";
+import Test from "./server/og/test";
+import { router } from "./server/router";
 
 const CLIENT_BUILD_DIR = `${process.cwd()}/dist/client`;
 const SERVER_BUILD_DIR = `${process.cwd()}/dist/server`;
@@ -15,6 +18,11 @@ Bun.serve({
   async fetch(req, server) {
     const url = new URL(req.url);
     console.log("Request URL:", url.pathname);
+
+    if (url.pathname === "/api/image") {
+      const element = React.createElement(Test, {}, []);
+      return new ImageResponse(element, { width: 1200, height: 630 });
+    }
 
     const staticPath = url.pathname === "/" ? "/index.html" : url.pathname;
     const file = Bun.file(CLIENT_BUILD_DIR + staticPath);
