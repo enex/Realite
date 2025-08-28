@@ -26,6 +26,8 @@ export interface RealiteEvents {
   };
   "realite.plan.changed": {
     name?: string; // name of the realite
+    startDate?: string; // ISO date string
+    endDate?: string; // ISO date string
     description?: string; // description of the realite
     url?: string; // url of the realite
     activity?: ActivityId;

@@ -1,7 +1,6 @@
 import { createRequestHandler } from "@expo/server/adapter/bun";
-import * as React from "react";
-
 import { RPCHandler } from "@orpc/server/websocket";
+import * as React from "react";
 import Test from "./server/og/test";
 import { router } from "./server/router";
 
@@ -24,10 +23,41 @@ Bun.serve({
       return new ImageResponse(element, { width: 1200, height: 630 });
     }
 
-    const staticPath = url.pathname === "/" ? "/index.html" : url.pathname;
-    const file = Bun.file(CLIENT_BUILD_DIR + staticPath);
+    // Prefer serving pre-rendered HTML from server build to avoid platform mismatch
+    const htmlPath =
+      url.pathname === "/" ? "/index.html" : `${url.pathname}.html`;
+    const serverHtml = Bun.file(SERVER_BUILD_DIR + htmlPath);
+    if (await serverHtml.exists()) {
+      return new Response(await serverHtml.arrayBuffer(), {
+        headers: { "content-type": "text/html; charset=utf-8" },
+      });
+    }
 
-    if (await file.exists()) return new Response(await file.arrayBuffer());
+    // Serve static assets from client build
+    const staticPath = url.pathname === "/" ? "/index.html" : url.pathname;
+    const clientFile = Bun.file(CLIENT_BUILD_DIR + staticPath);
+    if (await clientFile.exists()) {
+      const ext = staticPath.split(".").pop() || "";
+      const type =
+        ext === "css"
+          ? "text/css"
+          : ext === "js"
+            ? "application/javascript"
+            : ext === "map"
+              ? "application/json"
+              : ext === "ttf"
+                ? "font/ttf"
+                : ext === "ico"
+                  ? "image/x-icon"
+                  : ext === "png"
+                    ? "image/png"
+                    : undefined;
+      return new Response(await clientFile.arrayBuffer(), {
+        headers: type
+          ? { "content-type": `${type}; charset=utf-8` }
+          : undefined,
+      });
+    }
 
     if (req.headers.get("upgrade") === "websocket" && server.upgrade(req))
       return;

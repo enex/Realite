@@ -68,30 +68,30 @@ export default function WebLanding() {
         <View className="relative bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 px-8 py-32 overflow-hidden">
           {/* Animated Emoji background */}
           <View pointerEvents="none" className="absolute inset-0 opacity-15">
-            <View className="absolute -top-8 -left-6 rotate-[-12deg] text-8xl animate-pulse">
+            <Text className="absolute -top-8 -left-6 rotate-[-12deg] text-8xl animate-pulse">
               🎮
-            </View>
-            <View className="absolute top-20 left-1/3 rotate-6 text-7xl animate-bounce">
+            </Text>
+            <Text className="absolute top-20 left-1/3 rotate-6 text-7xl animate-bounce">
               ☕️
-            </View>
-            <View className="absolute top-1/4 right-8 -rotate-6 text-8xl animate-pulse">
+            </Text>
+            <Text className="absolute top-1/4 right-8 -rotate-6 text-8xl animate-pulse">
               🎨
-            </View>
-            <View className="absolute top-1/2 left-6 rotate-12 text-8xl animate-bounce">
+            </Text>
+            <Text className="absolute top-1/2 left-6 rotate-12 text-8xl animate-bounce">
               ⚽️
-            </View>
-            <View className="absolute top-[60%] right-1/3 rotate-3 text-7xl animate-pulse">
+            </Text>
+            <Text className="absolute top-[60%] right-1/3 rotate-3 text-7xl animate-pulse">
               🎭
-            </View>
-            <View className="absolute bottom-20 right-8 -rotate-12 text-8xl animate-bounce">
+            </Text>
+            <Text className="absolute bottom-20 right-8 -rotate-12 text-8xl animate-bounce">
               🎵
-            </View>
-            <View className="absolute bottom-32 left-1/4 rotate-12 text-7xl animate-pulse">
+            </Text>
+            <Text className="absolute bottom-32 left-1/4 rotate-12 text-7xl animate-pulse">
               🍽️
-            </View>
-            <View className="absolute top-[70%] left-8 rotate-[-6deg] text-8xl animate-bounce">
+            </Text>
+            <Text className="absolute top-[70%] left-8 rotate-[-6deg] text-8xl animate-bounce">
               🏃‍♂️
-            </View>
+            </Text>
           </View>
 
           <View className="max-w-6xl w-full mx-auto text-center">

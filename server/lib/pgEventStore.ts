@@ -1,6 +1,7 @@
 import { and, asc, eq, gte, inArray } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { AnyPgColumn, AnyPgTable } from "drizzle-orm/pg-core";
+import { v5 } from "uuid";
 import {
   BaseEvent,
   EventFromDataMap,
@@ -57,6 +58,8 @@ export type LazyProjectionDefinition<
     ...args: any[]
   ) => Promise<any>
 >;
+
+const CONSUMER_NAMESPACE = "41bf4acd-edfb-4fe1-9895-1b5565a2b9ea";
 
 export class Builder<
   TEvents extends Record<string, any>,
@@ -225,7 +228,12 @@ export class Builder<
             const consumer = await tx
               .select()
               .from(this.schema.consumers)
-              .where(eq(this.schema.consumers.name, name));
+              .where(
+                and(
+                  eq(this.schema.consumers.name, name),
+                  eq(this.schema.consumers.id, v5(name, CONSUMER_NAMESPACE))
+                )
+              );
             const version =
               consumer.length === 0 ? -1 : (consumer[0].version as number);
             const needsUpdate = version < (projection.version ?? 0);
@@ -249,6 +257,19 @@ export class Builder<
                 ];
               if (handler) await handler(event as any, ctx);
             }
+            await tx
+              .insert(this.schema.consumers)
+              .values({
+                id: v5(name, CONSUMER_NAMESPACE),
+                name,
+                version: projection.version ?? 0,
+              })
+              .onConflictDoUpdate({
+                target: [this.schema.consumers.id],
+                set: {
+                  version: projection.version ?? 0,
+                },
+              });
           }
           return report;
         });

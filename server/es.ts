@@ -1,4 +1,5 @@
 import { ActivityId } from "@/shared/activities";
+import { addSeconds } from "date-fns";
 import { eq, sql } from "drizzle-orm";
 import * as schema from "../db/schema";
 import { builder } from "./builder";
@@ -50,13 +51,56 @@ export const es = builder.store({
               .where(eq(schema.plans.id, ev.subject));
           },
           async "realite.plan.changed"(ev, ctx) {
-            const { locations, ...rest } = ev.data;
+            let {
+              locations,
+              startDate: updStartDate,
+              endDate,
+              ...rest
+            } = ev.data;
+            const plan = await ctx.db.query.plans.findFirst({
+              where: eq(schema.plans.id, ev.subject),
+            });
+            if (!plan) {
+              throw new Error("Plan not found");
+            }
+
+            const startDate = updStartDate
+              ? new Date(updStartDate)
+              : plan.startDate;
+
+            // Determine the new end date while ensuring endDate >= startDate
+            let newEndDate: Date;
+            if (typeof endDate !== "undefined") {
+              const requestedEnd = new Date(endDate);
+              const minimumEnd = addSeconds(startDate, 1);
+              newEndDate =
+                requestedEnd >= minimumEnd ? requestedEnd : minimumEnd;
+            } else {
+              // Preserve original duration if present, otherwise ensure at least +1s
+              if (plan.endDate) {
+                const durationMs =
+                  plan.endDate.getTime() - plan.startDate.getTime();
+                if (durationMs >= 1000) {
+                  newEndDate = new Date(startDate.getTime() + durationMs);
+                } else {
+                  newEndDate = addSeconds(startDate, 1);
+                }
+              } else {
+                newEndDate = addSeconds(startDate, 1);
+              }
+            }
+
+            const upd = {
+              updatedAt: ev.time,
+              startDate,
+              endDate: newEndDate,
+              ...rest,
+            } as const;
+
+            console.log("update plan", upd);
             await ctx.db
               .update(schema.plans)
-              .set({
-                updatedAt: ev.time,
-                ...rest,
-              })
+              .set(upd)
               .where(eq(schema.plans.id, ev.subject));
 
             if (ev.data?.locations) {
@@ -174,21 +218,6 @@ export const es = builder.store({
                 schema.planLocations,
                 eq(schema.plans.id, schema.planLocations.planId)
               );
-
-            const res: {
-              earliestStartDate: Date;
-              latestEndDate: Date;
-              activity: ActivityId;
-              plans: {
-                id: string;
-                title: string;
-                startDate: Date;
-                endDate: Date;
-                creatorId: string;
-              }[];
-            }[] = [];
-            for (const plan of plans) {
-            }
 
             return plans;
           },
