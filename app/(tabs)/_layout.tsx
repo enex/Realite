@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -9,6 +10,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -25,18 +27,18 @@ export default function TabLayout() {
             backgroundColor: "transparent",
             elevation: 0,
             shadowOpacity: 0,
-            height: 88,
+            height: 54 + insets.bottom,
             paddingTop: 8,
-            paddingBottom: 34,
+            paddingBottom: insets.bottom,
           },
           default: {
             borderTopWidth: 0,
             backgroundColor: "rgba(255, 255, 255, 0.95)",
             elevation: 0,
             shadowOpacity: 0,
-            height: 68,
+            height: 56 + insets.bottom,
             paddingTop: 8,
-            paddingBottom: 8,
+            paddingBottom: 8 + insets.bottom,
           },
         }),
         tabBarLabelStyle: {
@@ -49,8 +51,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "My Plans",
-          headerTitle: "My Plans",
+          title: "Meine Pläne",
+          headerTitle: "Meine Pläne",
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol size={24} name={"calendar"} color={color} />
           ),

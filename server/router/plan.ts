@@ -2,10 +2,13 @@ import { activities, activityIds } from "@/shared/activities";
 import { coreRepetitionSchema } from "@/shared/validation/plan";
 import { openai } from "@ai-sdk/openai";
 import { generateText, stepCountIs, tool } from "ai";
+import { addWeeks } from "date-fns";
 import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
 import type { RealiteEvents } from "../events";
 import { protectedRoute } from "../orpc";
+import { PlacesService } from "../services/places";
+import { locationRouter } from "./location";
 
 const planSchema = z.object({
   url: z.string().optional(),
@@ -78,11 +81,36 @@ export const planRouter = {
         console.error(err);
         throw err;
       }
-      return data;
+      return { id, ...data };
     }),
   withAI: protectedRoute
-    .input(z.object({ text: z.string() }))
+    .input(
+      z.object({
+        text: z.string(),
+        location: z
+          .object({
+            latitude: z.number(),
+            longitude: z.number(),
+            radius: z.number().optional(),
+          })
+          .optional(),
+      })
+    )
     .handler(async ({ context, input, signal }) => {
+      const placesService = new PlacesService(
+        process.env.GOOGLE_PLACES_API_KEY ??
+          process.env.GOOGLE_MAPS_API_KEY ??
+          ""
+      );
+
+      const resolved = input.location
+        ? await placesService.reverseGeocode(
+            input.location.latitude,
+            input.location.longitude
+          )
+        : null;
+      const now = new Date();
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const systemPrompt = [
         `You receive the input of a user that mentions what he or she wants to do. You create a plan out of this input.`,
         `Decide on the correct activity for the plan. Use the most appropriate activity form the list:`,
@@ -94,75 +122,136 @@ export const planRouter = {
           ),
         ]),
         `If a event is referenced, search after the event using the web_search tool. And fill in correct information for the plan.`,
-        `Today is ${new Date().toLocaleDateString("de-DE", {
+        input.location
+          ? `The user's approximate location is ${
+              [resolved?.city, resolved?.region, resolved?.country]
+                .filter(Boolean)
+                .join(", ") ||
+              `lat ${input.location.latitude}, lon ${input.location.longitude}`
+            }. Prefer suggestions relevant around this location.`
+          : `If no location is provided, do not assume a specific city; keep suggestions generic or ask clarifying questions.`,
+        `Today is ${now.toLocaleDateString("de-DE", {
           weekday: "long",
-          day: "numeric",
+          day: "2-digit",
           month: "long",
-        })} and it is ${new Date().toLocaleTimeString("de-DE", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })} Uhr.`,
+          year: "numeric",
+        })} (${now.toISOString().slice(0, 10)}). The local time is ${now.toLocaleTimeString(
+          "de-DE",
+          {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          }
+        )} in time zone ${timeZone}.`,
+        "All date-times must be in ISO 8601 UTC format: YYYY-MM-DDTHH:mm:ssZ. Always include the correct year.",
+        "If a month/day or weekday would be in the past this year, schedule the next future occurrence (possibly next year).",
         "Every plan must be in the future.",
       ].join("\n");
 
       //TODO: pass location properly
       //TODO: integrate location search properly
-      let aiResult = await generateText({
+      const aiResult = await generateText({
         model: openai("gpt-4o-mini"),
         abortSignal: signal,
         system: systemPrompt,
         prompt: input.text,
         toolChoice: "required",
-        prepareStep: ({ stepNumber }) => {
+        prepareStep: ({ stepNumber, steps }) => {
+          if (
+            stepNumber > 2 &&
+            !steps.some((s) =>
+              s.toolCalls.some((t) => t.toolName === "search_location")
+            )
+          )
+            return { toolChoice: "required", activeTools: ["search_location"] };
           if (stepNumber > 3) {
-            return { toolChoice: "required", activeTools: ["createPlan"] };
+            return { toolChoice: "required", activeTools: ["create_plan"] };
           }
         },
         stopWhen: stepCountIs(5),
         tools: {
-          createPlan: tool({
+          create_plan: tool({
             inputSchema: planSchema,
             description: "Create a plan",
           }),
           web_search: openai.tools.webSearchPreview({
-            // optional configuration:
             searchContextSize: "high",
-            userLocation: {
-              type: "approximate",
-              city: "San Francisco",
-              region: "California",
+            userLocation: input.location
+              ? {
+                  type: "approximate",
+                  city: resolved?.city || undefined,
+                  region: resolved?.regionCode || resolved?.region || undefined,
+                  country: resolved?.countryCode || undefined,
+                }
+              : undefined,
+          }),
+          search_location: tool({
+            inputSchema: locationRouter.search["~orpc"].inputSchema!,
+            description:
+              "Search for a location. This is necessary in order to to create a plan, because every plan must have at least one location.",
+            execute: async ({ query }) => {
+              const res = await placesService.search({
+                query,
+                userLocation: input.location
+                  ? {
+                      lat: input.location?.latitude ?? 0,
+                      lng: input.location?.longitude ?? 0,
+                    }
+                  : undefined,
+                radius: input.location?.radius,
+                limit: 50,
+              });
+              console.log("searched for", query, res);
+
+              return res;
             },
           }),
-          /*searchLocation: tool({
-            inputSchema: locationRouter.search["~orpc"].inputSchema!,
-            description: "Search for a location",
-            execute: async ({ query }) => {
-              const locations = await context.es.projections.location.search(query);
-              return locations;
-            },
-          }),*/
         },
       });
       console.log(JSON.stringify(aiResult.toolCalls, null, 2));
       const res = {
         answer: aiResult.text,
-        plan: aiResult.toolCalls.find((r) => r.toolName === "createPlan")
+        plan: aiResult.toolCalls.find((r) => r.toolName === "create_plan")
           ?.input as z.infer<typeof planSchema>,
       };
+      // Normalize AI result: enforce ISO-8601 and ensure startDate is in the future
+      if (res.plan?.startDate) {
+        const parsed = new Date(res.plan.startDate);
+        if (!isNaN(parsed.getTime())) {
+          let adjusted = new Date(parsed);
+          const now = new Date();
+          if (adjusted.getTime() <= now.getTime()) {
+            // Try with current year, then next year if still in the past
+            adjusted.setFullYear(now.getFullYear());
+            if (adjusted.getTime() <= now.getTime()) {
+              adjusted.setFullYear(now.getFullYear() + 1);
+            }
+          }
+          res.plan.startDate = adjusted.toISOString();
+        }
+      }
       console.log(res);
       return res;
     }),
-  myPlans: protectedRoute.handler(async ({ context, signal }) => {
-    try {
-      const plans = await context.es.projections.plan.listMyPlans(
-        context.session.id
-      );
-      return plans;
-    } catch (err) {
-      console.error(err);
-      throw err;
-    }
-  }),
+  myPlans: protectedRoute
+    .input(
+      z.object({
+        startDate: z.coerce.date().default(new Date()),
+        endDate: z.coerce.date().default(addWeeks(new Date(), 10)),
+      })
+    )
+    .handler(async ({ context, input, signal }) => {
+      try {
+        const plans = await context.es.projections.plan.listMyPlans(
+          context.session.id,
+          [input.startDate, input.endDate]
+        );
+        return plans;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
+    }),
   get: protectedRoute
     .input(z.object({ id: z.string() }))
     .handler(async ({ context, input, signal }) => {
@@ -186,5 +275,25 @@ export const planRouter = {
         data: input.plan,
       });
       return plan;
+    }),
+  find: protectedRoute
+    .input(
+      z.object({
+        query: z.string().optional(),
+        startDate: z.coerce.date().default(new Date()),
+        endDate: z.coerce.date().default(addWeeks(new Date(), 10)),
+        activity: z.enum(activityIds).optional(),
+        location: z
+          .object({
+            latitude: z.number(),
+            longitude: z.number(),
+            radius: z.number().optional(),
+          })
+          .optional(),
+      })
+    )
+    .handler(async ({ context, input, signal }) => {
+      const plans = await context.es.projections.plan.findPlans(input);
+      return plans;
     }),
 };

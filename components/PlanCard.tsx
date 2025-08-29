@@ -162,158 +162,163 @@ export function PlanCard({ item, index }: PlanCardProps) {
         }
         style={{ borderRadius: 20 }}
       >
-        <LinearGradient
-          colors={getActivityGradient(item.activity)}
-          start={{ x: 0, y: 1 }}
-          end={{ x: 1, y: 0 }}
-          style={{
-            borderRadius: 20,
-            padding: spacing.lg,
-            position: "relative",
-            overflow: "hidden",
-            ...shadows.medium,
-          }}
+        {/* Shadow wrapper to avoid clipping shadows by overflow hidden */}
+        <View
+          style={{ borderRadius: 20, overflow: "visible", ...shadows.medium }}
         >
-          {/* Large background icon */}
-          <View
+          <LinearGradient
+            colors={getActivityGradient(item.activity)}
+            start={{ x: 0, y: 1 }}
+            end={{ x: 1, y: 0 }}
             style={{
-              position: "absolute",
-              top: -16,
-              right: -16,
-              opacity: 0.35,
-              zIndex: 0,
+              borderRadius: 20,
+              padding: spacing.lg,
+              position: "relative",
+              overflow: "hidden",
             }}
           >
-            <IconSymbol
-              name={getActivityIcon(item.activity)}
-              size={120}
-              color={getActivityIconColor(item.activity)}
-            />
-          </View>
-
-          {/* Content */}
-          <View style={{ position: "relative", zIndex: 10 }}>
-            <View style={{ marginBottom: spacing.md }}>
-              <Text
-                style={{
-                  ...typography.title3,
-                  color: "#1C1C1E",
-                  marginBottom: spacing.sm,
-                }}
-              >
-                {item.title}
-              </Text>
-              {item.locations &&
-                item.locations.map((location, index) => (
-                  <View
-                    key={index}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: spacing.sm,
-                    }}
-                  >
-                    <BlurView
-                      intensity={60}
-                      style={{
-                        borderRadius: 12,
-                        padding: 6,
-                        overflow: "hidden",
-                      }}
-                    >
-                      <IconSymbol name="location" size={12} color="#8E8E93" />
-                    </BlurView>
-                    <Text
-                      style={{
-                        ...typography.subheadline,
-                        color: "#3C3C43",
-                      }}
-                    >
-                      {location.title}
-                    </Text>
-                  </View>
-                ))}
-            </View>
-
+            {/* Large background icon */}
             <View
               style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
+                position: "absolute",
+                top: -16,
+                right: -16,
+                opacity: 0.35,
+                zIndex: 0,
               }}
             >
-              {item.participants && item.participants.length > 0 && (
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <View style={{ flexDirection: "row" }}>
-                    {item.participants.map((participant, idx) => (
-                      <View
-                        key={participant}
-                        style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: 18,
-                          backgroundColor: "rgba(255, 255, 255, 0.9)",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          borderWidth: 2,
-                          borderColor: "rgba(255, 255, 255, 0.5)",
-                          marginLeft: idx > 0 ? -12 : 0,
-                          zIndex: item.participants!.length - idx,
-                          ...shadows.small,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            ...typography.footnote,
-                            fontWeight: "600",
-                            color: "#1C1C1E",
-                          }}
-                        >
-                          {participant}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-                  {item.participants.length > 1 && (
-                    <Text
-                      style={{
-                        ...typography.caption1,
-                        color: "#3C3C43",
-                        marginLeft: spacing.sm,
-                      }}
-                    >
-                      +{item.participants.length - 1} more
-                    </Text>
-                  )}
-                </View>
-              )}
+              <IconSymbol
+                name={getActivityIcon(item.activity)}
+                size={120}
+                color={getActivityIconColor(item.activity)}
+              />
+            </View>
 
-              <BlurView
-                intensity={80}
-                style={{
-                  borderRadius: 12,
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  overflow: "hidden",
-                  ...shadows.small,
-                }}
-              >
+            {/* Content */}
+            <View style={{ position: "relative", zIndex: 10 }}>
+              <View style={{ marginBottom: spacing.md }}>
                 <Text
                   style={{
-                    ...typography.caption1,
-                    fontWeight: "600",
+                    ...typography.title3,
                     color: "#1C1C1E",
+                    marginBottom: spacing.sm,
                   }}
                 >
-                  {new Date(item.date).toLocaleTimeString("en-US", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {item.title}
                 </Text>
-              </BlurView>
+                {item.locations &&
+                  item.locations.map((location, index) => (
+                    <View
+                      key={index}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: spacing.sm,
+                      }}
+                    >
+                      <BlurView
+                        intensity={60}
+                        style={{
+                          borderRadius: 12,
+                          padding: 6,
+                          overflow: "hidden",
+                        }}
+                      >
+                        <IconSymbol name="location" size={12} color="#8E8E93" />
+                      </BlurView>
+                      <Text
+                        style={{
+                          ...typography.subheadline,
+                          color: "#3C3C43",
+                        }}
+                      >
+                        {location.title}
+                      </Text>
+                    </View>
+                  ))}
+              </View>
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                {item.participants && item.participants.length > 0 && (
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <View style={{ flexDirection: "row" }}>
+                      {item.participants.map((participant, idx) => (
+                        <View
+                          key={participant}
+                          style={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: 18,
+                            backgroundColor: "rgba(255, 255, 255, 0.9)",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderWidth: 2,
+                            borderColor: "rgba(255, 255, 255, 0.5)",
+                            marginLeft: idx > 0 ? -12 : 0,
+                            zIndex: item.participants!.length - idx,
+                            ...shadows.small,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              ...typography.footnote,
+                              fontWeight: "600",
+                              color: "#1C1C1E",
+                            }}
+                          >
+                            {participant}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                    {item.participants.length > 1 && (
+                      <Text
+                        style={{
+                          ...typography.caption1,
+                          color: "#3C3C43",
+                          marginLeft: spacing.sm,
+                        }}
+                      >
+                        +{item.participants.length - 1} more
+                      </Text>
+                    )}
+                  </View>
+                )}
+
+                <BlurView
+                  intensity={80}
+                  experimentalBlurMethod="dimezisBlurView"
+                  style={{
+                    borderRadius: 12,
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    overflow: "hidden",
+                    ...shadows.small,
+                  }}
+                >
+                  <Text
+                    style={{
+                      ...typography.caption1,
+                      fontWeight: "600",
+                      color: "#1C1C1E",
+                    }}
+                  >
+                    {new Date(item.date).toLocaleTimeString("de-DE", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </Text>
+                </BlurView>
+              </View>
             </View>
-          </View>
-        </LinearGradient>
+          </LinearGradient>
+        </View>
       </Pressable>
     </Animated.View>
   );

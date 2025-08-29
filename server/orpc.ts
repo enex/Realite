@@ -35,11 +35,16 @@ export const protectedRoute = publicRoute
   })
   .use(({ context, next }) => {
     if (!context.session) throw new ORPCError("UNAUTHORIZED");
-    return next({
-      context: {
-        ...context,
-        session: context.session!,
-        es: es.withActor(context.session.id),
-      },
-    });
+    try {
+      return next({
+        context: {
+          ...context,
+          session: context.session!,
+          es: es.withActor(context.session.id),
+        },
+      });
+    } catch (error) {
+      console.error("[ORPC] Route error:", error);
+      throw error;
+    }
   });

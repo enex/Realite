@@ -1,5 +1,6 @@
 import orpc, { client } from "@/client/orpc";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { useLocation } from "@/hooks/useLocation";
 import {
   BottomSheetModal,
   BottomSheetTextInput,
@@ -53,6 +54,7 @@ const AIPlanBottomSheet = forwardRef<
   );
 
   const queryClient = useQueryClient();
+  const { latitude, longitude, hasPermission } = useLocation();
   const handleSubmit = useCallback(async () => {
     if (!text.trim()) {
       Alert.alert("Please enter what you want to do");
@@ -63,22 +65,30 @@ const AIPlanBottomSheet = forwardRef<
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     try {
-      const result = await client.plan.withAI({ text: text.trim() });
+      const result = await client.plan.withAI({
+        text: text.trim(),
+        location: hasPermission
+          ? {
+              latitude,
+              longitude,
+              radius: 50000,
+            }
+          : undefined,
+      });
 
       if (result.plan) {
         // Create the actual plan using the create endpoint
-        await client.plan.create(result.plan);
+        const created = await client.plan.create(result.plan);
 
-        onPlanCreated?.(result.plan);
+        // Provide the new plan id to the parent for navigation
+        onPlanCreated?.({ ...result.plan, id: (created as any)?.id });
         setText("");
         handleDismissModalPress();
 
-        queryClient.invalidateQueries(orpc.plan.myPlans.queryOptions({}));
-
-        Alert.alert(
-          "Success!",
-          result.answer || "Your plan has been created!",
-          [{ text: "OK", style: "default" }]
+        queryClient.invalidateQueries(
+          orpc.plan.myPlans.queryOptions({
+            input: {},
+          })
         );
       } else {
         Alert.alert(

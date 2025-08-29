@@ -1,8 +1,16 @@
 import { ActivityId } from "@/shared/activities";
 import { addSeconds } from "date-fns";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, gte, ilike, lt, lte, ne, or, sql } from "drizzle-orm";
 import * as schema from "../db/schema";
 import { builder } from "./builder";
+import {
+  distance,
+  jsonArrayAgg,
+  jsonArrayAggWhere,
+  jsonBuildObject,
+  rangesOverlap,
+  tsrange,
+} from "./utils/pg";
 import { getPostHogClient } from "./utils/posthog";
 
 export const es = builder.store({
@@ -125,32 +133,123 @@ export const es = builder.store({
           },
         },
         queries: {
-          async listMyPlans(ctx, actor: string) {
-            return ctx.db.query.plans.findMany({
-              where: (t, { eq }) => eq(t.creatorId, actor),
-              with: {
-                locations: {
-                  columns: {
-                    title: true,
-                    address: true,
-                    category: true,
-                    description: true,
-                    imageUrl: true,
-                    url: true,
-                  },
-                  extras: {
-                    latitude:
-                      sql<number>`ST_Y(${schema.planLocations.location})`.as(
-                        "latitude"
-                      ),
-                    longitude:
-                      sql<number>`ST_X(${schema.planLocations.location})`.as(
-                        "longitude"
-                      ),
-                  },
-                },
-              },
-            });
+          async listMyPlans(ctx, actor: string, range: [Date, Date]) {
+            const baseQuery = ctx.db
+              .select({
+                id: schema.plans.id,
+                creatorId: schema.plans.creatorId,
+                startDate: schema.plans.startDate,
+                activity: schema.plans.activity,
+                endDate: schema.plans.endDate,
+                title: schema.plans.title,
+                description: schema.plans.description,
+                url: schema.plans.url,
+                repetition: schema.plans.repetition,
+                // location
+                location: schema.planLocations.location,
+                address: schema.planLocations.address,
+                category: schema.planLocations.category,
+                imageUrl: schema.planLocations.imageUrl,
+              })
+              .from(schema.plans)
+              .leftJoin(
+                schema.planLocations,
+                eq(schema.plans.id, schema.planLocations.planId)
+              );
+            const ownPlansWithLocation = baseQuery
+              .where(eq(schema.plans.creatorId, actor))
+              .as("ownPlansWithLocation");
+            const otherPlansWithLocation = baseQuery
+              .where(ne(schema.plans.creatorId, actor))
+              .as("otherPlansWithLocation"); //TODO: filter to only those that are visible for this user
+
+            const q = ctx.db
+              .select({
+                id: ownPlansWithLocation.id,
+                startDate: ownPlansWithLocation.startDate,
+                endDate: ownPlansWithLocation.endDate,
+                activity: ownPlansWithLocation.activity,
+                title: ownPlansWithLocation.title,
+                description: ownPlansWithLocation.description,
+                url: ownPlansWithLocation.url,
+                repetition: ownPlansWithLocation.repetition,
+                locations: jsonArrayAgg(
+                  jsonBuildObject({
+                    title: ownPlansWithLocation.title,
+                    address: ownPlansWithLocation.address,
+                    category: ownPlansWithLocation.category,
+                    imageUrl: ownPlansWithLocation.imageUrl,
+                    latitude: sql<number>`ST_Y(${ownPlansWithLocation.location})`,
+                    longitude: sql<number>`ST_X(${ownPlansWithLocation.location})`,
+                  })
+                ),
+                // When there is no matching plan in the LEFT JOIN, Postgres would
+                // emit a single object with all-null fields. Filter those out so
+                // the result is an empty array instead of [{ id: null, ... }].
+                similarOverlappingPlans: jsonArrayAggWhere(
+                  jsonBuildObject({
+                    id: otherPlansWithLocation.id,
+                    startDate: otherPlansWithLocation.startDate,
+                    endDate: otherPlansWithLocation.endDate,
+                    creatorId: otherPlansWithLocation.creatorId,
+                  }),
+                  sql<boolean>`${otherPlansWithLocation.id} is not null`
+                ),
+              })
+              .from(ownPlansWithLocation)
+              .leftJoin(
+                otherPlansWithLocation,
+                and(
+                  ne(ownPlansWithLocation.id, otherPlansWithLocation.id),
+                  eq(
+                    ownPlansWithLocation.activity,
+                    otherPlansWithLocation.activity
+                  ),
+                  // times overlap
+                  rangesOverlap(
+                    tsrange(
+                      ownPlansWithLocation.startDate,
+                      ownPlansWithLocation.endDate
+                    ),
+                    tsrange(
+                      otherPlansWithLocation.startDate,
+                      otherPlansWithLocation.endDate
+                    )
+                  ),
+                  lt(
+                    distance(
+                      ownPlansWithLocation.location,
+                      otherPlansWithLocation.location
+                    ),
+                    500
+                  )
+                )
+              )
+              .where(
+                and(
+                  eq(ownPlansWithLocation.creatorId, actor),
+                  rangesOverlap(
+                    tsrange(
+                      ownPlansWithLocation.startDate,
+                      ownPlansWithLocation.endDate
+                    ),
+                    tsrange(sql`${range[0]}`, sql`${range[1]}`)
+                  )
+                )
+              )
+              .groupBy(
+                ownPlansWithLocation.id,
+                ownPlansWithLocation.startDate,
+                ownPlansWithLocation.endDate,
+                ownPlansWithLocation.activity,
+                ownPlansWithLocation.title,
+                ownPlansWithLocation.description,
+                ownPlansWithLocation.url,
+                ownPlansWithLocation.repetition
+              );
+
+            console.log(q.toSQL());
+            return await q;
           },
           async get(ctx, id: string) {
             return ctx.db.query.plans.findFirst({
@@ -182,15 +281,44 @@ export const es = builder.store({
           async findPlans(
             ctx,
             input: {
+              query?: string;
               startDate: Date;
               endDate: Date;
               activity?: ActivityId;
-              location: string;
+              location?: {
+                latitude: number;
+                longitude: number;
+                radius?: number;
+              };
             }
           ) {
             // TODO: only show plans visible to the user
             // TODO: group all plans that are approximately at the same place and with overlapping time
             // TODO: Only group if activity is the same
+            const where = and(
+              gte(schema.plans.startDate, input.startDate),
+              lte(schema.plans.startDate, input.endDate),
+              ...(input.activity
+                ? [eq(schema.plans.activity, input.activity)]
+                : []),
+              ...(input?.query
+                ? [
+                    or(
+                      ilike(schema.plans.title, `%${input.query}%`),
+                      ilike(schema.planLocations.title, `%${input.query}%`),
+                      ilike(schema.planLocations.address, `%${input.query}%`)
+                    ),
+                  ]
+                : []),
+              ...(input.location
+                ? [
+                    sql`ST_DWithin(${schema.planLocations.location}::geography, ST_SetSRID(ST_MakePoint(${input.location.longitude}, ${input.location.latitude}), 4326)::geography, ${
+                      input.location.radius ?? 5000
+                    })`,
+                  ]
+                : [])
+            );
+
             const plans = await ctx.db
               .select({
                 id: schema.plans.id,
@@ -217,7 +345,8 @@ export const es = builder.store({
               .leftJoin(
                 schema.planLocations,
                 eq(schema.plans.id, schema.planLocations.planId)
-              );
+              )
+              .where(where);
 
             return plans;
           },

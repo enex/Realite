@@ -1,18 +1,30 @@
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import { useCallback, useMemo, useRef } from "react";
-import { Animated, Pressable, Text, View } from "react-native";
+import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  Animated,
+  Platform,
+  Pressable,
+  RefreshControl,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
 import orpc from "@/client/orpc";
 import AIPlanBottomSheet, {
   AIPlanBottomSheetRef,
 } from "@/components/AIPlanBottomSheet";
 import { PlanCard, shadows } from "@/components/PlanCard";
+import PlanFilterBottomSheet, {
+  PlanFilterBottomSheetRef,
+  type PlanFilter,
+} from "@/components/PlanFilterBottomSheet";
 import { ThemedText } from "@/components/ThemedText";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import type { ActivityId } from "@/shared/activities";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // iOS Design System (reduced to what's needed for this screen)
 const typography = {
@@ -36,7 +48,12 @@ type PlanListItem = {
   date: string;
   status: "committed" | "pending";
   activity: ActivityId;
-  location?: string;
+  locations?: {
+    title: string;
+    address?: string;
+    latitude: number;
+    longitude: number;
+  }[];
   participants?: string[];
 };
 
@@ -47,8 +64,22 @@ type GroupedPlans = {
 };
 
 export default function PlansScreen() {
+  const router = useRouter();
   const aiPlanBottomSheetRef = useRef<AIPlanBottomSheetRef>(null);
-  const { data: plans, error } = useQuery(orpc.plan.myPlans.queryOptions({}));
+  const filterRef = useRef<PlanFilterBottomSheetRef>(null);
+  const [filter, setFilter] = useState<PlanFilter | undefined>(undefined);
+  const queryClient = useQueryClient();
+  const {
+    data: plans,
+    error,
+    refetch,
+    isFetching,
+    isRefetching,
+  } = useQuery(
+    orpc.plan.myPlans.queryOptions({
+      input: filter ?? {},
+    })
+  );
 
   // TODO: Replace with data from ORPC once endpoint is available
   const data = useMemo<PlanListItem[]>(() => {
@@ -57,20 +88,59 @@ export default function PlansScreen() {
     return plans.map((plan) => ({
       id: plan.id,
       title: plan.title,
-      date: plan.startDate?.toISOString?.() ?? "",
+      date: (plan.startDate?.toISOString?.() ?? (plan.startDate as any)) || "",
       status: "committed",
       activity: plan.activity as ActivityId,
-      locations: plan.locations,
+      locations: Array.isArray(plan.locations)
+        ? plan.locations
+            .filter((l: any) => !!l)
+            .map((l: any) => {
+              const title = ((l.title ?? l.address ?? "") as string) || "";
+              return {
+                title,
+                address: (l.address ?? undefined) as string | undefined,
+                latitude: Number(l.latitude ?? 0),
+                longitude: Number(l.longitude ?? 0),
+              };
+            })
+            .filter((l: any) => l.title !== "" || (l.latitude && l.longitude))
+        : undefined,
       participants: [],
     }));
   }, [plans]);
 
+  const filteredData = useMemo(() => {
+    if (!data) return [] as PlanListItem[];
+
+    // Default: only today and future
+    const defaultStart = new Date();
+    defaultStart.setHours(0, 0, 0, 0);
+
+    const startDate =
+      typeof filter === "undefined"
+        ? defaultStart
+        : (filter?.startDate ?? undefined);
+    const endDate = filter?.endDate ?? undefined;
+
+    return data.filter((p) => {
+      const t = new Date(p.date).getTime();
+      if (startDate && t < startDate.getTime()) return false;
+      if (endDate && t > endDate.getTime()) return false;
+      if (filter?.activity && p.activity !== filter.activity) return false;
+      return true;
+    });
+  }, [data, filter]);
+
   const groupedPlans = useMemo(() => {
     const groups: Record<string, PlanListItem[]> = {};
 
-    data.forEach((plan) => {
+    filteredData.forEach((plan) => {
       const date = new Date(plan.date);
-      const dateKey = date.toDateString();
+      // Build a stable local-date key (YYYY-MM-DD) to avoid Safari parsing issues
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      const dateKey = `${y}-${m}-${d}`;
 
       if (!groups[dateKey]) {
         groups[dateKey] = [];
@@ -80,10 +150,18 @@ export default function PlansScreen() {
 
     return Object.entries(groups)
       .map(([dateKey, plans]) => {
-        const date = new Date(dateKey);
+        // Recreate a local Date from the stable key at local midnight
+        const [y, m, d] = dateKey.split("-").map((v) => Number(v));
+        const date = new Date(y, (m as number) - 1, d as number);
         const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        const todayKey = `${today.getFullYear()}-${String(
+          today.getMonth() + 1
+        ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        const tmr = new Date(today);
+        tmr.setDate(tmr.getDate() + 1);
+        const tomorrowKey = `${tmr.getFullYear()}-${String(
+          tmr.getMonth() + 1
+        ).padStart(2, "0")}-${String(tmr.getDate()).padStart(2, "0")}`;
 
         let dayLabel = date.toLocaleDateString("de-DE", {
           weekday: "long",
@@ -91,9 +169,9 @@ export default function PlansScreen() {
           day: "numeric",
         });
 
-        if (date.toDateString() === today.toDateString()) {
+        if (dateKey === todayKey) {
           dayLabel = "Heute";
-        } else if (date.toDateString() === tomorrow.toDateString()) {
+        } else if (dateKey === tomorrowKey) {
           dayLabel = "Morgen";
         }
 
@@ -106,7 +184,7 @@ export default function PlansScreen() {
         };
       })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [data]);
+  }, [filteredData]);
 
   const renderDayGroup = ({
     item,
@@ -141,6 +219,7 @@ export default function PlansScreen() {
   );
 
   const scrollY = useRef(new Animated.Value(0)).current;
+  const isAndroid = Platform.OS === "android";
 
   // Large title animations
   const headerOpacity = scrollY.interpolate({
@@ -161,10 +240,15 @@ export default function PlansScreen() {
     extrapolate: "clamp",
   });
 
+  const bottomPadding = isAndroid ? 80 : 140;
+
   return (
-    <View style={{ flex: 1, backgroundColor: "#F2F2F7" }}>
-      <SafeAreaView style={{ flex: 1 }}>
-        {/* Large Title Header */}
+    <SafeAreaView
+      edges={["top"]}
+      style={{ flex: 1, backgroundColor: "#F2F2F7" }}
+    >
+      {/* Large Title Header (animated on iOS, moved into ScrollView on Android) */}
+      {!isAndroid && (
         <Animated.View
           style={{
             height: headerHeight,
@@ -176,54 +260,230 @@ export default function PlansScreen() {
             overflow: "hidden",
           }}
         >
-          <Text
+          <View
             style={{
-              ...typography.largeTitle,
-              color: "#1C1C1E",
-              marginBottom: spacing.xs,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}
           >
-            Meine Pläne
-          </Text>
-          <Text
-            style={{
-              ...typography.subheadline,
-              color: "#8E8E93",
-            }}
-          >
-            Alle deine Pläne
-          </Text>
+            <View>
+              <Text
+                style={{
+                  ...typography.largeTitle,
+                  color: "#1C1C1E",
+                  marginBottom: spacing.xs,
+                }}
+              >
+                Meine Pläne
+              </Text>
+              <Text
+                style={{
+                  ...typography.subheadline,
+                  color: "#8E8E93",
+                }}
+              >
+                Alle deine Pläne
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => {
+                filterRef.current?.present();
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                backgroundColor: "white",
+                alignItems: "center",
+                justifyContent: "center",
+                borderWidth: 1,
+                borderColor: "#E5E5EA",
+                ...shadows.small,
+              }}
+            >
+              <IconSymbol
+                name="line.3.horizontal.decrease.circle"
+                size={18}
+                color="#1C1C1E"
+              />
+            </Pressable>
+          </View>
         </Animated.View>
+      )}
 
-        {error && (
-          <View style={{ padding: spacing.lg }}>
-            <ThemedText style={{ ...typography.subheadline, color: "#8E8E93" }}>
-              {error.message}
-            </ThemedText>
+      {error && (
+        <View style={{ padding: spacing.lg }}>
+          <ThemedText style={{ ...typography.subheadline, color: "#8E8E93" }}>
+            {error.message}
+          </ThemedText>
+        </View>
+      )}
+
+      {/* Scrollable Content */}
+      <Animated.ScrollView
+        style={{ flex: 1 }}
+        onScroll={
+          isAndroid
+            ? undefined
+            : Animated.event(
+                [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                { useNativeDriver: false }
+              )
+        }
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        removeClippedSubviews={isAndroid}
+        nestedScrollEnabled={isAndroid}
+        refreshControl={
+          <RefreshControl
+            refreshing={Boolean(isRefetching || isFetching)}
+            onRefresh={async () => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              try {
+                await refetch();
+              } catch (e) {
+                // Swallow errors; UI already surfaces query errors
+                console.error("Refresh error", e);
+              }
+            }}
+            tintColor="#007AFF"
+          />
+        }
+        contentContainerStyle={{
+          paddingHorizontal: spacing.lg,
+          paddingBottom: bottomPadding,
+        }}
+      >
+        {isAndroid && (
+          <View style={{ paddingTop: spacing.sm, paddingBottom: spacing.md }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View>
+                <Text
+                  style={{
+                    ...typography.largeTitle,
+                    color: "#1C1C1E",
+                    marginBottom: spacing.xs,
+                  }}
+                >
+                  Meine Pläne
+                </Text>
+                <Text
+                  style={{
+                    ...typography.subheadline,
+                    color: "#8E8E93",
+                  }}
+                >
+                  Alle deine Pläne
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => {
+                  filterRef.current?.present();
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: "white",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderWidth: 1,
+                  borderColor: "#E5E5EA",
+                  ...shadows.small,
+                }}
+              >
+                <IconSymbol
+                  name="line.3.horizontal.decrease.circle"
+                  size={18}
+                  color="#1C1C1E"
+                />
+              </Pressable>
+            </View>
+            <Text>{JSON.stringify(plans, null, 2)}</Text>
           </View>
         )}
-
-        {/* Scrollable Content */}
-        <Animated.ScrollView
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: false }
-          )}
-          scrollEventThrottle={16}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingHorizontal: spacing.lg,
-            paddingBottom: 140,
-          }}
-        >
-          {groupedPlans.map((group, index) => (
-            <View key={group.date}>
-              {renderDayGroup({ item: group, index })}
+        {groupedPlans.map((group, index) => (
+          <View key={group.date}>{renderDayGroup({ item: group, index })}</View>
+        ))}
+        {groupedPlans.length === 0 && (
+          <View
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              paddingTop: spacing.xl,
+              paddingBottom: spacing.xl,
+              gap: 16,
+            }}
+          >
+            {/* Illustration */}
+            <View
+              style={{
+                width: 96,
+                height: 96,
+                borderRadius: 48,
+                backgroundColor: "#E5F0FF",
+                borderWidth: 1,
+                borderColor: "#B7D4FF",
+                alignItems: "center",
+                justifyContent: "center",
+                ...shadows.small,
+              }}
+            >
+              <IconSymbol name="calendar" size={44} color="#007AFF" />
             </View>
-          ))}
-        </Animated.ScrollView>
+            <Text
+              style={{
+                ...typography.headline,
+                color: "#1C1C1E",
+              }}
+            >
+              Noch keine Pläne
+            </Text>
+            <Text
+              style={{
+                ...typography.subheadline,
+                color: "#8E8E93",
+                textAlign: "center",
+              }}
+            >
+              Lege fest, was du vor hast – andere sehen es und können
+              dazukommen.
+            </Text>
 
-        {/* Navigation Bar Overlay */}
+            {/* What is a plan */}
+            <WhatIsAPlan />
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                aiPlanBottomSheetRef.current?.present();
+              }}
+              style={{
+                backgroundColor: "#007AFF",
+                borderRadius: 12,
+                paddingHorizontal: 20,
+                paddingVertical: 12,
+                marginTop: 8,
+              }}
+            >
+              <Text style={{ color: "white", fontWeight: "600", fontSize: 16 }}>
+                Plan erstellen
+              </Text>
+            </Pressable>
+          </View>
+        )}
+      </Animated.ScrollView>
+
+      {/* Navigation Bar Overlay */}
+      {!isAndroid && (
         <Animated.View
           style={{
             position: "absolute",
@@ -257,20 +517,42 @@ export default function PlansScreen() {
             </BlurView>
           </SafeAreaView>
         </Animated.View>
+      )}
 
-        {/* Native iOS FAB */}
+      {/* Native iOS FAB */}
+      {groupedPlans.length > 0 && (
         <NativeFAB onPress={() => aiPlanBottomSheetRef.current?.present()} />
+      )}
 
-        {/* AI Plan Bottom Sheet */}
+      {/* AI Plan Bottom Sheet */}
         <AIPlanBottomSheet
           ref={aiPlanBottomSheetRef}
-          onPlanCreated={(plan) => {
+          onPlanCreated={(plan: any) => {
             console.log("Plan created:", plan);
-            // TODO: Refresh the plans list or add the new plan to the state
+            // Refresh the plans list so the new plan appears
+            queryClient.invalidateQueries({
+              queryKey: orpc.plan.myPlans.queryOptions({
+                input: filter ?? {},
+              }).queryKey,
+            });
+            // Navigate to the plan details for quick editing
+            if (plan?.id) {
+              // Slight defer to ensure bottom sheet dismiss animation doesn't conflict
+              setTimeout(() => {
+                router.push(`/plan/${plan.id}` as any);
+              }, 0);
+            }
           }}
         />
-      </SafeAreaView>
-    </View>
+
+      {/* Filter Bottom Sheet */}
+      <PlanFilterBottomSheet
+        ref={filterRef}
+        initial={filter}
+        onApply={(f) => setFilter(f)}
+        hideLocation
+      />
+    </SafeAreaView>
   );
 }
 
@@ -304,7 +586,7 @@ function NativeFAB({ onPress }: { onPress: () => void }) {
       onPressOut={handlePressOut}
       style={{
         position: "absolute",
-        bottom: 110,
+        bottom: 24,
         right: spacing.lg,
         zIndex: 1000,
       }}
@@ -329,5 +611,111 @@ function NativeFAB({ onPress }: { onPress: () => void }) {
         </View>
       </Animated.View>
     </Pressable>
+  );
+}
+
+function WhatIsAPlan() {
+  return (
+    <View
+      style={{
+        width: "100%",
+        backgroundColor: "white",
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "#E5E5EA",
+        padding: 16,
+        gap: 10,
+        marginTop: 4,
+        ...shadows.small,
+      }}
+    >
+      <Text style={{ fontSize: 16, fontWeight: "600", color: "#1C1C1E" }}>
+        Was ist ein Plan?
+      </Text>
+      <View style={{ gap: 8 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <View
+            style={{
+              borderRadius: 10,
+              backgroundColor: "#F2F2F7",
+              borderWidth: 1,
+              borderColor: "#E5E5EA",
+              padding: 6,
+            }}
+          >
+            <IconSymbol name="tag" size={14} color="#8E8E93" />
+          </View>
+          <Text style={{ color: "#3C3C43" }}>
+            Aktivität mit Titel und Beschreibung
+          </Text>
+        </View>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <View
+            style={{
+              borderRadius: 10,
+              backgroundColor: "#F2F2F7",
+              borderWidth: 1,
+              borderColor: "#E5E5EA",
+              padding: 6,
+            }}
+          >
+            <IconSymbol name="clock" size={14} color="#8E8E93" />
+          </View>
+          <Text style={{ color: "#3C3C43" }}>Zeitpunkt oder Zeitraum</Text>
+        </View>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <View
+            style={{
+              borderRadius: 10,
+              backgroundColor: "#F2F2F7",
+              borderWidth: 1,
+              borderColor: "#E5E5EA",
+              padding: 6,
+            }}
+          >
+            <IconSymbol name="location" size={14} color="#8E8E93" />
+          </View>
+          <Text style={{ color: "#3C3C43" }}>Ort (optional)</Text>
+        </View>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <View
+            style={{
+              borderRadius: 10,
+              backgroundColor: "#F2F2F7",
+              borderWidth: 1,
+              borderColor: "#E5E5EA",
+              padding: 6,
+            }}
+          >
+            <IconSymbol name="person.2" size={14} color="#8E8E93" />
+          </View>
+          <Text style={{ color: "#3C3C43" }}>Andere können dazukommen</Text>
+        </View>
+      </View>
+    </View>
   );
 }
