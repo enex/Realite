@@ -29,6 +29,7 @@ export const publicRoute = os
       throw error;
     }
   });
+
 export const protectedRoute = publicRoute
   .errors({
     UNAUTHORIZED: { message: "Unauthorized" },

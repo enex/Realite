@@ -1,15 +1,7 @@
 import type { ExpoPushMessage } from "expo-server-sdk";
 import type { PushSubscription as WebPushSubscription } from "web-push";
 import webpush from "web-push";
-
-import type { DB } from "@realite/db/client";
-import type { EventData } from "@realite/db/events";
-import { eq } from "@realite/db";
-import { db as defaultDb } from "@realite/db/client";
-
-// import { Event } from "@realite/db/schema";
-
-import { saveEventWithAnalytics } from "./events";
+import { DB } from "../db";
 
 const vapidPublic = process.env.VAPID_PUBLIC_KEY;
 const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
@@ -17,13 +9,13 @@ if (vapidPublic && vapidPrivate) {
   webpush.setVapidDetails(
     "mailto:support@realite.app",
     vapidPublic,
-    vapidPrivate,
+    vapidPrivate
   );
 }
 
 export async function getWebPushSubscriptionsForUsers(
   userIds: string[],
-  db: DB = defaultDb,
+  db: DB
 ): Promise<
   Record<
     string,
@@ -34,7 +26,7 @@ export async function getWebPushSubscriptionsForUsers(
     where: (t, { and, inArray }) =>
       and(
         eq(t.type, "web-push-subscription-added"),
-        inArray(t.actorId, userIds),
+        inArray(t.actorId, userIds)
       ),
   })) as EventData[];
 
@@ -42,7 +34,7 @@ export async function getWebPushSubscriptionsForUsers(
     where: (t, { and, inArray }) =>
       and(
         eq(t.type, "web-push-subscription-removed"),
-        inArray(t.actorId, userIds),
+        inArray(t.actorId, userIds)
       ),
   })) as EventData[];
 
@@ -86,14 +78,14 @@ export async function getWebPushSubscriptionsForUsers(
 async function getWebPushCountSince(
   userId: string,
   since: Date,
-  db: DB,
+  db: DB
 ): Promise<number> {
   const events = await db.query.Event.findMany({
     where: (t, { and, eq, gt }) =>
       and(
         eq(t.type, "push-notification-sent"),
         eq(t.actorId, userId),
-        gt(t.time, since),
+        gt(t.time, since)
       ),
     columns: { id: true },
   });
@@ -102,13 +94,13 @@ async function getWebPushCountSince(
 
 export async function sendWebPushToUsers(
   messages: (Omit<ExpoPushMessage, "to"> & { to: string | string[] })[],
-  db: DB = defaultDb,
+  db: DB = defaultDb
 ): Promise<void> {
   if (!vapidPublic || !vapidPrivate) return;
   // Collect referenced userIds for potential prefetching (unused for now)
 
   const userIds = messages.flatMap((m) =>
-    Array.isArray(m.to) ? m.to : [m.to],
+    Array.isArray(m.to) ? m.to : [m.to]
   );
   const userToSubs = await getWebPushSubscriptionsForUsers(userIds, db);
   const tasks: Promise<unknown>[] = [];
@@ -146,7 +138,7 @@ export async function sendWebPushToUsers(
                 },
               });
             })
-            .catch(() => undefined),
+            .catch(() => undefined)
         );
       }
     }
@@ -157,7 +149,7 @@ export async function sendWebPushToUsers(
 export async function sendCappedWebPushToUsers(
   messages: (Omit<ExpoPushMessage, "to"> & { to: string | string[] })[],
   maxPerDay = 3,
-  db: DB = defaultDb,
+  db: DB = defaultDb
 ): Promise<void> {
   const now = new Date();
   const since = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -170,7 +162,7 @@ export async function sendCappedWebPushToUsers(
       tasks.push(
         (async () => {
           await sendWebPushToUsers([{ ...msg, to: userId }], db);
-        })(),
+        })()
       );
     }
   }

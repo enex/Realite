@@ -14,7 +14,7 @@ RUN bun install --frozen-lockfile
 COPY . .
 
 # Build the application (if needed)
-RUN bun run build:web || true
+RUN bun run build:web
 
 # Expose the port the server runs on
 EXPOSE 3000
