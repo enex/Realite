@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Realite",
-    "slug": "Realite",
+    "slug": "realite",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -12,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "app.realite",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -38,6 +39,12 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "cdab1a3a-1672-4b6b-855f-c906c806bc85"
+      }
+    },
+    "owner": "enex"
   }
 }

@@ -429,7 +429,7 @@ export const es = builder.store({
     },
   },
   onEvent: async (event) => {
-    const client = getPostHogClient();
+    const client = await getPostHogClient();
     if (!client) return;
     const isSystemEvent = !event.actor;
     const distinctId = event.actor || "system";
