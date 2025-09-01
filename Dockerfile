@@ -18,9 +18,13 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV EXPO_NO_TELEMETRY=1
 ENV EXPO_NO_TELEMETRY_DETACH=1
+ENV EXPO_OFFLINE=1
 
-# Build the application (if needed)
-RUN bun run build:web
+# Install Node.js to run Expo CLI with Node for export
+RUN apk add --no-cache nodejs npm
+
+# Build the application (web export) using Node to avoid Bun/Metro resolution issues
+RUN node node_modules/@expo/cli/build/bin/cli export --platform web
 
 # Expose the port the server runs on
 EXPOSE 3000
