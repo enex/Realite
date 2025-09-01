@@ -13,15 +13,17 @@ RUN bun install --frozen-lockfile
 # Copy source code
 COPY . .
 
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV EXPO_NO_TELEMETRY=1
+ENV EXPO_NO_TELEMETRY_DETACH=1
+
 # Build the application (if needed)
 RUN bun run build:web
 
 # Expose the port the server runs on
 EXPOSE 3000
-
-# Set environment variables
-ENV NODE_ENV=production
-ENV PORT=3000
 
 # Start the server
 CMD ["bun", "run", "server.ts"]
