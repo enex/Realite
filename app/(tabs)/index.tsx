@@ -1,16 +1,18 @@
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Platform,
   Pressable,
   RefreshControl,
-  Text,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+
+import { Button, buttonTextVariants } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 
 import orpc from "@/client/orpc";
 import AIPlanBottomSheet, {
@@ -397,7 +399,7 @@ export default function PlansScreen() {
                   alignItems: "center",
                   justifyContent: "center",
                   borderWidth: 1,
-                  borderColor: "#E5E5EA",
+                  borderColor: "#6366F1",
                   ...shadows.small,
                 }}
               >
@@ -461,23 +463,23 @@ export default function PlansScreen() {
 
             {/* What is a plan */}
             <WhatIsAPlan />
-            <Pressable
+            <Button
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 aiPlanBottomSheetRef.current?.present();
               }}
-              style={{
-                backgroundColor: "#007AFF",
-                borderRadius: 12,
-                paddingHorizontal: 20,
-                paddingVertical: 12,
-                marginTop: 8,
-              }}
+              variant="default"
+              size="lg"
             >
-              <Text style={{ color: "white", fontWeight: "600", fontSize: 16 }}>
+              <Text
+                className={buttonTextVariants({
+                  variant: "default",
+                  size: "lg",
+                })}
+              >
                 Plan erstellen
               </Text>
-            </Pressable>
+            </Button>
           </View>
         )}
       </Animated.ScrollView>
@@ -525,25 +527,25 @@ export default function PlansScreen() {
       )}
 
       {/* AI Plan Bottom Sheet */}
-        <AIPlanBottomSheet
-          ref={aiPlanBottomSheetRef}
-          onPlanCreated={(plan: any) => {
-            console.log("Plan created:", plan);
-            // Refresh the plans list so the new plan appears
-            queryClient.invalidateQueries({
-              queryKey: orpc.plan.myPlans.queryOptions({
-                input: filter ?? {},
-              }).queryKey,
-            });
-            // Navigate to the plan details for quick editing
-            if (plan?.id) {
-              // Slight defer to ensure bottom sheet dismiss animation doesn't conflict
-              setTimeout(() => {
-                router.push(`/plan/${plan.id}` as any);
-              }, 0);
-            }
-          }}
-        />
+      <AIPlanBottomSheet
+        ref={aiPlanBottomSheetRef}
+        onPlanCreated={(plan: any) => {
+          console.log("Plan created:", plan);
+          // Refresh the plans list so the new plan appears
+          queryClient.invalidateQueries({
+            queryKey: orpc.plan.myPlans.queryOptions({
+              input: filter ?? {},
+            }).queryKey,
+          });
+          // Navigate to the plan details for quick editing
+          if (plan?.id) {
+            // Slight defer to ensure bottom sheet dismiss animation doesn't conflict
+            setTimeout(() => {
+              router.push(`/plan/${plan.id}` as any);
+            }, 0);
+          }
+        }}
+      />
 
       {/* Filter Bottom Sheet */}
       <PlanFilterBottomSheet

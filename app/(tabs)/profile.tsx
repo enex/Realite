@@ -10,6 +10,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  Switch,
   Text,
   TextInput,
   View,
@@ -169,7 +170,7 @@ export default function ProfileScreen() {
         >
           <View className="px-6 pt-4 flex-col gap-y-8">
             <View className="items-center">
-              <View className="h-24 w-24 rounded-full bg-gray-100 dark:bg-gray-700 items-center justify-center mb-3">
+              <View className="h-24 w-24 rounded-full bg-white dark:bg-gray-700 items-center justify-center mb-3">
                 <ThemedText className="text-3xl">👤</ThemedText>
               </View>
             </View>
@@ -206,10 +207,8 @@ export default function ProfileScreen() {
                     {(me.data as any)?.phoneNumber || "—"}
                   </ThemedText>
                   <Link href="/profile/change-phone" asChild>
-                    <Pressable className="rounded-lg border border-blue-300 dark:border-blue-700/50 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5">
-                      <ThemedText className="text-blue-700 dark:text-blue-300">
-                        Ändern
-                      </ThemedText>
+                    <Pressable className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5">
+                      <Text className="text-primary">Ändern</Text>
                     </Pressable>
                   </Link>
                 </View>
@@ -224,17 +223,17 @@ export default function ProfileScreen() {
                     <Pressable
                       key={g}
                       onPress={() => setGender(g)}
-                      className={`rounded-xl border px-3 py-2 ${gender === g ? "bg-blue-600 border-blue-600" : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"}`}
+                      className={`rounded-xl border px-3 py-2 ${gender === g ? "bg-primary border-primary" : "bg-transparent"}`}
                     >
-                      <ThemedText
+                      <Text
                         className={
                           gender === g
-                            ? "text-white"
-                            : "text-gray-800 dark:text-gray-200"
+                            ? "text-primary-foreground"
+                            : "text-foreground"
                         }
                       >
                         {GENDER_LABEL[g]}
-                      </ThemedText>
+                      </Text>
                     </Pressable>
                   ))}
                 </View>
@@ -251,17 +250,17 @@ export default function ProfileScreen() {
                     <Pressable
                       key={rs}
                       onPress={() => setRelationshipStatus(rs)}
-                      className={`rounded-xl border px-3 py-2 ${relationshipStatus === rs ? "bg-blue-600 border-blue-600" : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"}`}
+                      className={`rounded-xl border px-3 py-2 ${relationshipStatus === rs ? "bg-primary border-primary" : "border-separate bg-transparent"}`}
                     >
-                      <ThemedText
+                      <Text
                         className={
                           relationshipStatus === rs
-                            ? "text-white"
-                            : "text-gray-800 dark:text-gray-200"
+                            ? "text-primary-foreground"
+                            : "text-foreground"
                         }
                       >
                         {REL_LABEL[rs]}
-                      </ThemedText>
+                      </Text>
                     </Pressable>
                   ))}
                 </View>
@@ -305,11 +304,11 @@ export default function ProfileScreen() {
               </ThemedText>
               <Pressable
                 onPress={openNotificationSettings}
-                className="rounded-xl border border-blue-300 dark:border-blue-700/50 bg-blue-50 dark:bg-blue-900/30 px-4 py-3"
+                className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
               >
-                <ThemedText className="text-blue-700 dark:text-blue-300">
+                <Text className="text-primary">
                   Benachrichtigungen verwalten
-                </ThemedText>
+                </Text>
               </Pressable>
             </View>
 
@@ -341,14 +340,19 @@ function ToggleRow({
       <ThemedText className="text-gray-700 dark:text-gray-300">
         {label}
       </ThemedText>
-      <Pressable
-        accessibilityRole="switch"
-        accessibilityState={{ checked: value }}
-        onPress={() => onChange(!value)}
-        className={`h-8 w-14 rounded-full ${value ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-700"} items-${value ? "end" : "start"} justify-center px-1`}
-      >
-        <View className="h-6 w-6 rounded-full bg-white dark:bg-gray-200" />
-      </Pressable>
+      <Switch
+        value={value}
+        onValueChange={onChange}
+        trackColor={{ false: "#D1D5DB", true: "#6366F1" }}
+        thumbColor={
+          Platform.OS === "android"
+            ? value
+              ? "#ffffff"
+              : "#f4f4f5"
+            : undefined
+        }
+        ios_backgroundColor="#D1D5DB"
+      />
     </View>
   );
 }
