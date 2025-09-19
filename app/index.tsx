@@ -17,7 +17,7 @@ export default function NativeLanding() {
   }, [session, isLoading]);
 
   return (
-    <View className="flex-1 bg-white justify-center items-center px-8">
+    <View className="bg-white justify-center items-center px-8 flex-1">
       {/* Logo/Icon Area */}
       <View className="items-center mb-16">
         <View className="flex-row items-center mb-4">
@@ -95,7 +95,7 @@ export default function NativeLanding() {
           className="bg-green-600 py-4 rounded-2xl active:scale-95 transition-all"
           onPress={() =>
             Linking.openURL(
-              "https://whatsapp.com/channel/0029Vb5w20yKwqSOem15d11O"
+              "https://whatsapp.com/channel/0029Vb5w20yKwqSOem15d11O",
             )
           }
         >

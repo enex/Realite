@@ -25,15 +25,35 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
+## Demo-Nutzer
 
-When you're ready, run:
+Für Testzwecke und Store-Reviews stehen mehrere Demo-Nutzer zur Verfügung:
 
-```bash
-npm run reset-project
-```
+### Demo-Nutzer 1: Store Review User
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+- Telefonnummer: `+49 555 1111111` (oder `05551111111`)
+- Verifizierungscode: `123456`
+- Zweck: Für App Store Reviews
+
+### Demo-Nutzer 2: Lokaler Testbenutzer
+
+- Telefonnummer: `+49 555 2222222` (oder `05552222222`)
+- Verifizierungscode: `123456`
+- Zweck: Für lokales Testen und Entwicklung
+
+### Demo-Nutzer 3: Zusätzlicher Testnutzer
+
+- Telefonnummer: `+49 555 3333333` (oder `05553333333`)
+- Verifizierungscode: `123456`
+- Zweck: Für Tests mit mehreren Nutzern
+
+### US Demo-Nutzer 1 & 2
+
+- Telefonnummer: `+1 202 555-0001` und `+1 202 555-0002`
+- Verifizierungscode: `123456`
+- Zweck: Internationale Testnummern
+
+**Hinweis:** Diese Telefonnummern sind valide aber speziell für Tests reserviert und werden niemals an echte Personen vergeben. Bei Verwendung dieser Nummern wird keine SMS versendet, und der Verifizierungscode ist fest eingestellt.
 
 ## Learn more
 
