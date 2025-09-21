@@ -24,24 +24,28 @@ export default function OnboardingLayout() {
         name="welcome"
         options={{
           title: "Willkommen",
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="how-it-works"
         options={{
           title: "So funktioniert's",
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="create-activity"
         options={{
           title: "Erste Aktivität",
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="profile-setup"
         options={{
           title: "Profil einrichten",
+          headerShown: false,
         }}
       />
     </Stack>

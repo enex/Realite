@@ -10,7 +10,7 @@ import BottomSheet, {
   BottomSheetScrollView,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useColorScheme } from "nativewind";
 import React, { useCallback, useMemo, useRef, useState } from "react";
@@ -267,13 +267,10 @@ export default function CreateActivityScreen() {
 
   const createMeet = useMutation(
     orpc.plan.create.mutationOptions({
-      input: {
-        inputText: "Ich möchte mit einem Freund Bowling spielen",
-      },
       onSuccess: (_result) => {
         // Mark onboarding as completed and navigate after cache invalidation
         void completeOnboarding
-          .mutateAsync()
+          .mutateAsync({})
           .catch(() => {})
           .finally(() => {
             router.replace("/" as never);
@@ -284,12 +281,12 @@ export default function CreateActivityScreen() {
       },
     })
   );
-
+  const queryClient = useQueryClient();
   const completeOnboarding = useMutation(
     orpc.user.completeOnboarding.mutationOptions({
       onSuccess: async () => {
         // Invalidate user cache to ensure fresh data
-        await utils.user.me.invalidate();
+        await queryClient.invalidateQueries(orpc.user.me.queryOptions({}));
       },
       onError: (error) => {
         console.error("Error completing onboarding:", error);
@@ -342,7 +339,7 @@ export default function CreateActivityScreen() {
     switch (currentStep) {
       case "activity":
         // Mark onboarding as completed when skipping
-        await completeOnboarding.mutateAsync().catch(() => {});
+        await completeOnboarding.mutateAsync({}).catch(() => {});
         router.replace("/" as never);
         break;
       case "description":
