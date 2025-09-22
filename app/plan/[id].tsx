@@ -101,6 +101,27 @@ export default function PlanDetails() {
       },
     })
   );
+  const participateInPlan = useMutation(
+    orpc.plan.participate.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries();
+        Alert.alert(
+          "Erfolgreich teilgenommen!",
+          "Der Plan wurde zu deinen Plänen hinzugefügt."
+        );
+      },
+      onError: (error: any) => {
+        if (error?.code === "ALREADY_OWNER") {
+          Alert.alert("Du besitzt diesen Plan bereits");
+        } else {
+          Alert.alert(
+            "Fehler",
+            "Konnte nicht am Plan teilnehmen. Bitte versuche es erneut."
+          );
+        }
+      },
+    })
+  );
 
   const activity = (plan?.activity ?? undefined) as ActivityId | undefined;
   const [c1, c2, c3] = getActivityGradient(activity);
@@ -144,7 +165,7 @@ export default function PlanDetails() {
         { text: "Abbrechen", style: "cancel" },
         {
           text: "Speichern",
-          onPress: (value) => {
+          onPress: (value: string | undefined) => {
             if (value !== undefined) onSubmit(value);
           },
         },
@@ -228,27 +249,74 @@ export default function PlanDetails() {
               <IconSymbol name={icon} size={120} color="#000000" />
             </View>
 
-            <Pressable
-              onPress={() => router.back()}
-              style={{ marginBottom: spacing.md, alignSelf: "flex-start" }}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: spacing.md,
+              }}
             >
-              <BlurView
-                intensity={80}
-                style={{
-                  borderRadius: 12,
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  overflow: "hidden",
-                }}
+              <Pressable
+                onPress={() => router.back()}
+                style={{ alignSelf: "flex-start" }}
               >
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <IconSymbol name="chevron.left" size={14} color="#1C1C1E" />
-                  <Text style={{ marginLeft: 4, color: "#1C1C1E" }}>
-                    Zurück
-                  </Text>
-                </View>
-              </BlurView>
-            </Pressable>
+                <BlurView
+                  intensity={80}
+                  style={{
+                    borderRadius: 12,
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    overflow: "hidden",
+                  }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <IconSymbol name="chevron.left" size={14} color="#1C1C1E" />
+                    <Text style={{ marginLeft: 4, color: "#1C1C1E" }}>
+                      Zurück
+                    </Text>
+                  </View>
+                </BlurView>
+              </Pressable>
+
+              {!isOwner && (
+                <Pressable
+                  onPress={() => participateInPlan.mutate({ id })}
+                  disabled={participateInPlan.isPending}
+                  style={{
+                    backgroundColor: "rgba(255,255,255,0.9)",
+                    borderRadius: 12,
+                    paddingHorizontal: 16,
+                    paddingVertical: 8,
+                    ...shadows.small,
+                  }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <IconSymbol
+                      name={
+                        participateInPlan.isPending
+                          ? "clock"
+                          : "person.badge.plus"
+                      }
+                      size={16}
+                      color="#007AFF"
+                    />
+                    <Text
+                      style={{
+                        marginLeft: 6,
+                        color: "#007AFF",
+                        ...typography.subheadline,
+                        fontWeight: "600",
+                      }}
+                    >
+                      {participateInPlan.isPending
+                        ? "Teilnehmen..."
+                        : "Teilnehmen"}
+                    </Text>
+                  </View>
+                </Pressable>
+              )}
+            </View>
 
             <Pressable onPress={handleEditTitle} disabled={!isOwner}>
               <Text style={{ ...typography.largeTitle, color: "#1C1C1E" }}>

@@ -55,6 +55,15 @@ Für Testzwecke und Store-Reviews stehen mehrere Demo-Nutzer zur Verfügung:
 
 **Hinweis:** Diese Telefonnummern sind valide aber speziell für Tests reserviert und werden niemals an echte Personen vergeben. Bei Verwendung dieser Nummern wird keine SMS versendet, und der Verifizierungscode ist fest eingestellt.
 
+## Personas fürs Testen
+
+Jeder Demonutzer hat eine Persona zugeordnet damit man während der Entwicklung
+es einfach Hat szenarien nach zu stellen
+
+1. Simon - Was ich machen würde
+2. Anna - Studentin die Single ist, Laufen geht und Lerngruppen sachen Macht
+3. Louis - Stundent der Calisthenics macht
+
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:

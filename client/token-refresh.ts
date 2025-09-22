@@ -51,7 +51,7 @@ export function useTokenRefresh() {
       return;
     }
 
-    const currentToken = getToken();
+    const currentToken = await getToken();
     if (!currentToken || !shouldRefreshToken(currentToken)) {
       return;
     }

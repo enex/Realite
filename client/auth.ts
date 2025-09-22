@@ -45,7 +45,7 @@ function decodeJWTLocally(token: string): JWTPayload | null {
 }
 
 // Query function für lokale Session-Initialisierung
-function getLocalSession(): JWTPayload | null {
+async function getLocalSession(): Promise<JWTPayload | null> {
   const token = getToken();
   if (!token) return null;
   return decodeJWTLocally(token);

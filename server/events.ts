@@ -55,6 +55,11 @@ export interface RealiteEvents {
     rating?: number; // rating of the realization, e.g. 5 stars
     repeat?: boolean; // if true, the user wants to repeat the plan
   };
+  // when a user participates in a plan by copying it
+  "realite.plan.participated": {
+    originalPlanId: string; // id of the original plan that was copied
+    originalCreatorId: string; // id of the user who created the original plan
+  };
 
   "realite.user.registered": {
     phoneNumber?: string;

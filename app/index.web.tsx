@@ -1,7 +1,18 @@
+import { useSession } from "@/client/auth";
+import { router } from "expo-router";
 import React, { useEffect } from "react";
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 
 export default function WebLanding() {
+  const { session, isLoading } = useSession();
+  useEffect(() => {
+    if (isLoading || !session) return;
+    if (session.onboarding?.completed) {
+      router.replace("/(tabs)");
+    } else {
+      router.replace("/onboarding/welcome");
+    }
+  }, [session, isLoading]);
   useEffect(() => {
     // Set the page title for web
     if (typeof document !== "undefined") {

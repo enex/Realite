@@ -1,4 +1,4 @@
-import { activities, activityIds } from "@/shared/activities";
+import { activities, activityIds, type ActivityId } from "@/shared/activities";
 import { coreRepetitionSchema } from "@/shared/validation/plan";
 import { openai } from "@ai-sdk/openai";
 import { generateText, stepCountIs, tool } from "ai";
@@ -295,5 +295,63 @@ export const planRouter = {
     .handler(async ({ context, input, signal }) => {
       const plans = await context.es.projections.plan.findPlans(input);
       return plans;
+    }),
+  participate: protectedRoute
+    .errors({
+      NOT_FOUND: { message: "Plan not found" },
+      ALREADY_OWNER: { message: "You are already the owner of this plan" },
+    })
+    .input(z.object({ id: z.string() }))
+    .handler(async ({ context, input, errors }) => {
+      const originalPlan = await context.es.projections.plan.get(input.id);
+      if (!originalPlan) throw errors.NOT_FOUND();
+
+      // Check if user is already the owner
+      if (originalPlan.creatorId === context.session.id) {
+        throw errors.ALREADY_OWNER();
+      }
+
+      const newPlanId = uuidv7();
+
+      // Create the new plan with the same data but new creator
+      const planData: RealiteEvents["realite.plan.created"] = {
+        activity: originalPlan.activity as ActivityId,
+        startDate: originalPlan.startDate.toISOString(),
+        endDate: originalPlan.endDate?.toISOString(),
+        title: originalPlan.title,
+        description: originalPlan.description || undefined,
+        url: originalPlan.url || undefined,
+        gathering: undefined,
+        locations: originalPlan.locations?.map((loc) => ({
+          title: loc.title || "",
+          address: loc.address || undefined,
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          url: loc.url || undefined,
+          description: loc.description || undefined,
+          category: loc.category || undefined,
+        })),
+        repetition: originalPlan.repetition as any,
+        maybe: originalPlan.maybe,
+      };
+
+      // Emit the plan created event
+      await context.es.add({
+        type: "realite.plan.created",
+        subject: newPlanId,
+        data: planData,
+      });
+
+      // Emit the participation event
+      await context.es.add({
+        type: "realite.plan.participated",
+        subject: newPlanId,
+        data: {
+          originalPlanId: input.id,
+          originalCreatorId: originalPlan.creatorId,
+        },
+      });
+
+      return { id: newPlanId, ...planData };
     }),
 };
