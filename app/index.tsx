@@ -1,5 +1,6 @@
 import { useSession } from "@/client/auth";
 import { router } from "expo-router";
+import { useFeatureFlag } from "posthog-react-native";
 import React, { useEffect } from "react";
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,16 +13,17 @@ export default function NativeLanding() {
   };
 
   const { session, isLoading } = useSession();
+  const onboardingEnabled = useFeatureFlag("onboarding");
   useEffect(() => {
     if (isLoading || !session) return;
 
     // Prüfe Onboarding-Status
-    if (session.onboarding?.completed) {
+    if (session.onboarding?.completed && !onboardingEnabled) {
       router.replace("/(tabs)");
     } else {
       router.replace("/onboarding/welcome");
     }
-  }, [session, isLoading]);
+  }, [session, isLoading, onboardingEnabled]);
 
   return (
     <SafeAreaView className="bg-white flex-1">
