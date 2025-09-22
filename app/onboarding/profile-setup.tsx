@@ -37,7 +37,7 @@ export default function ProfileSetupScreen() {
   const updateProfile = useMutation(
     orpc.user.update.mutationOptions({
       onSuccess: () => {
-        router.push("/onboarding/create-activity" as never);
+        router.push("/onboarding/calendar-sync" as never);
       },
       onError: (error) => {
         Alert.alert("Fehler", error.message);
@@ -55,7 +55,7 @@ export default function ProfileSetupScreen() {
   };
 
   const handleSkip = () => {
-    router.push("/onboarding/create-activity" as never);
+    router.push("/onboarding/calendar-sync" as never);
   };
 
   return (

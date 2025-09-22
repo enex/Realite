@@ -35,9 +35,16 @@ export default function OnboardingLayout() {
         }}
       />
       <Stack.Screen
-        name="create-activity"
+        name="calendar-sync"
         options={{
-          title: "Erste Aktivität",
+          title: "Kalender verbinden",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="permissions"
+        options={{
+          title: "Berechtigungen",
           headerShown: false,
         }}
       />

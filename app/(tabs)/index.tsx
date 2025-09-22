@@ -410,7 +410,6 @@ export default function PlansScreen() {
                 />
               </Pressable>
             </View>
-            <Text>{JSON.stringify(plans, null, 2)}</Text>
           </View>
         )}
         {groupedPlans.map((group, index) => (

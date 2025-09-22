@@ -9,34 +9,34 @@ export default function HowItWorksScreen() {
 
   const steps = [
     {
-      icon: "add-circle",
-      title: "1. Aktivität vorschlagen",
+      icon: "event",
+      title: "1. Termine importieren",
       description:
-        "Erstelle einen Vorschlag für eine Aktivität, die du gerne machen möchtest. Wähle aus beliebten Spots oder schlage neue vor.",
+        "Verbinde deinen Kalender und importiere deine Termine automatisch als Pläne in Realite.",
+    },
+    {
+      icon: "people",
+      title: "2. Freunde einladen",
+      description:
+        "Lade deine Freunde zu deinen Plänen ein oder finde gemeinsame Zeitfenster für Aktivitäten.",
     },
     {
       icon: "notifications",
-      title: "2. Andere benachrichtigen",
+      title: "3. Benachrichtigungen erhalten",
       description:
-        "Deine Kontakte und passende Personen in der Nähe werden über deinen Vorschlag informiert.",
+        "Erhalte Erinnerungen für deine Pläne und Updates über neue Einladungen oder Änderungen.",
     },
     {
-      icon: "thumb-up",
-      title: "3. Interesse zeigen",
+      icon: "location-on",
+      title: "4. Lokale Aktivitäten entdecken",
       description:
-        "Andere können Interesse an deiner Aktivität zeigen oder eigene Zeitvorschläge machen.",
-    },
-    {
-      icon: "event",
-      title: "4. Realite bestätigen",
-      description:
-        "Sobald genug Interesse da ist, wird aus dem Vorschlag eine konkrete Realite mit Zeit und Ort.",
+        "Finde spannende Aktivitäten in deiner Nähe und lerne neue Leute kennen.",
     },
     {
       icon: "verified",
-      title: "5. Teilnahme bestätigen",
+      title: "5. Echte Verbindungen schaffen",
       description:
-        "Nach der Realite bestätigt ihr gegenseitig eure Teilnahme, um eure Zuverlässigkeitsbewertung zu verbessern.",
+        "Triff dich mit Menschen, teile Erlebnisse und baue echte, nachhaltige Beziehungen auf.",
     },
   ];
 
@@ -75,11 +75,12 @@ export default function HowItWorksScreen() {
 
           <View className="mt-8 rounded-lg bg-primary/10 p-4">
             <Text className="mb-2 font-semibold text-primary">
-              💡 Tipp: Zuverlässigkeit ist wichtig!
+              💡 Tipp: Starte mit deinen bestehenden Terminen!
             </Text>
             <Text className="text-muted-foreground">
-              Je zuverlässiger du bist, desto mehr Vertrauen baust du auf und
-              desto mehr Leute werden an deinen Aktivitäten teilnehmen wollen.
+              Verbinde deinen Kalender, um deine Termine automatisch zu
+              importieren und Freunde zu deinen Plänen einzuladen. So wird
+              Realite zu einem natürlichen Teil deines Alltags.
             </Text>
           </View>
         </View>

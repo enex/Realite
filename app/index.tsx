@@ -14,7 +14,13 @@ export default function NativeLanding() {
   const { session, isLoading } = useSession();
   useEffect(() => {
     if (isLoading || !session) return;
-    router.replace("/(tabs)");
+
+    // Prüfe Onboarding-Status
+    if (session.onboarding?.completed) {
+      router.replace("/(tabs)");
+    } else {
+      router.replace("/onboarding/welcome");
+    }
   }, [session, isLoading]);
 
   return (

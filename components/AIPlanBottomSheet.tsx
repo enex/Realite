@@ -1,5 +1,7 @@
 import orpc, { client } from "@/client/orpc";
+import { Button } from "@/components/ui/button";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Text } from "@/components/ui/text";
 import { useLocation } from "@/hooks/useLocation";
 import {
   BottomSheetModal,
@@ -9,7 +11,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import React, { forwardRef, useCallback, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Alert, View } from "react-native";
 
 type AIPlanBottomSheetProps = {
   onPlanCreated?: (plan: any) => void;
@@ -57,7 +59,7 @@ const AIPlanBottomSheet = forwardRef<
   const { latitude, longitude, hasPermission } = useLocation();
   const handleSubmit = useCallback(async () => {
     if (!text.trim()) {
-      Alert.alert("Please enter what you want to do");
+      Alert.alert("Bitte geben Sie ein, was Sie tun möchten");
       return;
     }
 
@@ -92,13 +94,16 @@ const AIPlanBottomSheet = forwardRef<
         );
       } else {
         Alert.alert(
-          "Error",
-          "Could not create a plan from your request. Please try again."
+          "Fehler",
+          "Konnte keinen Plan aus Ihrer Anfrage erstellen. Bitte versuchen Sie es erneut."
         );
       }
     } catch (error) {
       console.error("Error creating AI plan:", error);
-      Alert.alert("Error", "Something went wrong. Please try again.");
+      Alert.alert(
+        "Fehler",
+        "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -125,53 +130,23 @@ const AIPlanBottomSheet = forwardRef<
         backgroundColor: "#C6C6C8",
       }}
     >
-      <BottomSheetView
-        style={{
-          flex: 1,
-          paddingHorizontal: 24,
-          paddingTop: 16,
-          paddingBottom: 34,
-        }}
-      >
+      <BottomSheetView className="flex-1 px-6 pt-4 pb-8">
         {/* Header */}
-        <View style={{ marginBottom: 20 }}>
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "700",
-              color: "#1C1C1E",
-              marginBottom: 6,
-            }}
-          >
-            What do you want to do?
+        <View className="mb-5">
+          <Text variant="h3" className="text-foreground mb-1.5">
+            Was möchten Sie tun?
           </Text>
-          <Text
-            style={{
-              fontSize: 16,
-              color: "#8E8E93",
-              lineHeight: 22,
-            }}
-          >
-            Tell me what you&apos;d like to do and I&apos;ll help you create a
-            plan
+          <Text variant="muted" className="text-base leading-6">
+            Sagen Sie mir, was Sie tun möchten, und ich helfe Ihnen dabei, einen
+            Plan zu erstellen
           </Text>
         </View>
 
         {/* Text Input */}
         <BottomSheetTextInput
-          style={{
-            backgroundColor: "white",
-            borderRadius: 12,
-            padding: 16,
-            fontSize: 16,
-            color: "#1C1C1E",
-            minHeight: 120,
-            textAlignVertical: "top",
-            borderWidth: 1,
-            borderColor: "#E5E5EA",
-            marginBottom: 16,
-          }}
-          placeholder="e.g., I want to go hiking this weekend with friends, or have a cozy dinner at home..."
+          className="bg-background rounded-xl p-4 text-base text-foreground min-h-[120px] border border-input mb-4"
+          style={{ textAlignVertical: "top" }}
+          placeholder="z.B. Ich möchte dieses Wochenende mit Freunden wandern gehen oder ein gemütliches Abendessen zu Hause haben..."
           placeholderTextColor="#8E8E93"
           multiline
           value={text}
@@ -180,87 +155,41 @@ const AIPlanBottomSheet = forwardRef<
         />
 
         {/* Character Counter */}
-        <Text
-          style={{
-            fontSize: 12,
-            color: "#8E8E93",
-            textAlign: "right",
-            marginBottom: 20,
-          }}
-        >
+        <Text variant="small" className="text-muted-foreground text-right mb-5">
           {text.length}/500
         </Text>
 
         {/* Action Buttons */}
-        <View style={{ flexDirection: "row", gap: 12 }}>
+        <View className="flex-row gap-3">
           {/* Cancel Button */}
-          <Pressable
+          <Button
+            variant="outline"
+            className="flex-1"
             onPress={handleDismissModalPress}
-            style={{
-              flex: 1,
-              backgroundColor: "#F2F2F7",
-              borderRadius: 12,
-              paddingVertical: 16,
-              alignItems: "center",
-              borderWidth: 1,
-              borderColor: "#E5E5EA",
-            }}
             disabled={isLoading}
           >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "#8E8E93",
-              }}
-            >
-              Cancel
-            </Text>
-          </Pressable>
+            <Text>Abbrechen</Text>
+          </Button>
 
           {/* Create Plan Button */}
-          <Pressable
+          <Button
+            variant="default"
+            className="flex-[2]"
             onPress={handleSubmit}
-            style={{
-              flex: 2,
-              backgroundColor: isLoading ? "#B0B0B0" : "#007AFF",
-              borderRadius: 12,
-              paddingVertical: 16,
-              alignItems: "center",
-              justifyContent: "center",
-              flexDirection: "row",
-              gap: 8,
-            }}
             disabled={isLoading || !text.trim()}
           >
             {isLoading ? (
               <>
                 <ActivityIndicator color="white" size="small" />
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: "600",
-                    color: "white",
-                  }}
-                >
-                  Creating...
-                </Text>
+                <Text>Erstelle...</Text>
               </>
             ) : (
               <>
                 <IconSymbol name="sparkles" size={16} color="white" />
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: "600",
-                    color: "white",
-                  }}
-                >
-                  Create with AI
-                </Text>
+                <Text>Mit KI erstellen</Text>
               </>
             )}
-          </Pressable>
+          </Button>
         </View>
       </BottomSheetView>
     </BottomSheetModal>

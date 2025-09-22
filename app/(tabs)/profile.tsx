@@ -2,7 +2,7 @@ import rpc from "@/client/orpc";
 import { genders, relationshipStatuses } from "@/shared/validation";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
@@ -21,6 +21,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const me = useQuery(rpc.auth.me.queryOptions());
 
   const [name, setName] = useState("");
@@ -309,6 +310,25 @@ export default function ProfileScreen() {
                 <Text className="text-primary">
                   Benachrichtigungen verwalten
                 </Text>
+              </Pressable>
+            </View>
+
+            <View className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-5 shadow-sm">
+              <ThemedText
+                type="subtitle"
+                className="text-gray-900 dark:text-white mb-2"
+              >
+                Onboarding
+              </ThemedText>
+              <ThemedText className="mb-3 text-gray-600 dark:text-gray-400">
+                Wiederhole das Onboarding, um deine Einstellungen und
+                Berechtigungen zu konfigurieren.
+              </ThemedText>
+              <Pressable
+                onPress={() => router.push("/onboarding/welcome")}
+                className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
+              >
+                <Text className="text-primary">Onboarding wiederholen</Text>
               </Pressable>
             </View>
 
