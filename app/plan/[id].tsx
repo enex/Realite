@@ -3,6 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Alert,
+  Image,
   Pressable,
   ScrollView,
   Text,
@@ -12,7 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useSession } from "@/client/auth";
-import orpc from "@/client/orpc";
+import { orpc } from "@/client/orpc";
 import { shadows } from "@/components/PlanCard";
 import SmartDateTimePicker from "@/components/SmartDateTimePicker";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -22,8 +23,9 @@ import {
   type ActivityId,
 } from "@/shared/activities";
 import { formatLocalDateTime } from "@/shared/utils/datetime";
+import { calculateDistance, isWithinRadius } from "@/shared/utils/distance";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import tinycolor from "tinycolor2";
 
 const typography = {
@@ -149,9 +151,240 @@ export default function PlanDetails() {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [showActivityPicker, setShowActivityPicker] = useState(false);
+  // Overlap UI state
+  const [overlapRadiusM] = useState(1000);
 
   // Ensure locations is always an array to prevent runtime errors
-  const safeLocations = Array.isArray(plan?.locations) ? plan.locations : [];
+  const safeLocations = useMemo(
+    () => (Array.isArray(plan?.locations) ? plan.locations : []),
+    [plan?.locations]
+  );
+
+  // Compute time window for overlap search
+  const { windowStartISO, windowEndISO } = useMemo(() => {
+    if (!plan)
+      return {
+        windowStartISO: undefined as string | undefined,
+        windowEndISO: undefined as string | undefined,
+      };
+    const start = new Date(plan.startDate as unknown as string);
+    const end = plan.endDate
+      ? new Date(plan.endDate as unknown as string)
+      : new Date(start.getTime() + 2 * 60 * 60 * 1000);
+    // Expand window a bit to include slight differences
+    const windowStart = new Date(start.getTime() - 3 * 60 * 60 * 1000);
+    const windowEnd = new Date(end.getTime() + 3 * 60 * 60 * 1000);
+    return {
+      windowStartISO: windowStart.toISOString(),
+      windowEndISO: windowEnd.toISOString(),
+    };
+  }, [plan]);
+
+  const center = useMemo(() => {
+    const first = safeLocations[0];
+    if (
+      first &&
+      typeof first.latitude === "number" &&
+      typeof first.longitude === "number"
+    ) {
+      return { latitude: first.latitude, longitude: first.longitude };
+    }
+    return undefined as { latitude: number; longitude: number } | undefined;
+  }, [safeLocations]);
+
+  // Fetch overlapping candidates near in time/location/activity
+  const { data: overlapsRaw } = useQuery(
+    orpc.plan.find.queryOptions({
+      input: {
+        startDate: windowStartISO
+          ? (new Date(windowStartISO) as any)
+          : undefined,
+        endDate: windowEndISO ? (new Date(windowEndISO) as any) : undefined,
+        location: center
+          ? {
+              latitude: center.latitude,
+              longitude: center.longitude,
+              radius: overlapRadiusM,
+            }
+          : undefined,
+      },
+      enabled: Boolean(plan && windowStartISO && windowEndISO),
+    })
+  );
+
+  type OverlapCandidate = {
+    id: string;
+    title?: string | null;
+    startDate: string | Date;
+    endDate?: string | Date | null;
+    activity: ActivityId;
+    latitude?: number | null;
+    longitude?: number | null;
+    address?: string | null;
+    locationTitle?: string | null;
+    creatorId: string;
+  };
+
+  const overlaps: OverlapCandidate[] = useMemo(() => {
+    if (!overlapsRaw) return [];
+    const list = (overlapsRaw as any[]).filter((o) => o && o.id !== id);
+    return list as OverlapCandidate[];
+  }, [overlapsRaw, id]);
+
+  // Fetch creator profiles for overlaps
+  const uniqueCreatorIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const o of overlaps) set.add(o.creatorId);
+    return Array.from(set);
+  }, [overlaps]);
+
+  const { data: creatorProfiles } = useQuery(
+    orpc.user.getMany.queryOptions({
+      input: { ids: uniqueCreatorIds as any },
+      enabled: uniqueCreatorIds.length > 0,
+    })
+  );
+
+  const profileById = useMemo(() => {
+    const map = new Map<
+      string,
+      { id: string; name?: string; image?: string }
+    >();
+    for (const p of (creatorProfiles as any[]) ?? []) {
+      if (p?.id) map.set(p.id, p);
+    }
+    return map;
+  }, [creatorProfiles]);
+
+  // Current plan owner profile
+  const { data: ownerProfile } = useQuery(
+    orpc.user.get.queryOptions({
+      input: { id: (plan?.creatorId as any) || "" },
+      enabled: Boolean(plan?.creatorId),
+    })
+  );
+
+  type EnrichedOverlap = OverlapCandidate & {
+    diff: {
+      timeMinutes: number;
+      distanceMeters?: number;
+      differentTitle: boolean;
+    };
+    creator?: { id: string; name?: string; image?: string };
+  };
+
+  const { exactMatches, similarMatches } = useMemo(() => {
+    if (!plan)
+      return {
+        exactMatches: [] as EnrichedOverlap[],
+        similarMatches: [] as EnrichedOverlap[],
+      };
+    const baseStart = new Date(plan.startDate as unknown as string);
+    const baseEnd = plan.endDate
+      ? new Date(plan.endDate as unknown as string)
+      : new Date(baseStart.getTime() + 60 * 60 * 1000);
+    const baseTitle = (plan.title ?? "").trim().toLowerCase();
+
+    const isSameLocation = (o: OverlapCandidate) => {
+      if (!safeLocations?.length) return false;
+      for (const loc of safeLocations) {
+        const lat = Number(loc.latitude ?? NaN);
+        const lon = Number(loc.longitude ?? NaN);
+        if (
+          isFinite(lat) &&
+          isFinite(lon) &&
+          isFinite(Number(o.latitude)) &&
+          isFinite(Number(o.longitude))
+        ) {
+          if (
+            isWithinRadius(
+              lat,
+              lon,
+              Number(o.latitude),
+              Number(o.longitude),
+              50
+            )
+          )
+            return true;
+        }
+        const a = (loc.title ?? loc.address ?? "")
+          .toString()
+          .trim()
+          .toLowerCase();
+        const b = (o.locationTitle ?? o.address ?? "")
+          .toString()
+          .trim()
+          .toLowerCase();
+        if (a && b && a === b) return true;
+      }
+      return false;
+    };
+
+    const enriched: EnrichedOverlap[] = overlaps
+      .map((o) => {
+        const oStart = new Date(o.startDate as any);
+        const oEnd = o.endDate
+          ? new Date(o.endDate as any)
+          : new Date(oStart.getTime() + 60 * 60 * 1000);
+        const overlapsInTime = oStart <= baseEnd && oEnd >= baseStart;
+        if (!overlapsInTime) return null;
+        const timeMinutes =
+          Math.abs(oStart.getTime() - baseStart.getTime()) / 60000;
+        let distanceMeters: number | undefined = undefined;
+        if (
+          safeLocations?.length &&
+          isFinite(Number(o.latitude)) &&
+          isFinite(Number(o.longitude))
+        ) {
+          distanceMeters = Math.min(
+            ...safeLocations
+              .map((loc) =>
+                calculateDistance(
+                  Number(loc.latitude),
+                  Number(loc.longitude),
+                  Number(o.latitude),
+                  Number(o.longitude)
+                )
+              )
+              .filter((d) => isFinite(d))
+          );
+        }
+        const differentTitle =
+          baseTitle !== (o.title ?? "").toString().trim().toLowerCase();
+        return {
+          ...o,
+          diff: { timeMinutes, distanceMeters, differentTitle },
+          creator: profileById.get(o.creatorId),
+        } as EnrichedOverlap;
+      })
+      .filter(Boolean) as EnrichedOverlap[];
+
+    const exact: EnrichedOverlap[] = [];
+    const similar: EnrichedOverlap[] = [];
+    for (const e of enriched) {
+      const sameLoc = isSameLocation(e);
+      const isExact =
+        sameLoc &&
+        e.diff.timeMinutes <= 5 &&
+        !e.diff.differentTitle &&
+        e.activity === (plan.activity as ActivityId);
+      if (isExact) exact.push(e);
+      else similar.push(e);
+    }
+
+    exact.sort((a, b) =>
+      (a.creator?.name || "").localeCompare(b.creator?.name || "")
+    );
+    similar.sort((a, b) => {
+      const at = a.diff.timeMinutes - b.diff.timeMinutes;
+      if (at !== 0) return at;
+      const ad =
+        (a.diff.distanceMeters ?? Infinity) -
+        (b.diff.distanceMeters ?? Infinity);
+      return ad;
+    });
+    return { exactMatches: exact, similarMatches: similar };
+  }, [plan, overlaps, safeLocations, profileById]);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(locationQuery.trim()), 250);
@@ -353,7 +586,37 @@ export default function PlanDetails() {
               </Pressable>
             )}
 
-            <View style={{ height: spacing.lg }} />
+            <View style={{ height: spacing.md }} />
+
+            {/* Owner under header with spacing */}
+            <View style={{ gap: 8 }}>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+              >
+                <Avatar
+                  size={28}
+                  image={ownerProfile?.image as any}
+                  name={ownerProfile?.name as any}
+                />
+                <Text style={{ ...typography.subheadline, color: "#1C1C1E" }}>
+                  {ownerProfile?.name || "Unbekannt"}
+                </Text>
+                <View
+                  style={{
+                    backgroundColor: "#00000011",
+                    paddingHorizontal: 8,
+                    paddingVertical: 2,
+                    borderRadius: 6,
+                    marginLeft: 6,
+                  }}
+                >
+                  <Text style={{ ...typography.caption1, color: "#1C1C1E" }}>
+                    Ersteller
+                  </Text>
+                </View>
+              </View>
+              <View style={{ height: spacing.md }} />
+            </View>
 
             <View style={{ gap: spacing.sm }}>
               <InfoRow
@@ -365,11 +628,7 @@ export default function PlanDetails() {
               <InfoRow
                 icon="clock"
                 label="Endet"
-                value={
-                  plan?.endDate
-                    ? formatPlanDateLabel(plan.endDate)
-                    : "—"
-                }
+                value={plan?.endDate ? formatPlanDateLabel(plan.endDate) : "—"}
                 onPress={isOwner ? handleEditEnd : undefined}
               />
               <InfoRow
@@ -545,6 +804,56 @@ export default function PlanDetails() {
                 />
               )}
             </View>
+            {/* Overlapping Plans (header + rows, no container card) */}
+            {(exactMatches.length > 0 || similarMatches.length > 0) && (
+              <View style={{ marginTop: spacing.lg }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: spacing.sm,
+                  }}
+                >
+                  <IconSymbol name="person.2" size={16} color="#1C1C1E" />
+                  <Text
+                    style={{
+                      marginLeft: 8,
+                      ...typography.subheadline,
+                      color: "#1C1C1E",
+                    }}
+                  >
+                    Überlappende Pläne
+                  </Text>
+                </View>
+
+                {exactMatches.length > 0 && (
+                  <View style={{ gap: 8 }}>
+                    <Text style={{ ...typography.caption1, color: "#8E8E93" }}>
+                      Gleich
+                    </Text>
+                    {exactMatches.map((e) => (
+                      <OverlapRow key={e.id} item={e} accent={c3} />
+                    ))}
+                  </View>
+                )}
+
+                {similarMatches.length > 0 && (
+                  <View
+                    style={{
+                      gap: 8,
+                      marginTop: exactMatches.length > 0 ? 6 : 0,
+                    }}
+                  >
+                    <Text style={{ ...typography.caption1, color: "#8E8E93" }}>
+                      Ähnlich
+                    </Text>
+                    {similarMatches.map((e) => (
+                      <OverlapRow key={e.id} item={e} accent={c3} />
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
           </LinearGradient>
         </ScrollView>
       </SafeAreaView>
@@ -645,6 +954,153 @@ function getActivityLabel(id?: ActivityId) {
   return sub
     ? `${group.nameDe || group.name}/${sub.nameDe || sub.name}`
     : (id as string);
+}
+
+function OverlapRow({
+  item,
+  accent,
+}: {
+  item: {
+    id: string;
+    title?: string | null;
+    startDate: string | Date;
+    endDate?: string | Date | null;
+    creator?: { id: string; name?: string; image?: string };
+    diff: {
+      timeMinutes: number;
+      distanceMeters?: number;
+      differentTitle: boolean;
+    };
+  };
+  accent: string;
+}) {
+  const router = useRouter();
+  const start = new Date(item.startDate as any);
+  const timeStr = start.toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const diffs: string[] = [];
+  if (item.diff.timeMinutes > 0)
+    diffs.push(`${Math.round(item.diff.timeMinutes)} Min anders`);
+  if (
+    typeof item.diff.distanceMeters === "number" &&
+    isFinite(item.diff.distanceMeters)
+  )
+    diffs.push(`${Math.round(item.diff.distanceMeters)} m entfernt`);
+  if (item.diff.differentTitle) diffs.push("anderer Titel");
+  return (
+    <Pressable
+      onPress={() => router.push(`/plan/${item.id}` as any)}
+      style={{
+        backgroundColor: "rgba(255,255,255,0.85)",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        ...shadows.small,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            flex: 1,
+            paddingRight: 8,
+            gap: 10,
+          }}
+        >
+          <Avatar
+            size={24}
+            image={item.creator?.image as any}
+            name={item.creator?.name as any}
+          />
+          <View style={{ flex: 1 }}>
+            <Text style={{ ...typography.subheadline, color: "#1C1C1E" }}>
+              {item.title || "Plan"}
+            </Text>
+            <Text style={{ ...typography.caption1, color: "#3C3C43" }}>
+              {timeStr}
+              {item.creator?.name ? ` · ${item.creator.name}` : ""}
+            </Text>
+          </View>
+        </View>
+        {diffs.length > 0 && (
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              gap: 6,
+              maxWidth: 180,
+              justifyContent: "flex-end",
+            }}
+          >
+            {diffs.map((d, i) => (
+              <View
+                key={i}
+                style={{
+                  backgroundColor: accent + "22",
+                  borderRadius: 8,
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                }}
+              >
+                <Text style={{ ...typography.caption1, color: "#1C1C1E" }}>
+                  {d}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+    </Pressable>
+  );
+}
+
+function Avatar({
+  size = 28,
+  image,
+  name,
+}: {
+  size?: number;
+  image?: string;
+  name?: string;
+}) {
+  const initials = (name || "?")
+    .toString()
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((s) => s[0]?.toUpperCase() || "")
+    .join("");
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        overflow: "hidden",
+        backgroundColor: "#E5E5EA",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {image ? (
+        <Image source={{ uri: image }} style={{ width: size, height: size }} />
+      ) : (
+        <Text style={{ ...typography.caption1, color: "#1C1C1E" }}>
+          {initials}
+        </Text>
+      )}
+    </View>
+  );
 }
 
 function ActivityBottomSheet({

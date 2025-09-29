@@ -199,13 +199,14 @@ export default function ExploreScreen() {
         if (mine) base = mine;
       }
 
-      // Participants: all creators in cluster, put me first if present
+      // Participants: exactly all creators in this cluster (base first)
       const allCreatorIds: string[] = Array.from(
         new Set(group.map((g: any) => g.creatorId as string))
       );
-      const participantIds = session?.id
-        ? [session.id, ...allCreatorIds.filter((id) => id !== session.id)]
-        : allCreatorIds;
+      const orderedCreatorIds = [
+        base.creatorId as string,
+        ...allCreatorIds.filter((id) => id !== base.creatorId),
+      ];
 
       return {
         id: base.id as string, // open the selected (own) plan when tapping
@@ -231,7 +232,7 @@ export default function ExploreScreen() {
                 },
               ]
             : undefined,
-        participants: participantIds
+        participants: orderedCreatorIds
           .map((id) => ({ name: nameById[id] ?? "" }))
           .filter((p) => p.name),
       } as PlanListItem;

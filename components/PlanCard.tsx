@@ -200,6 +200,28 @@ export function PlanCard({ item, index }: PlanCardProps) {
               />
             </View>
 
+            {/* Time chip - absolute top-right for consistent placement */}
+            <View className="absolute top-3 right-3" pointerEvents="none">
+              <BlurView
+                intensity={80}
+                experimentalBlurMethod="dimezisBlurView"
+                className="rounded-xl px-3 py-1.5 overflow-hidden"
+                style={{
+                  ...shadows.small,
+                }}
+              >
+                <Text
+                  className="dark:text-zinc-50"
+                  style={{
+                    ...typography.caption1,
+                    fontWeight: "600",
+                  }}
+                >
+                  {formatLocalTime(item.date)}
+                </Text>
+              </BlurView>
+            </View>
+
             {/* Content */}
             <View className="relative z-10">
               <View style={{ marginBottom: spacing.md }}>
@@ -222,20 +244,15 @@ export function PlanCard({ item, index }: PlanCardProps) {
                         marginBottom: spacing.sm,
                       }}
                     >
-                      <BlurView
-                        intensity={60}
-                        style={{
-                          borderRadius: 12,
-                          padding: 6,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <IconSymbol name="location" size={12} color="#8E8E93" />
-                      </BlurView>
+                      <IconSymbol
+                        name="mappin.and.ellipse"
+                        size={14}
+                        color="#1C1C1E"
+                      />
                       <Text
                         style={{
                           ...typography.subheadline,
-                          color: "#3C3C43",
+                          color: "#1C1C1E",
                         }}
                       >
                         {location.title}
@@ -248,7 +265,7 @@ export function PlanCard({ item, index }: PlanCardProps) {
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  justifyContent: "space-between",
+                  justifyContent: "flex-start",
                 }}
               >
                 {item.participants && item.participants.length > 0 && (
@@ -287,7 +304,7 @@ export function PlanCard({ item, index }: PlanCardProps) {
                     <Text
                       style={{
                         ...typography.caption1,
-                        color: "#3C3C43",
+                        color: "#1C1C1E",
                       }}
                       numberOfLines={1}
                     >
@@ -309,27 +326,7 @@ export function PlanCard({ item, index }: PlanCardProps) {
                   </View>
                 )}
 
-                <BlurView
-                  intensity={80}
-                  experimentalBlurMethod="dimezisBlurView"
-                  style={{
-                    borderRadius: 12,
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    overflow: "hidden",
-                    ...shadows.small,
-                  }}
-                >
-                  <Text
-                    style={{
-                      ...typography.caption1,
-                      fontWeight: "600",
-                      color: "#1C1C1E",
-                    }}
-                  >
-                    {formatLocalTime(item.date)}
-                  </Text>
-                </BlurView>
+                {/* Time chip moved to absolute top-right */}
               </View>
             </View>
           </LinearGradient>
