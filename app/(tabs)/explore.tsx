@@ -76,10 +76,7 @@ export default function ExploreScreen() {
             ? {
                 latitude,
                 longitude,
-                radius: Math.max(
-                  1,
-                  ((filter?.radiusKm ?? 50) as number) * 1000
-                ),
+                radius: Math.max(1, (filter?.radiusKm ?? 50) * 1000),
               }
             : undefined,
       },

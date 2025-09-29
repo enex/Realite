@@ -28,20 +28,22 @@ export default function NativeLanding() {
   }, [session, isLoading, onboardingEnabled, meRes.data, meRes.isLoading]);
 
   return (
-    <SafeAreaView className="bg-white flex-1">
+    <SafeAreaView className="flex-1 bg-white dark:bg-zinc-950">
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="bg-white justify-center items-center px-8 py-8 min-h-full">
+        <View className="min-h-full items-center justify-center px-8 py-8">
           {/* Logo/Icon Area */}
           <View className="items-center mb-12">
             <View className="flex-row items-center mb-4">
               <View className="w-12 h-12 bg-blue-600 rounded-xl items-center justify-center mr-3 shadow-lg">
                 <Text className="text-white text-xl font-bold">R</Text>
               </View>
-              <Text className="text-3xl font-bold text-gray-900">Realite</Text>
+              <Text className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
+                Realite
+              </Text>
               <View className="bg-blue-600 px-2 py-1 rounded-full ml-3">
                 <Text className="text-white font-semibold text-xs">BETA</Text>
               </View>
@@ -50,13 +52,13 @@ export default function NativeLanding() {
 
           {/* Main Message - Simplified */}
           <View className="items-center mb-12">
-            <Text className="text-2xl font-bold text-center text-gray-900 mb-4 leading-tight">
+            <Text className="mb-4 text-center text-2xl font-bold leading-tight text-zinc-900 dark:text-zinc-50">
               Die App für echte Verbindungen
             </Text>
-            <Text className="text-lg text-center text-gray-700 mb-6 leading-relaxed">
+            <Text className="mb-6 text-center text-lg leading-relaxed text-zinc-700 dark:text-zinc-200">
               Leg dein Handy weg. Erlebe echte Momente.
             </Text>
-            <Text className="text-center text-amber-700 bg-amber-50 px-4 py-2 rounded-xl border border-amber-200">
+            <Text className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-center text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
               Geschlossene Beta – Apps derzeit nicht für jeden verfügbar
             </Text>
           </View>
@@ -64,28 +66,28 @@ export default function NativeLanding() {
           {/* Key Features - Simplified */}
           <View className="flex-row justify-center gap-8 mb-12">
             <View className="items-center">
-              <View className="w-16 h-16 bg-white rounded-2xl items-center justify-center shadow-lg mb-2">
+              <View className="mb-2 h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-lg dark:bg-zinc-900">
                 <Text className="text-2xl">🤝</Text>
               </View>
-              <Text className="text-sm font-semibold text-gray-800 text-center">
+              <Text className="text-center text-sm font-semibold text-zinc-800 dark:text-zinc-200">
                 Freunde
               </Text>
             </View>
 
             <View className="items-center">
-              <View className="w-16 h-16 bg-white rounded-2xl items-center justify-center shadow-lg mb-2">
+              <View className="mb-2 h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-lg dark:bg-zinc-900">
                 <Text className="text-2xl">🎯</Text>
               </View>
-              <Text className="text-sm font-semibold text-gray-800 text-center">
+              <Text className="text-center text-sm font-semibold text-zinc-800 dark:text-zinc-200">
                 Aktivitäten
               </Text>
             </View>
 
             <View className="items-center">
-              <View className="w-16 h-16 bg-white rounded-2xl items-center justify-center shadow-lg mb-2">
+              <View className="mb-2 h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-lg dark:bg-zinc-900">
                 <Text className="text-2xl">✨</Text>
               </View>
-              <Text className="text-sm font-semibold text-gray-800 text-center">
+              <Text className="text-center text-sm font-semibold text-zinc-800 dark:text-zinc-200">
                 Erlebnisse
               </Text>
             </View>
@@ -117,10 +119,10 @@ export default function NativeLanding() {
           </View>
 
           {/* Security Badge - Simplified */}
-          <View className="mt-8 bg-white px-6 py-3 rounded-2xl shadow-lg border border-gray-100">
+          <View className="mt-8 rounded-2xl border border-zinc-200 bg-white px-6 py-3 shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
             <View className="flex-row items-center">
               <Text className="text-xl mr-2">🔒</Text>
-              <Text className="text-gray-800 font-semibold text-center">
+              <Text className="text-center font-semibold text-zinc-800 dark:text-zinc-200">
                 Invite-only • Sicher
               </Text>
             </View>

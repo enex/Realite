@@ -23,9 +23,9 @@ import PlanFilterBottomSheet, {
   PlanFilterBottomSheetRef,
   type PlanFilter,
 } from "@/components/PlanFilterBottomSheet";
-import { ThemedText } from "@/components/ThemedText";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useLocation } from "@/hooks/useLocation";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import type { ActivityId } from "@/shared/activities";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -287,6 +287,14 @@ export default function PlansScreen() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [othersData]);
 
+  const colorScheme = useColorScheme();
+
+  const surfaceClass = "bg-zinc-100 dark:bg-zinc-950";
+  const elevatedSurfaceClass = "bg-white dark:bg-zinc-900";
+  const mutedTextClass = "text-zinc-500 dark:text-zinc-400";
+  const strongTextClass = "text-zinc-900 dark:text-zinc-50";
+  const iconPrimary = colorScheme === "dark" ? "#f4f4f5" : "#1C1C1E";
+
   const renderDayGroup = ({
     item,
     index,
@@ -302,11 +310,9 @@ export default function PlansScreen() {
         }}
       >
         <Text
+          className={`uppercase font-semibold ${mutedTextClass}`}
           style={{
             ...typography.caption1,
-            color: "#8E8E93",
-            fontWeight: "600",
-            textTransform: "uppercase",
             letterSpacing: 0.5,
           }}
         >
@@ -344,65 +350,49 @@ export default function PlansScreen() {
   const bottomPadding = isAndroid ? 80 : 140;
 
   return (
-    <SafeAreaView
-      edges={["top"]}
-      style={{ flex: 1, backgroundColor: "#F2F2F7" }}
-    >
+    <SafeAreaView edges={["top"]} className={`flex-1 ${surfaceClass}`}>
       {/* Large Title Header (animated on iOS, moved into ScrollView on Android) */}
       {/* iOS Large Header with inline actions */}
       {!isAndroid && (
         <Animated.View
+          className={`${surfaceClass} overflow-hidden`}
           style={{
             height: headerHeight,
             paddingHorizontal: spacing.lg,
             paddingTop: spacing.sm,
             paddingBottom: spacing.md,
-            backgroundColor: "#F2F2F7",
             opacity: headerOpacity,
-            overflow: "hidden",
           }}
         >
           <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
+            className="flex-row items-center justify-between"
+            style={{ gap: 10 }}
           >
             <View>
               <Text
+                className={strongTextClass}
                 style={{
                   ...typography.largeTitle,
-                  color: "#1C1C1E",
                   marginBottom: spacing.xs,
                 }}
               >
                 Meine Pläne
               </Text>
               <Text
-                style={{
-                  ...typography.subheadline,
-                  color: "#8E8E93",
-                }}
+                className={mutedTextClass}
+                style={typography.subheadline}
               >
                 Alle deine Pläne
               </Text>
             </View>
-            <View style={{ flexDirection: "row", gap: 10 }}>
+            <View className="flex-row" style={{ gap: 10 }}>
               <Pressable
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   aiPlanBottomSheetRef.current?.present();
                 }}
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 18,
-                  backgroundColor: "#007AFF",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  ...shadows.small,
-                }}
+                className="h-9 w-9 items-center justify-center rounded-full bg-blue-600"
+                style={{ ...shadows.small }}
               >
                 <IconSymbol name="plus" size={18} color="#FFFFFF" />
               </Pressable>
@@ -411,22 +401,13 @@ export default function PlansScreen() {
                   filterRef.current?.present();
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 }}
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 18,
-                  backgroundColor: "white",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderWidth: 1,
-                  borderColor: "#E5E5EA",
-                  ...shadows.small,
-                }}
+                className={`h-9 w-9 items-center justify-center rounded-full border ${elevatedSurfaceClass} border-zinc-200 dark:border-zinc-700`}
+                style={{ ...shadows.small }}
               >
                 <IconSymbol
                   name="line.3.horizontal.decrease.circle"
                   size={18}
-                  color="#1C1C1E"
+                  color={iconPrimary}
                 />
               </Pressable>
             </View>
@@ -436,9 +417,12 @@ export default function PlansScreen() {
 
       {error && (
         <View style={{ padding: spacing.lg }}>
-          <ThemedText style={{ ...typography.subheadline, color: "#8E8E93" }}>
+          <Text
+            className={mutedTextClass}
+            style={typography.subheadline}
+          >
             {error.message}
-          </ThemedText>
+          </Text>
         </View>
       )}
 
@@ -479,29 +463,18 @@ export default function PlansScreen() {
       >
         {isAndroid && (
           <View style={{ paddingTop: spacing.sm, paddingBottom: spacing.md }}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
+            <View className="flex-row items-center justify-between" style={{ gap: 10 }}>
               <View>
                 <Text
+                  className={strongTextClass}
                   style={{
                     ...typography.largeTitle,
-                    color: "#1C1C1E",
                     marginBottom: spacing.xs,
                   }}
                 >
                   Meine Pläne
                 </Text>
-                <Text
-                  style={{
-                    ...typography.subheadline,
-                    color: "#8E8E93",
-                  }}
-                >
+                <Text className={mutedTextClass} style={typography.subheadline}>
                   Alle deine Pläne
                 </Text>
               </View>
@@ -510,22 +483,13 @@ export default function PlansScreen() {
                   filterRef.current?.present();
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 }}
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 18,
-                  backgroundColor: "white",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderWidth: 1,
-                  borderColor: "#6366F1",
-                  ...shadows.small,
-                }}
+                className={`h-9 w-9 items-center justify-center rounded-full border border-indigo-500/60 ${elevatedSurfaceClass}`}
+                style={{ ...shadows.small }}
               >
                 <IconSymbol
                   name="line.3.horizontal.decrease.circle"
                   size={18}
-                  color="#1C1C1E"
+                  color={iconPrimary}
                 />
               </Pressable>
             </View>
@@ -543,11 +507,9 @@ export default function PlansScreen() {
               }}
             >
               <Text
+                className={`uppercase font-semibold ${mutedTextClass}`}
                 style={{
                   ...typography.caption1,
-                  color: "#8E8E93",
-                  fontWeight: "600",
-                  textTransform: "uppercase",
                   letterSpacing: 0.5,
                 }}
               >
@@ -573,34 +535,20 @@ export default function PlansScreen() {
           >
             {/* Illustration */}
             <View
-              style={{
-                width: 96,
-                height: 96,
-                borderRadius: 48,
-                backgroundColor: "#E5F0FF",
-                borderWidth: 1,
-                borderColor: "#B7D4FF",
-                alignItems: "center",
-                justifyContent: "center",
-                ...shadows.small,
-              }}
+              className="h-24 w-24 items-center justify-center rounded-full border border-indigo-200 bg-indigo-100 dark:border-indigo-500/40 dark:bg-indigo-500/10"
+              style={{ ...shadows.small }}
             >
               <IconSymbol name="calendar" size={44} color="#007AFF" />
             </View>
             <Text
-              style={{
-                ...typography.headline,
-                color: "#1C1C1E",
-              }}
+              className={strongTextClass}
+              style={typography.headline}
             >
               Noch keine Pläne
             </Text>
             <Text
-              style={{
-                ...typography.subheadline,
-                color: "#8E8E93",
-                textAlign: "center",
-              }}
+              className={`${mutedTextClass} text-center`}
+              style={typography.subheadline}
             >
               Lege fest, was du vor hast – andere sehen es und können
               dazukommen.
@@ -649,13 +597,16 @@ export default function PlansScreen() {
                 height: 44,
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundColor: "rgba(242, 242, 247, 0.8)",
+                backgroundColor:
+                  colorScheme === "dark"
+                    ? "rgba(24, 24, 27, 0.85)"
+                    : "rgba(242, 242, 247, 0.8)",
               }}
             >
               <Text
+                className={strongTextClass}
                 style={{
                   ...typography.headline,
-                  color: "#1C1C1E",
                   fontWeight: "600",
                 }}
               >
@@ -814,105 +765,46 @@ function NativeFAB({ onPress }: { onPress: () => void }) {
 }
 
 function WhatIsAPlan() {
+  const colorScheme = useColorScheme();
+  const detailIconColor = colorScheme === "dark" ? "#a1a1aa" : "#3C3C43";
+  const badgeBgClass =
+    "rounded-xl border border-zinc-200 bg-zinc-100 p-1.5 dark:border-zinc-800 dark:bg-zinc-900/70";
+  const detailTextClass = "text-sm text-zinc-600 dark:text-zinc-300";
+
   return (
     <View
-      style={{
-        width: "100%",
-        backgroundColor: "white",
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: "#E5E5EA",
-        padding: 16,
-        gap: 10,
-        marginTop: 4,
-        ...shadows.small,
-      }}
+      className="w-full rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+      style={{ gap: 10, marginTop: 4, ...shadows.small }}
     >
-      <Text style={{ fontSize: 16, fontWeight: "600", color: "#1C1C1E" }}>
+      <Text className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
         Was ist ein Plan?
       </Text>
       <View style={{ gap: 8 }}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <View
-            style={{
-              borderRadius: 10,
-              backgroundColor: "#F2F2F7",
-              borderWidth: 1,
-              borderColor: "#E5E5EA",
-              padding: 6,
-            }}
-          >
-            <IconSymbol name="tag" size={14} color="#8E8E93" />
+        <View className="flex-row items-center" style={{ gap: 10 }}>
+          <View className={badgeBgClass}>
+            <IconSymbol name="tag" size={14} color={detailIconColor} />
           </View>
-          <Text style={{ color: "#3C3C43" }}>
+          <Text className={detailTextClass}>
             Aktivität mit Titel und Beschreibung
           </Text>
         </View>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <View
-            style={{
-              borderRadius: 10,
-              backgroundColor: "#F2F2F7",
-              borderWidth: 1,
-              borderColor: "#E5E5EA",
-              padding: 6,
-            }}
-          >
-            <IconSymbol name="clock" size={14} color="#8E8E93" />
+        <View className="flex-row items-center" style={{ gap: 10 }}>
+          <View className={badgeBgClass}>
+            <IconSymbol name="clock" size={14} color={detailIconColor} />
           </View>
-          <Text style={{ color: "#3C3C43" }}>Zeitpunkt oder Zeitraum</Text>
+          <Text className={detailTextClass}>Zeitpunkt oder Zeitraum</Text>
         </View>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <View
-            style={{
-              borderRadius: 10,
-              backgroundColor: "#F2F2F7",
-              borderWidth: 1,
-              borderColor: "#E5E5EA",
-              padding: 6,
-            }}
-          >
-            <IconSymbol name="location" size={14} color="#8E8E93" />
+        <View className="flex-row items-center" style={{ gap: 10 }}>
+          <View className={badgeBgClass}>
+            <IconSymbol name="location" size={14} color={detailIconColor} />
           </View>
-          <Text style={{ color: "#3C3C43" }}>Ort (optional)</Text>
+          <Text className={detailTextClass}>Ort (optional)</Text>
         </View>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <View
-            style={{
-              borderRadius: 10,
-              backgroundColor: "#F2F2F7",
-              borderWidth: 1,
-              borderColor: "#E5E5EA",
-              padding: 6,
-            }}
-          >
-            <IconSymbol name="person.2" size={14} color="#8E8E93" />
+        <View className="flex-row items-center" style={{ gap: 10 }}>
+          <View className={badgeBgClass}>
+            <IconSymbol name="person.2" size={14} color={detailIconColor} />
           </View>
-          <Text style={{ color: "#3C3C43" }}>Andere können dazukommen</Text>
+          <Text className={detailTextClass}>Andere können dazukommen</Text>
         </View>
       </View>
     </View>

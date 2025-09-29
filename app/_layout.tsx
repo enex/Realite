@@ -17,6 +17,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { colorScheme as nativewindColorScheme } from "nativewind";
 
 import "../global.css";
 
@@ -31,6 +32,10 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+
+  useEffect(() => {
+    nativewindColorScheme.set(colorScheme ?? "system");
+  }, [colorScheme]);
 
   useEffect(() => {
     if (Platform.OS !== "android") return;
@@ -77,7 +82,7 @@ export default function RootLayout() {
                   <Stack.Screen name="plan" options={{ headerShown: false }} />
                   <Stack.Screen name="+not-found" />
                 </Stack>
-                <StatusBar style="auto" />
+                <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
               </ThemeProvider>
             </BottomSheetModalProvider>
           </QueryClientProvider>
