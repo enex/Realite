@@ -4,6 +4,7 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Animated, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useSession } from "@/client/auth";
 import orpc from "@/client/orpc";
 import { PlanCard, shadows } from "@/components/PlanCard";
 import PlanFilterBottomSheet, {
@@ -13,6 +14,7 @@ import PlanFilterBottomSheet, {
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useLocation } from "@/hooks/useLocation";
 import type { ActivityId } from "@/shared/activities";
+import { isWithinRadius } from "@/shared/utils/distance";
 import { useQuery } from "@tanstack/react-query";
 
 // iOS Design System (matching Plans screen)
@@ -46,7 +48,7 @@ type PlanListItem = {
     description?: string;
     category?: string;
   }[];
-  participants?: string[];
+  participants?: { name: string; image?: string }[];
 };
 
 type GroupedPlans = {
@@ -83,33 +85,158 @@ export default function ExploreScreen() {
     })
   );
 
+  // Collect unique creator IDs for profile lookup
+  const creatorIds = useMemo(() => {
+    const s = new Set<string>();
+    (foundPlans ?? []).forEach((p: any) => {
+      if (p?.creatorId) s.add(p.creatorId as string);
+    });
+    return Array.from(s);
+  }, [foundPlans]);
+
+  // Fetch creator profiles in bulk
+  const { data: creatorProfiles } = useQuery({
+    ...orpc.user.getMany.queryOptions({ input: { ids: creatorIds } }),
+    enabled: creatorIds.length > 0,
+  } as any);
+
+  const nameById = useMemo(() => {
+    const map: Record<string, string> = {};
+    const arr = Array.isArray(creatorProfiles)
+      ? (creatorProfiles as any[])
+      : [];
+    arr.forEach((u: any) => {
+      if (u?.id) map[u.id] = (u.name as string) || "";
+    });
+    return map;
+  }, [creatorProfiles]);
+
+  // Cluster plans (same activity, overlapping time, same/near location)
+  const clusters = useMemo(() => {
+    const plans = (foundPlans ?? []) as any[];
+    const n = plans.length;
+    const norm = (s?: string | null) =>
+      (s ?? "").toString().trim().toLowerCase();
+    const sameLocation = (a: any, b: any) => {
+      const aLat = Number(a.latitude ?? NaN);
+      const aLon = Number(a.longitude ?? NaN);
+      const bLat = Number(b.latitude ?? NaN);
+      const bLon = Number(b.longitude ?? NaN);
+      if (
+        isFinite(aLat) &&
+        isFinite(aLon) &&
+        isFinite(bLat) &&
+        isFinite(bLon)
+      ) {
+        if (isWithinRadius(aLat, aLon, bLat, bLon, 500)) return true;
+      }
+      if (norm(a.locationUrl) && norm(a.locationUrl) === norm(b.locationUrl))
+        return true;
+      if (
+        norm(a.locationTitle) &&
+        norm(a.locationTitle) === norm(b.locationTitle)
+      )
+        return true;
+      if (norm(a.address) && norm(a.address) === norm(b.address)) return true;
+      return false;
+    };
+    const adj: number[][] = Array.from({ length: n }, () => []);
+    for (let i = 0; i < n; i++) {
+      const a = plans[i];
+      const aStart = new Date(a.startDate);
+      const aEnd = a.endDate ? new Date(a.endDate) : new Date(a.startDate);
+      for (let j = i + 1; j < n; j++) {
+        const b = plans[j];
+        if (a.activity !== b.activity) continue;
+        const bStart = new Date(b.startDate);
+        const bEnd = b.endDate ? new Date(b.endDate) : new Date(b.startDate);
+        const timeOverlap = aStart <= bEnd && bStart <= aEnd;
+        if (!timeOverlap) continue;
+        if (!sameLocation(a, b)) continue;
+        adj[i].push(j);
+        adj[j].push(i);
+      }
+    }
+    const visited = new Array(n).fill(false);
+    const groups: any[][] = [];
+    for (let i = 0; i < n; i++) {
+      if (visited[i]) continue;
+      const queue = [i];
+      visited[i] = true;
+      const group: any[] = [];
+      while (queue.length) {
+        const v = queue.shift()!;
+        group.push(plans[v]);
+        for (const w of adj[v]) {
+          if (!visited[w]) {
+            visited[w] = true;
+            queue.push(w);
+          }
+        }
+      }
+      groups.push(group);
+    }
+    return groups;
+  }, [foundPlans]);
+
+  const { session } = useSession();
+
   const data = useMemo<PlanListItem[]>(() => {
     if (!foundPlans) return [];
 
-    // Map flattened findPlans rows to PlanCard items
-    return foundPlans.map((p) => ({
-      id: p.id,
-      title: p.title,
-      date: (p.startDate?.toISOString?.() ?? p.startDate) || "",
-      status: "committed",
-      activity: p.activity as ActivityId,
-      locations:
-        p.locationTitle || p.latitude || p.longitude
-          ? [
-              {
-                title: p.locationTitle ?? "",
-                address: p.address ?? undefined,
-                latitude: Number(p.latitude ?? 0),
-                longitude: Number(p.longitude ?? 0),
-                url: p.locationUrl ?? undefined,
-                description: p.locationDescription ?? undefined,
-                category: p.locationCategory ?? undefined,
-              },
-            ]
-          : undefined,
-      participants: [],
-    }));
-  }, [foundPlans]);
+    // One card per cluster: group of creators
+    return clusters.map((group) => {
+      // Prefer user's own plan as base if present
+      const sortedByStart = group
+        .slice()
+        .sort(
+          (a: any, b: any) =>
+            new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+        );
+      let base = sortedByStart[0];
+      if (session?.id) {
+        const mine = group.find((g: any) => g.creatorId === session.id);
+        if (mine) base = mine;
+      }
+
+      // Participants: all creators in cluster, put me first if present
+      const allCreatorIds: string[] = Array.from(
+        new Set(group.map((g: any) => g.creatorId as string))
+      );
+      const participantIds = session?.id
+        ? [session.id, ...allCreatorIds.filter((id) => id !== session.id)]
+        : allCreatorIds;
+
+      return {
+        id: base.id as string, // open the selected (own) plan when tapping
+        title: base.title as string,
+        date: (base.startDate?.toISOString?.() ?? base.startDate) as string,
+        status: "committed" as const,
+        activity: base.activity as ActivityId,
+        locations:
+          base.locationTitle || base.latitude || base.longitude
+            ? [
+                {
+                  title: (base.locationTitle ?? "") as string,
+                  address: (base.address ?? undefined) as string | undefined,
+                  latitude: Number(base.latitude ?? 0),
+                  longitude: Number(base.longitude ?? 0),
+                  url: (base.locationUrl ?? undefined) as string | undefined,
+                  description: (base.locationDescription ?? undefined) as
+                    | string
+                    | undefined,
+                  category: (base.locationCategory ?? undefined) as
+                    | string
+                    | undefined,
+                },
+              ]
+            : undefined,
+        participants: participantIds
+          .map((id) => ({ name: nameById[id] ?? "" }))
+          .filter((p) => p.name),
+      } as PlanListItem;
+    });
+  }, [foundPlans, clusters, nameById, session?.id]);
 
   const groupedPlans = useMemo(() => {
     const groups: Record<string, PlanListItem[]> = {};
@@ -345,7 +472,6 @@ export default function ExploreScreen() {
               {renderDayGroup({ item: group, index })}
             </View>
           ))}
-          <Text>{JSON.stringify(foundPlans)}</Text>
           {groupedPlans.length === 0 && (
             <View style={{ paddingTop: spacing.lg }}>
               <Text style={{ ...typography.subheadline, color: "#8E8E93" }}>

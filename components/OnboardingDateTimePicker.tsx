@@ -1,3 +1,4 @@
+import { formatLocalTime } from "@/shared/utils/datetime";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useColorScheme } from "nativewind";
 import React, { useCallback, useState } from "react";
@@ -70,15 +71,7 @@ export default function OnboardingDateTimePicker({
                     {range.day}
                   </Text>
                   <Text className="text-sm text-muted-foreground">
-                    {range.start.toLocaleTimeString("de-DE", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}{" "}
-                    -{" "}
-                    {range.end.toLocaleTimeString("de-DE", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {formatLocalTime(range.start)} - {formatLocalTime(range.end)}
                   </Text>
                 </View>
                 <Pressable onPress={() => onDateRemove(index)}>

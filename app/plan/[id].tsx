@@ -21,6 +21,7 @@ import {
   type ActivityGroupId,
   type ActivityId,
 } from "@/shared/activities";
+import { formatLocalDateTime } from "@/shared/utils/datetime";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import tinycolor from "tinycolor2";
@@ -83,6 +84,21 @@ const getActivityIcon = (activityId?: ActivityId) => {
       return "calendar";
   }
 };
+
+const formatPlanDateLabel = (value: unknown): string =>
+  formatLocalDateTime(value as Date | string | number | null | undefined, {
+    dateOptions: {
+      weekday: "long",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    },
+    timeOptions: {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    },
+  });
 
 export default function PlanDetails() {
   const router = useRouter();
@@ -343,23 +359,7 @@ export default function PlanDetails() {
               <InfoRow
                 icon="calendar"
                 label="Datum"
-                value={(() => {
-                  const date = new Date(plan.startDate as unknown as string);
-                  const weekday = date.toLocaleDateString("de-DE", {
-                    weekday: "long",
-                  });
-                  const dateStr = date.toLocaleDateString("de-DE", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                  });
-                  const timeStr = date.toLocaleTimeString("de-DE", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false,
-                  });
-                  return `${weekday}, ${dateStr} ${timeStr}`;
-                })()}
+                value={formatPlanDateLabel(plan.startDate)}
                 onPress={isOwner ? handleEditStart : undefined}
               />
               <InfoRow
@@ -367,25 +367,7 @@ export default function PlanDetails() {
                 label="Endet"
                 value={
                   plan?.endDate
-                    ? (() => {
-                        const date = new Date(
-                          plan.endDate as unknown as string
-                        );
-                        const weekday = date.toLocaleDateString("de-DE", {
-                          weekday: "long",
-                        });
-                        const dateStr = date.toLocaleDateString("de-DE", {
-                          year: "numeric",
-                          month: "2-digit",
-                          day: "2-digit",
-                        });
-                        const timeStr = date.toLocaleTimeString("de-DE", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        });
-                        return `${weekday}, ${dateStr} ${timeStr}`;
-                      })()
+                    ? formatPlanDateLabel(plan.endDate)
                     : "—"
                 }
                 onPress={isOwner ? handleEditEnd : undefined}

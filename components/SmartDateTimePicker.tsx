@@ -1,4 +1,5 @@
 import { getAvailableTimeSlots } from "@/client/calendar";
+import { formatLocalTime } from "@/shared/utils/datetime";
 import { MaterialIcons } from "@expo/vector-icons";
 import Color from "color";
 import * as Calendar from "expo-calendar";
@@ -114,10 +115,7 @@ const TimeSlotCell = React.memo(function TimeSlotCell({
             }}
             numberOfLines={1}
           >
-            {new Date(event.startDate).toLocaleTimeString("de-DE", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            {formatLocalTime(event.startDate)}
           </Text>
         </View>
       )}
@@ -129,10 +127,7 @@ const TimeSlotCell = React.memo(function TimeSlotCell({
           }}
           numberOfLines={1}
         >
-          {new Date(event.endDate).toLocaleTimeString("de-DE", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+          {formatLocalTime(event.endDate)}
         </Text>
       )}
       {event && eventPosition === "middle" && (

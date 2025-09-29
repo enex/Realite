@@ -116,4 +116,23 @@ export const userRouter = {
         "relationshipStatus",
       ]);
     }),
+  getMany: protectedRoute
+    .input(z.object({ ids: z.array(z.uuid()).min(1) }))
+    .handler(async ({ context, input }) => {
+      const profiles = await Promise.all(
+        input.ids.map(async (id) => {
+          const u = await context.es.projections.user.getProfile(id);
+          if (!u) return null;
+          return pick(u, [
+            "id",
+            "name",
+            "image",
+            "gender",
+            "birthDate",
+            "relationshipStatus",
+          ]);
+        })
+      );
+      return profiles.filter(Boolean);
+    }),
 };

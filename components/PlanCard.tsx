@@ -10,6 +10,7 @@ import {
   type ActivityGroupId,
   type ActivityId,
 } from "@/shared/activities";
+import { formatLocalTime } from "@/shared/utils/datetime";
 import { useRouter } from "expo-router";
 import tinycolor from "tinycolor2";
 
@@ -56,7 +57,7 @@ type PlanListItem = {
     latitude: number;
     longitude: number;
   }[];
-  participants?: string[];
+  participants?: { name: string; image?: string }[];
 };
 
 interface PlanCardProps {
@@ -110,6 +111,19 @@ const getActivityIcon = (activityId: ActivityId) => {
     default:
       return "calendar";
   }
+};
+
+const getInitials = (name: string): string => {
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+};
+
+const getFirstName = (name: string): string => {
+  const trimmed = String(name).trim();
+  if (!trimmed) return "";
+  return trimmed.split(/\s+/)[0];
 };
 
 export function PlanCard({ item, index }: PlanCardProps) {
@@ -198,6 +212,7 @@ export function PlanCard({ item, index }: PlanCardProps) {
                 >
                   {item.title}
                 </Text>
+                {/* Owner line removed in favor of participant avatars row below */}
                 {item.locations &&
                   item.locations.map((location, index) => (
                     <View
@@ -238,47 +253,59 @@ export function PlanCard({ item, index }: PlanCardProps) {
               >
                 {item.participants && item.participants.length > 0 && (
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <View style={{ flexDirection: "row" }}>
-                      {item.participants.map((participant, idx) => (
+                    <View style={{ flexDirection: "row", marginRight: 8 }}>
+                      {item.participants.slice(0, 5).map((p, idx) => (
                         <View
-                          key={participant}
+                          key={`${p.name}-${idx}`}
                           style={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: 18,
+                            width: 28,
+                            height: 28,
+                            borderRadius: 14,
                             backgroundColor: "rgba(255, 255, 255, 0.9)",
                             alignItems: "center",
                             justifyContent: "center",
                             borderWidth: 2,
                             borderColor: "rgba(255, 255, 255, 0.5)",
-                            marginLeft: idx > 0 ? -12 : 0,
+                            marginLeft: idx > 0 ? -10 : 0,
                             zIndex: item.participants!.length - idx,
                             ...shadows.small,
                           }}
                         >
+                          {/* If we had images, we'd render Image here; fallback to initials */}
                           <Text
                             style={{
-                              ...typography.footnote,
+                              ...typography.caption1,
                               fontWeight: "600",
                               color: "#1C1C1E",
                             }}
                           >
-                            {participant}
+                            {getInitials(p.name)}
                           </Text>
                         </View>
                       ))}
                     </View>
-                    {item.participants.length > 1 && (
-                      <Text
-                        style={{
-                          ...typography.caption1,
-                          color: "#3C3C43",
-                          marginLeft: spacing.sm,
-                        }}
-                      >
-                        +{item.participants.length - 1} more
-                      </Text>
-                    )}
+                    <Text
+                      style={{
+                        ...typography.caption1,
+                        color: "#3C3C43",
+                      }}
+                      numberOfLines={1}
+                    >
+                      {(() => {
+                        const firstTwo = item.participants
+                          .slice(0, 2)
+                          .map((p) => getFirstName(p.name));
+                        const remaining =
+                          item.participants.length - firstTwo.length;
+                        const label =
+                          remaining > 0
+                            ? `${firstTwo.join(", ")} +${remaining}`
+                            : firstTwo.join(", ");
+                        return item.participants.length > 1
+                          ? `Gruppe: ${label}`
+                          : firstTwo.join(", ");
+                      })()}
+                    </Text>
                   </View>
                 )}
 
@@ -300,10 +327,7 @@ export function PlanCard({ item, index }: PlanCardProps) {
                       color: "#1C1C1E",
                     }}
                   >
-                    {new Date(item.date).toLocaleTimeString("de-DE", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {formatLocalTime(item.date)}
                   </Text>
                 </BlurView>
               </View>
