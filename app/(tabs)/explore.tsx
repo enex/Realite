@@ -228,16 +228,16 @@ export default function ExploreScreen() {
   }, []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#F2F2F7" }}>
+    <View className="flex-1 bg-zinc-100 dark:bg-zinc-950">
       <SafeAreaView style={{ flex: 1 }}>
         {/* Large Title Header */}
         <Animated.View
+          className="bg-zinc-100 dark:bg-zinc-950"
           style={{
             height: headerHeight,
             paddingHorizontal: spacing.lg,
             paddingTop: spacing.sm,
             paddingBottom: spacing.md,
-            backgroundColor: "#F2F2F7",
             opacity: headerOpacity,
             overflow: "hidden",
           }}
@@ -251,9 +251,9 @@ export default function ExploreScreen() {
           >
             <View>
               <Text
+                className="text-zinc-900 dark:text-zinc-50"
                 style={{
                   ...typography.largeTitle,
-                  color: "#1C1C1E",
                   marginBottom: spacing.xs,
                 }}
               >

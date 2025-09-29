@@ -146,15 +146,15 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F7" }}>
-      <ThemedView style={{ flex: 1, backgroundColor: "#F2F2F7" }}>
-        <View className="px-6 pt-2 pb-4" style={{ backgroundColor: "#F2F2F7" }}>
+    <SafeAreaView className="flex-1 bg-zinc-100 dark:bg-zinc-950">
+      <ThemedView className="flex-1 bg-zinc-100 dark:bg-zinc-950">
+        <View className="px-6 pt-2 pb-4 bg-zinc-100 dark:bg-zinc-950">
           <Text
+            className="text-zinc-900 dark:text-zinc-50"
             style={{
               fontSize: 34,
               fontWeight: "700",
               lineHeight: 41,
-              color: "#1C1C1E",
               marginBottom: 4,
             }}
           >
@@ -179,17 +179,17 @@ export default function ProfileScreen() {
             <View className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-5 shadow-sm">
               <ThemedText
                 type="subtitle"
-                className="text-gray-900 dark:text-white mb-4"
+                className="text-zinc-900 dark:text-zinc-50 mb-4"
               >
                 Basisdaten
               </ThemedText>
 
               <View className="mb-4">
-                <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
+                <ThemedText className="mb-2 text-zinc-600 dark:text-zinc-400">
                   Name
                 </ThemedText>
                 <TextInput
-                  className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3 text-gray-900 dark:text-white"
+                  className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-zinc-900 dark:text-zinc-50"
                   placeholder="Dein Name"
                   placeholderTextColor={
                     Platform.OS === "ios" ? undefined : "#9CA3AF"
@@ -200,7 +200,7 @@ export default function ProfileScreen() {
               </View>
 
               <View className="mb-4">
-                <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
+                <ThemedText className="mb-2 text-zinc-600 dark:text-zinc-400">
                   Telefonnummer
                 </ThemedText>
                 <View className="flex-row items-center justify-between rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3">
@@ -224,13 +224,13 @@ export default function ProfileScreen() {
                     <Pressable
                       key={g}
                       onPress={() => setGender(g)}
-                      className={`rounded-xl border px-3 py-2 ${gender === g ? "bg-primary border-primary" : "bg-transparent"}`}
+                      className={`rounded-xl border px-3 py-2 ${gender === g ? "bg-primary border-primary" : "bg-transparent dark:border-zinc-50 border-zinc-700"}`}
                     >
                       <Text
                         className={
                           gender === g
                             ? "text-primary-foreground"
-                            : "text-foreground"
+                            : "text-zinc-900 dark:text-zinc-50"
                         }
                       >
                         {GENDER_LABEL[g]}
@@ -251,13 +251,13 @@ export default function ProfileScreen() {
                     <Pressable
                       key={rs}
                       onPress={() => setRelationshipStatus(rs)}
-                      className={`rounded-xl border px-3 py-2 ${relationshipStatus === rs ? "bg-primary border-primary" : "border-separate bg-transparent"}`}
+                      className={`rounded-xl border px-3 py-2 ${relationshipStatus === rs ? "bg-primary border-primary" : "border-separate bg-transparent dark:border-zinc-50 border-zinc-700"}`}
                     >
                       <Text
                         className={
                           relationshipStatus === rs
                             ? "text-primary-foreground"
-                            : "text-foreground"
+                            : "text-zinc-900 dark:text-zinc-50"
                         }
                       >
                         {REL_LABEL[rs]}
