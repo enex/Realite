@@ -178,15 +178,7 @@ export function PlanCard({ item, index }: PlanCardProps) {
             }}
           >
             {/* Large background icon */}
-            <View
-              style={{
-                position: "absolute",
-                top: -16,
-                right: -16,
-                opacity: 0.35,
-                zIndex: 0,
-              }}
-            >
+            <View className="absolute -top-4 -right-4 opacity-35 z-0">
               <IconSymbol
                 name={getActivityIcon(item.activity)}
                 size={120}
@@ -195,7 +187,7 @@ export function PlanCard({ item, index }: PlanCardProps) {
             </View>
 
             {/* Content */}
-            <View style={{ position: "relative", zIndex: 10 }}>
+            <View className="relative z-10">
               <View style={{ marginBottom: spacing.md }}>
                 <Text
                   style={{
@@ -210,10 +202,9 @@ export function PlanCard({ item, index }: PlanCardProps) {
                   item.locations.map((location, index) => (
                     <View
                       key={index}
+                      className="flex-row items-center gap-2"
                       style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: spacing.sm,
+                        marginBottom: spacing.sm,
                       }}
                     >
                       <BlurView

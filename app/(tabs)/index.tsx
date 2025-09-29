@@ -25,6 +25,7 @@ import PlanFilterBottomSheet, {
 } from "@/components/PlanFilterBottomSheet";
 import { ThemedText } from "@/components/ThemedText";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { useLocation } from "@/hooks/useLocation";
 import type { ActivityId } from "@/shared/activities";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -71,6 +72,7 @@ export default function PlansScreen() {
   const filterRef = useRef<PlanFilterBottomSheetRef>(null);
   const [filter, setFilter] = useState<PlanFilter | undefined>(undefined);
   const queryClient = useQueryClient();
+  const { latitude, longitude, hasPermission } = useLocation();
   const {
     data: plans,
     error,
@@ -188,6 +190,103 @@ export default function PlansScreen() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [filteredData]);
 
+  // Also fetch others' plans (public feed / nearby)
+  const { data: foundPlans } = useQuery(
+    orpc.plan.find.queryOptions({
+      input: {
+        startDate: filter?.startDate,
+        endDate: filter?.endDate,
+        activity: filter?.activity,
+        location:
+          hasPermission && (filter?.radiusKm ?? 50) !== null
+            ? {
+                latitude,
+                longitude,
+                radius: Math.max(
+                  1,
+                  ((filter?.radiusKm ?? 50) as number) * 1000
+                ),
+              }
+            : undefined,
+      },
+    })
+  );
+
+  const othersData = useMemo<PlanListItem[]>(() => {
+    if (!foundPlans) return [];
+
+    const mapped = (foundPlans as any[]).map((p) => ({
+      id: p.id as string,
+      title: p.title as string,
+      date: (p.startDate?.toISOString?.() ?? p.startDate) as string,
+      status: "committed" as const,
+      activity: p.activity as ActivityId,
+      locations:
+        p.locationTitle || p.latitude || p.longitude
+          ? [
+              {
+                title: (p.locationTitle ?? "") as string,
+                address: (p.address ?? undefined) as string | undefined,
+                latitude: Number(p.latitude ?? 0),
+                longitude: Number(p.longitude ?? 0),
+                // optional fields present in findPlans are ignored here
+              },
+            ]
+          : undefined,
+      participants: [],
+    }));
+
+    // Deduplicate own plans by id
+    const ownIds = new Set((filteredData ?? []).map((d) => d.id));
+    return mapped.filter((m) => !ownIds.has(m.id));
+  }, [foundPlans, filteredData]);
+
+  const groupedOtherPlans = useMemo(() => {
+    const groups: Record<string, PlanListItem[]> = {};
+
+    othersData.forEach((plan) => {
+      const date = new Date(plan.date);
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      const dateKey = `${y}-${m}-${d}`;
+      if (!groups[dateKey]) groups[dateKey] = [];
+      groups[dateKey].push(plan);
+    });
+
+    return Object.entries(groups)
+      .map(([dateKey, plans]) => {
+        const [y, m, d] = dateKey.split("-").map((v) => Number(v));
+        const date = new Date(y, (m as number) - 1, d as number);
+        const today = new Date();
+        const todayKey = `${today.getFullYear()}-${String(
+          today.getMonth() + 1
+        ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        const tmr = new Date(today);
+        tmr.setDate(tmr.getDate() + 1);
+        const tomorrowKey = `${tmr.getFullYear()}-${String(
+          tmr.getMonth() + 1
+        ).padStart(2, "0")}-${String(tmr.getDate()).padStart(2, "0")}`;
+
+        let dayLabel = date.toLocaleDateString("de-DE", {
+          weekday: "long",
+          month: "short",
+          day: "numeric",
+        });
+        if (dateKey === todayKey) dayLabel = "Heute";
+        else if (dateKey === tomorrowKey) dayLabel = "Morgen";
+
+        return {
+          date: dateKey,
+          dayLabel,
+          plans: plans.sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+          ),
+        };
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [othersData]);
+
   const renderDayGroup = ({
     item,
     index,
@@ -250,6 +349,7 @@ export default function PlansScreen() {
       style={{ flex: 1, backgroundColor: "#F2F2F7" }}
     >
       {/* Large Title Header (animated on iOS, moved into ScrollView on Android) */}
+      {/* iOS Large Header with inline actions */}
       {!isAndroid && (
         <Animated.View
           style={{
@@ -288,29 +388,48 @@ export default function PlansScreen() {
                 Alle deine Pläne
               </Text>
             </View>
-            <Pressable
-              onPress={() => {
-                filterRef.current?.present();
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              }}
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 18,
-                backgroundColor: "white",
-                alignItems: "center",
-                justifyContent: "center",
-                borderWidth: 1,
-                borderColor: "#E5E5EA",
-                ...shadows.small,
-              }}
-            >
-              <IconSymbol
-                name="line.3.horizontal.decrease.circle"
-                size={18}
-                color="#1C1C1E"
-              />
-            </Pressable>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <Pressable
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  aiPlanBottomSheetRef.current?.present();
+                }}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: "#007AFF",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  ...shadows.small,
+                }}
+              >
+                <IconSymbol name="plus" size={18} color="#FFFFFF" />
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  filterRef.current?.present();
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: "white",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderWidth: 1,
+                  borderColor: "#E5E5EA",
+                  ...shadows.small,
+                }}
+              >
+                <IconSymbol
+                  name="line.3.horizontal.decrease.circle"
+                  size={18}
+                  color="#1C1C1E"
+                />
+              </Pressable>
+            </View>
           </View>
         </Animated.View>
       )}
@@ -415,6 +534,33 @@ export default function PlansScreen() {
         {groupedPlans.map((group, index) => (
           <View key={group.date}>{renderDayGroup({ item: group, index })}</View>
         ))}
+        {groupedOtherPlans.length > 0 && (
+          <View style={{ marginTop: spacing.lg }}>
+            <View
+              style={{
+                marginBottom: spacing.md,
+                paddingHorizontal: spacing.xs,
+              }}
+            >
+              <Text
+                style={{
+                  ...typography.caption1,
+                  color: "#8E8E93",
+                  fontWeight: "600",
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                }}
+              >
+                In deiner Nähe
+              </Text>
+            </View>
+            {groupedOtherPlans.map((group, index) => (
+              <View key={`other-${group.date}`}>
+                {renderDayGroup({ item: group, index })}
+              </View>
+            ))}
+          </View>
+        )}
         {groupedPlans.length === 0 && (
           <View
             style={{
@@ -494,13 +640,13 @@ export default function PlansScreen() {
             opacity: navTitleOpacity,
             zIndex: 1000,
           }}
-          pointerEvents="none"
+          pointerEvents="box-none"
         >
           <SafeAreaView style={{ backgroundColor: "transparent" }}>
             <BlurView
               intensity={80}
               style={{
-                height: 44, // Standard iOS nav bar height
+                height: 44,
                 justifyContent: "center",
                 alignItems: "center",
                 backgroundColor: "rgba(242, 242, 247, 0.8)",
@@ -515,13 +661,44 @@ export default function PlansScreen() {
               >
                 Meine Pläne
               </Text>
+              {/* Right action (+) in overlay */}
+              <View
+                style={{
+                  position: "absolute",
+                  right: spacing.lg,
+                  top: 6,
+                  height: 32,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+                pointerEvents="box-none"
+              >
+                <Pressable
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    aiPlanBottomSheetRef.current?.present();
+                  }}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    backgroundColor: "#007AFF",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    ...shadows.small,
+                  }}
+                >
+                  <IconSymbol name="plus" size={16} color="#FFFFFF" />
+                </Pressable>
+              </View>
             </BlurView>
           </SafeAreaView>
         </Animated.View>
       )}
 
-      {/* Native iOS FAB */}
-      {groupedPlans.length > 0 && (
+      {/* Platform FAB: only show on Android */}
+      {isAndroid && groupedPlans.length > 0 && (
         <NativeFAB onPress={() => aiPlanBottomSheetRef.current?.present()} />
       )}
 
@@ -534,6 +711,27 @@ export default function PlansScreen() {
           queryClient.invalidateQueries({
             queryKey: orpc.plan.myPlans.queryOptions({
               input: filter ?? {},
+            }).queryKey,
+          });
+          // Also refresh the discovery feed
+          queryClient.invalidateQueries({
+            queryKey: orpc.plan.find.queryOptions({
+              input: {
+                startDate: filter?.startDate,
+                endDate: filter?.endDate,
+                activity: filter?.activity,
+                location:
+                  hasPermission && (filter?.radiusKm ?? 50) !== null
+                    ? {
+                        latitude,
+                        longitude,
+                        radius: Math.max(
+                          1,
+                          ((filter?.radiusKm ?? 50) as number) * 1000
+                        ),
+                      }
+                    : undefined,
+              },
             }).queryKey,
           });
           // Navigate to the plan details for quick editing

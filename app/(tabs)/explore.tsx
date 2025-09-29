@@ -61,7 +61,7 @@ export default function ExploreScreen() {
   const [filter, setFilter] = useState<PlanFilter | undefined>(undefined);
 
   const filterRef = useRef<PlanFilterBottomSheetRef>(null);
-  const { latitude, longitude, hasPermission, isLoading, requestPermission } =
+  const { latitude, longitude, hasPermission, requestPermission } =
     useLocation();
 
   const { data: foundPlans, error } = useQuery(
@@ -90,7 +90,7 @@ export default function ExploreScreen() {
     if (!foundPlans) return [];
 
     // Map flattened findPlans rows to PlanCard items
-    return foundPlans.map((p: any) => ({
+    return foundPlans.map((p) => ({
       id: p.id,
       title: p.title,
       date: (p.startDate?.toISOString?.() ?? p.startDate) || "",
@@ -348,6 +348,7 @@ export default function ExploreScreen() {
               {renderDayGroup({ item: group, index })}
             </View>
           ))}
+          <Text>{JSON.stringify(foundPlans)}</Text>
           {groupedPlans.length === 0 && (
             <View style={{ paddingTop: spacing.lg }}>
               <Text style={{ ...typography.subheadline, color: "#8E8E93" }}>

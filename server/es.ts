@@ -298,25 +298,19 @@ export const es = builder.store({
             const where = and(
               gte(schema.plans.startDate, input.startDate),
               lte(schema.plans.startDate, input.endDate),
-              ...(input.activity
-                ? [eq(schema.plans.activity, input.activity)]
-                : []),
-              ...(input?.query
-                ? [
-                    or(
-                      ilike(schema.plans.title, `%${input.query}%`),
-                      ilike(schema.planLocations.title, `%${input.query}%`),
-                      ilike(schema.planLocations.address, `%${input.query}%`)
-                    ),
-                  ]
-                : []),
-              ...(input.location
-                ? [
-                    sql`ST_DWithin(${schema.planLocations.location}::geography, ST_SetSRID(ST_MakePoint(${input.location.longitude}, ${input.location.latitude}), 4326)::geography, ${
-                      input.location.radius ?? 5000
-                    })`,
-                  ]
-                : [])
+              input.activity && eq(schema.plans.activity, input.activity),
+              input?.query
+                ? or(
+                    ilike(schema.plans.title, `%${input.query}%`),
+                    ilike(schema.planLocations.title, `%${input.query}%`),
+                    ilike(schema.planLocations.address, `%${input.query}%`)
+                  )
+                : undefined,
+              input.location
+                ? sql`ST_DWithin(${schema.planLocations.location}::geography, ST_SetSRID(ST_MakePoint(${input.location.longitude}, ${input.location.latitude}), 4326)::geography, ${
+                    input.location.radius ?? 5000
+                  })`
+                : undefined
             );
 
             const plans = await ctx.db

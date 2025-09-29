@@ -1,7 +1,9 @@
 import { useSession } from "@/client/auth";
+import orpc from "@/client/orpc";
+import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useFeatureFlag } from "posthog-react-native";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -13,17 +15,17 @@ export default function NativeLanding() {
   };
 
   const { session, isLoading } = useSession();
+  const meRes = useQuery(orpc.auth.me.queryOptions());
   const onboardingEnabled = useFeatureFlag("onboarding");
   useEffect(() => {
-    if (isLoading || !session) return;
-
-    // Prüfe Onboarding-Status
-    if (session.onboarding?.completed && !onboardingEnabled) {
+    if (meRes.isLoading || !meRes.data) return;
+    // Check Onboarding-Status
+    if (meRes.data.onboarded && !onboardingEnabled) {
       router.replace("/(tabs)");
     } else {
       router.replace("/onboarding/welcome");
     }
-  }, [session, isLoading, onboardingEnabled]);
+  }, [session, isLoading, onboardingEnabled, meRes.data, meRes.isLoading]);
 
   return (
     <SafeAreaView className="bg-white flex-1">

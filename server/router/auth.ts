@@ -26,7 +26,7 @@ const DEMO_CODE = "123456";
 
 export const authRouter = {
   getSession: protectedRoute.handler(async ({ context }) => {
-    const ctx = context as { session: any };
+    const ctx = context;
     return ctx.session ?? null;
   }),
   me: protectedRoute.handler(async ({ context }) => {

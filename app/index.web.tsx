@@ -1,18 +1,21 @@
 import { useSession } from "@/client/auth";
+import orpc from "@/client/orpc";
+import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import React, { useEffect } from "react";
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 
 export default function WebLanding() {
   const { session, isLoading } = useSession();
+  const meRes = useQuery(orpc.auth.me.queryOptions());
   useEffect(() => {
-    if (isLoading || !session) return;
-    if (session.onboarding?.completed) {
+    if (isLoading || !meRes.data) return;
+    if (meRes.data.onboarded) {
       router.replace("/(tabs)");
     } else {
       router.replace("/onboarding/welcome");
     }
-  }, [session, isLoading]);
+  }, [session, isLoading, meRes.data, meRes.isLoading]);
   useEffect(() => {
     // Set the page title for web
     if (typeof document !== "undefined") {
