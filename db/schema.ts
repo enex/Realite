@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTable } from "drizzle-orm/pg-core";
+import { index, pgTable, QueryBuilder } from "drizzle-orm/pg-core";
 
 export const events = pgTable("events", (t) => ({
   id: t.uuid("id").primaryKey(),
@@ -38,9 +38,9 @@ export const plans = pgTable(
     index().on(t.creatorId),
     index("plans_time_range").using(
       "gist",
-      sql`tsrange(${t.startDate}, ${t.endDate})`
+      sql`tsrange(${t.startDate}, ${t.endDate})`,
     ),
-  ]
+  ],
 );
 
 export type InsertPlan = typeof plans.$inferInsert;
@@ -63,7 +63,7 @@ export const planLocations = pgTable(
     imageUrl: t.text(),
     category: t.text(),
   }),
-  (t) => [index("spatial_index").using("gist", t.location)]
+  (t) => [index("spatial_index").using("gist", t.location)],
 );
 export type PlanLocation = typeof planLocations.$inferInsert;
 
@@ -176,3 +176,15 @@ export const planTimeRelations = relations(planTimes, ({ one }) => ({
 
 // #endregion
 */
+
+/**
+ * query builder for the database, very useful for writing complex queries without using a specific db or transaction directly
+ *
+ * @example
+ * const q = schema.qb.select({ id: cards.id, aboutUrl: cards.aboutUrl }).from(cards).where(
+ *   schema.isCardIsSharedWithSpace(cards.id, schema.spaceIdsSpaceIsPartOfIncludingSelf(session.user.personalSpaceId))
+ * )
+ */
+export const qb = new QueryBuilder({
+  casing: "snake_case",
+});

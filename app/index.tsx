@@ -14,7 +14,6 @@ export default function NativeLanding() {
     router.push("/auth/phone");
   };
 
-  const { session, isLoading } = useSession();
   const meRes = useQuery(orpc.auth.me.queryOptions());
   const onboardingEnabled = useFeatureFlag("onboarding");
   useEffect(() => {
@@ -25,7 +24,7 @@ export default function NativeLanding() {
     } else {
       router.replace("/onboarding/welcome");
     }
-  }, [session, isLoading, onboardingEnabled, meRes.data, meRes.isLoading]);
+  }, [onboardingEnabled, meRes.data, meRes.isLoading]);
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-zinc-950">
@@ -108,7 +107,7 @@ export default function NativeLanding() {
               className="bg-green-600 py-4 rounded-2xl active:scale-95 transition-all"
               onPress={() =>
                 Linking.openURL(
-                  "https://whatsapp.com/channel/0029Vb5w20yKwqSOem15d11O"
+                  "https://whatsapp.com/channel/0029Vb5w20yKwqSOem15d11O",
                 )
               }
             >

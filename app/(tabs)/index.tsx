@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, buttonTextVariants } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
+import { useSession } from "@/client/auth";
 import orpc from "@/client/orpc";
 import AIPlanBottomSheet, {
   AIPlanBottomSheetRef,
@@ -27,6 +28,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useLocation } from "@/hooks/useLocation";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import type { ActivityId } from "@/shared/activities";
+import { isWithinRadius } from "@/shared/utils/distance";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // iOS Design System (reduced to what's needed for this screen)
@@ -57,7 +59,7 @@ type PlanListItem = {
     latitude: number;
     longitude: number;
   }[];
-  participants?: string[];
+  participants?: { name: string; image?: string }[];
 };
 
 type GroupedPlans = {
@@ -73,6 +75,7 @@ export default function PlansScreen() {
   const [filter, setFilter] = useState<PlanFilter | undefined>(undefined);
   const queryClient = useQueryClient();
   const { latitude, longitude, hasPermission } = useLocation();
+  const { session } = useSession();
   const {
     data: plans,
     error,
@@ -82,7 +85,7 @@ export default function PlansScreen() {
   } = useQuery(
     orpc.plan.myPlans.queryOptions({
       input: filter ?? {},
-    })
+    }),
   );
 
   // TODO: Replace with data from ORPC once endpoint is available
@@ -109,9 +112,28 @@ export default function PlansScreen() {
             })
             .filter((l: any) => l.title !== "" || (l.latitude && l.longitude))
         : undefined,
-      participants: [],
+      participants: (() => {
+        const participantIds =
+          participantsByPlanId.get(plan.id) ?? new Set<string>();
+        const otherParticipants = Array.from(participantIds)
+          .map((creatorId) => {
+            const name = nameById[creatorId];
+            return name ? { name, image: undefined } : null;
+          })
+          .filter(Boolean) as { name: string; image?: string }[];
+        if (otherParticipants.length === 0) return undefined;
+
+        if (session?.id) {
+          const hasName =
+            typeof session?.name === "string" && session.name.trim().length > 0;
+          const label = hasName ? String(session.name) : "Du";
+          return [{ name: label }, ...otherParticipants];
+        }
+
+        return otherParticipants;
+      })(),
     }));
-  }, [plans]);
+  }, [plans, participantsByPlanId, nameById, session?.id, session?.name]);
 
   const filteredData = useMemo(() => {
     if (!data) return [] as PlanListItem[];
@@ -159,12 +181,12 @@ export default function PlansScreen() {
         const date = new Date(y, (m as number) - 1, d as number);
         const today = new Date();
         const todayKey = `${today.getFullYear()}-${String(
-          today.getMonth() + 1
+          today.getMonth() + 1,
         ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
         const tmr = new Date(today);
         tmr.setDate(tmr.getDate() + 1);
         const tomorrowKey = `${tmr.getFullYear()}-${String(
-          tmr.getMonth() + 1
+          tmr.getMonth() + 1,
         ).padStart(2, "0")}-${String(tmr.getDate()).padStart(2, "0")}`;
 
         let dayLabel = date.toLocaleDateString("de-DE", {
@@ -183,7 +205,7 @@ export default function PlansScreen() {
           date: dateKey,
           dayLabel,
           plans: plans.sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
           ),
         };
       })
@@ -204,13 +226,117 @@ export default function PlansScreen() {
                 longitude,
                 radius: Math.max(
                   1,
-                  ((filter?.radiusKm ?? 50) as number) * 1000
+                  ((filter?.radiusKm ?? 50) as number) * 1000,
                 ),
               }
             : undefined,
       },
-    })
+    }),
   );
+
+  const participantsByPlanId = useMemo(() => {
+    const result = new Map<string, Set<string>>();
+    if (!plans || !foundPlans) return result;
+
+    const others = Array.isArray(foundPlans) ? (foundPlans as any[]) : [];
+    const norm = (value?: unknown) =>
+      (value ?? "").toString().trim().toLowerCase();
+
+    const planList = Array.isArray(plans) ? (plans as any[]) : [];
+
+    planList.forEach((plan) => {
+      const baseId = plan?.id as string | undefined;
+      if (!baseId) return;
+
+      const baseStart = new Date(plan.startDate as any);
+      const baseEnd = plan.endDate
+        ? new Date(plan.endDate as any)
+        : new Date(baseStart.getTime() + 2 * 60 * 60 * 1000);
+
+      const planLocations = Array.isArray(plan.locations)
+        ? plan.locations.filter(Boolean)
+        : [];
+
+      const matchesLocation = (candidate: any) => {
+        if (planLocations.length === 0) return false;
+        return planLocations.some((loc: any) => {
+          const planLat = Number(loc?.latitude);
+          const planLon = Number(loc?.longitude);
+          const candLat = Number(candidate?.latitude);
+          const candLon = Number(candidate?.longitude);
+          if (
+            isFinite(planLat) &&
+            isFinite(planLon) &&
+            isFinite(candLat) &&
+            isFinite(candLon)
+          ) {
+            if (isWithinRadius(planLat, planLon, candLat, candLon, 500)) {
+              return true;
+            }
+          }
+          const planLabel = norm(loc?.title ?? loc?.address);
+          const candLabel = norm(
+            candidate?.locationTitle ?? candidate?.address,
+          );
+          if (planLabel && candLabel && planLabel === candLabel) return true;
+          return false;
+        });
+      };
+
+      const participantIds = new Set<string>();
+
+      others.forEach((candidate) => {
+        const creatorId = candidate?.creatorId as string | undefined;
+        if (!creatorId || creatorId === session?.id) return;
+        if (candidate?.id === baseId) return;
+        if (candidate?.activity !== plan.activity) return;
+
+        const candStart = new Date(candidate.startDate as any);
+        const candEnd = candidate.endDate
+          ? new Date(candidate.endDate as any)
+          : new Date(candStart.getTime() + 60 * 60 * 1000);
+
+        const overlapsInTime = candStart <= baseEnd && candEnd >= baseStart;
+        if (!overlapsInTime) return;
+        if (!matchesLocation(candidate)) return;
+
+        participantIds.add(creatorId);
+      });
+
+      result.set(baseId, participantIds);
+    });
+
+    return result;
+  }, [plans, foundPlans, session?.id]);
+
+  const overlapCreatorIds = useMemo(() => {
+    const ids = new Set<string>();
+    participantsByPlanId.forEach((set) => {
+      set.forEach((id) => ids.add(id));
+    });
+    return Array.from(ids);
+  }, [participantsByPlanId]);
+
+  const { data: overlapProfiles } = useQuery({
+    ...orpc.user.getMany.queryOptions({ input: { ids: overlapCreatorIds } }),
+    enabled: overlapCreatorIds.length > 0,
+  } as any);
+
+  const nameById = useMemo(() => {
+    const map: Record<string, string> = {};
+    const arr = Array.isArray(overlapProfiles)
+      ? (overlapProfiles as any[])
+      : [];
+    arr.forEach((profile: any) => {
+      if (profile?.id) {
+        const name = (profile.name as string) || "";
+        if (name) {
+          map[profile.id as string] = name;
+        }
+      }
+    });
+    return map;
+  }, [overlapProfiles]);
 
   const othersData = useMemo<PlanListItem[]>(() => {
     if (!foundPlans) return [];
@@ -260,12 +386,12 @@ export default function PlansScreen() {
         const date = new Date(y, (m as number) - 1, d as number);
         const today = new Date();
         const todayKey = `${today.getFullYear()}-${String(
-          today.getMonth() + 1
+          today.getMonth() + 1,
         ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
         const tmr = new Date(today);
         tmr.setDate(tmr.getDate() + 1);
         const tomorrowKey = `${tmr.getFullYear()}-${String(
-          tmr.getMonth() + 1
+          tmr.getMonth() + 1,
         ).padStart(2, "0")}-${String(tmr.getDate()).padStart(2, "0")}`;
 
         let dayLabel = date.toLocaleDateString("de-DE", {
@@ -280,7 +406,7 @@ export default function PlansScreen() {
           date: dateKey,
           dayLabel,
           plans: plans.sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
           ),
         };
       })
@@ -378,10 +504,7 @@ export default function PlansScreen() {
               >
                 Meine Pläne
               </Text>
-              <Text
-                className={mutedTextClass}
-                style={typography.subheadline}
-              >
+              <Text className={mutedTextClass} style={typography.subheadline}>
                 Alle deine Pläne
               </Text>
             </View>
@@ -417,10 +540,7 @@ export default function PlansScreen() {
 
       {error && (
         <View style={{ padding: spacing.lg }}>
-          <Text
-            className={mutedTextClass}
-            style={typography.subheadline}
-          >
+          <Text className="text-red-500" style={typography.subheadline}>
             {error.message}
           </Text>
         </View>
@@ -434,7 +554,7 @@ export default function PlansScreen() {
             ? undefined
             : Animated.event(
                 [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                { useNativeDriver: false }
+                { useNativeDriver: false },
               )
         }
         scrollEventThrottle={16}
@@ -463,7 +583,10 @@ export default function PlansScreen() {
       >
         {isAndroid && (
           <View style={{ paddingTop: spacing.sm, paddingBottom: spacing.md }}>
-            <View className="flex-row items-center justify-between" style={{ gap: 10 }}>
+            <View
+              className="flex-row items-center justify-between"
+              style={{ gap: 10 }}
+            >
               <View>
                 <Text
                   className={strongTextClass}
@@ -540,10 +663,7 @@ export default function PlansScreen() {
             >
               <IconSymbol name="calendar" size={44} color="#007AFF" />
             </View>
-            <Text
-              className={strongTextClass}
-              style={typography.headline}
-            >
+            <Text className={strongTextClass} style={typography.headline}>
               Noch keine Pläne
             </Text>
             <Text
@@ -678,7 +798,7 @@ export default function PlansScreen() {
                         longitude,
                         radius: Math.max(
                           1,
-                          ((filter?.radiusKm ?? 50) as number) * 1000
+                          ((filter?.radiusKm ?? 50) as number) * 1000,
                         ),
                       }
                     : undefined,

@@ -3,7 +3,7 @@ import { genders, relationshipStatuses } from "@/shared/validation";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Linking,
@@ -54,13 +54,16 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     if (!me.data) return;
-    const raw = me.data as any;
+    const raw = me.data;
     setName(raw?.name ?? "");
     // sanitize invalid server defaults
     const g = raw?.gender;
-    setGender(genders.includes(g) ? g : undefined);
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    setGender(g as any);
     const rs = raw?.relationshipStatus;
-    setRelationshipStatus(relationshipStatuses.includes(rs) ? rs : undefined);
+    setRelationshipStatus(
+      relationshipStatuses.includes(rs as any) ? (rs as any) : undefined
+    );
     const bd = raw?.birthDate as string | undefined;
     setBirthDate(
       typeof bd === "string" && /^\d{4}-\d{2}-\d{2}$/.test(bd) ? bd : undefined
@@ -166,7 +169,7 @@ export default function ProfileScreen() {
         </View>
 
         <ScrollView
-          className="flex-1"
+          className="flex-1 bg-zinc-100 dark:bg-zinc-950"
           contentContainerStyle={{ paddingBottom: 24 }}
         >
           <View className="px-6 pt-4 flex-col gap-y-8">
@@ -176,7 +179,7 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            <View className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-5 shadow-sm">
+            <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 p-5 shadow-sm">
               <ThemedText
                 type="subtitle"
                 className="text-zinc-900 dark:text-zinc-50 mb-4"
@@ -268,7 +271,7 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            <View className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-5 shadow-sm">
+            <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
               <ThemedText
                 type="subtitle"
                 className="text-gray-900 dark:text-white mb-4"
@@ -292,7 +295,7 @@ export default function ProfileScreen() {
               />
             </View>
 
-            <View className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-5 shadow-sm">
+            <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
               <ThemedText
                 type="subtitle"
                 className="text-gray-900 dark:text-white mb-2"
@@ -313,7 +316,7 @@ export default function ProfileScreen() {
               </Pressable>
             </View>
 
-            <View className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-5 shadow-sm">
+            <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
               <ThemedText
                 type="subtitle"
                 className="text-gray-900 dark:text-white mb-2"

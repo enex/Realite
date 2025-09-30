@@ -1,7 +1,7 @@
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { Animated, Pressable, Text, TextInput, View } from "react-native";
+import { Animated, Pressable, RefreshControl, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useSession } from "@/client/auth";
@@ -66,7 +66,13 @@ export default function ExploreScreen() {
   const { latitude, longitude, hasPermission, requestPermission } =
     useLocation();
 
-  const { data: foundPlans, error } = useQuery(
+  const {
+    data: foundPlans,
+    error,
+    refetch,
+    isFetching,
+    isRefetching,
+  } = useQuery(
     orpc.plan.find.queryOptions({
       input: {
         query: searchText || undefined,
@@ -463,6 +469,20 @@ export default function ExploreScreen() {
           )}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={Boolean(isRefetching || isFetching)}
+              onRefresh={async () => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                try {
+                  await refetch();
+                } catch (e) {
+                  console.error("Refresh error", e);
+                }
+              }}
+              tintColor="#007AFF"
+            />
+          }
           contentContainerStyle={{
             paddingHorizontal: spacing.lg,
             paddingBottom: 80,

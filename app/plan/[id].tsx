@@ -1,10 +1,12 @@
 import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Alert,
   Image,
   Pressable,
+  RefreshControl,
   ScrollView,
   Text,
   TextInput,
@@ -109,7 +111,12 @@ export default function PlanDetails() {
 
   const queryClient = useQueryClient();
   const { session } = useSession();
-  const { data: plan } = useQuery(
+  const {
+    data: plan,
+    refetch,
+    isFetching,
+    isRefetching,
+  } = useQuery(
     orpc.plan.get.queryOptions({ input: { id } })
   );
   const changePlan = useMutation(
@@ -230,6 +237,11 @@ export default function PlanDetails() {
     const list = (overlapsRaw as any[]).filter((o) => o && o.id !== id);
     return list as OverlapCandidate[];
   }, [overlapsRaw, id]);
+
+  const hasOwnOverlap = useMemo(() => {
+    if (!session?.id) return false;
+    return overlaps.some((o) => o.creatorId === session.id);
+  }, [overlaps, session?.id]);
 
   // Fetch creator profiles for overlaps
   const uniqueCreatorIds = useMemo(() => {
@@ -386,6 +398,17 @@ export default function PlanDetails() {
     return { exactMatches: exact, similarMatches: similar };
   }, [plan, overlaps, safeLocations, profileById]);
 
+  const copiedFromMatch = useMemo(() => {
+    if (!isOwner) return undefined;
+    const exactSource = exactMatches.find(
+      (m) => m.creator?.id && m.creator.id !== session?.id
+    );
+    if (exactSource) return exactSource;
+    return similarMatches.find(
+      (m) => m.creator?.id && m.creator.id !== session?.id
+    );
+  }, [isOwner, exactMatches, similarMatches, session?.id]);
+
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(locationQuery.trim()), 250);
     return () => clearTimeout(t);
@@ -468,7 +491,23 @@ export default function PlanDetails() {
   return (
     <View style={{ flex: 1, backgroundColor: c1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: c1 }}>
-        <ScrollView contentContainerStyle={{ paddingBottom: spacing.xl }}>
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={Boolean(isRefetching || isFetching)}
+              onRefresh={async () => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                try {
+                  await refetch();
+                } catch (e) {
+                  console.error("Refresh error", e);
+                }
+              }}
+              tintColor="#007AFF"
+            />
+          }
+          contentContainerStyle={{ paddingBottom: spacing.xl }}
+        >
           <LinearGradient
             colors={[c1, c2, c3]}
             start={{ x: 0, y: 1 }}
@@ -528,7 +567,7 @@ export default function PlanDetails() {
                 </BlurView>
               </Pressable>
 
-              {!isOwner && (
+              {!isOwner && !hasOwnOverlap && (
                 <Pressable
                   onPress={() => participateInPlan.mutate({ id })}
                   disabled={participateInPlan.isPending}
@@ -615,10 +654,31 @@ export default function PlanDetails() {
                   </Text>
                 </View>
               </View>
-              <View style={{ height: spacing.md }} />
-            </View>
+            <View style={{ height: spacing.md }} />
+          </View>
 
-            <View style={{ gap: spacing.sm }}>
+          {copiedFromMatch && (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+                backgroundColor: "rgba(255,255,255,0.9)",
+                borderRadius: 12,
+                paddingHorizontal: spacing.md,
+                paddingVertical: spacing.sm,
+                marginBottom: spacing.md,
+                ...shadows.small,
+              }}
+            >
+              <IconSymbol name="doc.on.doc" size={16} color="#1C1C1E" />
+              <Text style={{ ...typography.subheadline, color: "#1C1C1E", flex: 1 }}>
+                Kopie von {copiedFromMatch.creator?.name || "einem anderen Plan"}
+              </Text>
+            </View>
+          )}
+
+          <View style={{ gap: spacing.sm }}>
               <InfoRow
                 icon="calendar"
                 label="Datum"
@@ -832,7 +892,12 @@ export default function PlanDetails() {
                       Gleich
                     </Text>
                     {exactMatches.map((e) => (
-                      <OverlapRow key={e.id} item={e} accent={c3} />
+                      <OverlapRow
+                        key={e.id}
+                        item={e}
+                        accent={c3}
+                        isSource={copiedFromMatch?.id === e.id}
+                      />
                     ))}
                   </View>
                 )}
@@ -848,7 +913,12 @@ export default function PlanDetails() {
                       Ähnlich
                     </Text>
                     {similarMatches.map((e) => (
-                      <OverlapRow key={e.id} item={e} accent={c3} />
+                      <OverlapRow
+                        key={e.id}
+                        item={e}
+                        accent={c3}
+                        isSource={copiedFromMatch?.id === e.id}
+                      />
                     ))}
                   </View>
                 )}
@@ -959,6 +1029,7 @@ function getActivityLabel(id?: ActivityId) {
 function OverlapRow({
   item,
   accent,
+  isSource,
 }: {
   item: {
     id: string;
@@ -973,6 +1044,7 @@ function OverlapRow({
     };
   };
   accent: string;
+  isSource?: boolean;
 }) {
   const router = useRouter();
   const start = new Date(item.startDate as any);
@@ -986,7 +1058,8 @@ function OverlapRow({
     diffs.push(`${Math.round(item.diff.timeMinutes)} Min anders`);
   if (
     typeof item.diff.distanceMeters === "number" &&
-    isFinite(item.diff.distanceMeters)
+    isFinite(item.diff.distanceMeters) &&
+    item.diff.distanceMeters > 4
   )
     diffs.push(`${Math.round(item.diff.distanceMeters)} m entfernt`);
   if (item.diff.differentTitle) diffs.push("anderer Titel");
@@ -1022,14 +1095,37 @@ function OverlapRow({
             image={item.creator?.image as any}
             name={item.creator?.name as any}
           />
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, gap: 4 }}>
             <Text style={{ ...typography.subheadline, color: "#1C1C1E" }}>
               {item.title || "Plan"}
             </Text>
-            <Text style={{ ...typography.caption1, color: "#3C3C43" }}>
-              {timeStr}
-              {item.creator?.name ? ` · ${item.creator.name}` : ""}
-            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 6,
+              }}
+            >
+              <Text style={{ ...typography.caption1, color: "#3C3C43" }}>
+                {timeStr}
+                {item.creator?.name ? ` · ${item.creator.name}` : ""}
+              </Text>
+              {isSource && (
+                <View
+                  style={{
+                    backgroundColor: accent,
+                    borderRadius: 6,
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                  }}
+                >
+                  <Text style={{ ...typography.caption1, color: "#FFFFFF" }}>
+                    Original
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
         </View>
         {diffs.length > 0 && (
