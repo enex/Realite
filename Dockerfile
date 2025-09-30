@@ -24,7 +24,7 @@ ENV EXPO_NO_TELEMETRY_DETACH=1
 ENV EXPO_IMAGE_UTILS_NO_SHARP=1
 
 # Build the application (web export) using Node to avoid Bun/Metro resolution issues
-RUN node node_modules/@expo/cli/build/bin/cli export --platform web
+RUN bun run build:web
 
 # Expose the port the server runs on
 EXPOSE 3000
