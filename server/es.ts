@@ -1,10 +1,9 @@
 import { ActivityId } from "@/shared/activities";
 import { addSeconds } from "date-fns";
-import { and, eq, gte, ilike, lt, lte, ne, or, sql } from "drizzle-orm";
+import { and, eq, gte, ilike, lte, ne, or, sql } from "drizzle-orm";
 import * as schema from "../db/schema";
 import { builder } from "./builder";
 import {
-  distance,
   jsonArrayAgg,
   jsonArrayAggWhere,
   jsonBuildObject,
@@ -141,15 +140,28 @@ export const es = builder.store({
                 startDate: schema.plans.startDate,
                 activity: schema.plans.activity,
                 endDate: schema.plans.endDate,
-                title: schema.plans.title,
-                description: schema.plans.description,
-                url: schema.plans.url,
+                planTitle: sql<string>`${schema.plans.title}`.as("plan_title"),
+                planDescription: sql<
+                  string | null
+                >`${schema.plans.description}`.as("plan_description"),
+                planUrl: sql<string | null>`${schema.plans.url}`.as("plan_url"),
                 repetition: schema.plans.repetition,
                 // location
                 location: schema.planLocations.location,
                 address: schema.planLocations.address,
                 category: schema.planLocations.category,
                 imageUrl: schema.planLocations.imageUrl,
+                locationTitle: sql<
+                  string | null
+                >`${schema.planLocations.title}`.as("location_title"),
+                locationUrl: sql<string | null>`${schema.planLocations.url}`.as(
+                  "location_url"
+                ),
+                locationDescription: sql<
+                  string | null
+                >`${schema.planLocations.description}`.as(
+                  "location_description"
+                ),
               })
               .from(schema.plans)
               .leftJoin(
@@ -169,16 +181,24 @@ export const es = builder.store({
                 startDate: ownPlansWithLocation.startDate,
                 endDate: ownPlansWithLocation.endDate,
                 activity: ownPlansWithLocation.activity,
-                title: ownPlansWithLocation.title,
-                description: ownPlansWithLocation.description,
-                url: ownPlansWithLocation.url,
+                title: sql<string>`"ownPlansWithLocation"."plan_title"`.as(
+                  "title"
+                ),
+                description: sql<
+                  string | null
+                >`"ownPlansWithLocation"."plan_description"`.as("description"),
+                url: sql<string | null>`"ownPlansWithLocation"."plan_url"`.as(
+                  "url"
+                ),
                 repetition: ownPlansWithLocation.repetition,
                 locations: jsonArrayAgg(
                   jsonBuildObject({
-                    title: ownPlansWithLocation.title,
+                    title: sql`"ownPlansWithLocation"."location_title"`,
                     address: ownPlansWithLocation.address,
                     category: ownPlansWithLocation.category,
                     imageUrl: ownPlansWithLocation.imageUrl,
+                    url: sql`"ownPlansWithLocation"."location_url"`,
+                    description: sql`"ownPlansWithLocation"."location_description"`,
                     latitude: sql<number>`ST_Y(${ownPlansWithLocation.location})`,
                     longitude: sql<number>`ST_X(${ownPlansWithLocation.location})`,
                   })
@@ -189,9 +209,21 @@ export const es = builder.store({
                 similarOverlappingPlans: jsonArrayAggWhere(
                   jsonBuildObject({
                     id: otherPlansWithLocation.id,
+                    title: sql`"otherPlansWithLocation"."plan_title"`,
+                    description: sql`"otherPlansWithLocation"."plan_description"`,
+                    url: sql`"otherPlansWithLocation"."plan_url"`,
                     startDate: otherPlansWithLocation.startDate,
                     endDate: otherPlansWithLocation.endDate,
+                    activity: otherPlansWithLocation.activity,
                     creatorId: otherPlansWithLocation.creatorId,
+                    locationTitle: sql`"otherPlansWithLocation"."location_title"`,
+                    address: otherPlansWithLocation.address,
+                    category: otherPlansWithLocation.category,
+                    imageUrl: otherPlansWithLocation.imageUrl,
+                    locationUrl: sql`"otherPlansWithLocation"."location_url"`,
+                    locationDescription: sql`"otherPlansWithLocation"."location_description"`,
+                    latitude: sql<number>`ST_Y(${otherPlansWithLocation.location})`,
+                    longitude: sql<number>`ST_X(${otherPlansWithLocation.location})`,
                   }),
                   sql<boolean>`${otherPlansWithLocation.id} is not null`
                 ),
@@ -216,13 +248,8 @@ export const es = builder.store({
                       otherPlansWithLocation.endDate
                     )
                   ),
-                  lt(
-                    distance(
-                      ownPlansWithLocation.location,
-                      otherPlansWithLocation.location
-                    ),
-                    500
-                  )
+                  // locations are within 50 meters (using geography for meter-based distance)
+                  sql<boolean>`ST_DWithin(${ownPlansWithLocation.location}::geography, ${otherPlansWithLocation.location}::geography, 50)`
                 )
               )
               .where(
@@ -242,9 +269,9 @@ export const es = builder.store({
                 ownPlansWithLocation.startDate,
                 ownPlansWithLocation.endDate,
                 ownPlansWithLocation.activity,
-                ownPlansWithLocation.title,
-                ownPlansWithLocation.description,
-                ownPlansWithLocation.url,
+                sql`"ownPlansWithLocation"."plan_title"`,
+                sql`"ownPlansWithLocation"."plan_description"`,
+                sql`"ownPlansWithLocation"."plan_url"`,
                 ownPlansWithLocation.repetition
               );
 

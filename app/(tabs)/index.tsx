@@ -14,21 +14,18 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, buttonTextVariants } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
-import { useSession } from "@/client/auth";
 import orpc from "@/client/orpc";
 import AIPlanBottomSheet, {
-  AIPlanBottomSheetRef,
+  type AIPlanBottomSheetRef,
 } from "@/components/AIPlanBottomSheet";
 import { PlanCard, shadows } from "@/components/PlanCard";
 import PlanFilterBottomSheet, {
-  PlanFilterBottomSheetRef,
   type PlanFilter,
+  type PlanFilterBottomSheetRef,
 } from "@/components/PlanFilterBottomSheet";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { useLocation } from "@/hooks/useLocation";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import type { ActivityId } from "@/shared/activities";
-import { isWithinRadius } from "@/shared/utils/distance";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // iOS Design System (reduced to what's needed for this screen)
@@ -74,8 +71,6 @@ export default function PlansScreen() {
   const filterRef = useRef<PlanFilterBottomSheetRef>(null);
   const [filter, setFilter] = useState<PlanFilter | undefined>(undefined);
   const queryClient = useQueryClient();
-  const { latitude, longitude, hasPermission } = useLocation();
-  const { session } = useSession();
   const {
     data: plans,
     error,
@@ -85,55 +80,93 @@ export default function PlansScreen() {
   } = useQuery(
     orpc.plan.myPlans.queryOptions({
       input: filter ?? {},
-    }),
+    })
   );
 
-  // TODO: Replace with data from ORPC once endpoint is available
+  // Extract unique participant creator IDs from similarOverlappingPlans
+  const participantCreatorIds = useMemo(() => {
+    if (!plans) return [];
+    const ids = new Set<string>();
+    plans.forEach((plan: any) => {
+      if (Array.isArray(plan.similarOverlappingPlans)) {
+        plan.similarOverlappingPlans.forEach((overlap: any) => {
+          if (overlap?.creatorId) {
+            ids.add(overlap.creatorId);
+          }
+        });
+      }
+    });
+    return Array.from(ids);
+  }, [plans]);
+
+  // Fetch profiles for all participants
+  const { data: participantProfiles } = useQuery({
+    ...orpc.user.getMany.queryOptions({
+      input: { ids: participantCreatorIds },
+    }),
+    enabled: participantCreatorIds.length > 0,
+  } as any);
+
+  // Map creator IDs to names
+  const participantNameById = useMemo(() => {
+    const map: Record<string, string> = {};
+    const arr = Array.isArray(participantProfiles)
+      ? (participantProfiles as any[])
+      : [];
+    arr.forEach((profile: any) => {
+      if (profile?.id) {
+        const name = (profile.name as string) || "";
+        if (name) {
+          map[profile.id as string] = name;
+        }
+      }
+    });
+    return map;
+  }, [participantProfiles]);
+
   const data = useMemo<PlanListItem[]>(() => {
     if (!plans) return [];
 
-    return plans.map((plan) => ({
-      id: plan.id,
-      title: plan.title,
-      date: (plan.startDate?.toISOString?.() ?? (plan.startDate as any)) || "",
-      status: "committed",
-      activity: plan.activity as ActivityId,
-      locations: Array.isArray(plan.locations)
-        ? plan.locations
-            .filter((l: any) => !!l)
-            .map((l: any) => {
-              const title = ((l.title ?? l.address ?? "") as string) || "";
-              return {
-                title,
-                address: (l.address ?? undefined) as string | undefined,
-                latitude: Number(l.latitude ?? 0),
-                longitude: Number(l.longitude ?? 0),
-              };
-            })
-            .filter((l: any) => l.title !== "" || (l.latitude && l.longitude))
-        : undefined,
-      participants: (() => {
-        const participantIds =
-          participantsByPlanId.get(plan.id) ?? new Set<string>();
-        const otherParticipants = Array.from(participantIds)
-          .map((creatorId) => {
-            const name = nameById[creatorId];
-            return name ? { name, image: undefined } : null;
-          })
-          .filter(Boolean) as { name: string; image?: string }[];
-        if (otherParticipants.length === 0) return undefined;
+    return plans.map((plan: any) => {
+      // Get participants from similarOverlappingPlans
+      const participants: { name: string; image?: string }[] = [];
+      if (Array.isArray(plan.similarOverlappingPlans)) {
+        plan.similarOverlappingPlans.forEach((overlap: any) => {
+          const creatorId = overlap?.creatorId;
+          if (creatorId && participantNameById[creatorId]) {
+            participants.push({
+              name: participantNameById[creatorId],
+              image: undefined, // Can be extended later if profile images are available
+            });
+          }
+        });
+      }
 
-        if (session?.id) {
-          const hasName =
-            typeof session?.name === "string" && session.name.trim().length > 0;
-          const label = hasName ? String(session.name) : "Du";
-          return [{ name: label }, ...otherParticipants];
-        }
-
-        return otherParticipants;
-      })(),
-    }));
-  }, [plans, participantsByPlanId, nameById, session?.id, session?.name]);
+      return {
+        id: plan.id,
+        title: plan.title,
+        date:
+          (plan.startDate?.toISOString?.() ?? (plan.startDate as any)) || "",
+        status: "committed",
+        activity: plan.activity as ActivityId,
+        locations: Array.isArray(plan.locations)
+          ? plan.locations
+              .filter((l: any) => !!l)
+              .map((l: any) => {
+                const title = ((l.title ?? l.address ?? "") as string) || "";
+                return {
+                  title,
+                  address: (l.address ?? undefined) as string | undefined,
+                  latitude: Number(l.latitude ?? 0),
+                  longitude: Number(l.longitude ?? 0),
+                };
+              })
+              .filter((l: any) => l.title !== "" || (l.latitude && l.longitude))
+          : undefined,
+        participants: participants.length > 0 ? participants : undefined,
+      };
+    });
+  }, [plans, participantNameById]);
 
   const filteredData = useMemo(() => {
     if (!data) return [] as PlanListItem[];
@@ -181,12 +214,12 @@ export default function PlansScreen() {
         const date = new Date(y, (m as number) - 1, d as number);
         const today = new Date();
         const todayKey = `${today.getFullYear()}-${String(
-          today.getMonth() + 1,
+          today.getMonth() + 1
         ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
         const tmr = new Date(today);
         tmr.setDate(tmr.getDate() + 1);
         const tomorrowKey = `${tmr.getFullYear()}-${String(
-          tmr.getMonth() + 1,
+          tmr.getMonth() + 1
         ).padStart(2, "0")}-${String(tmr.getDate()).padStart(2, "0")}`;
 
         let dayLabel = date.toLocaleDateString("de-DE", {
@@ -205,213 +238,14 @@ export default function PlansScreen() {
           date: dateKey,
           dayLabel,
           plans: plans.sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
           ),
         };
       })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [filteredData]);
 
-  // Also fetch others' plans (public feed / nearby)
-  const { data: foundPlans } = useQuery(
-    orpc.plan.find.queryOptions({
-      input: {
-        startDate: filter?.startDate,
-        endDate: filter?.endDate,
-        activity: filter?.activity,
-        location:
-          hasPermission && (filter?.radiusKm ?? 50) !== null
-            ? {
-                latitude,
-                longitude,
-                radius: Math.max(
-                  1,
-                  ((filter?.radiusKm ?? 50) as number) * 1000,
-                ),
-              }
-            : undefined,
-      },
-    }),
-  );
-
-  const participantsByPlanId = useMemo(() => {
-    const result = new Map<string, Set<string>>();
-    if (!plans || !foundPlans) return result;
-
-    const others = Array.isArray(foundPlans) ? (foundPlans as any[]) : [];
-    const norm = (value?: unknown) =>
-      (value ?? "").toString().trim().toLowerCase();
-
-    const planList = Array.isArray(plans) ? (plans as any[]) : [];
-
-    planList.forEach((plan) => {
-      const baseId = plan?.id as string | undefined;
-      if (!baseId) return;
-
-      const baseStart = new Date(plan.startDate as any);
-      const baseEnd = plan.endDate
-        ? new Date(plan.endDate as any)
-        : new Date(baseStart.getTime() + 2 * 60 * 60 * 1000);
-
-      const planLocations = Array.isArray(plan.locations)
-        ? plan.locations.filter(Boolean)
-        : [];
-
-      const matchesLocation = (candidate: any) => {
-        if (planLocations.length === 0) return false;
-        return planLocations.some((loc: any) => {
-          const planLat = Number(loc?.latitude);
-          const planLon = Number(loc?.longitude);
-          const candLat = Number(candidate?.latitude);
-          const candLon = Number(candidate?.longitude);
-          if (
-            isFinite(planLat) &&
-            isFinite(planLon) &&
-            isFinite(candLat) &&
-            isFinite(candLon)
-          ) {
-            if (isWithinRadius(planLat, planLon, candLat, candLon, 500)) {
-              return true;
-            }
-          }
-          const planLabel = norm(loc?.title ?? loc?.address);
-          const candLabel = norm(
-            candidate?.locationTitle ?? candidate?.address,
-          );
-          if (planLabel && candLabel && planLabel === candLabel) return true;
-          return false;
-        });
-      };
-
-      const participantIds = new Set<string>();
-
-      others.forEach((candidate) => {
-        const creatorId = candidate?.creatorId as string | undefined;
-        if (!creatorId || creatorId === session?.id) return;
-        if (candidate?.id === baseId) return;
-        if (candidate?.activity !== plan.activity) return;
-
-        const candStart = new Date(candidate.startDate as any);
-        const candEnd = candidate.endDate
-          ? new Date(candidate.endDate as any)
-          : new Date(candStart.getTime() + 60 * 60 * 1000);
-
-        const overlapsInTime = candStart <= baseEnd && candEnd >= baseStart;
-        if (!overlapsInTime) return;
-        if (!matchesLocation(candidate)) return;
-
-        participantIds.add(creatorId);
-      });
-
-      result.set(baseId, participantIds);
-    });
-
-    return result;
-  }, [plans, foundPlans, session?.id]);
-
-  const overlapCreatorIds = useMemo(() => {
-    const ids = new Set<string>();
-    participantsByPlanId.forEach((set) => {
-      set.forEach((id) => ids.add(id));
-    });
-    return Array.from(ids);
-  }, [participantsByPlanId]);
-
-  const { data: overlapProfiles } = useQuery({
-    ...orpc.user.getMany.queryOptions({ input: { ids: overlapCreatorIds } }),
-    enabled: overlapCreatorIds.length > 0,
-  } as any);
-
-  const nameById = useMemo(() => {
-    const map: Record<string, string> = {};
-    const arr = Array.isArray(overlapProfiles)
-      ? (overlapProfiles as any[])
-      : [];
-    arr.forEach((profile: any) => {
-      if (profile?.id) {
-        const name = (profile.name as string) || "";
-        if (name) {
-          map[profile.id as string] = name;
-        }
-      }
-    });
-    return map;
-  }, [overlapProfiles]);
-
-  const othersData = useMemo<PlanListItem[]>(() => {
-    if (!foundPlans) return [];
-
-    const mapped = (foundPlans as any[]).map((p) => ({
-      id: p.id as string,
-      title: p.title as string,
-      date: (p.startDate?.toISOString?.() ?? p.startDate) as string,
-      status: "committed" as const,
-      activity: p.activity as ActivityId,
-      locations:
-        p.locationTitle || p.latitude || p.longitude
-          ? [
-              {
-                title: (p.locationTitle ?? "") as string,
-                address: (p.address ?? undefined) as string | undefined,
-                latitude: Number(p.latitude ?? 0),
-                longitude: Number(p.longitude ?? 0),
-                // optional fields present in findPlans are ignored here
-              },
-            ]
-          : undefined,
-      participants: [],
-    }));
-
-    // Deduplicate own plans by id
-    const ownIds = new Set((filteredData ?? []).map((d) => d.id));
-    return mapped.filter((m) => !ownIds.has(m.id));
-  }, [foundPlans, filteredData]);
-
-  const groupedOtherPlans = useMemo(() => {
-    const groups: Record<string, PlanListItem[]> = {};
-
-    othersData.forEach((plan) => {
-      const date = new Date(plan.date);
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, "0");
-      const d = String(date.getDate()).padStart(2, "0");
-      const dateKey = `${y}-${m}-${d}`;
-      if (!groups[dateKey]) groups[dateKey] = [];
-      groups[dateKey].push(plan);
-    });
-
-    return Object.entries(groups)
-      .map(([dateKey, plans]) => {
-        const [y, m, d] = dateKey.split("-").map((v) => Number(v));
-        const date = new Date(y, (m as number) - 1, d as number);
-        const today = new Date();
-        const todayKey = `${today.getFullYear()}-${String(
-          today.getMonth() + 1,
-        ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-        const tmr = new Date(today);
-        tmr.setDate(tmr.getDate() + 1);
-        const tomorrowKey = `${tmr.getFullYear()}-${String(
-          tmr.getMonth() + 1,
-        ).padStart(2, "0")}-${String(tmr.getDate()).padStart(2, "0")}`;
-
-        let dayLabel = date.toLocaleDateString("de-DE", {
-          weekday: "long",
-          month: "short",
-          day: "numeric",
-        });
-        if (dateKey === todayKey) dayLabel = "Heute";
-        else if (dateKey === tomorrowKey) dayLabel = "Morgen";
-
-        return {
-          date: dateKey,
-          dayLabel,
-          plans: plans.sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-          ),
-        };
-      })
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [othersData]);
+  // Participants are now fetched as part of myPlans via similarOverlappingPlans
 
   const colorScheme = useColorScheme();
 
@@ -554,7 +388,7 @@ export default function PlansScreen() {
             ? undefined
             : Animated.event(
                 [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                { useNativeDriver: false },
+                { useNativeDriver: false }
               )
         }
         scrollEventThrottle={16}
@@ -621,31 +455,6 @@ export default function PlansScreen() {
         {groupedPlans.map((group, index) => (
           <View key={group.date}>{renderDayGroup({ item: group, index })}</View>
         ))}
-        {groupedOtherPlans.length > 0 && (
-          <View style={{ marginTop: spacing.lg }}>
-            <View
-              style={{
-                marginBottom: spacing.md,
-                paddingHorizontal: spacing.xs,
-              }}
-            >
-              <Text
-                className={`uppercase font-semibold ${mutedTextClass}`}
-                style={{
-                  ...typography.caption1,
-                  letterSpacing: 0.5,
-                }}
-              >
-                In deiner Nähe
-              </Text>
-            </View>
-            {groupedOtherPlans.map((group, index) => (
-              <View key={`other-${group.date}`}>
-                {renderDayGroup({ item: group, index })}
-              </View>
-            ))}
-          </View>
-        )}
         {groupedPlans.length === 0 && (
           <View
             style={{
@@ -778,31 +587,10 @@ export default function PlansScreen() {
         ref={aiPlanBottomSheetRef}
         onPlanCreated={(plan: any) => {
           console.log("Plan created:", plan);
-          // Refresh the plans list so the new plan appears
+          // Refresh the plans list so the new plan appears (also refreshes participants via similarOverlappingPlans)
           queryClient.invalidateQueries({
             queryKey: orpc.plan.myPlans.queryOptions({
               input: filter ?? {},
-            }).queryKey,
-          });
-          // Also refresh the discovery feed
-          queryClient.invalidateQueries({
-            queryKey: orpc.plan.find.queryOptions({
-              input: {
-                startDate: filter?.startDate,
-                endDate: filter?.endDate,
-                activity: filter?.activity,
-                location:
-                  hasPermission && (filter?.radiusKm ?? 50) !== null
-                    ? {
-                        latitude,
-                        longitude,
-                        radius: Math.max(
-                          1,
-                          ((filter?.radiusKm ?? 50) as number) * 1000,
-                        ),
-                      }
-                    : undefined,
-              },
             }).queryKey,
           });
           // Navigate to the plan details for quick editing
