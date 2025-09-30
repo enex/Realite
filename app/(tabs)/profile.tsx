@@ -3,6 +3,7 @@ import { genders, relationshipStatuses } from "@/shared/validation";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useRouter } from "expo-router";
+import { useFeatureFlag } from "posthog-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
@@ -22,6 +23,7 @@ import { ThemedView } from "@/components/ThemedView";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const simpleAppBar = useFeatureFlag("simple-appbar-for-starpage");
   const me = useQuery(rpc.auth.me.queryOptions());
 
   const [name, setName] = useState("");
@@ -148,6 +150,187 @@ export default function ProfileScreen() {
     }
   };
 
+  // Simple app bar version
+  if (simpleAppBar) {
+    return (
+      <ScrollView
+        className="flex-1 bg-zinc-100 dark:bg-zinc-950"
+        contentContainerStyle={{ paddingTop: 16, paddingBottom: 24 }}
+      >
+        <View className="px-6 flex-col gap-y-8">
+          <View className="items-center">
+            <View className="h-24 w-24 rounded-full bg-white dark:bg-gray-700 items-center justify-center mb-3">
+              <ThemedText className="text-3xl">👤</ThemedText>
+            </View>
+          </View>
+
+          <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 p-5 shadow-sm">
+            <ThemedText
+              type="subtitle"
+              className="text-zinc-900 dark:text-zinc-50 mb-4"
+            >
+              Basisdaten
+            </ThemedText>
+
+            <View className="mb-4">
+              <ThemedText className="mb-2 text-zinc-600 dark:text-zinc-400">
+                Name
+              </ThemedText>
+              <TextInput
+                className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-zinc-900 dark:text-zinc-50"
+                placeholder="Dein Name"
+                placeholderTextColor={
+                  Platform.OS === "ios" ? undefined : "#9CA3AF"
+                }
+                value={name}
+                onChangeText={setName}
+              />
+            </View>
+
+            <View className="mb-4">
+              <ThemedText className="mb-2 text-zinc-600 dark:text-zinc-400">
+                Telefonnummer
+              </ThemedText>
+              <View className="flex-row items-center justify-between rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3">
+                <ThemedText className="text-gray-900 dark:text-white">
+                  {(me.data as any)?.phoneNumber || "—"}
+                </ThemedText>
+                <Link href="/profile/change-phone" asChild>
+                  <Pressable className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5">
+                    <Text className="text-primary">Ändern</Text>
+                  </Pressable>
+                </Link>
+              </View>
+            </View>
+
+            <View className="mb-4">
+              <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
+                Geschlecht
+              </ThemedText>
+              <View className="flex-row flex-wrap gap-2">
+                {genders.map((g) => (
+                  <Pressable
+                    key={g}
+                    onPress={() => setGender(g)}
+                    className={`rounded-xl border px-3 py-2 ${gender === g ? "bg-primary border-primary" : "bg-transparent dark:border-zinc-50 border-zinc-700"}`}
+                  >
+                    <Text
+                      className={
+                        gender === g
+                          ? "text-primary-foreground"
+                          : "text-zinc-900 dark:text-zinc-50"
+                      }
+                    >
+                      {GENDER_LABEL[g]}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+
+            <BirthdateField value={birthDate} onChange={setBirthDate} />
+
+            <View>
+              <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
+                Beziehungsstatus
+              </ThemedText>
+              <View className="flex-row flex-wrap gap-2">
+                {relationshipStatuses.map((rs) => (
+                  <Pressable
+                    key={rs}
+                    onPress={() => setRelationshipStatus(rs)}
+                    className={`rounded-xl border px-3 py-2 ${relationshipStatus === rs ? "bg-primary border-primary" : "border-separate bg-transparent dark:border-zinc-50 border-zinc-700"}`}
+                  >
+                    <Text
+                      className={
+                        relationshipStatus === rs
+                          ? "text-primary-foreground"
+                          : "text-zinc-900 dark:text-zinc-50"
+                      }
+                    >
+                      {REL_LABEL[rs]}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          </View>
+
+          <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
+            <ThemedText
+              type="subtitle"
+              className="text-gray-900 dark:text-white mb-4"
+            >
+              Sichtbarkeit
+            </ThemedText>
+            <ToggleRow
+              label="Geschlecht anzeigen"
+              value={showGender}
+              onChange={setShowGender}
+            />
+            <ToggleRow
+              label="Alter anzeigen"
+              value={showAge}
+              onChange={setShowAge}
+            />
+            <ToggleRow
+              label="Beziehungsstatus anzeigen"
+              value={showRelationshipStatus}
+              onChange={setShowRelationshipStatus}
+            />
+          </View>
+
+          <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
+            <ThemedText
+              type="subtitle"
+              className="text-gray-900 dark:text-white mb-2"
+            >
+              Benachrichtigungen
+            </ThemedText>
+            <ThemedText className="mb-3 text-gray-600 dark:text-gray-400">
+              Push-Benachrichtigungen können in den System-Einstellungen
+              verwaltet werden.
+            </ThemedText>
+            <Pressable
+              onPress={openNotificationSettings}
+              className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
+            >
+              <Text className="text-primary">Benachrichtigungen verwalten</Text>
+            </Pressable>
+          </View>
+
+          <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
+            <ThemedText
+              type="subtitle"
+              className="text-gray-900 dark:text-white mb-2"
+            >
+              Onboarding
+            </ThemedText>
+            <ThemedText className="mb-3 text-gray-600 dark:text-gray-400">
+              Wiederhole das Onboarding, um deine Einstellungen und
+              Berechtigungen zu konfigurieren.
+            </ThemedText>
+            <Pressable
+              onPress={() => router.push("/onboarding/welcome")}
+              className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
+            >
+              <Text className="text-primary">Onboarding wiederholen</Text>
+            </Pressable>
+          </View>
+
+          <View className="opacity-80">
+            <ThemedText className="text-center text-gray-500 dark:text-gray-400">
+              Änderungen werden automatisch gespeichert
+            </ThemedText>
+          </View>
+
+          <View className="pb-8" />
+        </View>
+      </ScrollView>
+    );
+  }
+
+  // Original complex app bar version
   return (
     <SafeAreaView className="flex-1 bg-zinc-100 dark:bg-zinc-950">
       <ThemedView className="flex-1 bg-zinc-100 dark:bg-zinc-950">

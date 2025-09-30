@@ -1,4 +1,5 @@
 import { Tabs } from "expo-router";
+import { useFeatureFlag } from "posthog-react-native";
 import React from "react";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -6,18 +7,17 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
-import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const simpleAppBar = Boolean(useFeatureFlag("simple-appbar-for-starpage"));
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: "#6366F1",
         tabBarInactiveTintColor: "#8E8E93",
-        headerShown: false,
+        headerShown: simpleAppBar,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
@@ -61,8 +61,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="explore"
         options={{
-          title: "Explore",
-          headerTitle: "Explore",
+          title: "Entdecken",
+          headerTitle: "Entdecken",
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol
               size={24}
@@ -75,8 +75,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
-          headerTitle: "Profile",
+          title: "Profil",
+          headerTitle: "Profil",
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol
               size={24}

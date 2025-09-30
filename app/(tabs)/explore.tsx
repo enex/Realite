@@ -1,7 +1,22 @@
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import React, { useCallback, useMemo, useRef, useState } from "react";
-import { Animated, Pressable, RefreshControl, Text, TextInput, View } from "react-native";
+import { useNavigation } from "expo-router";
+import { useFeatureFlag } from "posthog-react-native";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  Animated,
+  Pressable,
+  RefreshControl,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useSession } from "@/client/auth";
@@ -58,11 +73,47 @@ type GroupedPlans = {
 };
 
 export default function ExploreScreen() {
+  const navigation = useNavigation();
+  const simpleAppBar = useFeatureFlag("simple-appbar-for-starpage");
   const [showSearch, setShowSearch] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [filter, setFilter] = useState<PlanFilter | undefined>(undefined);
 
   const filterRef = useRef<PlanFilterBottomSheetRef>(null);
+
+  // Set header buttons when simple app bar is enabled
+  useEffect(() => {
+    if (simpleAppBar) {
+      navigation.setOptions({
+        headerRight: () => (
+          <View style={{ flexDirection: "row", gap: 18, marginRight: 8 }}>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setShowSearch((v) => !v);
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <IconSymbol name="magnifyingglass" size={22} color="#007AFF" />
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                filterRef.current?.present();
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <IconSymbol
+                name="line.3.horizontal.decrease.circle"
+                size={22}
+                color="#007AFF"
+              />
+            </Pressable>
+          </View>
+        ),
+      } as any);
+    }
+  }, [simpleAppBar, navigation]);
   const { latitude, longitude, hasPermission, requestPermission } =
     useLocation();
 
@@ -361,6 +412,136 @@ export default function ExploreScreen() {
     setFilter(f);
   }, []);
 
+  // Simple app bar version
+  if (simpleAppBar) {
+    return (
+      <View className="flex-1 bg-zinc-100 dark:bg-zinc-950">
+        {showSearch && (
+          <View
+            style={{
+              paddingHorizontal: spacing.md,
+              paddingVertical: spacing.sm,
+            }}
+            className="bg-zinc-100 dark:bg-zinc-950"
+          >
+            <View
+              style={{
+                borderRadius: 10,
+                backgroundColor: "rgba(120, 120, 128, 0.12)",
+                flexDirection: "row",
+                alignItems: "center",
+                paddingHorizontal: 8,
+                height: 36,
+              }}
+              className="dark:bg-zinc-800"
+            >
+              <IconSymbol name="magnifyingglass" size={17} color="#8E8E93" />
+              <TextInput
+                placeholder="Suche"
+                placeholderTextColor="#8E8E93"
+                value={searchText}
+                onChangeText={setSearchText}
+                style={{
+                  flex: 1,
+                  paddingVertical: 8,
+                  paddingHorizontal: 8,
+                  fontSize: 17,
+                  color: "#1C1C1E",
+                }}
+                className="dark:text-zinc-50"
+                returnKeyType="search"
+                autoFocus
+              />
+              {!!searchText && (
+                <Pressable
+                  onPress={() => setSearchText("")}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <View
+                    style={{
+                      width: 16,
+                      height: 16,
+                      borderRadius: 8,
+                      backgroundColor: "#8E8E93",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <IconSymbol name="xmark" size={10} color="#FFFFFF" />
+                  </View>
+                </Pressable>
+              )}
+            </View>
+          </View>
+        )}
+        {error && (
+          <View style={{ padding: spacing.lg }}>
+            <Text
+              style={{ ...typography.subheadline, color: "#8E8E93" }}
+              className="text-zinc-500 dark:text-zinc-400"
+            >
+              {error.message}
+            </Text>
+          </View>
+        )}
+        <Animated.ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={Boolean(isRefetching || isFetching)}
+              onRefresh={async () => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                try {
+                  await refetch();
+                } catch (e) {
+                  console.error("Refresh error", e);
+                }
+              }}
+              tintColor="#007AFF"
+            />
+          }
+          contentContainerStyle={{
+            paddingTop: showSearch ? 0 : spacing.md,
+            paddingHorizontal: spacing.lg,
+            paddingBottom: 80,
+          }}
+        >
+          {groupedPlans.map((group, index) => (
+            <View key={group.date}>
+              {renderDayGroup({ item: group, index })}
+            </View>
+          ))}
+          {groupedPlans.length === 0 && (
+            <View style={{ paddingTop: spacing.lg }}>
+              <Text
+                style={{ ...typography.subheadline, color: "#8E8E93" }}
+                className="text-zinc-500 dark:text-zinc-400"
+              >
+                Keine Pläne gefunden
+              </Text>
+            </View>
+          )}
+        </Animated.ScrollView>
+
+        <PlanFilterBottomSheet
+          ref={filterRef}
+          initial={{
+            useLocation: hasPermission,
+            radiusKm:
+              typeof filter?.radiusKm === "undefined"
+                ? 50
+                : (filter?.radiusKm ?? null),
+            ...filter,
+          }}
+          onApply={onApplyFilter}
+          canUseLocation={hasPermission}
+          onRequestLocation={() => requestPermission()}
+        />
+      </View>
+    );
+  }
+
+  // Original complex app bar version
   return (
     <View className="flex-1 bg-zinc-100 dark:bg-zinc-950">
       <SafeAreaView style={{ flex: 1 }}>

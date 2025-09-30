@@ -21,8 +21,11 @@
     "db:check": "drizzle-kit check",
     "build": "expo export --platform web",
     "build:web": "expo export --platform web",
-    "build:android": "dotenvx run -f .env.local -- eas build --platform android --local",
-    "build:ios": "dotenvx run -f .env.local -- eas build --platform ios --local"
+    "build:android": "export JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home && NODE_ENV=production dotenvx run -f .env.local -- eas build --platform android --local",
+    "build:ios": "NODE_ENV=production dotenvx run -f .env.local -- eas build --platform ios --local",
+    "submit:android": "eas submit --platform android --profile production",
+    "submit:ios": "eas submit --platform ios --profile production",
+    "testflight": "npx testflight"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.38",

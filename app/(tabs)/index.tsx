@@ -1,7 +1,8 @@
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useNavigation, useRouter } from "expo-router";
+import { useFeatureFlag } from "posthog-react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Platform,
@@ -67,10 +68,46 @@ type GroupedPlans = {
 
 export default function PlansScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
+  const simpleAppBar = useFeatureFlag("simple-appbar-for-starpage");
   const aiPlanBottomSheetRef = useRef<AIPlanBottomSheetRef>(null);
   const filterRef = useRef<PlanFilterBottomSheetRef>(null);
   const [filter, setFilter] = useState<PlanFilter | undefined>(undefined);
   const queryClient = useQueryClient();
+
+  // Set header buttons when simple app bar is enabled
+  useEffect(() => {
+    if (simpleAppBar) {
+      navigation.setOptions({
+        headerRight: () => (
+          <View style={{ flexDirection: "row", gap: 18, marginRight: 8 }}>
+            <Pressable
+              onPress={() => {
+                filterRef.current?.present();
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <IconSymbol
+                name="line.3.horizontal.decrease.circle"
+                size={22}
+                color="#007AFF"
+              />
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                aiPlanBottomSheetRef.current?.present();
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <IconSymbol name="plus" size={22} color="#007AFF" />
+            </Pressable>
+          </View>
+        ),
+      } as any);
+    }
+  }, [simpleAppBar, navigation]);
   const {
     data: plans,
     error,
@@ -309,6 +346,125 @@ export default function PlansScreen() {
 
   const bottomPadding = isAndroid ? 80 : 140;
 
+  // Simple app bar version
+  if (simpleAppBar) {
+    return (
+      <View className={`flex-1 ${surfaceClass}`}>
+        {error && (
+          <View style={{ padding: spacing.lg }}>
+            <Text className="text-red-500" style={typography.subheadline}>
+              {error.message}
+            </Text>
+          </View>
+        )}
+        <Animated.ScrollView
+          style={{ flex: 1 }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={Boolean(isRefetching || isFetching)}
+              onRefresh={async () => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                try {
+                  await refetch();
+                } catch (e) {
+                  console.error("Refresh error", e);
+                }
+              }}
+              tintColor="#007AFF"
+            />
+          }
+          contentContainerStyle={{
+            paddingTop: spacing.md,
+            paddingHorizontal: spacing.lg,
+            paddingBottom: bottomPadding,
+          }}
+        >
+          {groupedPlans.map((group, index) => (
+            <View key={group.date}>
+              {renderDayGroup({ item: group, index })}
+            </View>
+          ))}
+          {groupedPlans.length === 0 && (
+            <View
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                paddingTop: spacing.xl,
+                paddingBottom: spacing.xl,
+                gap: 16,
+              }}
+            >
+              <View
+                className="h-24 w-24 items-center justify-center rounded-full border border-indigo-200 bg-indigo-100 dark:border-indigo-500/40 dark:bg-indigo-500/10"
+                style={{ ...shadows.small }}
+              >
+                <IconSymbol name="calendar" size={44} color="#007AFF" />
+              </View>
+              <Text className={strongTextClass} style={typography.headline}>
+                Noch keine Pläne
+              </Text>
+              <Text
+                className={`${mutedTextClass} text-center`}
+                style={typography.subheadline}
+              >
+                Lege fest, was du vor hast – andere sehen es und können
+                dazukommen.
+              </Text>
+              <WhatIsAPlan />
+              <Button
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  aiPlanBottomSheetRef.current?.present();
+                }}
+                variant="default"
+                size="lg"
+              >
+                <Text
+                  className={buttonTextVariants({
+                    variant: "default",
+                    size: "lg",
+                  })}
+                >
+                  Plan erstellen
+                </Text>
+              </Button>
+            </View>
+          )}
+        </Animated.ScrollView>
+
+        {isAndroid && groupedPlans.length > 0 && (
+          <NativeFAB onPress={() => aiPlanBottomSheetRef.current?.present()} />
+        )}
+
+        <AIPlanBottomSheet
+          ref={aiPlanBottomSheetRef}
+          onPlanCreated={(plan: any) => {
+            console.log("Plan created:", plan);
+            queryClient.invalidateQueries({
+              queryKey: orpc.plan.myPlans.queryOptions({
+                input: filter ?? {},
+              }).queryKey,
+            });
+            if (plan?.id) {
+              setTimeout(() => {
+                router.push(`/plan/${plan.id}` as any);
+              }, 0);
+            }
+          }}
+        />
+
+        <PlanFilterBottomSheet
+          ref={filterRef}
+          initial={filter}
+          onApply={(f) => setFilter(f)}
+          hideLocation
+        />
+      </View>
+    );
+  }
+
+  // Original complex app bar version
   return (
     <SafeAreaView edges={["top"]} className={`flex-1 ${surfaceClass}`}>
       {/* Large Title Header (animated on iOS, moved into ScrollView on Android) */}
