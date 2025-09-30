@@ -8,7 +8,7 @@ RUN apk add --no-cache nodejs npm
 WORKDIR /app
 
 # Copy package files
-COPY package.json bun.lockb ./
+COPY package.json bun.lock bunfig.toml ./
 
 # Install dependencies with npm to ensure Metro alias packages are created
 RUN npm install --no-audit --no-fund
