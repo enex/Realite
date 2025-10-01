@@ -12,6 +12,9 @@ config.resolver.alias = {
   ...config.resolver.alias,
   "@orpc/server/fetch": require.resolve("@orpc/server/fetch"),
   "@orpc/server/plugins": require.resolve("@orpc/server/plugins"),
+  "@orpc/zod": require.resolve("@orpc/zod"),
+  "@orpc/openapi": require.resolve("@orpc/openapi"),
+  "@orpc/openapi/fetch": require.resolve("@orpc/openapi/fetch"),
 };
 
 // Ensure proper node_modules resolution
