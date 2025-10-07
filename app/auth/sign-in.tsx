@@ -1,6 +1,6 @@
+import { router } from "expo-router";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
-import { router } from "expo-router";
 
 export default function SignIn() {
   return (
