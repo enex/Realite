@@ -24,7 +24,8 @@
     "build:ios": "NODE_ENV=production dotenvx run -f .env.local -- eas build --platform ios --local",
     "submit:android": "eas submit --platform android --profile production",
     "submit:ios": "eas submit --platform ios --profile production",
-    "testflight": "npx testflight"
+    "testflight": "npx testflight",
+    "upgrade": "expo install --fix && bunx expo-doctor@latest && echo 'https://docs.expo.dev/workflow/upgrading-expo-sdk-walkthrough/'"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.50",
@@ -53,7 +54,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.6",
-    "expo": "~54.0.10",
+    "expo": "^54.0.13",
     "expo-blur": "~15.0.7",
     "expo-calendar": "~15.0.7",
     "expo-constants": "~18.0.9",
