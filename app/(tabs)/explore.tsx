@@ -21,7 +21,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useSession } from "@/client/auth";
 import orpc from "@/client/orpc";
-import { PlanCard, shadows } from "@/components/PlanCard";
+import { PlanCard } from "@/components/PlanCard";
 import PlanFilterBottomSheet, {
   PlanFilterBottomSheetRef,
   type PlanFilter,
@@ -83,36 +83,35 @@ export default function ExploreScreen() {
 
   // Set header buttons when simple app bar is enabled
   useEffect(() => {
-    if (simpleAppBar) {
-      navigation.setOptions({
-        headerRight: () => (
-          <View style={{ flexDirection: "row", gap: 18, marginRight: 8 }}>
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setShowSearch((v) => !v);
-              }}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <IconSymbol name="magnifyingglass" size={22} color="#007AFF" />
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                filterRef.current?.present();
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              }}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <IconSymbol
-                name="line.3.horizontal.decrease.circle"
-                size={22}
-                color="#007AFF"
-              />
-            </Pressable>
-          </View>
-        ),
-      } as any);
-    }
+    if (!simpleAppBar) return;
+    navigation.setOptions({
+      headerRight: () => (
+        <View style={{ flexDirection: "row", gap: 18, marginRight: 8 }}>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowSearch((v) => !v);
+            }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <IconSymbol name="magnifyingglass" size={22} color="#007AFF" />
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              filterRef.current?.present();
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <IconSymbol
+              name="line.3.horizontal.decrease.circle"
+              size={22}
+              color="#007AFF"
+            />
+          </Pressable>
+        </View>
+      ),
+    });
   }, [simpleAppBar, navigation]);
   const { latitude, longitude, hasPermission, requestPermission } =
     useLocation();
@@ -685,14 +684,8 @@ export default function ExploreScreen() {
 
         {/* Navigation Bar Overlay */}
         <Animated.View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            opacity: navTitleOpacity,
-            zIndex: 1000,
-          }}
+          className="bg-zinc-100 dark:bg-zinc-950 absolute top-0 left-0 right-0 z-1000 pointer-events-none"
+          style={{ opacity: navTitleOpacity }}
           pointerEvents="none"
         >
           <SafeAreaView style={{ backgroundColor: "transparent" }}>
@@ -748,17 +741,7 @@ function HeaderIconButton({
   return (
     <Pressable
       onPress={onPress}
-      style={{
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: "white",
-        alignItems: "center",
-        justifyContent: "center",
-        borderWidth: 1,
-        borderColor: "#E5E5EA",
-        ...shadows.small,
-      }}
+      className="w-9 h-9 rounded-9 border border-zinc-200 dark:border-zinc-800 shadow-sm justify-center items-center flex"
     >
       <IconSymbol name={icon as any} size={18} color="#1C1C1E" />
     </Pressable>

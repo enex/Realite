@@ -4,6 +4,7 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
+import * as FileSystem from "expo-file-system";
 import { useFonts } from "expo-font";
 import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router";
@@ -56,7 +57,11 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <PostHogProvider
           apiKey={POSTHOG_API_KEY}
-          options={{ host: POSTHOG_HOST, enableSessionReplay: true }}
+          options={{
+            host: POSTHOG_HOST,
+            enableSessionReplay: true,
+            storage: FileSystem,
+          }}
         >
           <QueryClientProvider client={queryClient}>
             <BottomSheetModalProvider>

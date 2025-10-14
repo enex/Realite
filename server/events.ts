@@ -102,39 +102,6 @@ export interface RealiteEvents {
     };
   };
 
-  "realite.gathering.created": {
-    name: string;
-    description?: string;
-    url?: string;
-    startDate: string; // ISO date string
-    endDate: string; // ISO date string
-    locationId: string; // id of the location this gathering is to take place in
-  };
-  "realite.gathering.updated": {
-    name?: string;
-    description?: string;
-    url?: string;
-    startDate?: string; // ISO date string
-    endDate?: string; // ISO date string
-  };
-  "realite.gathering.deleted": {};
-
-  "realite.location.created": {
-    name: string;
-    url?: string;
-    address?: string;
-    city?: string;
-    state?: string;
-  };
-  "realite.location.updated": {
-    name?: string;
-    url?: string;
-    address?: string;
-    city?: string;
-    state?: string;
-  };
-  "realite.location.deleted": {};
-
   "realite.contacts.imported": {
     hashes: string[];
   };
