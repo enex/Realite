@@ -39,6 +39,7 @@
     "@orpc/server": "^1.9.4",
     "@orpc/tanstack-query": "^1.9.4",
     "@orpc/zod": "^1.9.4",
+    "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/datetimepicker": "8.4.4",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.6.4",

@@ -4,13 +4,12 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import * as FileSystem from "expo-file-system";
 import { useFonts } from "expo-font";
 import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { PostHogProvider } from "posthog-react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
@@ -33,6 +32,7 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     nativewindColorScheme.set(colorScheme ?? "system");
@@ -47,51 +47,56 @@ export default function RootLayout() {
     } catch {}
   }, [colorScheme]);
 
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   if (!loaded) {
     // Async font loading only occurs in development.
     return null;
   }
 
+  const content = (
+    <QueryClientProvider client={queryClient}>
+      <BottomSheetModalProvider>
+        <ThemeProvider
+          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+        >
+          <Stack>
+            <Stack.Screen
+              name="index"
+              options={{
+                headerShown: false,
+                title: "Realite - Die App für echte Verbindungen",
+              }}
+            />
+            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="plan" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+        </ThemeProvider>
+      </BottomSheetModalProvider>
+    </QueryClientProvider>
+  );
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <PostHogProvider
-          apiKey={POSTHOG_API_KEY}
-          options={{
-            host: POSTHOG_HOST,
-            enableSessionReplay: true,
-            storage: FileSystem,
-          }}
-        >
-          <QueryClientProvider client={queryClient}>
-            <BottomSheetModalProvider>
-              <ThemeProvider
-                value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-              >
-                <Stack>
-                  <Stack.Screen
-                    name="index"
-                    options={{
-                      headerShown: false,
-                      title: "Realite - Die App für echte Verbindungen",
-                    }}
-                  />
-                  <Stack.Screen
-                    name="onboarding"
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="(tabs)"
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen name="plan" options={{ headerShown: false }} />
-                  <Stack.Screen name="+not-found" />
-                </Stack>
-                <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-              </ThemeProvider>
-            </BottomSheetModalProvider>
-          </QueryClientProvider>
-        </PostHogProvider>
+        {isClient ? (
+          <PostHogProvider
+            apiKey={POSTHOG_API_KEY}
+            options={{
+              host: POSTHOG_HOST,
+              enableSessionReplay: true,
+            }}
+          >
+            {content}
+          </PostHogProvider>
+        ) : (
+          content
+        )}
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
