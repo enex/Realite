@@ -41,8 +41,12 @@ export default function WebLanding() {
         {/* Modern Header */}
         <View className="flex-row justify-between items-center px-8 py-6 bg-white/80 backdrop-blur-md border-b border-gray-100/50 sticky top-0 z-50">
           <View className="flex-row items-center">
-            <View className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl items-center justify-center mr-3 shadow-lg">
-              <Text className="text-white text-xl font-bold">R</Text>
+            <View className="w-10 h-10 mr-3 shadow-lg rounded-xl overflow-hidden">
+              <img
+                src={require("../assets/images/icon.png").uri}
+                alt="Realite App Icon"
+                className="w-full h-full scale-125 object-cover rounded-2xl"
+              />
             </View>
             <Text className="text-2xl font-bold text-gray-900">Realite</Text>
             <Text className="ml-3 px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 text-xs font-bold rounded-full border border-blue-200">
