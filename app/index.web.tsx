@@ -49,7 +49,7 @@ export default function WebLanding() {
               />
             </View>
             <Text className="text-2xl font-bold text-gray-900">Realite</Text>
-            <Text className="ml-3 px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 text-xs font-bold rounded-full border border-blue-200">
+            <Text className="ml-3 px-3 py-1 bg-gradient-to-r from-pink-100 to-rose-100 text-pink-700 text-xs font-bold rounded-full border border-pink-200">
               CLOSED BETA
             </Text>
           </View>
@@ -57,19 +57,19 @@ export default function WebLanding() {
           <View className="flex-row items-center gap-8">
             <Pressable
               onPress={() => scrollToSection("features")}
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              className="text-gray-700 hover:text-pink-600 transition-colors font-medium"
             >
               <Text className="font-medium">Features</Text>
             </Pressable>
             <Pressable
               onPress={() => scrollToSection("how-it-works")}
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              className="text-gray-700 hover:text-pink-600 transition-colors font-medium"
             >
               <Text className="font-medium">So funktioniert&apos;s</Text>
             </Pressable>
             <Pressable
               onPress={() => scrollToSection("security")}
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              className="text-gray-700 hover:text-pink-600 transition-colors font-medium"
             >
               <Text className="font-medium">Sicherheit</Text>
             </Pressable>
@@ -83,7 +83,7 @@ export default function WebLanding() {
         </View>
 
         {/* Enhanced Hero Section */}
-        <View className="relative bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 px-8 py-32 overflow-hidden">
+        <View className="relative bg-gradient-to-br from-slate-50 via-pink-50 to-rose-100 px-8 py-32 overflow-hidden">
           {/* Animated Emoji background */}
           <View pointerEvents="none" className="absolute inset-0 opacity-15">
             <Text className="absolute -top-8 -left-6 rotate-[-12deg] text-8xl animate-pulse">
@@ -114,7 +114,7 @@ export default function WebLanding() {
 
           <View className="max-w-6xl w-full mx-auto text-center">
             <View className="mb-12">
-              <Text className="text-7xl font-black text-center bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent mb-6 leading-tight tracking-tight">
+              <Text className="text-7xl font-black text-center bg-gradient-to-r from-gray-900 via-pink-600 to-rose-600 bg-clip-text text-transparent mb-6 leading-tight tracking-tight">
                 Die App für echte{"\n"}Verbindungen
               </Text>
               <Text className="text-3xl font-bold text-center text-gray-700 mb-8 leading-relaxed">
@@ -245,8 +245,8 @@ export default function WebLanding() {
                 {
                   icon: "🎲",
                   title: "Spiele",
-                  color: "from-blue-500 to-indigo-600",
-                  bg: "bg-blue-50",
+                  color: "from-pink-500 to-rose-600",
+                  bg: "bg-pink-50",
                 },
                 {
                   icon: "🎭",
@@ -269,7 +269,7 @@ export default function WebLanding() {
                 {
                   icon: "🎵",
                   title: "Musik",
-                  color: "from-cyan-500 to-blue-600",
+                  color: "from-cyan-500 to-pink-600",
                   bg: "bg-cyan-50",
                 },
                 {
@@ -324,12 +324,12 @@ export default function WebLanding() {
                 So funktioniert&apos;s – in nur drei einfachen Schritten zu
                 echten Verbindungen
               </Text>
-              <View className="w-24 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded-full"></View>
+              <View className="w-24 h-1 bg-gradient-to-r from-pink-500 to-rose-600 mx-auto rounded-full"></View>
             </View>
 
             <View className="grid lg:grid-cols-3 gap-12 relative">
               {/* Connection Lines */}
-              <View className="absolute top-24 left-1/4 right-1/4 h-0.5 bg-gradient-to-r from-blue-200 via-emerald-200 to-purple-200 hidden lg:block"></View>
+              <View className="absolute top-24 left-1/4 right-1/4 h-0.5 bg-gradient-to-r from-pink-200 via-emerald-200 to-purple-200 hidden lg:block"></View>
 
               {[
                 {
@@ -338,8 +338,8 @@ export default function WebLanding() {
                   description:
                     "Erstelle einen Vorschlag für eine Aktivität. Wähle aus beliebten Spots oder schlage neue vor. Die App hilft dir beim Finden der perfekten Zeit und Location.",
                   tip: "💡 Trage alles ein, was du vorhast – und Orte, an denen du andere treffen möchtest",
-                  color: "from-blue-500 to-indigo-600",
-                  bgColor: "bg-blue-50",
+                  color: "from-pink-500 to-rose-600",
+                  bgColor: "bg-pink-50",
                   tipColor: "text-blue-700",
                 },
                 {
