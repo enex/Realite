@@ -96,9 +96,9 @@ export interface RealiteEvents {
     birthDate?: string; // ISO date string
     relationshipStatus?: RelationshipStatus;
     privacySettings?: {
-      showGender: boolean;
-      showAge: boolean;
-      showRelationshipStatus: boolean;
+      showGender?: boolean;
+      showAge?: boolean;
+      showRelationshipStatus?: boolean;
     };
   };
 

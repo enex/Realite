@@ -1,8 +1,4 @@
-import {
-  Gender,
-  genderSchema,
-  relationshipStatusSchema,
-} from "@/shared/validation";
+import { genderSchema, relationshipStatusSchema } from "@/shared/validation";
 import { pick } from "radash";
 import { z } from "zod";
 import { protectedRoute } from "../orpc";
@@ -14,9 +10,9 @@ const updateUserInputSchema = z.object({
   relationshipStatus: relationshipStatusSchema.optional(),
   privacySettings: z
     .object({
-      showGender: z.boolean(),
-      showAge: z.boolean(),
-      showRelationshipStatus: z.boolean(),
+      showGender: z.boolean().optional(),
+      showAge: z.boolean().optional(),
+      showRelationshipStatus: z.boolean().optional(),
     })
     .optional(),
 });
@@ -43,51 +39,6 @@ export const userRouter = {
       },
     });
   }),
-  me: protectedRoute
-    .errors({
-      NOT_FOUND: { message: "User not found" },
-    })
-    .handler(async ({ context, errors }) => {
-      const { id: userId } = context.session;
-      return await context.es.reduce(
-        { actor: userId, subject: userId },
-        (acc, event) => {
-          switch (event.type) {
-            case "realite.user.registered":
-              return { ...acc, ...event.data };
-            case "realite.user.onboarded":
-              return {
-                ...acc,
-                onboarding: {
-                  completed: true,
-                  completedAt: event.time,
-                },
-              };
-            case "realite.profile.updated":
-              return {
-                ...acc,
-                ...event.data,
-              };
-            default:
-              return acc;
-          }
-        },
-        {
-          gender: undefined as Gender | undefined,
-          birthDate: undefined as Date | string | undefined,
-          image: undefined,
-          onboarding: {
-            completed: false,
-            completedAt: undefined as Date | undefined,
-          },
-          privacySettings: {
-            showGender: true,
-            showAge: true,
-            showRelationshipStatus: true,
-          },
-        }
-      );
-    }),
   get: protectedRoute
     .input(
       z

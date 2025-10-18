@@ -386,11 +386,22 @@ export const es = builder.store({
                   if (event.data.phoneNumber)
                     acc.phoneNumber = event.data.phoneNumber;
                   return acc;
+                case "realite.auth.phone-code-verified":
+                  acc.phoneNumber = event.data.phoneNumber;
+                  return acc;
                 case "realite.user.onboarded":
                   acc.onboarded = true;
                   return acc;
                 case "realite.profile.updated":
+                  const pps = acc.privacySettings;
                   Object.assign(acc, event.data);
+                  acc.privacySettings = pps;
+                  if (event.data.privacySettings) {
+                    acc.privacySettings = {
+                      ...pps,
+                      ...event.data.privacySettings,
+                    };
+                  }
                   return acc;
                 default:
                   return acc;
@@ -405,6 +416,11 @@ export const es = builder.store({
               birthDate: "asdf",
               relationshipStatus: "asdf",
               onboarded: false,
+              privacySettings: {
+                showGender: true,
+                showAge: true,
+                showRelationshipStatus: true,
+              },
             }
           ),
         getContacts: async (ctx, id: string) => {},

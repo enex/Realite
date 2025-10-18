@@ -1,7 +1,6 @@
 import { Tabs } from "expo-router";
 import { useFeatureFlag } from "posthog-react-native";
 import React from "react";
-import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/HapticTab";
@@ -20,32 +19,7 @@ export default function TabLayout() {
         headerShown: simpleAppBar,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: "absolute",
-            borderTopWidth: 0,
-            backgroundColor: "transparent",
-            elevation: 0,
-            shadowOpacity: 0,
-            height: 54 + insets.bottom,
-            paddingTop: 8,
-            paddingBottom: insets.bottom,
-          },
-          default: {
-            borderTopWidth: 0,
-            backgroundColor: "rgba(255, 255, 255, 0.95)",
-            elevation: 0,
-            shadowOpacity: 0,
-            height: 56 + insets.bottom,
-            paddingTop: 8,
-            paddingBottom: 8 + insets.bottom,
-          },
-        }),
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: "500",
-          marginTop: 4,
-        },
+        title: "Realite",
       }}
     >
       <Tabs.Screen

@@ -1,10 +1,10 @@
 import rpc from "@/client/orpc";
 import { genders, relationshipStatuses } from "@/shared/validation";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "expo-router";
 import { useFeatureFlag } from "posthog-react-native";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Alert,
   Linking,
@@ -26,17 +26,7 @@ export default function ProfileScreen() {
   const simpleAppBar = useFeatureFlag("simple-appbar-for-starpage");
   const me = useQuery(rpc.auth.me.queryOptions());
 
-  const [name, setName] = useState("");
-  const [gender, setGender] = useState<(typeof genders)[number] | undefined>(
-    undefined
-  );
-  const [birthDate, setBirthDate] = useState<string | undefined>(undefined);
-  const [relationshipStatus, setRelationshipStatus] = useState<
-    (typeof relationshipStatuses)[number] | undefined
-  >(undefined);
-  const [showGender, setShowGender] = useState(true);
-  const [showAge, setShowAge] = useState(true);
-  const [showRelationshipStatus, setShowRelationshipStatus] = useState(true);
+  const [name, setName] = useState<string | null>(null);
 
   const GENDER_LABEL: Record<string, string> = {
     MALE: "Männlich",
@@ -54,35 +44,31 @@ export default function ProfileScreen() {
     COMPLICATED: "Es ist kompliziert",
   };
 
-  useEffect(() => {
-    if (!me.data) return;
-    const raw = me.data;
-    setName(raw?.name ?? "");
-    // sanitize invalid server defaults
-    const g = raw?.gender;
-    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    setGender(g as any);
-    const rs = raw?.relationshipStatus;
-    setRelationshipStatus(
-      relationshipStatuses.includes(rs as any) ? (rs as any) : undefined
-    );
-    const bd = raw?.birthDate as string | undefined;
-    setBirthDate(
-      typeof bd === "string" && /^\d{4}-\d{2}-\d{2}$/.test(bd) ? bd : undefined
-    );
-    setShowGender((me.data as any)?.privacySettings?.showGender ?? true);
-    setShowAge((me.data as any)?.privacySettings?.showAge ?? true);
-    setShowRelationshipStatus(
-      (me.data as any)?.privacySettings?.showRelationshipStatus ?? true
-    );
-  }, [me.data]);
+  const queryClient = useQueryClient();
 
   const update = useMutation(
     rpc.user.update.mutationOptions({
-      onSuccess: () => {
-        // Silent success for autosave
+      onMutate: (data) => {
+        const old = queryClient.getQueryData(rpc.auth.me.key());
+        queryClient.setQueryData(rpc.auth.me.key(), (old: any) => {
+          console.log("old", old, data);
+          const res = {
+            ...old,
+            ...data,
+            privacySettings: {
+              ...(old?.privacySettings ?? {}),
+              ...(data.privacySettings ?? {}),
+            },
+          };
+          console.log("res", res);
+          return res;
+        });
+        return { old };
       },
-      onError: (e) => {
+      onSuccess: () => {
+        queryClient.refetchQueries({ queryKey: rpc.auth.me.key() });
+      },
+      onError: (e, _, ctx) => {
         // Suppress noisy alerts for validation failures during autosave
         const msg = e.message || "";
         if (msg.toLowerCase().includes("validation")) {
@@ -90,50 +76,12 @@ export default function ProfileScreen() {
           return;
         }
         Alert.alert("Fehler", msg);
+        if (ctx?.old) {
+          queryClient.setQueryData(rpc.auth.me.key(), ctx.old);
+        }
       },
     })
   );
-
-  // (Save button removed; autosave handles persistence)
-
-  // Autosave with debounce, avoiding initial load dispatch and duplicate payloads
-  const hasLoadedRef = useRef(false);
-  const lastSentRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!hasLoadedRef.current) {
-      // Wait until initial data mounted once to avoid saving server defaults back
-      hasLoadedRef.current = true;
-      return;
-    }
-
-    // Build payload only with valid values
-    const payload: Record<string, unknown> = {
-      privacySettings: { showGender, showAge, showRelationshipStatus },
-    };
-    if (name.trim().length > 0) payload.name = name.trim();
-    if (gender && genders.includes(gender)) payload.gender = gender;
-    if (birthDate && /^\d{4}-\d{2}-\d{2}$/.test(birthDate))
-      payload.birthDate = birthDate;
-    if (relationshipStatus && relationshipStatuses.includes(relationshipStatus))
-      payload.relationshipStatus = relationshipStatus;
-    const serialized = JSON.stringify(payload);
-    if (serialized === lastSentRef.current) return;
-
-    const t = setTimeout(() => {
-      lastSentRef.current = serialized;
-      update.mutate(payload as any);
-    }, 600);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    name,
-    gender,
-    birthDate,
-    relationshipStatus,
-    showGender,
-    showAge,
-    showRelationshipStatus,
-  ]);
 
   const openNotificationSettings = async () => {
     try {
@@ -150,6 +98,192 @@ export default function ProfileScreen() {
     }
   };
 
+  const content = (
+    <View className="px-6 pt-4 flex-col gap-y-8">
+      <View className="items-center">
+        <View className="h-24 w-24 rounded-full bg-white dark:bg-gray-700 items-center justify-center mb-3">
+          <ThemedText className="text-3xl">👤</ThemedText>
+        </View>
+      </View>
+
+      <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 p-5 shadow-sm">
+        <ThemedText
+          type="subtitle"
+          className="text-zinc-900 dark:text-zinc-50 mb-4"
+        >
+          Basisdaten
+        </ThemedText>
+
+        <View className="mb-4">
+          <ThemedText className="mb-2 text-zinc-600 dark:text-zinc-400">
+            Name
+          </ThemedText>
+          <TextInput
+            className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-zinc-900 dark:text-zinc-50"
+            placeholder="Dein Name"
+            placeholderTextColor={Platform.OS === "ios" ? undefined : "#9CA3AF"}
+            value={name ?? me.data?.name ?? ""}
+            onChangeText={(text) => setName(text)}
+            onBlur={() => {
+              if (name) {
+                update.mutate({ name: name ?? undefined });
+              }
+            }}
+          />
+        </View>
+
+        <View className="mb-4">
+          <ThemedText className="mb-2 text-zinc-600 dark:text-zinc-400">
+            Telefonnummer
+          </ThemedText>
+          <View className="flex-row items-center justify-between rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3">
+            <ThemedText className="text-gray-900 dark:text-white">
+              {me.data?.phoneNumber || "—"}
+            </ThemedText>
+            <Link href="/auth/change-phone" asChild>
+              <Pressable className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5">
+                <Text className="text-primary">Ändern</Text>
+              </Pressable>
+            </Link>
+          </View>
+        </View>
+
+        <View className="mb-4">
+          <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
+            Geschlecht
+          </ThemedText>
+          <View className="flex-row flex-wrap gap-2">
+            {genders.map((g) => (
+              <Pressable
+                key={g}
+                onPress={() => {
+                  update.mutate({ gender: g });
+                }}
+                className={`rounded-xl border px-3 py-2 ${me.data?.gender === g ? "bg-primary border-primary" : "bg-transparent dark:border-zinc-50 border-zinc-700"}`}
+              >
+                <Text
+                  className={
+                    me.data?.gender === g
+                      ? "text-primary-foreground"
+                      : "text-zinc-900 dark:text-zinc-50"
+                  }
+                >
+                  {GENDER_LABEL[g]}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <BirthdateField
+          value={me.data?.birthDate}
+          onChange={(v) => update.mutate({ birthDate: v })}
+        />
+
+        <View>
+          <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
+            Beziehungsstatus
+          </ThemedText>
+          <View className="flex-row flex-wrap gap-2">
+            {relationshipStatuses.map((rs) => (
+              <Pressable
+                key={rs}
+                onPress={() => update.mutate({ relationshipStatus: rs })}
+                className={`rounded-xl border px-3 py-2 ${me.data?.relationshipStatus === rs ? "bg-primary border-primary" : "border-separate bg-transparent dark:border-zinc-50 border-zinc-700"}`}
+              >
+                <Text
+                  className={
+                    me.data?.relationshipStatus === rs
+                      ? "text-primary-foreground"
+                      : "text-zinc-900 dark:text-zinc-50"
+                  }
+                >
+                  {REL_LABEL[rs]}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      </View>
+
+      <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
+        <ThemedText
+          type="subtitle"
+          className="text-gray-900 dark:text-white mb-4"
+        >
+          Sichtbarkeit
+        </ThemedText>
+        <ToggleRow
+          label="Geschlecht anzeigen"
+          value={me.data?.privacySettings?.showGender ?? true}
+          onChange={(v) =>
+            update.mutate({ privacySettings: { showGender: v } })
+          }
+        />
+        <ToggleRow
+          label="Alter anzeigen"
+          value={me.data?.privacySettings?.showAge ?? true}
+          onChange={(v) => update.mutate({ privacySettings: { showAge: v } })}
+        />
+        <ToggleRow
+          label="Beziehungsstatus anzeigen"
+          value={me.data?.privacySettings?.showRelationshipStatus ?? true}
+          onChange={(v) =>
+            update.mutate({
+              privacySettings: { showRelationshipStatus: v },
+            })
+          }
+        />
+      </View>
+
+      <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
+        <ThemedText
+          type="subtitle"
+          className="text-gray-900 dark:text-white mb-2"
+        >
+          Benachrichtigungen
+        </ThemedText>
+        <ThemedText className="mb-3 text-gray-600 dark:text-gray-400">
+          Push-Benachrichtigungen können in den System-Einstellungen verwaltet
+          werden.
+        </ThemedText>
+        <Pressable
+          onPress={openNotificationSettings}
+          className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
+        >
+          <Text className="text-primary">Benachrichtigungen verwalten</Text>
+        </Pressable>
+      </View>
+
+      <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
+        <ThemedText
+          type="subtitle"
+          className="text-gray-900 dark:text-white mb-2"
+        >
+          Onboarding
+        </ThemedText>
+        <ThemedText className="mb-3 text-gray-600 dark:text-gray-400">
+          Wiederhole das Onboarding, um deine Einstellungen und Berechtigungen
+          zu konfigurieren.
+        </ThemedText>
+        <Pressable
+          onPress={() => router.push("/onboarding/welcome")}
+          className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
+        >
+          <Text className="text-primary">Onboarding wiederholen</Text>
+        </Pressable>
+      </View>
+
+      <View className="opacity-80">
+        <ThemedText className="text-center text-gray-500 dark:text-gray-400">
+          Änderungen werden automatisch gespeichert
+        </ThemedText>
+      </View>
+
+      <View className="pb-8" />
+    </View>
+  );
+
   // Simple app bar version
   if (simpleAppBar) {
     return (
@@ -157,175 +291,7 @@ export default function ProfileScreen() {
         className="flex-1 bg-zinc-100 dark:bg-zinc-950"
         contentContainerStyle={{ paddingTop: 16, paddingBottom: 24 }}
       >
-        <View className="px-6 flex-col gap-y-8">
-          <View className="items-center">
-            <View className="h-24 w-24 rounded-full bg-white dark:bg-gray-700 items-center justify-center mb-3">
-              <ThemedText className="text-3xl">👤</ThemedText>
-            </View>
-          </View>
-
-          <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 p-5 shadow-sm">
-            <ThemedText
-              type="subtitle"
-              className="text-zinc-900 dark:text-zinc-50 mb-4"
-            >
-              Basisdaten
-            </ThemedText>
-
-            <View className="mb-4">
-              <ThemedText className="mb-2 text-zinc-600 dark:text-zinc-400">
-                Name
-              </ThemedText>
-              <TextInput
-                className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-zinc-900 dark:text-zinc-50"
-                placeholder="Dein Name"
-                placeholderTextColor={
-                  Platform.OS === "ios" ? undefined : "#9CA3AF"
-                }
-                value={name}
-                onChangeText={setName}
-              />
-            </View>
-
-            <View className="mb-4">
-              <ThemedText className="mb-2 text-zinc-600 dark:text-zinc-400">
-                Telefonnummer
-              </ThemedText>
-              <View className="flex-row items-center justify-between rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3">
-                <ThemedText className="text-gray-900 dark:text-white">
-                  {(me.data as any)?.phoneNumber || "—"}
-                </ThemedText>
-                <Link href="/profile/change-phone" asChild>
-                  <Pressable className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5">
-                    <Text className="text-primary">Ändern</Text>
-                  </Pressable>
-                </Link>
-              </View>
-            </View>
-
-            <View className="mb-4">
-              <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
-                Geschlecht
-              </ThemedText>
-              <View className="flex-row flex-wrap gap-2">
-                {genders.map((g) => (
-                  <Pressable
-                    key={g}
-                    onPress={() => setGender(g)}
-                    className={`rounded-xl border px-3 py-2 ${gender === g ? "bg-primary border-primary" : "bg-transparent dark:border-zinc-50 border-zinc-700"}`}
-                  >
-                    <Text
-                      className={
-                        gender === g
-                          ? "text-primary-foreground"
-                          : "text-zinc-900 dark:text-zinc-50"
-                      }
-                    >
-                      {GENDER_LABEL[g]}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
-
-            <BirthdateField value={birthDate} onChange={setBirthDate} />
-
-            <View>
-              <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
-                Beziehungsstatus
-              </ThemedText>
-              <View className="flex-row flex-wrap gap-2">
-                {relationshipStatuses.map((rs) => (
-                  <Pressable
-                    key={rs}
-                    onPress={() => setRelationshipStatus(rs)}
-                    className={`rounded-xl border px-3 py-2 ${relationshipStatus === rs ? "bg-primary border-primary" : "border-separate bg-transparent dark:border-zinc-50 border-zinc-700"}`}
-                  >
-                    <Text
-                      className={
-                        relationshipStatus === rs
-                          ? "text-primary-foreground"
-                          : "text-zinc-900 dark:text-zinc-50"
-                      }
-                    >
-                      {REL_LABEL[rs]}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
-          </View>
-
-          <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
-            <ThemedText
-              type="subtitle"
-              className="text-gray-900 dark:text-white mb-4"
-            >
-              Sichtbarkeit
-            </ThemedText>
-            <ToggleRow
-              label="Geschlecht anzeigen"
-              value={showGender}
-              onChange={setShowGender}
-            />
-            <ToggleRow
-              label="Alter anzeigen"
-              value={showAge}
-              onChange={setShowAge}
-            />
-            <ToggleRow
-              label="Beziehungsstatus anzeigen"
-              value={showRelationshipStatus}
-              onChange={setShowRelationshipStatus}
-            />
-          </View>
-
-          <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
-            <ThemedText
-              type="subtitle"
-              className="text-gray-900 dark:text-white mb-2"
-            >
-              Benachrichtigungen
-            </ThemedText>
-            <ThemedText className="mb-3 text-gray-600 dark:text-gray-400">
-              Push-Benachrichtigungen können in den System-Einstellungen
-              verwaltet werden.
-            </ThemedText>
-            <Pressable
-              onPress={openNotificationSettings}
-              className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
-            >
-              <Text className="text-primary">Benachrichtigungen verwalten</Text>
-            </Pressable>
-          </View>
-
-          <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
-            <ThemedText
-              type="subtitle"
-              className="text-gray-900 dark:text-white mb-2"
-            >
-              Onboarding
-            </ThemedText>
-            <ThemedText className="mb-3 text-gray-600 dark:text-gray-400">
-              Wiederhole das Onboarding, um deine Einstellungen und
-              Berechtigungen zu konfigurieren.
-            </ThemedText>
-            <Pressable
-              onPress={() => router.push("/onboarding/welcome")}
-              className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
-            >
-              <Text className="text-primary">Onboarding wiederholen</Text>
-            </Pressable>
-          </View>
-
-          <View className="opacity-80">
-            <ThemedText className="text-center text-gray-500 dark:text-gray-400">
-              Änderungen werden automatisch gespeichert
-            </ThemedText>
-          </View>
-
-          <View className="pb-8" />
-        </View>
+        {content}
       </ScrollView>
     );
   }
@@ -355,177 +321,7 @@ export default function ProfileScreen() {
           className="flex-1 bg-zinc-100 dark:bg-zinc-950"
           contentContainerStyle={{ paddingBottom: 24 }}
         >
-          <View className="px-6 pt-4 flex-col gap-y-8">
-            <View className="items-center">
-              <View className="h-24 w-24 rounded-full bg-white dark:bg-gray-700 items-center justify-center mb-3">
-                <ThemedText className="text-3xl">👤</ThemedText>
-              </View>
-            </View>
-
-            <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 p-5 shadow-sm">
-              <ThemedText
-                type="subtitle"
-                className="text-zinc-900 dark:text-zinc-50 mb-4"
-              >
-                Basisdaten
-              </ThemedText>
-
-              <View className="mb-4">
-                <ThemedText className="mb-2 text-zinc-600 dark:text-zinc-400">
-                  Name
-                </ThemedText>
-                <TextInput
-                  className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-zinc-900 dark:text-zinc-50"
-                  placeholder="Dein Name"
-                  placeholderTextColor={
-                    Platform.OS === "ios" ? undefined : "#9CA3AF"
-                  }
-                  value={name}
-                  onChangeText={setName}
-                />
-              </View>
-
-              <View className="mb-4">
-                <ThemedText className="mb-2 text-zinc-600 dark:text-zinc-400">
-                  Telefonnummer
-                </ThemedText>
-                <View className="flex-row items-center justify-between rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3">
-                  <ThemedText className="text-gray-900 dark:text-white">
-                    {(me.data as any)?.phoneNumber || "—"}
-                  </ThemedText>
-                  <Link href="/profile/change-phone" asChild>
-                    <Pressable className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5">
-                      <Text className="text-primary">Ändern</Text>
-                    </Pressable>
-                  </Link>
-                </View>
-              </View>
-
-              <View className="mb-4">
-                <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
-                  Geschlecht
-                </ThemedText>
-                <View className="flex-row flex-wrap gap-2">
-                  {genders.map((g) => (
-                    <Pressable
-                      key={g}
-                      onPress={() => setGender(g)}
-                      className={`rounded-xl border px-3 py-2 ${gender === g ? "bg-primary border-primary" : "bg-transparent dark:border-zinc-50 border-zinc-700"}`}
-                    >
-                      <Text
-                        className={
-                          gender === g
-                            ? "text-primary-foreground"
-                            : "text-zinc-900 dark:text-zinc-50"
-                        }
-                      >
-                        {GENDER_LABEL[g]}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
-
-              <BirthdateField value={birthDate} onChange={setBirthDate} />
-
-              <View>
-                <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
-                  Beziehungsstatus
-                </ThemedText>
-                <View className="flex-row flex-wrap gap-2">
-                  {relationshipStatuses.map((rs) => (
-                    <Pressable
-                      key={rs}
-                      onPress={() => setRelationshipStatus(rs)}
-                      className={`rounded-xl border px-3 py-2 ${relationshipStatus === rs ? "bg-primary border-primary" : "border-separate bg-transparent dark:border-zinc-50 border-zinc-700"}`}
-                    >
-                      <Text
-                        className={
-                          relationshipStatus === rs
-                            ? "text-primary-foreground"
-                            : "text-zinc-900 dark:text-zinc-50"
-                        }
-                      >
-                        {REL_LABEL[rs]}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
-            </View>
-
-            <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
-              <ThemedText
-                type="subtitle"
-                className="text-gray-900 dark:text-white mb-4"
-              >
-                Sichtbarkeit
-              </ThemedText>
-              <ToggleRow
-                label="Geschlecht anzeigen"
-                value={showGender}
-                onChange={setShowGender}
-              />
-              <ToggleRow
-                label="Alter anzeigen"
-                value={showAge}
-                onChange={setShowAge}
-              />
-              <ToggleRow
-                label="Beziehungsstatus anzeigen"
-                value={showRelationshipStatus}
-                onChange={setShowRelationshipStatus}
-              />
-            </View>
-
-            <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
-              <ThemedText
-                type="subtitle"
-                className="text-gray-900 dark:text-white mb-2"
-              >
-                Benachrichtigungen
-              </ThemedText>
-              <ThemedText className="mb-3 text-gray-600 dark:text-gray-400">
-                Push-Benachrichtigungen können in den System-Einstellungen
-                verwaltet werden.
-              </ThemedText>
-              <Pressable
-                onPress={openNotificationSettings}
-                className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
-              >
-                <Text className="text-primary">
-                  Benachrichtigungen verwalten
-                </Text>
-              </Pressable>
-            </View>
-
-            <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
-              <ThemedText
-                type="subtitle"
-                className="text-gray-900 dark:text-white mb-2"
-              >
-                Onboarding
-              </ThemedText>
-              <ThemedText className="mb-3 text-gray-600 dark:text-gray-400">
-                Wiederhole das Onboarding, um deine Einstellungen und
-                Berechtigungen zu konfigurieren.
-              </ThemedText>
-              <Pressable
-                onPress={() => router.push("/onboarding/welcome")}
-                className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
-              >
-                <Text className="text-primary">Onboarding wiederholen</Text>
-              </Pressable>
-            </View>
-
-            <View className="opacity-80">
-              <ThemedText className="text-center text-gray-500 dark:text-gray-400">
-                Änderungen werden automatisch gespeichert
-              </ThemedText>
-            </View>
-
-            <View className="pb-8" />
-          </View>
+          {content}
         </ScrollView>
       </ThemedView>
     </SafeAreaView>
