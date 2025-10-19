@@ -26,7 +26,12 @@ import {
 } from "@/shared/activities";
 import { formatLocalDateTime } from "@/shared/utils/datetime";
 import { calculateDistance, isWithinRadius } from "@/shared/utils/distance";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import tinycolor from "tinycolor2";
 
@@ -116,9 +121,7 @@ export default function PlanDetails() {
     refetch,
     isFetching,
     isRefetching,
-  } = useQuery(
-    orpc.plan.get.queryOptions({ input: { id } })
-  );
+  } = useQuery(orpc.plan.get.queryOptions({ input: { id } }));
   const changePlan = useMutation(
     orpc.plan.change.mutationOptions({
       onSuccess: async () => {
@@ -152,9 +155,6 @@ export default function PlanDetails() {
   const [c1, c2, c3] = getActivityGradient(activity);
   const icon = getActivityIcon(activity);
   const isOwner = plan?.creatorId === session?.id;
-  const [showLocationSearch, setShowLocationSearch] = useState(false);
-  const [locationQuery, setLocationQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [showActivityPicker, setShowActivityPicker] = useState(false);
@@ -409,22 +409,6 @@ export default function PlanDetails() {
     );
   }, [isOwner, exactMatches, similarMatches, session?.id]);
 
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedQuery(locationQuery.trim()), 250);
-    return () => clearTimeout(t);
-  }, [locationQuery]);
-
-  const { data: locationSearch } = useQuery(
-    orpc.location.search.queryOptions({
-      input: {
-        query: debouncedQuery || "",
-        includePhotos: true,
-        limit: 10,
-      },
-      enabled: showLocationSearch && debouncedQuery.length >= 2,
-    })
-  );
-
   const promptEdit = (
     title: string,
     current: string,
@@ -526,44 +510,20 @@ export default function PlanDetails() {
               ...shadows.medium,
             }}
           >
-            <View
-              style={{
-                position: "absolute",
-                top: -10,
-                right: -10,
-                opacity: 0.35,
-              }}
-            >
+            <View className="absolute top-[-10px] right-[-10px] opacity-35">
               <IconSymbol name={icon} size={120} color="#000000" />
             </View>
 
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: spacing.md,
-              }}
-            >
-              <Pressable
-                onPress={() => router.back()}
-                style={{ alignSelf: "flex-start" }}
-              >
+            <View className="flex-row justify-between items-center mb-4">
+              <Pressable onPress={() => router.back()} className="self-start">
                 <BlurView
                   intensity={80}
-                  style={{
-                    borderRadius: 12,
-                    paddingHorizontal: 10,
-                    paddingVertical: 6,
-                    overflow: "hidden",
-                  }}
+                  className="rounded-xl px-2 py-1 overflow-hidden flex-row items-center"
                 >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <IconSymbol name="chevron.left" size={14} color="#1C1C1E" />
-                    <Text style={{ marginLeft: 4, color: "#1C1C1E" }}>
-                      Zurück
-                    </Text>
-                  </View>
+                  <IconSymbol name="chevron.left" size={14} color="#1C1C1E" />
+                  <Text className="ml-2 text-foreground/80 text-sm">
+                    Zurück
+                  </Text>
                 </BlurView>
               </Pressable>
 
@@ -571,15 +531,9 @@ export default function PlanDetails() {
                 <Pressable
                   onPress={() => participateInPlan.mutate({ id })}
                   disabled={participateInPlan.isPending}
-                  style={{
-                    backgroundColor: "rgba(255,255,255,0.9)",
-                    borderRadius: 12,
-                    paddingHorizontal: 16,
-                    paddingVertical: 8,
-                    ...shadows.small,
-                  }}
+                  className="bg-foreground/10 rounded-xl px-4 py-2 shadow-sm"
                 >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <View className="flex-row items-center">
                     <IconSymbol
                       name={
                         participateInPlan.isPending
@@ -612,7 +566,11 @@ export default function PlanDetails() {
               </Text>
             </Pressable>
             {plan.description !== undefined && (
-              <Pressable onPress={handleEditDescription} disabled={!isOwner}>
+              <Pressable
+                onPress={handleEditDescription}
+                className="pb-4"
+                disabled={!isOwner}
+              >
                 <Text
                   style={{
                     ...typography.subheadline,
@@ -625,13 +583,9 @@ export default function PlanDetails() {
               </Pressable>
             )}
 
-            <View style={{ height: spacing.md }} />
-
             {/* Owner under header with spacing */}
-            <View style={{ gap: 8 }}>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
+            <View className="gap-2">
+              <View className="flex-row items-center gap-2">
                 <Avatar
                   size={28}
                   image={ownerProfile?.image as any}
@@ -640,45 +594,24 @@ export default function PlanDetails() {
                 <Text style={{ ...typography.subheadline, color: "#1C1C1E" }}>
                   {ownerProfile?.name || "Unbekannt"}
                 </Text>
-                <View
-                  style={{
-                    backgroundColor: "#00000011",
-                    paddingHorizontal: 8,
-                    paddingVertical: 2,
-                    borderRadius: 6,
-                    marginLeft: 6,
-                  }}
-                >
-                  <Text style={{ ...typography.caption1, color: "#1C1C1E" }}>
-                    Ersteller
-                  </Text>
+                <View className="bg-foreground/10 px-2 py-1 rounded-md ml-2">
+                  <Text className="text-foreground/80 text-sm">Ersteller</Text>
                 </View>
               </View>
-            <View style={{ height: spacing.md }} />
-          </View>
-
-          {copiedFromMatch && (
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 10,
-                backgroundColor: "rgba(255,255,255,0.9)",
-                borderRadius: 12,
-                paddingHorizontal: spacing.md,
-                paddingVertical: spacing.sm,
-                marginBottom: spacing.md,
-                ...shadows.small,
-              }}
-            >
-              <IconSymbol name="doc.on.doc" size={16} color="#1C1C1E" />
-              <Text style={{ ...typography.subheadline, color: "#1C1C1E", flex: 1 }}>
-                Kopie von {copiedFromMatch.creator?.name || "einem anderen Plan"}
-              </Text>
+              <View style={{ height: spacing.md }} />
             </View>
-          )}
 
-          <View style={{ gap: spacing.sm }}>
+            {copiedFromMatch && (
+              <View className="flex-row items-center gap-2 bg-foreground/10 px-2 py-1 rounded-md ml-2">
+                <IconSymbol name="doc.on.doc" size={16} color="#1C1C1E" />
+                <Text className="text-foreground/80 text-sm flex-1">
+                  Kopie von{" "}
+                  {copiedFromMatch.creator?.name || "einem anderen Plan"}
+                </Text>
+              </View>
+            )}
+
+            <View className="gap-2">
               <InfoRow
                 icon="calendar"
                 label="Datum"
@@ -698,161 +631,7 @@ export default function PlanDetails() {
                 onPress={isOwner ? handleEditActivity : undefined}
               />
               {/* Locations */}
-              <View
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.85)",
-                  borderRadius: 14,
-                  paddingHorizontal: spacing.md,
-                  paddingVertical: spacing.sm,
-                  ...shadows.small,
-                  gap: spacing.sm,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <IconSymbol name="location" size={16} color="#1C1C1E" />
-                    <Text
-                      style={{
-                        marginLeft: 8,
-                        ...typography.subheadline,
-                        color: "#1C1C1E",
-                      }}
-                    >
-                      Orte
-                    </Text>
-                  </View>
-                  {isOwner && (
-                    <Pressable onPress={() => setShowLocationSearch((v) => !v)}>
-                      <Text
-                        style={{ color: "#007AFF", ...typography.subheadline }}
-                      >
-                        {showLocationSearch ? "Fertig" : "Hinzufügen"}
-                      </Text>
-                    </Pressable>
-                  )}
-                </View>
-
-                {/* Selected locations */}
-                <View style={{ gap: 8 }}>
-                  {safeLocations.length === 0 && (
-                    <Text style={{ ...typography.caption1, color: "#3C3C43" }}>
-                      Keine Orte hinzugefügt
-                    </Text>
-                  )}
-                  {safeLocations.length > 0 &&
-                    safeLocations.map((location, index) => (
-                      <View
-                        key={index}
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <Text
-                          style={{
-                            ...typography.subheadline,
-                            color: "#1C1C1E",
-                          }}
-                        >
-                          {location.title || location.address || "Ort"}
-                        </Text>
-                        {isOwner && (
-                          <Pressable
-                            onPress={() => {
-                              changePlan.mutate({
-                                id,
-                                plan: { locations: [] as any },
-                              });
-                            }}
-                          >
-                            <Text style={{ color: "#FF3B30" }}>Entfernen</Text>
-                          </Pressable>
-                        )}
-                      </View>
-                    ))}
-                </View>
-
-                {/* Search UI */}
-                {isOwner && showLocationSearch && (
-                  <View style={{ gap: 8 }}>
-                    <TextInput
-                      placeholder="Ort suchen (mind. 2 Zeichen)"
-                      placeholderTextColor="#8E8E93"
-                      value={locationQuery}
-                      onChangeText={setLocationQuery}
-                      style={{
-                        backgroundColor: "rgba(0,0,0,0.05)",
-                        borderRadius: 10,
-                        paddingHorizontal: 12,
-                        paddingVertical: 10,
-                        color: "#1C1C1E",
-                      }}
-                    />
-                    {debouncedQuery.length >= 2 && (
-                      <View style={{ gap: 8 }}>
-                        {(locationSearch?.locations ?? []).map((l) => (
-                          <Pressable
-                            key={l.id}
-                            onPress={() => {
-                              changePlan.mutate({
-                                id,
-                                plan: {
-                                  locations: [
-                                    ...(plan?.locations.map((l) => ({
-                                      title: l.title ?? "",
-                                      address: l.address ?? undefined,
-                                      latitude: l.latitude,
-                                      longitude: l.longitude,
-                                    })) ?? []),
-                                    {
-                                      title: l.name,
-                                      address: l.address ?? undefined,
-                                      latitude: l.latitude,
-                                      longitude: l.longitude,
-                                    },
-                                  ],
-                                },
-                              });
-                            }}
-                            style={{
-                              backgroundColor: "rgba(0,0,0,0.04)",
-                              borderRadius: 10,
-                              paddingHorizontal: 12,
-                              paddingVertical: 10,
-                            }}
-                          >
-                            <Text
-                              style={{
-                                ...typography.subheadline,
-                                color: "#1C1C1E",
-                              }}
-                            >
-                              {l.name}
-                            </Text>
-                            {l.address && (
-                              <Text
-                                style={{
-                                  ...typography.caption1,
-                                  color: "#3C3C43",
-                                }}
-                              >
-                                {l.address}
-                              </Text>
-                            )}
-                          </Pressable>
-                        ))}
-                      </View>
-                    )}
-                  </View>
-                )}
-              </View>
+              <Locations isOwner={isOwner} id={id} />
               {plan.url && (
                 <InfoRow icon="link" label="Verknüpfung" value={plan.url} />
               )}
@@ -1394,6 +1173,197 @@ function DateTimeBottomSheet({
           </Pressable>
         </View>
       </View>
+    </View>
+  );
+}
+
+function Locations({ isOwner, id }: { isOwner: boolean; id: string }) {
+  const [showLocationSearch, setShowLocationSearch] = useState(false);
+  const [locationQuery, setLocationQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(locationQuery.trim()), 250);
+    return () => clearTimeout(t);
+  }, [locationQuery]);
+
+  const { data: locationSearch } = useQuery(
+    orpc.location.search.queryOptions({
+      input: {
+        query: debouncedQuery || "",
+        includePhotos: true,
+        limit: 10,
+      },
+      enabled: showLocationSearch && debouncedQuery.length >= 2,
+    })
+  );
+  const queryClient = useQueryClient();
+  const { data: plan } = useSuspenseQuery(
+    orpc.plan.get.queryOptions({ input: { id } })
+  );
+  const changePlan = useMutation(
+    orpc.plan.change.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries();
+      },
+    })
+  );
+
+  if (!plan) return null;
+
+  return (
+    <View
+      style={{
+        backgroundColor: "rgba(255,255,255,0.85)",
+        borderRadius: 14,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+        ...shadows.small,
+        gap: spacing.sm,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <IconSymbol name="location" size={16} color="#1C1C1E" />
+          <Text
+            style={{
+              marginLeft: 8,
+              ...typography.subheadline,
+              color: "#1C1C1E",
+            }}
+          >
+            Orte
+          </Text>
+        </View>
+        {isOwner && (
+          <Pressable onPress={() => setShowLocationSearch((v) => !v)}>
+            <Text style={{ color: "#007AFF", ...typography.subheadline }}>
+              {showLocationSearch ? "Fertig" : "Hinzufügen"}
+            </Text>
+          </Pressable>
+        )}
+      </View>
+
+      {/* Selected locations */}
+      <View style={{ gap: 8 }}>
+        {plan.locations.length === 0 && (
+          <Text style={{ ...typography.caption1, color: "#3C3C43" }}>
+            Keine Orte hinzugefügt
+          </Text>
+        )}
+        {plan.locations.length > 0 &&
+          plan.locations.map((location, index) => (
+            <View
+              key={index}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Text
+                style={{
+                  ...typography.subheadline,
+                  color: "#1C1C1E",
+                }}
+              >
+                {location.title || location.address || "Ort"}
+              </Text>
+              {isOwner && (
+                <Pressable
+                  onPress={() => {
+                    changePlan.mutate({
+                      id,
+                      plan: { locations: [] as any },
+                    });
+                  }}
+                >
+                  <Text style={{ color: "#FF3B30" }}>Entfernen</Text>
+                </Pressable>
+              )}
+            </View>
+          ))}
+      </View>
+
+      {/* Search UI */}
+      {isOwner && showLocationSearch && (
+        <View style={{ gap: 8 }}>
+          <TextInput
+            placeholder="Ort suchen (mind. 2 Zeichen)"
+            placeholderTextColor="#8E8E93"
+            value={locationQuery}
+            onChangeText={setLocationQuery}
+            style={{
+              backgroundColor: "rgba(0,0,0,0.05)",
+              borderRadius: 10,
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              color: "#1C1C1E",
+            }}
+          />
+          {debouncedQuery.length >= 2 && (
+            <View style={{ gap: 8 }}>
+              {(locationSearch?.locations ?? []).map((l) => (
+                <Pressable
+                  key={l.id}
+                  onPress={() => {
+                    changePlan.mutate({
+                      id,
+                      plan: {
+                        locations: [
+                          ...(plan?.locations.map((l) => ({
+                            title: l.title ?? "",
+                            address: l.address ?? undefined,
+                            latitude: l.latitude,
+                            longitude: l.longitude,
+                          })) ?? []),
+                          {
+                            title: l.name,
+                            address: l.address ?? undefined,
+                            latitude: l.latitude,
+                            longitude: l.longitude,
+                          },
+                        ],
+                      },
+                    });
+                  }}
+                  style={{
+                    backgroundColor: "rgba(0,0,0,0.04)",
+                    borderRadius: 10,
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                  }}
+                >
+                  <Text
+                    style={{
+                      ...typography.subheadline,
+                      color: "#1C1C1E",
+                    }}
+                  >
+                    {l.name}
+                  </Text>
+                  {l.address && (
+                    <Text
+                      style={{
+                        ...typography.caption1,
+                        color: "#3C3C43",
+                      }}
+                    >
+                      {l.address}
+                    </Text>
+                  )}
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
     </View>
   );
 }
