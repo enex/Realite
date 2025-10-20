@@ -32,7 +32,7 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import tinycolor from "tinycolor2";
 
 const typography = {
@@ -472,9 +472,85 @@ export default function PlanDetails() {
     );
   }
 
+  const startDateObj = plan?.startDate
+    ? new Date(plan.startDate as unknown as string)
+    : undefined;
+  const endDateObj = plan?.endDate
+    ? new Date(plan.endDate as unknown as string)
+    : undefined;
+  const dayLabel = startDateObj
+    ? startDateObj.toLocaleDateString("de-DE", { weekday: "long" })
+    : undefined;
+  const dateLabel = startDateObj
+    ? startDateObj.toLocaleDateString("de-DE", {
+        day: "2-digit",
+        month: "long",
+      })
+    : undefined;
+  const timeRangeLabel = startDateObj
+    ? `${startDateObj.toLocaleTimeString("de-DE", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })}${
+        endDateObj
+          ? ` – ${endDateObj.toLocaleTimeString("de-DE", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            })}`
+          : ""
+      }`
+    : undefined;
+  const relativeTimeLabel = startDateObj
+    ? getRelativeTimeLabel(startDateObj)
+    : undefined;
+  const primaryLocation = safeLocations[0];
+  const locationLabel = primaryLocation
+    ? primaryLocation.title || primaryLocation.address || undefined
+    : undefined;
+  const gradientColors = [
+    tinycolor(c1).lighten(10).desaturate(8).toHexString(),
+    tinycolor.mix(c1, c2, 40).desaturate(6).toHexString(),
+    tinycolor(c3).darken(6).desaturate(4).toHexString(),
+  ] as const;
+  const gradientMid = tinycolor
+    .mix(gradientColors[0], gradientColors[2], 45)
+    .toHexString();
+  const heroIsDark = tinycolor(gradientMid).getLuminance() < 0.48;
+  const heroTextColor = heroIsDark ? "#F9FAFB" : "#0F172A";
+  const heroMutedColor = tinycolor(heroTextColor)
+    .setAlpha(heroIsDark ? 0.72 : 0.68)
+    .toRgbString();
+  const heroSurface = heroIsDark
+    ? "rgba(255,255,255,0.12)"
+    : "rgba(15,23,42,0.08)";
+  const heroSurfaceBold = heroIsDark
+    ? "rgba(255,255,255,0.18)"
+    : "rgba(15,23,42,0.12)";
+  const heroBorder = heroIsDark
+    ? "rgba(255,255,255,0.35)"
+    : "rgba(15,23,42,0.15)";
+  const heroIconColor = heroIsDark
+    ? "rgba(0,0,0,0.18)"
+    : "rgba(255,255,255,0.18)";
+  const pageBackground = tinycolor(c1).lighten(38).desaturate(15).toHexString();
+  const accentToken = tinycolor(c3).saturate(10).toHexString();
+  const participateBackground = heroIsDark
+    ? tinycolor(accentToken).setAlpha(0.22).toRgbString()
+    : tinycolor(accentToken).lighten(28).setAlpha(0.32).toRgbString();
+  const participateBorder = heroIsDark
+    ? tinycolor(accentToken).setAlpha(0.45).toRgbString()
+    : tinycolor(accentToken).setAlpha(0.28).toRgbString();
+  const participateTextColor = heroIsDark
+    ? "#FDFDFE"
+    : tinycolor(accentToken).darken(12).toHexString();
+  const hostName = ownerProfile?.name || "Unbekannt";
+  const activityLabel = getActivityLabel(plan?.activity as ActivityId);
+
   return (
-    <View style={{ flex: 1, backgroundColor: c1 }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: c1 }}>
+    <View style={{ flex: 1, backgroundColor: pageBackground }}>
+      <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
           refreshControl={
             <RefreshControl
@@ -493,47 +569,92 @@ export default function PlanDetails() {
           contentContainerStyle={{ paddingBottom: spacing.xl }}
         >
           <LinearGradient
-            colors={[c1, c2, c3]}
-            start={{ x: 0, y: 1 }}
-            end={{ x: 1, y: 0 }}
+            colors={[
+              gradientColors[0],
+              gradientColors[1],
+              gradientColors[2],
+            ]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={{
-              borderTopLeftRadius: 0,
-              borderTopRightRadius: 0,
-              borderBottomLeftRadius: 24,
-              borderBottomRightRadius: 24,
-              margin: 0,
-              paddingHorizontal: spacing.lg,
-              paddingTop: spacing.lg,
+              borderBottomLeftRadius: 32,
+              borderBottomRightRadius: 32,
+              paddingHorizontal: spacing.md,
+              paddingTop: spacing.md,
               paddingBottom: spacing.lg,
+              marginBottom: spacing.lg,
               position: "relative",
               overflow: "hidden",
               ...shadows.medium,
             }}
           >
-            <View className="absolute top-[-10px] right-[-10px] opacity-35">
-              <IconSymbol name={icon} size={120} color="#000000" />
+            <View
+              style={{
+                position: "absolute",
+                top: -60,
+                right: -40,
+                opacity: 0.14,
+              }}
+            >
+              <IconSymbol name={icon} size={220} color={heroIconColor} />
             </View>
 
-            <View className="flex-row justify-between items-center mb-4">
-              <Pressable onPress={() => router.back()} className="self-start">
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Pressable onPress={() => router.back()}>
                 <BlurView
-                  intensity={80}
-                  className="rounded-xl px-2 py-1 overflow-hidden flex-row items-center"
+                  intensity={heroIsDark ? 50 : 70}
+                  tint={heroIsDark ? "dark" : "light"}
+                  style={{
+                    borderRadius: 18,
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
                 >
-                  <IconSymbol name="chevron.left" size={14} color="#1C1C1E" />
-                  <Text className="ml-2 text-foreground/80 text-sm">
+                  <IconSymbol
+                    name="chevron.left"
+                    size={14}
+                    color={heroTextColor}
+                  />
+                  <Text
+                    style={{
+                      ...typography.subheadline,
+                      color: heroMutedColor,
+                      fontWeight: "600",
+                    }}
+                  >
                     Zurück
                   </Text>
                 </BlurView>
               </Pressable>
-
               {!isOwner && !hasOwnOverlap && (
                 <Pressable
                   onPress={() => participateInPlan.mutate({ id })}
                   disabled={participateInPlan.isPending}
-                  className="bg-foreground/10 rounded-xl px-4 py-2 shadow-sm"
+                  style={{
+                    borderRadius: 18,
+                    backgroundColor: participateBackground,
+                    borderWidth: 1,
+                    borderColor: participateBorder,
+                    paddingHorizontal: 18,
+                    paddingVertical: 10,
+                  }}
                 >
-                  <View className="flex-row items-center">
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
                     <IconSymbol
                       name={
                         participateInPlan.isPending
@@ -541,14 +662,13 @@ export default function PlanDetails() {
                           : "person.badge.plus"
                       }
                       size={16}
-                      color="#007AFF"
+                      color={participateTextColor}
                     />
                     <Text
                       style={{
-                        marginLeft: 6,
-                        color: "#007AFF",
                         ...typography.subheadline,
                         fontWeight: "600",
+                        color: participateTextColor,
                       }}
                     >
                       {participateInPlan.isPending
@@ -560,150 +680,311 @@ export default function PlanDetails() {
               )}
             </View>
 
-            <Pressable onPress={handleEditTitle} disabled={!isOwner}>
-              <Text style={{ ...typography.largeTitle, color: "#1C1C1E" }}>
-                {plan.title}
-              </Text>
-            </Pressable>
-            {plan.description !== undefined && (
+            <View style={{ marginTop: spacing.lg, gap: spacing.xs }}>
+              {dayLabel && dateLabel && (
+                <Text
+                  style={{
+                    ...typography.caption1,
+                    color: heroMutedColor,
+                    textTransform: "uppercase",
+                    letterSpacing: 1.1,
+                  }}
+                >
+                  {`${dayLabel} · ${dateLabel}`}
+                </Text>
+              )}
               <Pressable
-                onPress={handleEditDescription}
-                className="pb-4"
+                onPress={isOwner ? handleEditTitle : undefined}
                 disabled={!isOwner}
               >
                 <Text
                   style={{
-                    ...typography.subheadline,
-                    color: "#3C3C43",
-                    marginTop: spacing.sm,
+                    ...typography.largeTitle,
+                    color: heroTextColor,
+                    fontSize: 40,
+                    lineHeight: 46,
                   }}
                 >
-                  {plan.description || "Beschreibung hinzufügen"}
+                  {plan.title}
                 </Text>
               </Pressable>
-            )}
-
-            {/* Owner under header with spacing */}
-            <View className="gap-2">
-              <View className="flex-row items-center gap-2">
-                <Avatar
-                  size={28}
-                  image={ownerProfile?.image as any}
-                  name={ownerProfile?.name as any}
-                />
-                <Text style={{ ...typography.subheadline, color: "#1C1C1E" }}>
-                  {ownerProfile?.name || "Unbekannt"}
-                </Text>
-                <View className="bg-foreground/10 px-2 py-1 rounded-md ml-2">
-                  <Text className="text-foreground/80 text-sm">Ersteller</Text>
-                </View>
-              </View>
-              <View style={{ height: spacing.md }} />
+              {plan.description !== undefined && (
+                <Pressable
+                  onPress={isOwner ? handleEditDescription : undefined}
+                  disabled={!isOwner}
+                  style={{ marginTop: spacing.sm }}
+                >
+                  <Text
+                    style={{
+                      ...typography.subheadline,
+                      color: heroMutedColor,
+                    }}
+                  >
+                    {plan.description || "Beschreibung hinzufügen"}
+                  </Text>
+                </Pressable>
+              )}
             </View>
 
-            {copiedFromMatch && (
-              <View className="flex-row items-center gap-2 bg-foreground/10 px-2 py-1 rounded-md ml-2">
-                <IconSymbol name="doc.on.doc" size={16} color="#1C1C1E" />
-                <Text className="text-foreground/80 text-sm flex-1">
-                  Kopie von{" "}
-                  {copiedFromMatch.creator?.name || "einem anderen Plan"}
+            <View
+              style={{
+                marginTop: spacing.md,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: spacing.sm,
+              }}
+            >
+              <Avatar
+                size={40}
+                image={ownerProfile?.image as any}
+                name={ownerProfile?.name as any}
+              />
+              <View style={{ flex: 1, gap: 4 }}>
+                <Text
+                  style={{
+                    ...typography.subheadline,
+                    color: heroTextColor,
+                    fontWeight: "600",
+                  }}
+                >
+                  {hostName}
+                </Text>
+                <Text
+                  style={{
+                    ...typography.caption1,
+                    color: heroMutedColor,
+                  }}
+                >
+                  {isOwner ? "Organisiert von dir" : "Veranstalter"}
                 </Text>
               </View>
-            )}
+              <View
+                style={{
+                  backgroundColor: heroSurfaceBold,
+                  borderRadius: 16,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderWidth: 1,
+                  borderColor: heroBorder,
+                }}
+              >
+                <Text style={{ ...typography.caption1, color: heroTextColor }}>
+                  {activityLabel || "Aktivität"}
+                </Text>
+              </View>
+            </View>
 
-            <View className="gap-2">
+            <View style={{ marginTop: spacing.md, gap: spacing.sm }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  gap: spacing.sm,
+                }}
+              >
+                <HeroMetaItem
+                  icon="clock"
+                  label="Zeitfenster"
+                  primary={timeRangeLabel || "Zeit hinzufügen"}
+                  secondary={
+                    startDateObj
+                      ? formatPlanDateLabel(plan.startDate)
+                      : undefined
+                  }
+                  accent={heroTextColor}
+                  surface={heroSurfaceBold}
+                  border={heroBorder}
+                  onPress={isOwner ? handleEditStart : undefined}
+                />
+                <HeroMetaItem
+                  icon="location"
+                  label="Treffpunkt"
+                  primary={
+                    locationLabel ||
+                    (isOwner ? "Ort hinzufügen" : "Ort wird noch geteilt")
+                  }
+                  secondary={
+                    primaryLocation?.address
+                      ? (primaryLocation.address as string)
+                      : undefined
+                  }
+                  accent={heroTextColor}
+                  surface={heroSurfaceBold}
+                  border={heroBorder}
+                  disabled
+                />
+                <HeroMetaItem
+                  icon={icon}
+                  label="Kategorie"
+                  primary={activityLabel || "Auswählen"}
+                  secondary={isOwner ? "Tippen zum Ändern" : undefined}
+                  accent={heroTextColor}
+                  surface={heroSurfaceBold}
+                  border={heroBorder}
+                  onPress={isOwner ? handleEditActivity : undefined}
+                />
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  gap: spacing.sm,
+                }}
+              >
+                {relativeTimeLabel && (
+                  <HeroMetaItem
+                    icon="sparkles"
+                    label="Startet"
+                    primary={relativeTimeLabel}
+                    accent={heroTextColor}
+                    surface={heroSurface}
+                    border={heroBorder}
+                    disabled
+                  />
+                )}
+                {copiedFromMatch && (
+                  <HeroMetaItem
+                    icon="doc.on.doc"
+                    label="Quelle"
+                    primary={
+                      copiedFromMatch.creator?.name ||
+                      "Plan eines anderen Nutzers"
+                    }
+                    accent={heroTextColor}
+                    surface={heroSurface}
+                    border={heroBorder}
+                    disabled
+                  />
+                )}
+              </View>
+            </View>
+          </LinearGradient>
+          <View
+            style={{
+              paddingHorizontal: spacing.md,
+              marginTop: -spacing.md,
+              gap: spacing.md,
+              paddingBottom: spacing.lg,
+            }}
+          >
+            <SectionCard
+              icon="info.circle"
+              title="Planüberblick"
+              accentColor={accentToken}
+            >
               <InfoRow
                 icon="calendar"
-                label="Datum"
+                label="Start"
                 value={formatPlanDateLabel(plan.startDate)}
                 onPress={isOwner ? handleEditStart : undefined}
+                accentColor={accentToken}
               />
               <InfoRow
                 icon="clock"
                 label="Endet"
-                value={plan?.endDate ? formatPlanDateLabel(plan.endDate) : "—"}
+                value={
+                  plan?.endDate
+                    ? formatPlanDateLabel(plan.endDate)
+                    : "Noch offen"
+                }
                 onPress={isOwner ? handleEditEnd : undefined}
+                accentColor={accentToken}
               />
               <InfoRow
                 icon="tag"
                 label="Aktivität"
-                value={getActivityLabel(plan?.activity as ActivityId)}
+                value={activityLabel || "Kategorie wählen"}
                 onPress={isOwner ? handleEditActivity : undefined}
+                accentColor={accentToken}
               />
-              {/* Locations */}
-              <Locations isOwner={isOwner} id={id} />
-              {plan.url && (
-                <InfoRow icon="link" label="Verknüpfung" value={plan.url} />
-              )}
-              {plan.maybe !== undefined && (
-                <InfoRow
-                  icon="questionmark.circle"
-                  label="Vielleicht"
-                  value={plan.maybe ? "Ja" : "Nein"}
-                />
-              )}
-            </View>
-            {/* Overlapping Plans (header + rows, no container card) */}
-            {(exactMatches.length > 0 || similarMatches.length > 0) && (
-              <View style={{ marginTop: spacing.lg }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginBottom: spacing.sm,
-                  }}
-                >
-                  <IconSymbol name="person.2" size={16} color="#1C1C1E" />
-                  <Text
-                    style={{
-                      marginLeft: 8,
-                      ...typography.subheadline,
-                      color: "#1C1C1E",
-                    }}
-                  >
-                    Überlappende Pläne
-                  </Text>
-                </View>
+            </SectionCard>
 
+            <SectionCard
+              icon="mappin.and.ellipse"
+              title="Orte"
+              accentColor={accentToken}
+              subtitle={
+                isOwner
+                  ? "Füge Treffpunkte oder Highlights hinzu"
+                  : "Geteilte Treffpunkte"
+              }
+            >
+              <Locations
+                isOwner={isOwner}
+                id={id}
+                accentColor={accentToken}
+              />
+            </SectionCard>
+
+            {(plan.url || plan.maybe !== undefined) && (
+              <SectionCard
+                icon="bubble.left"
+                title="Weitere Infos"
+                accentColor={accentToken}
+              >
+                {plan.url && (
+                  <InfoRow
+                    icon="link"
+                    label="Link"
+                    value={plan.url}
+                    accentColor={accentToken}
+                  />
+                )}
+                {plan.maybe !== undefined && (
+                  <InfoRow
+                    icon="questionmark.circle"
+                    label="Vielleicht"
+                    value={plan.maybe ? "Ja" : "Nein"}
+                    accentColor={accentToken}
+                  />
+                )}
+              </SectionCard>
+            )}
+
+            {(exactMatches.length > 0 || similarMatches.length > 0) && (
+              <SectionCard
+                icon="person.2"
+                title="Überlappende Pläne"
+                accentColor={accentToken}
+                subtitle="Entdecke ähnliche Aktivitäten in deinem Umfeld"
+              >
                 {exactMatches.length > 0 && (
                   <View style={{ gap: 8 }}>
-                    <Text style={{ ...typography.caption1, color: "#8E8E93" }}>
+                    <Text
+                      style={{ ...typography.caption1, color: "#6B7280" }}
+                    >
                       Gleich
                     </Text>
                     {exactMatches.map((e) => (
                       <OverlapRow
                         key={e.id}
                         item={e}
-                        accent={c3}
+                        accent={accentToken}
                         isSource={copiedFromMatch?.id === e.id}
                       />
                     ))}
                   </View>
                 )}
-
                 {similarMatches.length > 0 && (
-                  <View
-                    style={{
-                      gap: 8,
-                      marginTop: exactMatches.length > 0 ? 6 : 0,
-                    }}
-                  >
-                    <Text style={{ ...typography.caption1, color: "#8E8E93" }}>
+                  <View style={{ gap: 8, marginTop: spacing.sm }}>
+                    <Text
+                      style={{ ...typography.caption1, color: "#6B7280" }}
+                    >
                       Ähnlich
                     </Text>
                     {similarMatches.map((e) => (
                       <OverlapRow
                         key={e.id}
                         item={e}
-                        accent={c3}
+                        accent={accentToken}
                         isSource={copiedFromMatch?.id === e.id}
                       />
                     ))}
                   </View>
                 )}
-              </View>
+              </SectionCard>
             )}
-          </LinearGradient>
+          </View>
         </ScrollView>
       </SafeAreaView>
       {showActivityPicker && plan && (
@@ -757,39 +1038,261 @@ function InfoRow({
   label,
   value,
   onPress,
+  accentColor = "#0F172A",
 }: {
   icon: Parameters<typeof IconSymbol>[0]["name"];
   label: string;
-  value: string;
+  value: ReactNode;
   onPress?: () => void;
+  accentColor?: string;
 }) {
+  const interactive = typeof onPress === "function";
+  const background = tinycolor(accentColor).setAlpha(0.06).toRgbString();
+  const border = tinycolor(accentColor).setAlpha(0.1).toRgbString();
+  const iconBg = tinycolor(accentColor).setAlpha(0.12).toRgbString();
+  const labelColor = tinycolor(accentColor).darken(10).toHexString();
+  const valueColor = tinycolor(accentColor).darken(25).toHexString();
   return (
     <Pressable
       onPress={onPress}
+      disabled={!interactive}
       style={{
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        backgroundColor: "rgba(255,255,255,0.85)",
+        backgroundColor: background,
         borderRadius: 14,
-        paddingHorizontal: spacing.md,
+        borderWidth: 1,
+        borderColor: border,
+        paddingHorizontal: spacing.sm + 6,
         paddingVertical: spacing.sm,
-        ...shadows.small,
+        opacity: interactive ? 1 : 0.9,
       }}
     >
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <IconSymbol name={icon} size={16} color="#1C1C1E" />
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <View
+          style={{
+            width: 30,
+            height: 30,
+            borderRadius: 15,
+            backgroundColor: iconBg,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <IconSymbol name={icon} size={16} color={accentColor} />
+        </View>
+        <Text style={{ ...typography.subheadline, color: labelColor }}>
+          {label}
+        </Text>
+      </View>
+      <View style={{ flexShrink: 1, maxWidth: "55%", alignItems: "flex-end" }}>
+        {typeof value === "string" ? (
+          <Text
+            style={{
+              ...typography.subheadline,
+              color: valueColor,
+              textAlign: "right",
+            }}
+            numberOfLines={2}
+          >
+            {value}
+          </Text>
+        ) : (
+          value
+        )}
+      </View>
+    </Pressable>
+  );
+}
+
+function HeroMetaItem({
+  icon,
+  label,
+  primary,
+  secondary,
+  accent,
+  surface,
+  border,
+  onPress,
+  disabled,
+}: {
+  icon: Parameters<typeof IconSymbol>[0]["name"];
+  label: string;
+  primary: string;
+  secondary?: string;
+  accent: string;
+  surface: string;
+  border: string;
+  onPress?: () => void;
+  disabled?: boolean;
+}) {
+  const interactive = typeof onPress === "function" && !disabled;
+  const readableAccent = tinycolor(accent).darken(10).toHexString();
+  const secondaryColor = tinycolor(accent)
+    .setAlpha(0.65)
+    .desaturate(8)
+    .toRgbString();
+  const body = (
+    <View
+      style={{
+        backgroundColor: surface,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: border,
+        paddingHorizontal: spacing.sm + 4,
+        paddingVertical: spacing.sm,
+        minWidth: 120,
+        maxWidth: 210,
+        flexShrink: 0,
+        gap: 4,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <View
+          style={{
+            width: 26,
+            height: 26,
+            borderRadius: 13,
+            backgroundColor: tinycolor(accent).setAlpha(0.18).toRgbString(),
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <IconSymbol name={icon} size={14} color={readableAccent} />
+        </View>
         <Text
-          style={{ marginLeft: 8, ...typography.subheadline, color: "#1C1C1E" }}
+          style={{
+            ...typography.caption1,
+            color: secondaryColor,
+            textTransform: "uppercase",
+            letterSpacing: 0.8,
+          }}
+          numberOfLines={1}
         >
           {label}
         </Text>
       </View>
-      <Text style={{ ...typography.subheadline, color: "#3C3C43" }}>
-        {value}
+      <Text
+        style={{
+          ...typography.subheadline,
+          color: readableAccent,
+          fontWeight: "600",
+        }}
+        numberOfLines={2}
+      >
+        {primary}
       </Text>
+      {secondary ? (
+        <Text
+          style={{
+            ...typography.caption1,
+            color: secondaryColor,
+          }}
+          numberOfLines={2}
+        >
+          {secondary}
+        </Text>
+      ) : null}
+    </View>
+  );
+  if (!interactive) return body;
+  return (
+    <Pressable onPress={onPress} style={{ flexShrink: 0 }}>
+      {body}
     </Pressable>
   );
+}
+
+function SectionCard({
+  icon,
+  title,
+  subtitle,
+  accentColor,
+  children,
+}: {
+  icon: Parameters<typeof IconSymbol>[0]["name"];
+  title: string;
+  subtitle?: string;
+  accentColor: string;
+  children: ReactNode;
+}) {
+  const surface = tinycolor(accentColor).setAlpha(0.04).toRgbString();
+  const border = tinycolor(accentColor).setAlpha(0.08).toRgbString();
+  return (
+    <View
+      style={{
+        backgroundColor: "#FFFFFF",
+        borderRadius: 20,
+        padding: spacing.md + 2,
+        borderWidth: 1,
+        borderColor: border,
+        gap: spacing.sm,
+        ...shadows.small,
+      }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <View
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            backgroundColor: surface,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <IconSymbol name={icon} size={20} color={accentColor} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={{ ...typography.title2, color: "#0F172A" }}>
+            {title}
+          </Text>
+          {subtitle ? (
+            <Text
+              style={{
+                ...typography.caption1,
+                color: "#6B7280",
+                marginTop: 2,
+              }}
+              numberOfLines={2}
+            >
+              {subtitle}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+      <View style={{ gap: spacing.sm }}>{children}</View>
+    </View>
+  );
+}
+
+function getRelativeTimeLabel(date: Date) {
+  const now = new Date();
+  const diffMinutes = Math.round(
+    (date.getTime() - now.getTime()) / (1000 * 60)
+  );
+  if (diffMinutes === 0) return "Beginnt jetzt";
+  const absMinutes = Math.abs(diffMinutes);
+  const prefix = diffMinutes > 0 ? "In" : "Vor";
+  if (absMinutes < 60) {
+    const unit = absMinutes === 1 ? "Minute" : "Minuten";
+    return `${prefix} ${absMinutes} ${unit}`;
+  }
+  if (absMinutes < 60 * 24) {
+    const hours = Math.round(absMinutes / 60);
+    const unit = hours === 1 ? "Stunde" : "Stunden";
+    return `${prefix} ${hours} ${unit}`;
+  }
+  const days = Math.round(absMinutes / (60 * 24));
+  const unit = days === 1 ? "Tag" : "Tagen";
+  return `${prefix} ${days} ${unit}`;
 }
 
 function getActivityLabel(id?: ActivityId) {
@@ -842,15 +1345,22 @@ function OverlapRow({
   )
     diffs.push(`${Math.round(item.diff.distanceMeters)} m entfernt`);
   if (item.diff.differentTitle) diffs.push("anderer Titel");
+  const background = tinycolor(accent).setAlpha(0.08).toRgbString();
+  const border = tinycolor(accent).setAlpha(0.18).toRgbString();
+  const titleColor = tinycolor(accent).darken(20).toHexString();
+  const metaColor = tinycolor(accent).darken(32).setAlpha(0.7).toRgbString();
+  const chipBg = tinycolor(accent).setAlpha(0.18).toRgbString();
+  const chipText = tinycolor(accent).darken(35).toHexString();
   return (
     <Pressable
       onPress={() => router.push(`/plan/${item.id}` as any)}
       style={{
-        backgroundColor: "rgba(255,255,255,0.85)",
-        borderRadius: 12,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        ...shadows.small,
+        backgroundColor: background,
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: border,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm + 2,
       }}
     >
       <View
@@ -875,7 +1385,7 @@ function OverlapRow({
             name={item.creator?.name as any}
           />
           <View style={{ flex: 1, gap: 4 }}>
-            <Text style={{ ...typography.subheadline, color: "#1C1C1E" }}>
+            <Text style={{ ...typography.subheadline, color: titleColor }}>
               {item.title || "Plan"}
             </Text>
             <View
@@ -886,20 +1396,20 @@ function OverlapRow({
                 gap: 6,
               }}
             >
-              <Text style={{ ...typography.caption1, color: "#3C3C43" }}>
+              <Text style={{ ...typography.caption1, color: metaColor }}>
                 {timeStr}
                 {item.creator?.name ? ` · ${item.creator.name}` : ""}
               </Text>
               {isSource && (
                 <View
                   style={{
-                    backgroundColor: accent,
-                    borderRadius: 6,
-                    paddingHorizontal: 6,
-                    paddingVertical: 2,
+                    backgroundColor: chipBg,
+                    borderRadius: 8,
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
                   }}
                 >
-                  <Text style={{ ...typography.caption1, color: "#FFFFFF" }}>
+                  <Text style={{ ...typography.caption1, color: chipText }}>
                     Original
                   </Text>
                 </View>
@@ -912,7 +1422,7 @@ function OverlapRow({
             style={{
               flexDirection: "row",
               flexWrap: "wrap",
-              gap: 6,
+              gap: 8,
               maxWidth: 180,
               justifyContent: "flex-end",
             }}
@@ -921,13 +1431,13 @@ function OverlapRow({
               <View
                 key={i}
                 style={{
-                  backgroundColor: accent + "22",
-                  borderRadius: 8,
-                  paddingHorizontal: 8,
+                  backgroundColor: chipBg,
+                  borderRadius: 10,
+                  paddingHorizontal: 10,
                   paddingVertical: 4,
                 }}
               >
-                <Text style={{ ...typography.caption1, color: "#1C1C1E" }}>
+                <Text style={{ ...typography.caption1, color: chipText }}>
                   {d}
                 </Text>
               </View>
@@ -1177,7 +1687,15 @@ function DateTimeBottomSheet({
   );
 }
 
-function Locations({ isOwner, id }: { isOwner: boolean; id: string }) {
+function Locations({
+  isOwner,
+  id,
+  accentColor,
+}: {
+  isOwner: boolean;
+  id: string;
+  accentColor: string;
+}) {
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [locationQuery, setLocationQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -1211,118 +1729,162 @@ function Locations({ isOwner, id }: { isOwner: boolean; id: string }) {
 
   if (!plan) return null;
 
+  const chipBackground = tinycolor(accentColor).setAlpha(0.08).toRgbString();
+  const chipBorder = tinycolor(accentColor).setAlpha(0.18).toRgbString();
+  const primaryText = tinycolor(accentColor).darken(12).toHexString();
+  const mutedText = tinycolor(accentColor)
+    .darken(24)
+    .setAlpha(0.75)
+    .toRgbString();
+  const actionText = accentColor;
+
+  const normalizedLocations = Array.isArray(plan.locations)
+    ? plan.locations.map((l) => ({
+        title: l.title ?? "",
+        address: l.address ?? undefined,
+        latitude: l.latitude,
+        longitude: l.longitude,
+      }))
+    : [];
+
   return (
     <View
       style={{
-        backgroundColor: "rgba(255,255,255,0.85)",
-        borderRadius: 14,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
-        ...shadows.small,
         gap: spacing.sm,
       }}
     >
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <IconSymbol name="location" size={16} color="#1C1C1E" />
-          <Text
-            style={{
-              marginLeft: 8,
-              ...typography.subheadline,
-              color: "#1C1C1E",
-            }}
-          >
-            Orte
+      {isOwner && (
+        <Pressable
+          onPress={() =>
+            setShowLocationSearch((previous) => !previous)
+          }
+          style={{
+            alignSelf: "flex-start",
+            backgroundColor: chipBackground,
+            borderRadius: 18,
+            borderWidth: 1,
+            borderColor: chipBorder,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <IconSymbol
+            name={showLocationSearch ? "xmark" : "plus"}
+            size={14}
+            color={actionText}
+          />
+          <Text style={{ ...typography.subheadline, color: actionText }}>
+            {showLocationSearch ? "Fertig" : "Ort hinzufügen"}
           </Text>
-        </View>
-        {isOwner && (
-          <Pressable onPress={() => setShowLocationSearch((v) => !v)}>
-            <Text style={{ color: "#007AFF", ...typography.subheadline }}>
-              {showLocationSearch ? "Fertig" : "Hinzufügen"}
-            </Text>
-          </Pressable>
-        )}
-      </View>
+        </Pressable>
+      )}
 
-      {/* Selected locations */}
-      <View style={{ gap: 8 }}>
-        {plan.locations.length === 0 && (
-          <Text style={{ ...typography.caption1, color: "#3C3C43" }}>
-            Keine Orte hinzugefügt
-          </Text>
-        )}
-        {plan.locations.length > 0 &&
-          plan.locations.map((location, index) => (
+      {normalizedLocations.length === 0 ? (
+        <Text style={{ ...typography.caption1, color: mutedText }}>
+          Noch keine Orte geteilt
+        </Text>
+      ) : (
+        <View style={{ gap: spacing.sm }}>
+          {normalizedLocations.map((location, index) => (
             <View
-              key={index}
+              key={`${location.title}-${index}`}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
+                backgroundColor: chipBackground,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: chipBorder,
+                paddingHorizontal: spacing.sm,
+                paddingVertical: spacing.sm,
+                gap: spacing.sm,
               }}
             >
-              <Text
-                style={{
-                  ...typography.subheadline,
-                  color: "#1C1C1E",
-                }}
-              >
-                {location.title || location.address || "Ort"}
-              </Text>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    ...typography.subheadline,
+                    color: primaryText,
+                    fontWeight: "600",
+                  }}
+                  numberOfLines={2}
+                >
+                  {location.title || location.address || "Ort"}
+                </Text>
+                {location.address &&
+                  location.title &&
+                  location.title !== location.address && (
+                    <Text
+                      style={{
+                        ...typography.caption1,
+                        color: mutedText,
+                        marginTop: 2,
+                      }}
+                      numberOfLines={2}
+                    >
+                      {location.address}
+                    </Text>
+                  )}
+              </View>
               {isOwner && (
                 <Pressable
                   onPress={() => {
+                    const remaining = normalizedLocations.filter(
+                      (_, i) => i !== index
+                    );
                     changePlan.mutate({
                       id,
-                      plan: { locations: [] as any },
+                      plan: { locations: remaining as any },
                     });
                   }}
+                  style={{ paddingHorizontal: 12, paddingVertical: 6 }}
                 >
-                  <Text style={{ color: "#FF3B30" }}>Entfernen</Text>
+                  <Text style={{ ...typography.caption1, color: "#EF4444" }}>
+                    Entfernen
+                  </Text>
                 </Pressable>
               )}
             </View>
           ))}
-      </View>
+        </View>
+      )}
 
       {/* Search UI */}
       {isOwner && showLocationSearch && (
-        <View style={{ gap: 8 }}>
+        <View style={{ gap: spacing.sm }}>
           <TextInput
             placeholder="Ort suchen (mind. 2 Zeichen)"
             placeholderTextColor="#8E8E93"
             value={locationQuery}
             onChangeText={setLocationQuery}
             style={{
-              backgroundColor: "rgba(0,0,0,0.05)",
-              borderRadius: 10,
-              paddingHorizontal: 12,
-              paddingVertical: 10,
-              color: "#1C1C1E",
+              backgroundColor: "#F5F7FB",
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: chipBorder,
+              paddingHorizontal: spacing.md,
+              paddingVertical: spacing.sm,
+              color: primaryText,
             }}
+            autoCorrect={false}
+            autoCapitalize="none"
           />
           {debouncedQuery.length >= 2 && (
-            <View style={{ gap: 8 }}>
+            <View style={{ gap: spacing.sm }}>
               {(locationSearch?.locations ?? []).map((l) => (
                 <Pressable
                   key={l.id}
                   onPress={() => {
+                    const current = normalizedLocations;
                     changePlan.mutate({
                       id,
                       plan: {
                         locations: [
-                          ...(plan?.locations.map((l) => ({
-                            title: l.title ?? "",
-                            address: l.address ?? undefined,
-                            latitude: l.latitude,
-                            longitude: l.longitude,
-                          })) ?? []),
+                          ...current,
                           {
                             title: l.name,
                             address: l.address ?? undefined,
@@ -1332,18 +1894,24 @@ function Locations({ isOwner, id }: { isOwner: boolean; id: string }) {
                         ],
                       },
                     });
+                    setLocationQuery("");
+                    setDebouncedQuery("");
+                    setShowLocationSearch(false);
                   }}
                   style={{
-                    backgroundColor: "rgba(0,0,0,0.04)",
-                    borderRadius: 10,
-                    paddingHorizontal: 12,
-                    paddingVertical: 10,
+                    backgroundColor: chipBackground,
+                    borderRadius: 14,
+                    borderWidth: 1,
+                    borderColor: chipBorder,
+                    paddingHorizontal: spacing.md,
+                    paddingVertical: spacing.sm,
                   }}
                 >
                   <Text
                     style={{
                       ...typography.subheadline,
-                      color: "#1C1C1E",
+                      color: primaryText,
+                      fontWeight: "600",
                     }}
                   >
                     {l.name}
@@ -1352,7 +1920,8 @@ function Locations({ isOwner, id }: { isOwner: boolean; id: string }) {
                     <Text
                       style={{
                         ...typography.caption1,
-                        color: "#3C3C43",
+                        color: mutedText,
+                        marginTop: 2,
                       }}
                     >
                       {l.address}

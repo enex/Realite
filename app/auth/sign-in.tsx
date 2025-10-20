@@ -4,18 +4,11 @@ import { Pressable, Text, View } from "react-native";
 
 export default function SignIn() {
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text style={{ fontSize: 24, marginBottom: 20 }}>
+    <View className="flex-1 justify-center items-center">
+      <Text className="text-foreground text-2xl font-bold mb-4">
         Willkommen bei Realite
       </Text>
-      <Text
-        style={{
-          fontSize: 16,
-          marginBottom: 30,
-          textAlign: "center",
-          paddingHorizontal: 20,
-        }}
-      >
+      <Text className="text-foreground/80 text-sm text-center mb-6 px-4">
         Melde dich an, um Events zu entdecken und neue Leute kennenzulernen
       </Text>
       <Pressable
@@ -23,14 +16,9 @@ export default function SignIn() {
           // Use the existing phone auth flow
           router.push("/auth/phone");
         }}
-        style={{
-          backgroundColor: "#4F46E5",
-          padding: 16,
-          borderRadius: 8,
-          minWidth: 200,
-        }}
+        className="bg-primary rounded-xl px-4 py-2 min-w-[200px]"
       >
-        <Text style={{ color: "white", fontSize: 16, textAlign: "center" }}>
+        <Text className="text-white text-sm text-center">
           Mit Telefonnummer anmelden
         </Text>
       </Pressable>
