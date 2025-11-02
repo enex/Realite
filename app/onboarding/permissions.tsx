@@ -16,6 +16,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Constants from "expo-constants";
 
 interface PermissionState {
   contacts: boolean;
@@ -79,6 +80,14 @@ export default function PermissionsScreen() {
   };
 
   const requestNotificationPermission = async () => {
+    if (Constants.appOwnership === "expo") {
+      Alert.alert(
+        "Benachrichtigungen nicht verfügbar",
+        "Push-Benachrichtigungen werden in Expo Go nicht unterstützt. Verwende eine Development Build, um sie zu testen."
+      );
+      setPermissions((prev) => ({ ...prev, notifications: false }));
+      return false;
+    }
     try {
       const { granted } = await Notifications.requestPermissionsAsync();
       setPermissions((prev) => ({ ...prev, notifications: granted }));

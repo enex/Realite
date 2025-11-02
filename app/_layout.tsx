@@ -8,7 +8,6 @@ import { useFonts } from "expo-font";
 import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { PostHogProvider } from "posthog-react-native";
 import React, { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -19,6 +18,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { colorScheme as nativewindColorScheme } from "nativewind";
 
+import { PostHogProvider } from "posthog-react-native";
 import "../global.css";
 
 const POSTHOG_API_KEY = "phc_3omBpOn5mo0ATpJZOmu7gU4RGpmLoXcef1YAGZY3e4O";
@@ -85,19 +85,12 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        {isClient ? (
-          <PostHogProvider
-            apiKey={POSTHOG_API_KEY}
-            options={{
-              host: POSTHOG_HOST,
-              enableSessionReplay: true,
-            }}
-          >
-            {content}
-          </PostHogProvider>
-        ) : (
-          content
-        )}
+        <PostHogProvider
+          apiKey={POSTHOG_API_KEY}
+          options={{ host: POSTHOG_HOST }}
+        >
+          {content}
+        </PostHogProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

@@ -4,35 +4,32 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Alert,
-  Image,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useSession } from "@/client/auth";
 import { orpc } from "@/client/orpc";
+import Avatar from "@/components/Avatar";
+import DateTimeBottomSheet from "@/components/DateTimeBottomSheet";
+import LocationEditBottomSheet from "@/components/LocationEditBottomSheet";
 import { shadows } from "@/components/PlanCard";
-import SmartDateTimePicker from "@/components/SmartDateTimePicker";
+import TextEditBottomSheet from "@/components/TextEditBottomSheet";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { useLocation } from "@/hooks/useLocation";
 import {
   activities,
   type ActivityGroupId,
   type ActivityId,
 } from "@/shared/activities";
-import { formatLocalDateTime } from "@/shared/utils/datetime";
 import { calculateDistance, isWithinRadius } from "@/shared/utils/distance";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ReactNode, useMemo, useState } from "react";
 import tinycolor from "tinycolor2";
 
 const typography = {
@@ -94,21 +91,6 @@ const getActivityIcon = (activityId?: ActivityId) => {
   }
 };
 
-const formatPlanDateLabel = (value: unknown): string =>
-  formatLocalDateTime(value as Date | string | number | null | undefined, {
-    dateOptions: {
-      weekday: "long",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    },
-    timeOptions: {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    },
-  });
-
 export default function PlanDetails() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id: string }>();
@@ -124,6 +106,13 @@ export default function PlanDetails() {
   } = useQuery(orpc.plan.get.queryOptions({ input: { id } }));
   const changePlan = useMutation(
     orpc.plan.change.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries();
+      },
+    })
+  );
+  const updateUser = useMutation(
+    orpc.user.update.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries();
       },
@@ -158,8 +147,17 @@ export default function PlanDetails() {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [showActivityPicker, setShowActivityPicker] = useState(false);
+  const [showTextEdit, setShowTextEdit] = useState<{
+    type: "title" | "description";
+  } | null>(null);
+  const [showLocationEdit, setShowLocationEdit] = useState<number | null>(null);
   // Overlap UI state
   const [overlapRadiusM] = useState(1000);
+  const {
+    latitude: userLat,
+    longitude: userLon,
+    hasPermission: hasLocationPermission,
+  } = useLocation();
 
   // Ensure locations is always an array to prevent runtime errors
   const safeLocations = useMemo(
@@ -398,51 +396,14 @@ export default function PlanDetails() {
     return { exactMatches: exact, similarMatches: similar };
   }, [plan, overlaps, safeLocations, profileById]);
 
-  const copiedFromMatch = useMemo(() => {
-    if (!isOwner) return undefined;
-    const exactSource = exactMatches.find(
-      (m) => m.creator?.id && m.creator.id !== session?.id
-    );
-    if (exactSource) return exactSource;
-    return similarMatches.find(
-      (m) => m.creator?.id && m.creator.id !== session?.id
-    );
-  }, [isOwner, exactMatches, similarMatches, session?.id]);
-
-  const promptEdit = (
-    title: string,
-    current: string,
-    onSubmit: (value: string) => void
-  ) => {
-    Alert.prompt(
-      title,
-      undefined,
-      [
-        { text: "Abbrechen", style: "cancel" },
-        {
-          text: "Speichern",
-          onPress: (value: string | undefined) => {
-            if (value !== undefined) onSubmit(value);
-          },
-        },
-      ],
-      "plain-text",
-      current
-    );
-  };
-
   const handleEditTitle = () => {
     if (!isOwner) return;
-    promptEdit("Titel bearbeiten", plan?.title ?? "", (value) => {
-      changePlan.mutate({ id, plan: { title: value } });
-    });
+    setShowTextEdit({ type: "title" });
   };
 
   const handleEditDescription = () => {
     if (!isOwner) return;
-    promptEdit("Beschreibung bearbeiten", plan?.description ?? "", (value) => {
-      changePlan.mutate({ id, plan: { description: value } });
-    });
+    setShowTextEdit({ type: "description" });
   };
 
   const handleEditStart = () => {
@@ -455,9 +416,41 @@ export default function PlanDetails() {
     setShowEndPicker(true);
   };
 
-  const handleEditActivity = () => {
-    if (!isOwner) return;
-    setShowActivityPicker(true);
+  const handleEditLocation = (index: number) => {
+    if (!isOwner || !safeLocations[index]) return;
+    setShowLocationEdit(index);
+  };
+
+  const handleEditCreatorName = () => {
+    if (!isOwner || !ownerProfile) return;
+    setShowTextEdit({ type: "title" }); // Reuse the text edit but we'll handle it differently
+    // For now, we'll use Alert.prompt for creator name as it's less critical
+    if (Platform.OS === "ios") {
+      Alert.prompt(
+        "Name bearbeiten",
+        undefined,
+        [
+          { text: "Abbrechen", style: "cancel" },
+          {
+            text: "Speichern",
+            onPress: (value: string | undefined) => {
+              if (value !== undefined) {
+                updateUser.mutate({ name: value });
+              }
+            },
+          },
+        ],
+        "plain-text",
+        ownerProfile.name || ""
+      );
+    } else {
+      // For Android/Web, we could show a simple input dialog
+      // For now, just open a basic alert - could be improved with a modal
+      Alert.alert(
+        "Name bearbeiten",
+        "Bitte nutze das Profil, um deinen Namen zu ändern."
+      );
+    }
   };
 
   if (!plan) {
@@ -483,32 +476,28 @@ export default function PlanDetails() {
     : undefined;
   const dateLabel = startDateObj
     ? startDateObj.toLocaleDateString("de-DE", {
-        day: "2-digit",
-        month: "long",
+        day: "numeric",
+        month: "numeric",
       })
-    : undefined;
-  const timeRangeLabel = startDateObj
-    ? `${startDateObj.toLocaleTimeString("de-DE", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      })}${
-        endDateObj
-          ? ` – ${endDateObj.toLocaleTimeString("de-DE", {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false,
-            })}`
-          : ""
-      }`
-    : undefined;
-  const relativeTimeLabel = startDateObj
-    ? getRelativeTimeLabel(startDateObj)
     : undefined;
   const primaryLocation = safeLocations[0];
   const locationLabel = primaryLocation
     ? primaryLocation.title || primaryLocation.address || undefined
     : undefined;
+  const locationDistanceMeters =
+    hasLocationPermission &&
+    userLat &&
+    userLon &&
+    primaryLocation &&
+    typeof primaryLocation.latitude === "number" &&
+    typeof primaryLocation.longitude === "number"
+      ? calculateDistance(
+          userLat,
+          userLon,
+          primaryLocation.latitude,
+          primaryLocation.longitude
+        )
+      : undefined;
   const gradientColors = [
     tinycolor(c1).lighten(10).desaturate(8).toHexString(),
     tinycolor.mix(c1, c2, 40).desaturate(6).toHexString(),
@@ -522,9 +511,6 @@ export default function PlanDetails() {
   const heroMutedColor = tinycolor(heroTextColor)
     .setAlpha(heroIsDark ? 0.72 : 0.68)
     .toRgbString();
-  const heroSurface = heroIsDark
-    ? "rgba(255,255,255,0.12)"
-    : "rgba(15,23,42,0.08)";
   const heroSurfaceBold = heroIsDark
     ? "rgba(255,255,255,0.18)"
     : "rgba(15,23,42,0.12)";
@@ -546,7 +532,6 @@ export default function PlanDetails() {
     ? "#FDFDFE"
     : tinycolor(accentToken).darken(12).toHexString();
   const hostName = ownerProfile?.name || "Unbekannt";
-  const activityLabel = getActivityLabel(plan?.activity as ActivityId);
 
   return (
     <View style={{ flex: 1, backgroundColor: pageBackground }}>
@@ -569,11 +554,7 @@ export default function PlanDetails() {
           contentContainerStyle={{ paddingBottom: spacing.xl }}
         >
           <LinearGradient
-            colors={[
-              gradientColors[0],
-              gradientColors[1],
-              gradientColors[2],
-            ]}
+            colors={[gradientColors[0], gradientColors[1], gradientColors[2]]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={{
@@ -680,183 +661,363 @@ export default function PlanDetails() {
               )}
             </View>
 
-            <View style={{ marginTop: spacing.lg, gap: spacing.xs }}>
-              {dayLabel && dateLabel && (
-                <Text
+            <View style={{ marginTop: spacing.lg, gap: spacing.sm + 4 }}>
+              {/* Combined Date and Time Field */}
+              {startDateObj && (
+                <Pressable
+                  onPress={isOwner ? handleEditStart : undefined}
+                  disabled={!isOwner}
                   style={{
-                    ...typography.caption1,
-                    color: heroMutedColor,
-                    textTransform: "uppercase",
-                    letterSpacing: 1.1,
+                    flexDirection: "row",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    paddingVertical: 0,
+                    opacity: isOwner ? 1 : 0.8,
                   }}
                 >
-                  {`${dayLabel} · ${dateLabel}`}
-                </Text>
+                  <View style={{ flex: 1 }}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: spacing.xs,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      {dayLabel && dateLabel && (
+                        <Text
+                          style={{
+                            ...typography.subheadline,
+                            color: heroTextColor,
+                            fontWeight: "500",
+                          }}
+                        >
+                          {`${dayLabel}, ${dateLabel}`}
+                        </Text>
+                      )}
+                      <Text
+                        style={{
+                          ...typography.subheadline,
+                          color: heroTextColor,
+                        }}
+                      >
+                        {startDateObj.toLocaleTimeString("de-DE", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        })}
+                      </Text>
+                      {endDateObj ? (
+                        <>
+                          <Text
+                            style={{
+                              ...typography.subheadline,
+                              color: heroMutedColor,
+                            }}
+                          >
+                            –
+                          </Text>
+                          <Pressable
+                            onPress={isOwner ? handleEditEnd : undefined}
+                            disabled={!isOwner}
+                            onStartShouldSetResponder={() => true}
+                            onResponderTerminationRequest={() => false}
+                          >
+                            <Text
+                              style={{
+                                ...typography.subheadline,
+                                color: heroTextColor,
+                              }}
+                            >
+                              {endDateObj.toLocaleTimeString("de-DE", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              })}
+                            </Text>
+                          </Pressable>
+                        </>
+                      ) : (
+                        isOwner && (
+                          <>
+                            <Text
+                              style={{
+                                ...typography.subheadline,
+                                color: heroMutedColor,
+                              }}
+                            >
+                              –
+                            </Text>
+                            <Pressable
+                              onPress={handleEditEnd}
+                              onStartShouldSetResponder={() => true}
+                              onResponderTerminationRequest={() => false}
+                            >
+                              <Text
+                                style={{
+                                  ...typography.subheadline,
+                                  color: heroMutedColor,
+                                  fontStyle: "italic",
+                                }}
+                              >
+                                Endzeit
+                              </Text>
+                            </Pressable>
+                          </>
+                        )
+                      )}
+                    </View>
+                  </View>
+                  {isOwner && (
+                    <IconSymbol
+                      name="chevron.right"
+                      size={12}
+                      color={heroMutedColor}
+                      style={{ marginTop: 2 }}
+                    />
+                  )}
+                </Pressable>
               )}
+
+              {/* Title Field */}
               <Pressable
                 onPress={isOwner ? handleEditTitle : undefined}
                 disabled={!isOwner}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                  paddingVertical: 0,
+                  opacity: isOwner ? 1 : 0.9,
+                }}
               >
                 <Text
                   style={{
                     ...typography.largeTitle,
                     color: heroTextColor,
-                    fontSize: 40,
-                    lineHeight: 46,
+                    fontSize: 32,
+                    lineHeight: 38,
+                    flex: 1,
                   }}
+                  numberOfLines={2}
                 >
                   {plan.title}
                 </Text>
+                {isOwner && (
+                  <IconSymbol
+                    name="chevron.right"
+                    size={12}
+                    color={heroMutedColor}
+                    style={{ marginTop: 6 }}
+                  />
+                )}
               </Pressable>
-              {plan.description !== undefined && (
+
+              {/* Description Field */}
+              {(plan.description !== undefined || isOwner) && (
                 <Pressable
                   onPress={isOwner ? handleEditDescription : undefined}
                   disabled={!isOwner}
-                  style={{ marginTop: spacing.sm }}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    paddingVertical: 0,
+                    opacity: isOwner ? 1 : 0.8,
+                  }}
                 >
                   <Text
                     style={{
                       ...typography.subheadline,
-                      color: heroMutedColor,
+                      color: plan.description ? heroTextColor : heroMutedColor,
+                      flex: 1,
+                      fontStyle: plan.description ? "normal" : "italic",
                     }}
+                    numberOfLines={3}
                   >
                     {plan.description || "Beschreibung hinzufügen"}
                   </Text>
+                  {isOwner && (
+                    <IconSymbol
+                      name="chevron.right"
+                      size={12}
+                      color={heroMutedColor}
+                      style={{ marginTop: 2 }}
+                    />
+                  )}
                 </Pressable>
               )}
             </View>
 
-            <View
-              style={{
-                marginTop: spacing.md,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: spacing.sm,
-              }}
-            >
-              <Avatar
-                size={40}
-                image={ownerProfile?.image as any}
-                name={ownerProfile?.name as any}
-              />
-              <View style={{ flex: 1, gap: 4 }}>
-                <Text
+            {(primaryLocation || isOwner) && (
+              <View style={{ marginTop: spacing.sm + 4 }}>
+                <Pressable
+                  onPress={
+                    isOwner
+                      ? primaryLocation
+                        ? () => handleEditLocation(0)
+                        : () => {
+                            // TODO: Add location button
+                          }
+                      : undefined
+                  }
+                  disabled={!isOwner}
                   style={{
-                    ...typography.subheadline,
-                    color: heroTextColor,
-                    fontWeight: "600",
+                    flexDirection: "row",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    paddingVertical: 0,
+                    opacity: isOwner ? 1 : 0.8,
                   }}
                 >
-                  {hostName}
-                </Text>
-                <Text
-                  style={{
-                    ...typography.caption1,
-                    color: heroMutedColor,
-                  }}
-                >
-                  {isOwner ? "Organisiert von dir" : "Veranstalter"}
-                </Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "flex-start",
+                      gap: spacing.sm,
+                      flex: 1,
+                    }}
+                  >
+                    <IconSymbol
+                      name="mappin.and.ellipse"
+                      size={18}
+                      color={heroTextColor}
+                      style={{ marginTop: 2 }}
+                    />
+                    {primaryLocation && locationLabel ? (
+                      <View style={{ flex: 1, gap: 3 }}>
+                        <Text
+                          style={{
+                            ...typography.subheadline,
+                            color: heroTextColor,
+                            fontWeight: "600",
+                          }}
+                          numberOfLines={1}
+                        >
+                          {locationLabel}
+                        </Text>
+                        {locationDistanceMeters !== undefined && (
+                          <Text
+                            style={{
+                              ...typography.caption1,
+                              color: heroMutedColor,
+                            }}
+                          >
+                            {locationDistanceMeters < 1000
+                              ? `${Math.round(locationDistanceMeters)} m`
+                              : `${(locationDistanceMeters / 1000).toFixed(1)} km`}{" "}
+                            entfernt
+                          </Text>
+                        )}
+                      </View>
+                    ) : (
+                      <Text
+                        style={{
+                          ...typography.subheadline,
+                          color: heroMutedColor,
+                          fontStyle: "italic",
+                        }}
+                      >
+                        Ort hinzufügen
+                      </Text>
+                    )}
+                  </View>
+                  {isOwner && (
+                    <IconSymbol
+                      name="chevron.right"
+                      size={12}
+                      color={heroMutedColor}
+                      style={{ marginTop: 2 }}
+                    />
+                  )}
+                </Pressable>
               </View>
-              <View
-                style={{
-                  backgroundColor: heroSurfaceBold,
-                  borderRadius: 16,
-                  paddingHorizontal: 10,
-                  paddingVertical: 4,
-                  borderWidth: 1,
-                  borderColor: heroBorder,
-                }}
-              >
-                <Text style={{ ...typography.caption1, color: heroTextColor }}>
-                  {activityLabel || "Aktivität"}
-                </Text>
-              </View>
-            </View>
+            )}
 
-            <View style={{ marginTop: spacing.md, gap: spacing.sm }}>
-              <View
+            <View style={{ marginTop: spacing.sm + 4 }}>
+              <Pressable
+                onPress={isOwner ? handleEditCreatorName : undefined}
+                disabled={!isOwner}
                 style={{
                   flexDirection: "row",
-                  flexWrap: "wrap",
+                  alignItems: "flex-start",
                   gap: spacing.sm,
+                  justifyContent: "space-between",
+                  paddingVertical: 0,
+                  opacity: isOwner ? 1 : 0.8,
                 }}
               >
-                <HeroMetaItem
-                  icon="clock"
-                  label="Zeitfenster"
-                  primary={timeRangeLabel || "Zeit hinzufügen"}
-                  secondary={
-                    startDateObj
-                      ? formatPlanDateLabel(plan.startDate)
-                      : undefined
-                  }
-                  accent={heroTextColor}
-                  surface={heroSurfaceBold}
-                  border={heroBorder}
-                  onPress={isOwner ? handleEditStart : undefined}
-                />
-                <HeroMetaItem
-                  icon="location"
-                  label="Treffpunkt"
-                  primary={
-                    locationLabel ||
-                    (isOwner ? "Ort hinzufügen" : "Ort wird noch geteilt")
-                  }
-                  secondary={
-                    primaryLocation?.address
-                      ? (primaryLocation.address as string)
-                      : undefined
-                  }
-                  accent={heroTextColor}
-                  surface={heroSurfaceBold}
-                  border={heroBorder}
-                  disabled
-                />
-                <HeroMetaItem
-                  icon={icon}
-                  label="Kategorie"
-                  primary={activityLabel || "Auswählen"}
-                  secondary={isOwner ? "Tippen zum Ändern" : undefined}
-                  accent={heroTextColor}
-                  surface={heroSurfaceBold}
-                  border={heroBorder}
-                  onPress={isOwner ? handleEditActivity : undefined}
-                />
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  gap: spacing.sm,
-                }}
-              >
-                {relativeTimeLabel && (
-                  <HeroMetaItem
-                    icon="sparkles"
-                    label="Startet"
-                    primary={relativeTimeLabel}
-                    accent={heroTextColor}
-                    surface={heroSurface}
-                    border={heroBorder}
-                    disabled
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "flex-start",
+                    gap: spacing.sm,
+                    flex: 1,
+                  }}
+                >
+                  <Avatar
+                    size={40}
+                    image={ownerProfile?.image as any}
+                    name={ownerProfile?.name as any}
                   />
-                )}
-                {copiedFromMatch && (
-                  <HeroMetaItem
-                    icon="doc.on.doc"
-                    label="Quelle"
-                    primary={
-                      copiedFromMatch.creator?.name ||
-                      "Plan eines anderen Nutzers"
-                    }
-                    accent={heroTextColor}
-                    surface={heroSurface}
-                    border={heroBorder}
-                    disabled
-                  />
-                )}
-              </View>
+                  <View style={{ flex: 1, gap: 3 }}>
+                    <Text
+                      style={{
+                        ...typography.subheadline,
+                        color: heroTextColor,
+                        fontWeight: "600",
+                      }}
+                    >
+                      {hostName}
+                    </Text>
+                    <Text
+                      style={{
+                        ...typography.caption1,
+                        color: heroMutedColor,
+                      }}
+                    >
+                      {isOwner ? "Organisiert von dir" : "Veranstalter"}
+                    </Text>
+                  </View>
+                </View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: spacing.xs,
+                  }}
+                >
+                  {!isOwner && plan.maybe !== undefined && (
+                    <View
+                      style={{
+                        backgroundColor: heroSurfaceBold,
+                        borderRadius: 12,
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        borderWidth: 1,
+                        borderColor: heroBorder,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          ...typography.caption1,
+                          color: heroTextColor,
+                        }}
+                      >
+                        {plan.maybe ? "Vielleicht" : "Sicher dabei"}
+                      </Text>
+                    </View>
+                  )}
+                  {isOwner && (
+                    <IconSymbol
+                      name="chevron.right"
+                      size={12}
+                      color={heroMutedColor}
+                      style={{ marginTop: 2 }}
+                    />
+                  )}
+                </View>
+              </Pressable>
             </View>
           </LinearGradient>
           <View
@@ -867,118 +1028,117 @@ export default function PlanDetails() {
               paddingBottom: spacing.lg,
             }}
           >
-            <SectionCard
-              icon="info.circle"
-              title="Planüberblick"
-              accentColor={accentToken}
-            >
-              <InfoRow
-                icon="calendar"
-                label="Start"
-                value={formatPlanDateLabel(plan.startDate)}
-                onPress={isOwner ? handleEditStart : undefined}
-                accentColor={accentToken}
-              />
-              <InfoRow
-                icon="clock"
-                label="Endet"
-                value={
-                  plan?.endDate
-                    ? formatPlanDateLabel(plan.endDate)
-                    : "Noch offen"
-                }
-                onPress={isOwner ? handleEditEnd : undefined}
-                accentColor={accentToken}
-              />
-              <InfoRow
-                icon="tag"
-                label="Aktivität"
-                value={activityLabel || "Kategorie wählen"}
-                onPress={isOwner ? handleEditActivity : undefined}
-                accentColor={accentToken}
-              />
-            </SectionCard>
-
-            <SectionCard
-              icon="mappin.and.ellipse"
-              title="Orte"
-              accentColor={accentToken}
-              subtitle={
-                isOwner
-                  ? "Füge Treffpunkte oder Highlights hinzu"
-                  : "Geteilte Treffpunkte"
-              }
-            >
-              <Locations
-                isOwner={isOwner}
-                id={id}
-                accentColor={accentToken}
-              />
-            </SectionCard>
-
-            {(plan.url || plan.maybe !== undefined) && (
+            {plan.url && (
               <SectionCard
                 icon="bubble.left"
                 title="Weitere Infos"
                 accentColor={accentToken}
               >
-                {plan.url && (
-                  <InfoRow
-                    icon="link"
-                    label="Link"
-                    value={plan.url}
-                    accentColor={accentToken}
-                  />
-                )}
-                {plan.maybe !== undefined && (
-                  <InfoRow
-                    icon="questionmark.circle"
-                    label="Vielleicht"
-                    value={plan.maybe ? "Ja" : "Nein"}
-                    accentColor={accentToken}
-                  />
-                )}
+                <InfoRow
+                  icon="link"
+                  label="Link"
+                  value={plan.url}
+                  accentColor={accentToken}
+                />
               </SectionCard>
             )}
 
+            {/* Teilnehmer mit überlappenden Plänen */}
             {(exactMatches.length > 0 || similarMatches.length > 0) && (
               <SectionCard
                 icon="person.2"
-                title="Überlappende Pläne"
+                title="Andere Teilnehmer"
                 accentColor={accentToken}
-                subtitle="Entdecke ähnliche Aktivitäten in deinem Umfeld"
+                subtitle="Personen mit überlappenden Plänen"
               >
                 {exactMatches.length > 0 && (
-                  <View style={{ gap: 8 }}>
-                    <Text
-                      style={{ ...typography.caption1, color: "#6B7280" }}
-                    >
-                      Gleich
-                    </Text>
+                  <View style={{ gap: spacing.sm, marginBottom: spacing.sm }}>
                     {exactMatches.map((e) => (
-                      <OverlapRow
+                      <View
                         key={e.id}
-                        item={e}
-                        accent={accentToken}
-                        isSource={copiedFromMatch?.id === e.id}
-                      />
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: spacing.sm,
+                          paddingVertical: spacing.xs,
+                        }}
+                      >
+                        <Avatar
+                          size={32}
+                          image={e.creator?.image as any}
+                          name={e.creator?.name as any}
+                        />
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={{
+                              ...typography.subheadline,
+                              fontWeight: "600",
+                              color: "#1C1C1E",
+                            }}
+                          >
+                            {e.creator?.name || "Unbekannt"}
+                          </Text>
+                          <Text
+                            style={{
+                              ...typography.caption1,
+                              color: "#8E8E93",
+                            }}
+                          >
+                            {e.title || "Plan"}
+                          </Text>
+                        </View>
+                      </View>
                     ))}
                   </View>
                 )}
                 {similarMatches.length > 0 && (
-                  <View style={{ gap: 8, marginTop: spacing.sm }}>
-                    <Text
-                      style={{ ...typography.caption1, color: "#6B7280" }}
-                    >
-                      Ähnlich
-                    </Text>
+                  <View style={{ gap: spacing.sm }}>
+                    {exactMatches.length > 0 && (
+                      <Text
+                        style={{
+                          ...typography.caption1,
+                          color: "#6B7280",
+                          marginTop: spacing.xs,
+                        }}
+                      >
+                        Ähnliche Pläne
+                      </Text>
+                    )}
                     {similarMatches.map((e) => (
-                      <OverlapRow
+                      <View
                         key={e.id}
-                        item={e}
-                        accent={accentToken}
-                        isSource={copiedFromMatch?.id === e.id}
-                      />
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: spacing.sm,
+                          paddingVertical: spacing.xs,
+                        }}
+                      >
+                        <Avatar
+                          size={32}
+                          image={e.creator?.image as any}
+                          name={e.creator?.name as any}
+                        />
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={{
+                              ...typography.subheadline,
+                              fontWeight: "600",
+                              color: "#1C1C1E",
+                            }}
+                          >
+                            {e.creator?.name || "Unbekannt"}
+                          </Text>
+                          <Text
+                            style={{
+                              ...typography.caption1,
+                              color: "#8E8E93",
+                            }}
+                          >
+                            {e.title || "Plan"}
+                          </Text>
+                        </View>
+                      </View>
                     ))}
                   </View>
                 )}
@@ -1026,6 +1186,57 @@ export default function PlanDetails() {
           onSelect={(d) => {
             setShowEndPicker(false);
             changePlan.mutate({ id, plan: { endDate: d.toISOString() } });
+          }}
+        />
+      )}
+      {showTextEdit && (
+        <TextEditBottomSheet
+          title={
+            showTextEdit.type === "title"
+              ? "Titel bearbeiten"
+              : "Beschreibung bearbeiten"
+          }
+          initialValue={
+            showTextEdit.type === "title"
+              ? (plan?.title ?? "")
+              : (plan?.description ?? "")
+          }
+          multiline={showTextEdit.type === "description"}
+          accentColor={c3}
+          onClose={() => setShowTextEdit(null)}
+          onSave={(value) => {
+            if (showTextEdit.type === "title") {
+              changePlan.mutate({ id, plan: { title: value } });
+            } else if (showTextEdit.type === "description") {
+              changePlan.mutate({ id, plan: { description: value } });
+            }
+            setShowTextEdit(null);
+          }}
+        />
+      )}
+      {showLocationEdit !== null && (
+        <LocationEditBottomSheet
+          currentLocation={
+            safeLocations[showLocationEdit]
+              ? {
+                  title: safeLocations[showLocationEdit].title || undefined,
+                  address: safeLocations[showLocationEdit].address || undefined,
+                  latitude: safeLocations[showLocationEdit].latitude,
+                  longitude: safeLocations[showLocationEdit].longitude,
+                }
+              : undefined
+          }
+          accentColor={c3}
+          userLat={userLat}
+          userLon={userLon}
+          onClose={() => setShowLocationEdit(null)}
+          onSelect={(location) => {
+            if (showLocationEdit !== null) {
+              const updated = [...safeLocations];
+              updated[showLocationEdit] = location as any;
+              changePlan.mutate({ id, plan: { locations: updated as any } });
+            }
+            setShowLocationEdit(null);
           }}
         />
       )}
@@ -1106,110 +1317,6 @@ function InfoRow({
   );
 }
 
-function HeroMetaItem({
-  icon,
-  label,
-  primary,
-  secondary,
-  accent,
-  surface,
-  border,
-  onPress,
-  disabled,
-}: {
-  icon: Parameters<typeof IconSymbol>[0]["name"];
-  label: string;
-  primary: string;
-  secondary?: string;
-  accent: string;
-  surface: string;
-  border: string;
-  onPress?: () => void;
-  disabled?: boolean;
-}) {
-  const interactive = typeof onPress === "function" && !disabled;
-  const readableAccent = tinycolor(accent).darken(10).toHexString();
-  const secondaryColor = tinycolor(accent)
-    .setAlpha(0.65)
-    .desaturate(8)
-    .toRgbString();
-  const body = (
-    <View
-      style={{
-        backgroundColor: surface,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: border,
-        paddingHorizontal: spacing.sm + 4,
-        paddingVertical: spacing.sm,
-        minWidth: 120,
-        maxWidth: 210,
-        flexShrink: 0,
-        gap: 4,
-      }}
-    >
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 8,
-        }}
-      >
-        <View
-          style={{
-            width: 26,
-            height: 26,
-            borderRadius: 13,
-            backgroundColor: tinycolor(accent).setAlpha(0.18).toRgbString(),
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <IconSymbol name={icon} size={14} color={readableAccent} />
-        </View>
-        <Text
-          style={{
-            ...typography.caption1,
-            color: secondaryColor,
-            textTransform: "uppercase",
-            letterSpacing: 0.8,
-          }}
-          numberOfLines={1}
-        >
-          {label}
-        </Text>
-      </View>
-      <Text
-        style={{
-          ...typography.subheadline,
-          color: readableAccent,
-          fontWeight: "600",
-        }}
-        numberOfLines={2}
-      >
-        {primary}
-      </Text>
-      {secondary ? (
-        <Text
-          style={{
-            ...typography.caption1,
-            color: secondaryColor,
-          }}
-          numberOfLines={2}
-        >
-          {secondary}
-        </Text>
-      ) : null}
-    </View>
-  );
-  if (!interactive) return body;
-  return (
-    <Pressable onPress={onPress} style={{ flexShrink: 0 }}>
-      {body}
-    </Pressable>
-  );
-}
-
 function SectionCard({
   icon,
   title,
@@ -1269,221 +1376,6 @@ function SectionCard({
         </View>
       </View>
       <View style={{ gap: spacing.sm }}>{children}</View>
-    </View>
-  );
-}
-
-function getRelativeTimeLabel(date: Date) {
-  const now = new Date();
-  const diffMinutes = Math.round(
-    (date.getTime() - now.getTime()) / (1000 * 60)
-  );
-  if (diffMinutes === 0) return "Beginnt jetzt";
-  const absMinutes = Math.abs(diffMinutes);
-  const prefix = diffMinutes > 0 ? "In" : "Vor";
-  if (absMinutes < 60) {
-    const unit = absMinutes === 1 ? "Minute" : "Minuten";
-    return `${prefix} ${absMinutes} ${unit}`;
-  }
-  if (absMinutes < 60 * 24) {
-    const hours = Math.round(absMinutes / 60);
-    const unit = hours === 1 ? "Stunde" : "Stunden";
-    return `${prefix} ${hours} ${unit}`;
-  }
-  const days = Math.round(absMinutes / (60 * 24));
-  const unit = days === 1 ? "Tag" : "Tagen";
-  return `${prefix} ${days} ${unit}`;
-}
-
-function getActivityLabel(id?: ActivityId) {
-  if (!id) return "";
-  const [groupId, subId] = (id as string).split("/");
-  const group = activities[groupId as keyof typeof activities];
-  if (!group) return id as string;
-  if (!subId) return group.nameDe || group.name;
-  const sub: any =
-    group.subActivities[subId as keyof typeof group.subActivities];
-  return sub
-    ? `${group.nameDe || group.name}/${sub.nameDe || sub.name}`
-    : (id as string);
-}
-
-function OverlapRow({
-  item,
-  accent,
-  isSource,
-}: {
-  item: {
-    id: string;
-    title?: string | null;
-    startDate: string | Date;
-    endDate?: string | Date | null;
-    creator?: { id: string; name?: string; image?: string };
-    diff: {
-      timeMinutes: number;
-      distanceMeters?: number;
-      differentTitle: boolean;
-    };
-  };
-  accent: string;
-  isSource?: boolean;
-}) {
-  const router = useRouter();
-  const start = new Date(item.startDate as any);
-  const timeStr = start.toLocaleTimeString("de-DE", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-  const diffs: string[] = [];
-  if (item.diff.timeMinutes > 0)
-    diffs.push(`${Math.round(item.diff.timeMinutes)} Min anders`);
-  if (
-    typeof item.diff.distanceMeters === "number" &&
-    isFinite(item.diff.distanceMeters) &&
-    item.diff.distanceMeters > 4
-  )
-    diffs.push(`${Math.round(item.diff.distanceMeters)} m entfernt`);
-  if (item.diff.differentTitle) diffs.push("anderer Titel");
-  const background = tinycolor(accent).setAlpha(0.08).toRgbString();
-  const border = tinycolor(accent).setAlpha(0.18).toRgbString();
-  const titleColor = tinycolor(accent).darken(20).toHexString();
-  const metaColor = tinycolor(accent).darken(32).setAlpha(0.7).toRgbString();
-  const chipBg = tinycolor(accent).setAlpha(0.18).toRgbString();
-  const chipText = tinycolor(accent).darken(35).toHexString();
-  return (
-    <Pressable
-      onPress={() => router.push(`/plan/${item.id}` as any)}
-      style={{
-        backgroundColor: background,
-        borderRadius: 18,
-        borderWidth: 1,
-        borderColor: border,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm + 2,
-      }}
-    >
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            flex: 1,
-            paddingRight: 8,
-            gap: 10,
-          }}
-        >
-          <Avatar
-            size={24}
-            image={item.creator?.image as any}
-            name={item.creator?.name as any}
-          />
-          <View style={{ flex: 1, gap: 4 }}>
-            <Text style={{ ...typography.subheadline, color: titleColor }}>
-              {item.title || "Plan"}
-            </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: 6,
-              }}
-            >
-              <Text style={{ ...typography.caption1, color: metaColor }}>
-                {timeStr}
-                {item.creator?.name ? ` · ${item.creator.name}` : ""}
-              </Text>
-              {isSource && (
-                <View
-                  style={{
-                    backgroundColor: chipBg,
-                    borderRadius: 8,
-                    paddingHorizontal: 8,
-                    paddingVertical: 3,
-                  }}
-                >
-                  <Text style={{ ...typography.caption1, color: chipText }}>
-                    Original
-                  </Text>
-                </View>
-              )}
-            </View>
-          </View>
-        </View>
-        {diffs.length > 0 && (
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              gap: 8,
-              maxWidth: 180,
-              justifyContent: "flex-end",
-            }}
-          >
-            {diffs.map((d, i) => (
-              <View
-                key={i}
-                style={{
-                  backgroundColor: chipBg,
-                  borderRadius: 10,
-                  paddingHorizontal: 10,
-                  paddingVertical: 4,
-                }}
-              >
-                <Text style={{ ...typography.caption1, color: chipText }}>
-                  {d}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-      </View>
-    </Pressable>
-  );
-}
-
-function Avatar({
-  size = 28,
-  image,
-  name,
-}: {
-  size?: number;
-  image?: string;
-  name?: string;
-}) {
-  const initials = (name || "?")
-    .toString()
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((s) => s[0]?.toUpperCase() || "")
-    .join("");
-  return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        overflow: "hidden",
-        backgroundColor: "#E5E5EA",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      {image ? (
-        <Image source={{ uri: image }} style={{ width: size, height: size }} />
-      ) : (
-        <Text style={{ ...typography.caption1, color: "#1C1C1E" }}>
-          {initials}
-        </Text>
-      )}
     </View>
   );
 }
@@ -1598,11 +1490,9 @@ function ActivityBottomSheet({
         <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
           <Pressable
             onPress={onClose}
+            className="items-center p-3"
             style={{
               backgroundColor: "#E5E5EA",
-              borderRadius: 12,
-              paddingVertical: 12,
-              alignItems: "center",
             }}
           >
             <Text style={{ color: "#1C1C1E", ...typography.subheadline }}>
@@ -1611,328 +1501,6 @@ function ActivityBottomSheet({
           </Pressable>
         </View>
       </View>
-    </View>
-  );
-}
-
-function DateTimeBottomSheet({
-  title,
-  initialDate,
-  onClose,
-  onSelect,
-  accentColor,
-}: {
-  title: string;
-  initialDate: Date;
-  onClose: () => void;
-  onSelect: (d: Date) => void;
-  accentColor: string;
-}) {
-  const [selected, setSelected] = useState<Date[]>([initialDate]);
-  return (
-    <View
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        top: 0,
-        backgroundColor: "rgba(0,0,0,0.2)",
-        justifyContent: "flex-end",
-      }}
-    >
-      <Pressable style={{ flex: 1 }} onPress={onClose} />
-      <View
-        style={{
-          backgroundColor: "#fff",
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-          paddingBottom: 12,
-          paddingTop: 8,
-        }}
-      >
-        <View style={{ alignItems: "center", paddingVertical: 6 }}>
-          <Text style={{ ...typography.subheadline, color: "#1C1C1E" }}>
-            {title}
-          </Text>
-        </View>
-        <View style={{ height: 420 }}>
-          <SmartDateTimePicker
-            selectedDates={selected}
-            onDateSelect={(d) => {
-              setSelected([d]);
-              onSelect(d);
-            }}
-            onDateRemove={() => {}}
-            accentColor={accentColor}
-          />
-        </View>
-        <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
-          <Pressable
-            onPress={onClose}
-            style={{
-              backgroundColor: "#E5E5EA",
-              borderRadius: 12,
-              paddingVertical: 12,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ color: "#1C1C1E", ...typography.subheadline }}>
-              Abbrechen
-            </Text>
-          </Pressable>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-function Locations({
-  isOwner,
-  id,
-  accentColor,
-}: {
-  isOwner: boolean;
-  id: string;
-  accentColor: string;
-}) {
-  const [showLocationSearch, setShowLocationSearch] = useState(false);
-  const [locationQuery, setLocationQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
-
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedQuery(locationQuery.trim()), 250);
-    return () => clearTimeout(t);
-  }, [locationQuery]);
-
-  const { data: locationSearch } = useQuery(
-    orpc.location.search.queryOptions({
-      input: {
-        query: debouncedQuery || "",
-        includePhotos: true,
-        limit: 10,
-      },
-      enabled: showLocationSearch && debouncedQuery.length >= 2,
-    })
-  );
-  const queryClient = useQueryClient();
-  const { data: plan } = useSuspenseQuery(
-    orpc.plan.get.queryOptions({ input: { id } })
-  );
-  const changePlan = useMutation(
-    orpc.plan.change.mutationOptions({
-      onSuccess: async () => {
-        await queryClient.invalidateQueries();
-      },
-    })
-  );
-
-  if (!plan) return null;
-
-  const chipBackground = tinycolor(accentColor).setAlpha(0.08).toRgbString();
-  const chipBorder = tinycolor(accentColor).setAlpha(0.18).toRgbString();
-  const primaryText = tinycolor(accentColor).darken(12).toHexString();
-  const mutedText = tinycolor(accentColor)
-    .darken(24)
-    .setAlpha(0.75)
-    .toRgbString();
-  const actionText = accentColor;
-
-  const normalizedLocations = Array.isArray(plan.locations)
-    ? plan.locations.map((l) => ({
-        title: l.title ?? "",
-        address: l.address ?? undefined,
-        latitude: l.latitude,
-        longitude: l.longitude,
-      }))
-    : [];
-
-  return (
-    <View
-      style={{
-        gap: spacing.sm,
-      }}
-    >
-      {isOwner && (
-        <Pressable
-          onPress={() =>
-            setShowLocationSearch((previous) => !previous)
-          }
-          style={{
-            alignSelf: "flex-start",
-            backgroundColor: chipBackground,
-            borderRadius: 18,
-            borderWidth: 1,
-            borderColor: chipBorder,
-            paddingHorizontal: 14,
-            paddingVertical: 8,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
-          <IconSymbol
-            name={showLocationSearch ? "xmark" : "plus"}
-            size={14}
-            color={actionText}
-          />
-          <Text style={{ ...typography.subheadline, color: actionText }}>
-            {showLocationSearch ? "Fertig" : "Ort hinzufügen"}
-          </Text>
-        </Pressable>
-      )}
-
-      {normalizedLocations.length === 0 ? (
-        <Text style={{ ...typography.caption1, color: mutedText }}>
-          Noch keine Orte geteilt
-        </Text>
-      ) : (
-        <View style={{ gap: spacing.sm }}>
-          {normalizedLocations.map((location, index) => (
-            <View
-              key={`${location.title}-${index}`}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                backgroundColor: chipBackground,
-                borderRadius: 16,
-                borderWidth: 1,
-                borderColor: chipBorder,
-                paddingHorizontal: spacing.sm,
-                paddingVertical: spacing.sm,
-                gap: spacing.sm,
-              }}
-            >
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    ...typography.subheadline,
-                    color: primaryText,
-                    fontWeight: "600",
-                  }}
-                  numberOfLines={2}
-                >
-                  {location.title || location.address || "Ort"}
-                </Text>
-                {location.address &&
-                  location.title &&
-                  location.title !== location.address && (
-                    <Text
-                      style={{
-                        ...typography.caption1,
-                        color: mutedText,
-                        marginTop: 2,
-                      }}
-                      numberOfLines={2}
-                    >
-                      {location.address}
-                    </Text>
-                  )}
-              </View>
-              {isOwner && (
-                <Pressable
-                  onPress={() => {
-                    const remaining = normalizedLocations.filter(
-                      (_, i) => i !== index
-                    );
-                    changePlan.mutate({
-                      id,
-                      plan: { locations: remaining as any },
-                    });
-                  }}
-                  style={{ paddingHorizontal: 12, paddingVertical: 6 }}
-                >
-                  <Text style={{ ...typography.caption1, color: "#EF4444" }}>
-                    Entfernen
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-          ))}
-        </View>
-      )}
-
-      {/* Search UI */}
-      {isOwner && showLocationSearch && (
-        <View style={{ gap: spacing.sm }}>
-          <TextInput
-            placeholder="Ort suchen (mind. 2 Zeichen)"
-            placeholderTextColor="#8E8E93"
-            value={locationQuery}
-            onChangeText={setLocationQuery}
-            style={{
-              backgroundColor: "#F5F7FB",
-              borderRadius: 14,
-              borderWidth: 1,
-              borderColor: chipBorder,
-              paddingHorizontal: spacing.md,
-              paddingVertical: spacing.sm,
-              color: primaryText,
-            }}
-            autoCorrect={false}
-            autoCapitalize="none"
-          />
-          {debouncedQuery.length >= 2 && (
-            <View style={{ gap: spacing.sm }}>
-              {(locationSearch?.locations ?? []).map((l) => (
-                <Pressable
-                  key={l.id}
-                  onPress={() => {
-                    const current = normalizedLocations;
-                    changePlan.mutate({
-                      id,
-                      plan: {
-                        locations: [
-                          ...current,
-                          {
-                            title: l.name,
-                            address: l.address ?? undefined,
-                            latitude: l.latitude,
-                            longitude: l.longitude,
-                          },
-                        ],
-                      },
-                    });
-                    setLocationQuery("");
-                    setDebouncedQuery("");
-                    setShowLocationSearch(false);
-                  }}
-                  style={{
-                    backgroundColor: chipBackground,
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: chipBorder,
-                    paddingHorizontal: spacing.md,
-                    paddingVertical: spacing.sm,
-                  }}
-                >
-                  <Text
-                    style={{
-                      ...typography.subheadline,
-                      color: primaryText,
-                      fontWeight: "600",
-                    }}
-                  >
-                    {l.name}
-                  </Text>
-                  {l.address && (
-                    <Text
-                      style={{
-                        ...typography.caption1,
-                        color: mutedText,
-                        marginTop: 2,
-                      }}
-                    >
-                      {l.address}
-                    </Text>
-                  )}
-                </Pressable>
-              ))}
-            </View>
-          )}
-        </View>
-      )}
     </View>
   );
 }

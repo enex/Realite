@@ -41,6 +41,7 @@ export default function VerifyCodeScreen() {
           },
         }}
       />
+      <View className="flex-1" />
 
       <Text className="mb-2 text-center text-2xl font-bold text-foreground">
         Verifikationscode eingeben

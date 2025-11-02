@@ -1,8 +1,7 @@
-import { useSession } from "@/client/auth";
 import orpc from "@/client/orpc";
+import useBoolFeatureFlag from "@/hooks/useBoolFeatureFlag";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { useFeatureFlag } from "posthog-react-native";
 import { useEffect } from "react";
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,7 +14,7 @@ export default function NativeLanding() {
   };
 
   const meRes = useQuery(orpc.auth.me.queryOptions());
-  const onboardingEnabled = useFeatureFlag("onboarding");
+  const onboardingEnabled = useBoolFeatureFlag("onboarding", false);
   useEffect(() => {
     if (meRes.isLoading || !meRes.data) return;
     // Check Onboarding-Status
@@ -107,7 +106,7 @@ export default function NativeLanding() {
               className="bg-green-600 py-4 rounded-2xl active:scale-95 transition-all"
               onPress={() =>
                 Linking.openURL(
-                  "https://whatsapp.com/channel/0029Vb5w20yKwqSOem15d11O",
+                  "https://whatsapp.com/channel/0029Vb5w20yKwqSOem15d11O"
                 )
               }
             >

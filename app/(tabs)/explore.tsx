@@ -1,7 +1,6 @@
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { useNavigation } from "expo-router";
-import { useFeatureFlag } from "posthog-react-native";
 import React, {
   useCallback,
   useEffect,
@@ -27,6 +26,7 @@ import PlanFilterBottomSheet, {
   type PlanFilter,
 } from "@/components/PlanFilterBottomSheet";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import useBoolFeatureFlag from "@/hooks/useBoolFeatureFlag";
 import { useLocation } from "@/hooks/useLocation";
 import type { ActivityId } from "@/shared/activities";
 import { isWithinRadius } from "@/shared/utils/distance";
@@ -74,7 +74,7 @@ type GroupedPlans = {
 
 export default function ExploreScreen() {
   const navigation = useNavigation();
-  const simpleAppBar = useFeatureFlag("simple-appbar-for-starpage");
+  const simpleAppBar = useBoolFeatureFlag("simple-appbar-for-starpage", false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [filter, setFilter] = useState<PlanFilter | undefined>(undefined);

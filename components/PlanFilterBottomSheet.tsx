@@ -1,5 +1,9 @@
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { activities, type ActivityId } from "@/shared/activities";
+import {
+  activities,
+  type ActivityGroupId,
+  type ActivityId,
+} from "@/shared/activities";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import React, { forwardRef, useCallback, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
@@ -32,6 +36,18 @@ const quickRanges = [
   { id: "all", label: "Alle" },
 ] as const;
 
+type QuickRangeId = (typeof quickRanges)[number]["id"];
+
+const extractGroupFromActivity = (
+  activity?: ActivityId
+): ActivityGroupId | undefined => {
+  if (!activity) return undefined;
+  const [groupId] = (activity as string).split("/");
+  return activities[groupId as ActivityGroupId]
+    ? (groupId as ActivityGroupId)
+    : undefined;
+};
+
 export const PlanFilterBottomSheet = forwardRef<
   PlanFilterBottomSheetRef,
   PlanFilterBottomSheetProps
@@ -46,11 +62,10 @@ export const PlanFilterBottomSheet = forwardRef<
     },
     ref
   ) => {
-    const [selectedQuick, setSelectedQuick] =
-      useState<(typeof quickRanges)[number]["id"]>("7d");
+    const [selectedQuick, setSelectedQuick] = useState<QuickRangeId>("7d");
     const [selectedActivity, setSelectedActivity] = useState<
-      ActivityId | undefined
-    >(initial?.activity);
+      ActivityGroupId | undefined
+    >(extractGroupFromActivity(initial?.activity));
     // We infer location usage from radiusKm presence; no explicit toggle needed
     const [radiusKm, setRadiusKm] = useState<number | null>(
       typeof initial?.radiusKm === "number" ? initial?.radiusKm : 50
@@ -74,64 +89,70 @@ export const PlanFilterBottomSheet = forwardRef<
     );
 
     const activityList = useMemo(() => {
-      const items: { id: ActivityId; name: string }[] = [];
-      Object.entries(activities).forEach(([groupId, group]) => {
-        Object.entries(group.subActivities).forEach(([subId, sub]) => {
-          items.push({ id: subId as ActivityId, name: sub.name });
-        });
-      });
-      return items;
+      return Object.entries(activities).map(([groupId, group]) => ({
+        id: groupId as ActivityGroupId,
+        name: group.nameDe ?? group.name,
+        emoji: group.emoji,
+      }));
     }, []);
 
-    const computeDates = useCallback((): {
-      startDate?: Date;
-      endDate?: Date;
-    } => {
-      const now = new Date();
-      if (selectedQuick === "today") {
-        const start = new Date(now);
-        const end = new Date(now);
-        end.setHours(23, 59, 59, 999);
-        return { startDate: start, endDate: end };
-      }
-      if (selectedQuick === "7d") {
-        const start = new Date(now);
-        const end = new Date(now);
-        end.setDate(end.getDate() + 7);
-        return { startDate: start, endDate: end };
-      }
-      if (selectedQuick === "30d") {
-        const start = new Date(now);
-        const end = new Date(now);
-        end.setDate(end.getDate() + 30);
-        return { startDate: start, endDate: end };
-      }
-      return { startDate: undefined, endDate: undefined };
-    }, [selectedQuick]);
+    const computeDates = useCallback(
+      (quick: QuickRangeId): {
+        startDate?: Date;
+        endDate?: Date;
+      } => {
+        const now = new Date();
+        if (quick === "today") {
+          const start = new Date(now);
+          const end = new Date(now);
+          end.setHours(23, 59, 59, 999);
+          return { startDate: start, endDate: end };
+        }
+        if (quick === "7d") {
+          const start = new Date(now);
+          const end = new Date(now);
+          end.setDate(end.getDate() + 7);
+          return { startDate: start, endDate: end };
+        }
+        if (quick === "30d") {
+          const start = new Date(now);
+          const end = new Date(now);
+          end.setDate(end.getDate() + 30);
+          return { startDate: start, endDate: end };
+        }
+        return { startDate: undefined, endDate: undefined };
+      },
+      []
+    );
+
+    const applyFilter = useCallback(
+      (nextState: {
+        quick: QuickRangeId;
+        activity: ActivityGroupId | undefined;
+        radius: number | null;
+      }) => {
+        const { startDate, endDate } = computeDates(nextState.quick);
+        onApply({
+          startDate,
+          endDate,
+          activity: nextState.activity,
+          useLocation: canUseLocation ? nextState.radius !== null : false,
+          radiusKm: nextState.radius,
+        });
+      },
+      [canUseLocation, computeDates, onApply]
+    );
 
     const handleReset = useCallback(() => {
-      setSelectedQuick("7d");
+      const defaultQuick: QuickRangeId = "7d";
+      setSelectedQuick(defaultQuick);
       setSelectedActivity(undefined);
-    }, []);
-
-    const handleApply = useCallback(() => {
-      const { startDate, endDate } = computeDates();
-      onApply({
-        startDate,
-        endDate,
-        activity: selectedActivity,
-        useLocation: canUseLocation ? radiusKm !== null : false,
-        radiusKm,
+      applyFilter({
+        quick: defaultQuick,
+        activity: undefined,
+        radius: radiusKm,
       });
-      handleDismiss();
-    }, [
-      computeDates,
-      onApply,
-      selectedActivity,
-      handleDismiss,
-      radiusKm,
-      canUseLocation,
-    ]);
+    }, [applyFilter, radiusKm]);
 
     return (
       <BottomSheetModal
@@ -189,7 +210,15 @@ export const PlanFilterBottomSheet = forwardRef<
                   {[null, 5, 10, 25, 50, 100, 250, 500].map((km) => (
                     <Pressable
                       key={km === null ? "any" : km}
-                      onPress={() => setRadiusKm(km as number | null)}
+                      onPress={() => {
+                        const nextRadius = km as number | null;
+                        setRadiusKm(nextRadius);
+                        applyFilter({
+                          quick: selectedQuick,
+                          activity: selectedActivity,
+                          radius: nextRadius,
+                        });
+                      }}
                       style={{
                         paddingHorizontal: 12,
                         paddingVertical: 8,
@@ -266,7 +295,15 @@ export const PlanFilterBottomSheet = forwardRef<
               {quickRanges.map((range) => (
                 <Pressable
                   key={range.id}
-                  onPress={() => setSelectedQuick(range.id)}
+                  onPress={() => {
+                    const nextQuick = range.id;
+                    setSelectedQuick(nextQuick);
+                    applyFilter({
+                      quick: nextQuick,
+                      activity: selectedActivity,
+                      radius: radiusKm,
+                    });
+                  }}
                   style={{
                     paddingHorizontal: 12,
                     paddingVertical: 8,
@@ -299,7 +336,14 @@ export const PlanFilterBottomSheet = forwardRef<
             <ScrollView style={{ maxHeight: 220 }}>
               <View style={{ gap: 8 }}>
                 <Pressable
-                  onPress={() => setSelectedActivity(undefined)}
+                  onPress={() => {
+                    setSelectedActivity(undefined);
+                    applyFilter({
+                      quick: selectedQuick,
+                      activity: undefined,
+                      radius: radiusKm,
+                    });
+                  }}
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
@@ -324,7 +368,14 @@ export const PlanFilterBottomSheet = forwardRef<
                 {activityList.map((a) => (
                   <Pressable
                     key={a.id}
-                    onPress={() => setSelectedActivity(a.id)}
+                    onPress={() => {
+                      setSelectedActivity(a.id);
+                      applyFilter({
+                        quick: selectedQuick,
+                        activity: a.id,
+                        radius: radiusKm,
+                      });
+                    }}
                     style={{
                       flexDirection: "row",
                       alignItems: "center",
@@ -340,7 +391,7 @@ export const PlanFilterBottomSheet = forwardRef<
                     }}
                   >
                     <Text style={{ fontSize: 16, color: "#1C1C1E" }}>
-                      {a.name}
+                      {a.emoji ? `${a.emoji} ${a.name}` : a.name}
                     </Text>
                     {selectedActivity === a.id && (
                       <IconSymbol name="checkmark" size={16} color="#007AFF" />
@@ -351,30 +402,11 @@ export const PlanFilterBottomSheet = forwardRef<
             </ScrollView>
           </View>
 
-          {/* Apply */}
-          <View style={{ flexDirection: "row", gap: 12, marginTop: 12 }}>
+          {/* Close */}
+          <View style={{ marginTop: 16 }}>
             <Pressable
               onPress={handleDismiss}
               style={{
-                flex: 1,
-                backgroundColor: "#F2F2F7",
-                borderRadius: 12,
-                paddingVertical: 14,
-                alignItems: "center",
-                borderWidth: 1,
-                borderColor: "#E5E5EA",
-              }}
-            >
-              <Text
-                style={{ fontSize: 16, fontWeight: "600", color: "#8E8E93" }}
-              >
-                Abbrechen
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={handleApply}
-              style={{
-                flex: 2,
                 backgroundColor: "#007AFF",
                 borderRadius: 12,
                 paddingVertical: 14,
@@ -390,7 +422,7 @@ export const PlanFilterBottomSheet = forwardRef<
                 color="white"
               />
               <Text style={{ fontSize: 16, fontWeight: "600", color: "white" }}>
-                Filter anwenden
+                Schließen
               </Text>
             </Pressable>
           </View>

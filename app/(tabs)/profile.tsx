@@ -3,7 +3,6 @@ import { genders, relationshipStatuses } from "@/shared/validation";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "expo-router";
-import { useFeatureFlag } from "posthog-react-native";
 import { useMemo, useState } from "react";
 import {
   Alert,
@@ -20,10 +19,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import useBoolFeatureFlag from "@/hooks/useBoolFeatureFlag";
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const simpleAppBar = useFeatureFlag("simple-appbar-for-starpage");
+  const simpleAppBar = useBoolFeatureFlag("simple-appbar-for-starpage", false);
   const me = useQuery(rpc.auth.me.queryOptions());
 
   const [name, setName] = useState<string | null>(null);

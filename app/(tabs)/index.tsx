@@ -1,7 +1,6 @@
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { useNavigation, useRouter } from "expo-router";
-import { useFeatureFlag } from "posthog-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
@@ -25,6 +24,7 @@ import PlanFilterBottomSheet, {
   type PlanFilterBottomSheetRef,
 } from "@/components/PlanFilterBottomSheet";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import useBoolFeatureFlag from "@/hooks/useBoolFeatureFlag";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import type { ActivityId } from "@/shared/activities";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -69,10 +69,13 @@ type GroupedPlans = {
 export default function PlansScreen() {
   const router = useRouter();
   const navigation = useNavigation();
-  const simpleAppBar = useFeatureFlag("simple-appbar-for-starpage");
+  const simpleAppBar = useBoolFeatureFlag("simple-appbar-for-starpage", false);
   const aiPlanBottomSheetRef = useRef<AIPlanBottomSheetRef>(null);
   const filterRef = useRef<PlanFilterBottomSheetRef>(null);
   const [filter, setFilter] = useState<PlanFilter | undefined>(undefined);
+  const handleApplyFilter = useCallback((f: PlanFilter) => {
+    setFilter(f);
+  }, []);
   const queryClient = useQueryClient();
 
   // Set header buttons when simple app bar is enabled
@@ -80,7 +83,9 @@ export default function PlansScreen() {
     if (simpleAppBar) {
       navigation.setOptions({
         headerRight: () => (
-          <View style={{ flexDirection: "row", gap: 18, marginRight: 8 }}>
+          <View
+            style={{ flexDirection: "row", gap: 18, marginRight: spacing.md }}
+          >
             <Pressable
               onPress={() => {
                 filterRef.current?.present();
@@ -304,17 +309,27 @@ export default function PlansScreen() {
         style={{
           marginBottom: spacing.md,
           paddingHorizontal: spacing.xs,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: spacing.sm,
         }}
       >
+        <View
+          className={`h-px flex-1 ${colorScheme === "dark" ? "bg-zinc-800" : "bg-zinc-200"}`}
+        />
         <Text
           className={`uppercase font-semibold ${mutedTextClass}`}
           style={{
             ...typography.caption1,
-            letterSpacing: 0.5,
+            letterSpacing: 1.2,
+            fontWeight: "600",
           }}
         >
           {item.dayLabel}
         </Text>
+        <View
+          className={`h-px flex-1 ${colorScheme === "dark" ? "bg-zinc-800" : "bg-zinc-200"}`}
+        />
       </View>
       {item.plans.map((plan, planIndex) => (
         <PlanCard key={plan.id} item={plan} index={index * 3 + planIndex} />
@@ -375,7 +390,7 @@ export default function PlansScreen() {
             />
           }
           contentContainerStyle={{
-            paddingTop: spacing.md,
+            paddingTop: spacing.lg,
             paddingHorizontal: spacing.lg,
             paddingBottom: bottomPadding,
           }}
@@ -390,27 +405,41 @@ export default function PlansScreen() {
               style={{
                 alignItems: "center",
                 justifyContent: "center",
-                paddingTop: spacing.xl,
+                paddingTop: spacing.xl * 2,
                 paddingBottom: spacing.xl,
-                gap: 16,
+                gap: 20,
+                minHeight: 400,
               }}
             >
               <View
-                className="h-24 w-24 items-center justify-center rounded-full border border-indigo-200 bg-indigo-100 dark:border-indigo-500/40 dark:bg-indigo-500/10"
-                style={{ ...shadows.small }}
+                className="h-28 w-28 items-center justify-center rounded-full border-2 border-indigo-300/60 bg-indigo-50 dark:border-indigo-500/50 dark:bg-indigo-500/10"
+                style={{ ...shadows.medium }}
               >
-                <IconSymbol name="calendar" size={44} color="#007AFF" />
+                <IconSymbol name="calendar" size={52} color="#6366F1" />
               </View>
-              <Text className={strongTextClass} style={typography.headline}>
-                Noch keine Pläne
-              </Text>
-              <Text
-                className={`${mutedTextClass} text-center`}
-                style={typography.subheadline}
-              >
-                Lege fest, was du vor hast – andere sehen es und können
-                dazukommen.
-              </Text>
+              <View style={{ gap: 8, alignItems: "center" }}>
+                <Text
+                  className={strongTextClass}
+                  style={{
+                    ...typography.headline,
+                    fontSize: 22,
+                    fontWeight: "700",
+                  }}
+                >
+                  Noch keine Pläne
+                </Text>
+                <Text
+                  className={`${mutedTextClass} text-center`}
+                  style={{
+                    ...typography.subheadline,
+                    maxWidth: 280,
+                    lineHeight: 22,
+                  }}
+                >
+                  Lege fest, was du vor hast – andere sehen es und können
+                  dazukommen.
+                </Text>
+              </View>
               <WhatIsAPlan />
               <Button
                 onPress={() => {
@@ -419,6 +448,7 @@ export default function PlansScreen() {
                 }}
                 variant="default"
                 size="lg"
+                style={{ marginTop: spacing.sm }}
               >
                 <Text
                   className={buttonTextVariants({
@@ -457,7 +487,7 @@ export default function PlansScreen() {
         <PlanFilterBottomSheet
           ref={filterRef}
           initial={filter}
-          onApply={(f) => setFilter(f)}
+          onApply={handleApplyFilter}
           hideLocation
         />
       </View>
@@ -484,37 +514,47 @@ export default function PlansScreen() {
             className="flex-row items-center justify-between"
             style={{ gap: 10 }}
           >
-            <View>
+            <View style={{ flex: 1 }}>
               <Text
                 className={strongTextClass}
                 style={{
                   ...typography.largeTitle,
                   marginBottom: spacing.xs,
+                  fontWeight: "700",
                 }}
               >
                 Meine Pläne
               </Text>
-              <Text className={mutedTextClass} style={typography.subheadline}>
+              <Text
+                className={mutedTextClass}
+                style={{
+                  ...typography.subheadline,
+                  lineHeight: 20,
+                }}
+              >
                 Alle deine Pläne
               </Text>
             </View>
-            <View className="flex-row" style={{ gap: 10 }}>
+            <View
+              className="flex-row"
+              style={{ gap: 10, marginLeft: spacing.sm }}
+            >
               <Pressable
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   aiPlanBottomSheetRef.current?.present();
                 }}
-                className="h-9 w-9 items-center justify-center rounded-full bg-blue-600"
+                className="h-10 w-10 items-center justify-center rounded-full bg-indigo-600"
                 style={{ ...shadows.small }}
               >
-                <IconSymbol name="plus" size={18} color="#FFFFFF" />
+                <IconSymbol name="plus" size={20} color="#FFFFFF" />
               </Pressable>
               <Pressable
                 onPress={() => {
                   filterRef.current?.present();
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 }}
-                className={`h-9 w-9 items-center justify-center rounded-full border ${elevatedSurfaceClass} border-zinc-200 dark:border-zinc-700`}
+                className={`h-10 w-10 items-center justify-center rounded-full border ${elevatedSurfaceClass} border-zinc-300 dark:border-zinc-700`}
                 style={{ ...shadows.small }}
               >
                 <IconSymbol
@@ -568,26 +608,34 @@ export default function PlansScreen() {
         }
         contentContainerStyle={{
           paddingHorizontal: spacing.lg,
+          paddingTop: isAndroid ? spacing.md : 0,
           paddingBottom: bottomPadding,
         }}
       >
         {isAndroid && (
-          <View style={{ paddingTop: spacing.sm, paddingBottom: spacing.md }}>
+          <View style={{ paddingTop: spacing.md, paddingBottom: spacing.lg }}>
             <View
               className="flex-row items-center justify-between"
               style={{ gap: 10 }}
             >
-              <View>
+              <View style={{ flex: 1 }}>
                 <Text
                   className={strongTextClass}
                   style={{
                     ...typography.largeTitle,
                     marginBottom: spacing.xs,
+                    fontWeight: "700",
                   }}
                 >
                   Meine Pläne
                 </Text>
-                <Text className={mutedTextClass} style={typography.subheadline}>
+                <Text
+                  className={mutedTextClass}
+                  style={{
+                    ...typography.subheadline,
+                    lineHeight: 20,
+                  }}
+                >
                   Alle deine Pläne
                 </Text>
               </View>
@@ -596,7 +644,7 @@ export default function PlansScreen() {
                   filterRef.current?.present();
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 }}
-                className={`h-9 w-9 items-center justify-center rounded-full border border-indigo-500/60 ${elevatedSurfaceClass}`}
+                className={`h-10 w-10 items-center justify-center rounded-full border border-zinc-300 dark:border-zinc-700 ${elevatedSurfaceClass}`}
                 style={{ ...shadows.small }}
               >
                 <IconSymbol
@@ -616,28 +664,42 @@ export default function PlansScreen() {
             style={{
               alignItems: "center",
               justifyContent: "center",
-              paddingTop: spacing.xl,
+              paddingTop: spacing.xl * 2,
               paddingBottom: spacing.xl,
-              gap: 16,
+              gap: 20,
+              minHeight: 400,
             }}
           >
             {/* Illustration */}
             <View
-              className="h-24 w-24 items-center justify-center rounded-full border border-indigo-200 bg-indigo-100 dark:border-indigo-500/40 dark:bg-indigo-500/10"
-              style={{ ...shadows.small }}
+              className="h-28 w-28 items-center justify-center rounded-full border-2 border-indigo-300/60 bg-indigo-50 dark:border-indigo-500/50 dark:bg-indigo-500/10"
+              style={{ ...shadows.medium }}
             >
-              <IconSymbol name="calendar" size={44} color="#007AFF" />
+              <IconSymbol name="calendar" size={52} color="#6366F1" />
             </View>
-            <Text className={strongTextClass} style={typography.headline}>
-              Noch keine Pläne
-            </Text>
-            <Text
-              className={`${mutedTextClass} text-center`}
-              style={typography.subheadline}
-            >
-              Lege fest, was du vor hast – andere sehen es und können
-              dazukommen.
-            </Text>
+            <View style={{ gap: 8, alignItems: "center" }}>
+              <Text
+                className={strongTextClass}
+                style={{
+                  ...typography.headline,
+                  fontSize: 22,
+                  fontWeight: "700",
+                }}
+              >
+                Noch keine Pläne
+              </Text>
+              <Text
+                className={`${mutedTextClass} text-center`}
+                style={{
+                  ...typography.subheadline,
+                  maxWidth: 280,
+                  lineHeight: 22,
+                }}
+              >
+                Lege fest, was du vor hast – andere sehen es und können
+                dazukommen.
+              </Text>
+            </View>
 
             {/* What is a plan */}
             <WhatIsAPlan />
@@ -648,6 +710,7 @@ export default function PlansScreen() {
               }}
               variant="default"
               size="lg"
+              style={{ marginTop: spacing.sm }}
             >
               <Text
                 className={buttonTextVariants({
@@ -692,7 +755,7 @@ export default function PlansScreen() {
                 className={strongTextClass}
                 style={{
                   ...typography.headline,
-                  fontWeight: "600",
+                  fontWeight: "700",
                 }}
               >
                 Meine Pläne
@@ -701,7 +764,7 @@ export default function PlansScreen() {
               <View
                 style={{
                   position: "absolute",
-                  right: spacing.lg,
+                  right: spacing.lg + spacing.sm, // Add extra spacing from edge
                   top: 6,
                   height: 32,
                   flexDirection: "row",
@@ -719,7 +782,7 @@ export default function PlansScreen() {
                     width: 32,
                     height: 32,
                     borderRadius: 16,
-                    backgroundColor: "#007AFF",
+                    backgroundColor: "#6366F1",
                     alignItems: "center",
                     justifyContent: "center",
                     ...shadows.small,
@@ -763,7 +826,7 @@ export default function PlansScreen() {
       <PlanFilterBottomSheet
         ref={filterRef}
         initial={filter}
-        onApply={(f) => setFilter(f)}
+        onApply={handleApplyFilter}
         hideLocation
       />
     </SafeAreaView>
@@ -801,7 +864,7 @@ function NativeFAB({ onPress }: { onPress: () => void }) {
       style={{
         position: "absolute",
         bottom: 24,
-        right: spacing.lg,
+        right: spacing.lg + spacing.sm, // Add extra spacing from edge
         zIndex: 1000,
       }}
     >
@@ -812,16 +875,16 @@ function NativeFAB({ onPress }: { onPress: () => void }) {
       >
         <View
           style={{
-            width: 52,
-            height: 52,
-            borderRadius: 26,
-            backgroundColor: "#007AFF",
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+            backgroundColor: "#6366F1",
             alignItems: "center",
             justifyContent: "center",
             ...shadows.medium,
           }}
         >
-          <IconSymbol name="plus" size={22} color="white" />
+          <IconSymbol name="plus" size={24} color="white" />
         </View>
       </Animated.View>
     </Pressable>

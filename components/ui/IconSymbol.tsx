@@ -27,6 +27,7 @@ const MAPPING = {
   // added mappings
   location: "location-on",
   "location.fill": "location-on",
+  "mappin.and.ellipse": "location-on",
   calendar: "calendar-today",
   clock: "access-time",
   tag: "sell",
