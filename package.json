@@ -25,6 +25,7 @@
     "submit:android": "eas submit --platform android --profile production",
     "submit:ios": "eas submit --platform ios --profile production",
     "testflight": "npx testflight",
+    "screenshots": "bun run scripts/generate-screenshots.ts",
     "upgrade": "expo install --fix && bunx expo-doctor@latest && echo 'https://docs.expo.dev/workflow/upgrading-expo-sdk-walkthrough/'"
   },
   "dependencies": {
@@ -115,6 +116,7 @@
     "eslint": "^9.39.0",
     "eslint-config-expo": "~10.0.0",
     "prettier-plugin-tailwindcss": "^0.5.14",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.17",
     "typescript": "~5.9.3"
   },
