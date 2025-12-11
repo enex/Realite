@@ -508,9 +508,6 @@ export default function PlanDetails() {
   const heroMutedColor = tinycolor(heroTextColor)
     .setAlpha(heroIsDark ? 0.72 : 0.68)
     .toRgbString();
-  const heroSurface = heroIsDark
-    ? "rgba(255,255,255,0.12)"
-    : "rgba(15,23,42,0.08)";
   const heroSurfaceBold = heroIsDark
     ? "rgba(255,255,255,0.18)"
     : "rgba(15,23,42,0.12)";
@@ -1046,116 +1043,6 @@ function InfoRow({
           value
         )}
       </View>
-    </Pressable>
-  );
-}
-
-function HeroMetaItem({
-  icon,
-  label,
-  primary,
-  secondary,
-  accent,
-  surface,
-  border,
-  onPress,
-  onLongPress,
-  disabled,
-}: {
-  icon: Parameters<typeof IconSymbol>[0]["name"];
-  label: string;
-  primary: string;
-  secondary?: string;
-  accent: string;
-  surface: string;
-  border: string;
-  onPress?: () => void;
-  onLongPress?: () => void;
-  disabled?: boolean;
-}) {
-  const interactive = typeof onPress === "function" && !disabled;
-  const readableAccent = tinycolor(accent).darken(10).toHexString();
-  const secondaryColor = tinycolor(accent)
-    .setAlpha(0.65)
-    .desaturate(8)
-    .toRgbString();
-  const body = (
-    <View
-      style={{
-        backgroundColor: surface,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: border,
-        paddingHorizontal: spacing.sm + 4,
-        paddingVertical: spacing.sm,
-        minWidth: 120,
-        maxWidth: 210,
-        flexShrink: 0,
-        gap: 4,
-      }}
-    >
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 8,
-        }}
-      >
-        <View
-          style={{
-            width: 26,
-            height: 26,
-            borderRadius: 13,
-            backgroundColor: tinycolor(accent).setAlpha(0.18).toRgbString(),
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <IconSymbol name={icon} size={14} color={readableAccent} />
-        </View>
-        <Text
-          style={{
-            ...typography.caption1,
-            color: secondaryColor,
-            textTransform: "uppercase",
-            letterSpacing: 0.8,
-          }}
-          numberOfLines={1}
-        >
-          {label}
-        </Text>
-      </View>
-      <Text
-        style={{
-          ...typography.subheadline,
-          color: readableAccent,
-          fontWeight: "600",
-        }}
-        numberOfLines={2}
-      >
-        {primary}
-      </Text>
-      {secondary ? (
-        <Text
-          style={{
-            ...typography.caption1,
-            color: secondaryColor,
-          }}
-          numberOfLines={2}
-        >
-          {secondary}
-        </Text>
-      ) : null}
-    </View>
-  );
-  if (!interactive && !onLongPress) return body;
-  return (
-    <Pressable
-      onPress={onPress}
-      onLongPress={onLongPress}
-      style={{ flexShrink: 0 }}
-    >
-      {body}
     </Pressable>
   );
 }

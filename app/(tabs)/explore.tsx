@@ -173,6 +173,16 @@ export default function ExploreScreen() {
     const n = plans.length;
     const norm = (s?: string | null) =>
       (s ?? "").toString().trim().toLowerCase();
+    const tokenize = (s?: string | null) =>
+      norm(s)
+        .split(/[^a-z0-9äöüß]+/i)
+        .filter((t) => t.length >= 4);
+    const sharesToken = (aStr?: string | null, bStr?: string | null) => {
+      const aTokens = tokenize(aStr);
+      const bTokens = tokenize(bStr);
+      if (aTokens.length === 0 || bTokens.length === 0) return false;
+      return aTokens.some((t) => bTokens.includes(t));
+    };
     const sameLocation = (a: any, b: any) => {
       const aLat = Number(a.latitude ?? NaN);
       const aLon = Number(a.longitude ?? NaN);
@@ -194,25 +204,36 @@ export default function ExploreScreen() {
       )
         return true;
       if (norm(a.address) && norm(a.address) === norm(b.address)) return true;
+      if (
+        sharesToken(a.locationTitle, b.locationTitle) ||
+        sharesToken(a.address, b.address) ||
+        sharesToken(a.locationTitle, b.address) ||
+        sharesToken(a.address, b.locationTitle)
+      )
+        return true;
       return false;
     };
     const adj: number[][] = Array.from({ length: n }, () => []);
-    for (let i = 0; i < n; i++) {
-      const a = plans[i];
-      const aStart = new Date(a.startDate);
-      const aEnd = a.endDate ? new Date(a.endDate) : new Date(a.startDate);
-      for (let j = i + 1; j < n; j++) {
-        const b = plans[j];
-        if (a.activity !== b.activity) continue;
-        const bStart = new Date(b.startDate);
-        const bEnd = b.endDate ? new Date(b.endDate) : new Date(b.startDate);
-        const timeOverlap = aStart <= bEnd && bStart <= aEnd;
-        if (!timeOverlap) continue;
-        if (!sameLocation(a, b)) continue;
-        adj[i].push(j);
-        adj[j].push(i);
+      for (let i = 0; i < n; i++) {
+        const a = plans[i];
+        const aStart = new Date(a.startDate);
+        const aEnd = a.endDate ? new Date(a.endDate) : new Date(a.startDate);
+        for (let j = i + 1; j < n; j++) {
+          const b = plans[j];
+          const bStart = new Date(b.startDate);
+          const bEnd = b.endDate ? new Date(b.endDate) : new Date(b.startDate);
+          const timeOverlap = aStart <= bEnd && bStart <= aEnd;
+          const timeClose =
+            Math.abs(aStart.getTime() - bStart.getTime()) <= 60 * 60 * 1000;
+          if (!timeOverlap && !timeClose) continue;
+          if (!sameLocation(a, b)) continue;
+          const activityMatch = a.activity === b.activity;
+          const titleMatch = sharesToken(a.title, b.title);
+          if (!activityMatch && !titleMatch) continue;
+          adj[i].push(j);
+          adj[j].push(i);
+        }
       }
-    }
     const visited = new Array(n).fill(false);
     const groups: any[][] = [];
     for (let i = 0; i < n; i++) {
