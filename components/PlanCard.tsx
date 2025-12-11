@@ -1,10 +1,10 @@
-import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCallback, useMemo, useRef } from "react";
 import { Animated, ColorValue, Pressable, Text, View } from "react-native";
 
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { GlassSurface } from "@/components/ui/glass";
 import {
   activities,
   type ActivityGroupId,
@@ -202,13 +202,10 @@ export function PlanCard({ item, index }: PlanCardProps) {
 
             {/* Time chip - absolute top-right for consistent placement */}
             <View className="absolute top-3 right-3" pointerEvents="none">
-              <BlurView
+              <GlassSurface
                 intensity={80}
-                experimentalBlurMethod="dimezisBlurView"
-                className="rounded-xl px-3 py-1.5 overflow-hidden"
-                style={{
-                  ...shadows.small,
-                }}
+                className="rounded-xl px-3 py-1.5 overflow-hidden border border-white/60 dark:border-white/20"
+                style={shadows.small}
               >
                 <Text
                   className="dark:text-zinc-50"
@@ -219,7 +216,7 @@ export function PlanCard({ item, index }: PlanCardProps) {
                 >
                   {formatLocalTime(item.date)}
                 </Text>
-              </BlurView>
+              </GlassSurface>
             </View>
 
             {/* Content */}

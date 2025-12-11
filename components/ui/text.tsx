@@ -34,6 +34,10 @@ const textVariants = cva(
         large: 'text-lg font-semibold',
         small: 'text-sm font-medium leading-none',
         muted: 'text-muted-foreground text-sm',
+        titleLarge: 'text-4xl font-semibold tracking-tight',
+        title: 'text-2xl font-semibold tracking-tight',
+        subtitle: 'text-base font-medium tracking-tight text-muted-foreground',
+        caption: 'text-xs font-medium text-muted-foreground tracking-wide',
       },
     },
     defaultVariants: {

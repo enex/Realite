@@ -41,3 +41,8 @@ app-example
 keys
 
 *.aab
+
+# Screenshots
+screenshots/source/
+screenshots/apple/
+screenshots/google/

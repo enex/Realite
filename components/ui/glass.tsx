@@ -1,0 +1,78 @@
+import { cn } from "@/lib/utils";
+import { BlurView } from "expo-blur";
+import * as React from "react";
+import {
+  Platform,
+  View,
+  type StyleProp,
+  type ViewProps,
+  type ViewStyle,
+} from "react-native";
+
+export type GlassSurfaceProps = ViewProps & {
+  blur?: boolean;
+  intensity?: number;
+  tint?: string;
+  androidFallback?: boolean;
+  fallbackBackground?: string;
+  borderColor?: string;
+  style?: StyleProp<ViewStyle>;
+};
+
+export function GlassSurface({
+  blur = true,
+  intensity = 60,
+  tint = "default",
+  androidFallback = false,
+  fallbackBackground,
+  borderColor,
+  className,
+  style,
+  children,
+  ...rest
+}: GlassSurfaceProps) {
+  const useBlur =
+    blur &&
+    (Platform.OS === "ios" ||
+      Platform.OS === "web" ||
+      (Platform.OS === "android" && !androidFallback));
+
+  const fallbackStyle: StyleProp<ViewStyle> = [
+    {
+      backgroundColor:
+        fallbackBackground ??
+        (Platform.OS === "web"
+          ? "rgba(255,255,255,0.7)"
+          : "rgba(255,255,255,0.8)"),
+      borderWidth: borderColor ? 1 : undefined,
+      borderColor,
+    },
+    style,
+  ];
+
+  if (!useBlur) {
+    return (
+      <View className={cn(className)} style={fallbackStyle} {...rest}>
+        {children}
+      </View>
+    );
+  }
+
+  return (
+    <BlurView
+      intensity={intensity}
+      tint={tint}
+      experimentalBlurMethod={
+        Platform.OS === "android" ? "dimezisBlurView" : undefined
+      }
+      className={cn(className)}
+      style={[
+        borderColor ? { borderWidth: 1, borderColor } : null,
+        style as any,
+      ]}
+      {...(rest as any)}
+    >
+      {children}
+    </BlurView>
+  );
+}

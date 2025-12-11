@@ -119,6 +119,8 @@ export default function PhoneAuthScreen() {
         <Pressable
           onPress={() => setPrivacyAccepted(!privacyAccepted)}
           className="mr-2 h-6 w-6 items-center justify-center rounded border border-input"
+          testID="privacy-checkbox"
+          accessibilityLabel="Datenschutzerklärung akzeptieren"
         >
           {privacyAccepted && <Text className="text-primary">✓</Text>}
         </Pressable>
@@ -141,6 +143,8 @@ export default function PhoneAuthScreen() {
         disabled={
           isLoading || !privacyAccepted || !!validationError || !phoneNumber
         }
+        testID="send-code-button"
+        accessibilityLabel="Code senden"
       >
         <Text className="text-base font-semibold text-white">
           {isLoading ? "Wird gesendet..." : "Code senden"}

@@ -14,7 +14,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: cn(
-          'bg-primary active:bg-primary/90 shadow-sm shadow-black/5',
+          'bg-primary active:bg-primary/90 shadow-sm shadow-black/10',
           Platform.select({ web: 'hover:bg-primary/90' })
         ),
         destructive: cn(
@@ -37,6 +37,9 @@ const buttonVariants = cva(
           'active:bg-accent dark:active:bg-accent/50',
           Platform.select({ web: 'hover:bg-accent dark:hover:bg-accent/50' })
         ),
+        glass: cn(
+          'bg-white/70 dark:bg-white/10 border border-white/70 dark:border-white/20 active:bg-white/80 dark:active:bg-white/15 shadow-sm shadow-black/5 backdrop-blur-xl'
+        ),
         link: '',
       },
       size: {
@@ -44,6 +47,7 @@ const buttonVariants = cva(
         sm: cn('h-9 gap-1.5 rounded-md px-3 sm:h-8', Platform.select({ web: 'has-[>svg]:px-2.5' })),
         lg: cn('h-11 rounded-md px-6 sm:h-10', Platform.select({ web: 'has-[>svg]:px-4' })),
         icon: 'h-10 w-10 sm:h-9 sm:w-9',
+        pill: cn('h-11 px-6 rounded-full'),
       },
     },
     defaultVariants: {
@@ -69,6 +73,7 @@ const buttonTextVariants = cva(
         ),
         secondary: 'text-secondary-foreground',
         ghost: 'group-active:text-accent-foreground',
+        glass: 'text-foreground',
         link: cn(
           'text-primary group-active:underline',
           Platform.select({ web: 'underline-offset-4 hover:underline group-hover:underline' })

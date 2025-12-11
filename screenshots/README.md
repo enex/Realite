@@ -4,30 +4,51 @@ Dieses Verzeichnis enthält die Screenshots für Apple App Store und Google Play
 
 ## Verwendung
 
-### 1. Quell-Screenshots erstellen
+### Option 1: Automatische Screenshots von der Web-App (Empfohlen)
 
-Erstelle deine Screenshots (z.B. manuell im Simulator/Emulator oder mit einem Tool) und speichere sie in `screenshots/source/`.
+1. **Starte die Web-App** (in einem separaten Terminal):
 
-**Tipps:**
-- Verwende hochauflösende Screenshots (mindestens 1080p)
-- Screenshots sollten das App-Interface ohne Rahmen zeigen
-- PNG oder JPEG Format
+   ```bash
+   bun run web
+   ```
 
-### 2. Screenshots generieren
+2. **Erstelle automatisch Screenshots**:
 
-Führe das Script aus:
+   ```bash
+   bun run screenshots:capture
+   ```
 
-```bash
-bun run screenshots
-```
+   Dies erstellt Screenshots von verschiedenen Screens direkt in allen benötigten App Store Größen (Apple & Google) und speichert sie in `screenshots/source/`.
 
-Das Script konvertiert automatisch alle Screenshots aus `screenshots/source/` in alle benötigten Größen für:
-- **Apple App Store**: iPhone 6.9", iPhone 6.5", iPad 13", iPad 12.9" (Portrait & Landscape)
-- **Google Play Store**: Phone HD/FHD, Tablet 7"/10" (Portrait & Landscape)
+   **Hinweis**: Die Screenshots werden bereits in den exakten Größen erstellt, die für Apple App Store und Google Play Store benötigt werden. Keine weitere Konvertierung nötig!
+
+### Option 2: Manuelle Screenshots
+
+1. **Quell-Screenshots erstellen**
+
+   Erstelle deine Screenshots (z.B. manuell im Simulator/Emulator oder mit einem Tool) und speichere sie in `screenshots/source/`.
+
+   **Tipps:**
+   - Verwende hochauflösende Screenshots (mindestens 1080p)
+   - Screenshots sollten das App-Interface ohne Rahmen zeigen
+   - PNG oder JPEG Format
+
+2. **Screenshots generieren**
+
+   Führe das Script aus:
+
+   ```bash
+   bun run screenshots
+   ```
+
+   Das Script konvertiert automatisch alle Screenshots aus `screenshots/source/` in alle benötigten Größen für:
+   - **Apple App Store**: iPhone 6.9", iPhone 6.5", iPad 13", iPad 12.9" (Portrait & Landscape)
+   - **Google Play Store**: Phone HD/FHD, Tablet 7"/10" (Portrait & Landscape)
 
 ### 3. Ausgabe
 
 Die konvertierten Screenshots werden in folgenden Verzeichnissen gespeichert:
+
 - `screenshots/apple/` - Apple App Store Screenshots
 - `screenshots/google/` - Google Play Store Screenshots
 
@@ -70,11 +91,17 @@ Die konvertierten Screenshots werden in folgenden Verzeichnissen gespeichert:
 ## Dateinamen
 
 Die generierten Screenshots folgen diesem Muster:
+
 ```
 <original-name>_<size-key>.png
 ```
 
 Beispiel: `home_iphone-6.9-portrait.png`
+
+## Verfügbare Scripts
+
+- `bun run screenshots:capture` - Erstellt automatisch Screenshots von der Web-App in allen benötigten App Store Größen
+- `bun run screenshots` - Konvertiert manuelle Quell-Screenshots in alle App Store Größen (nur wenn manuelle Screenshots verwendet werden)
 
 ## Hinweise
 
@@ -82,3 +109,5 @@ Beispiel: `home_iphone-6.9-portrait.png`
 - Screenshots werden mit weißem Hintergrund skaliert (fit: contain)
 - Alle Screenshots werden als PNG exportiert
 - Die Quell-Screenshots bleiben unverändert
+- Für automatische Screenshots wird Playwright verwendet (Chromium Browser)
+- Die Web-App muss auf `http://localhost:8081` laufen (oder setze `WEB_URL` Umgebungsvariable)

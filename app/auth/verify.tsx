@@ -57,12 +57,16 @@ export default function VerifyCodeScreen() {
         keyboardType="number-pad"
         maxLength={6}
         autoFocus
+        testID="verify-code-input"
+        accessibilityLabel="Verifizierungscode eingeben"
       />
 
       <Pressable
         className={`mb-3 flex items-center rounded-lg bg-primary p-3 ${isLoading ? "opacity-70" : ""}`}
         onPress={handleVerifyCode}
         disabled={isLoading}
+        testID="verify-code-button"
+        accessibilityLabel="Code verifizieren"
       >
         <Text className="text-base font-semibold text-white">
           {isLoading ? "Verifying..." : "Verify Code"}
