@@ -506,7 +506,7 @@ export default function PlanDetails() {
   const heroIsDark = tinycolor(gradientMid).getLuminance() < 0.48;
   const heroTextColor = heroIsDark ? "#F9FAFB" : "#0F172A";
   const heroMutedColor = tinycolor(heroTextColor)
-    .setAlpha(heroIsDark ? 0.72 : 0.68)
+    .setAlpha(heroIsDark ? 0.82 : 0.78)
     .toRgbString();
   const heroSurfaceBold = heroIsDark
     ? "rgba(255,255,255,0.18)"
@@ -520,14 +520,10 @@ export default function PlanDetails() {
   const pageBackground = tinycolor(c1).lighten(38).desaturate(15).toHexString();
   const accentToken = tinycolor(c3).saturate(10).toHexString();
   const participateBackground = heroIsDark
-    ? tinycolor(accentToken).setAlpha(0.22).toRgbString()
-    : tinycolor(accentToken).lighten(28).setAlpha(0.32).toRgbString();
-  const participateBorder = heroIsDark
-    ? tinycolor(accentToken).setAlpha(0.45).toRgbString()
-    : tinycolor(accentToken).setAlpha(0.28).toRgbString();
-  const participateTextColor = heroIsDark
-    ? "#FDFDFE"
-    : tinycolor(accentToken).darken(12).toHexString();
+    ? tinycolor(accentToken).setAlpha(0.9).toRgbString()
+    : tinycolor(accentToken).saturate(6).setAlpha(0.9).toRgbString();
+  const participateBorder = "transparent";
+  const participateTextColor = "#FFFFFF";
   const hostName = ownerProfile?.name || "Unbekannt";
   const activityLabel = getActivityLabel(plan?.activity as ActivityId);
 
@@ -611,14 +607,14 @@ export default function PlanDetails() {
                       size={14}
                       color={heroTextColor}
                     />
-                    <Text
-                      style={{
-                        ...typography.subheadline,
-                        color: heroMutedColor,
-                        fontWeight: "600",
-                      }}
-                    >
-                      Zurück
+                  <Text
+                    style={{
+                      ...typography.subheadline,
+                      color: heroTextColor,
+                      fontWeight: "600",
+                    }}
+                  >
+                    Zurück
                     </Text>
                   </BlurView>
                 </Pressable>
@@ -626,38 +622,39 @@ export default function PlanDetails() {
                   <Pressable
                     onPress={() => participateInPlan.mutate({ id })}
                     disabled={participateInPlan.isPending}
+                  style={{
+                    borderRadius: 18,
+                    backgroundColor: participateBackground,
+                    borderWidth: 1,
+                    borderColor: participateBorder,
+                    paddingHorizontal: 18,
+                    paddingVertical: 10,
+                    ...shadows.small,
+                  }}
+                >
+                  <View
                     style={{
-                      borderRadius: 18,
-                      backgroundColor: participateBackground,
-                      borderWidth: 1,
-                      borderColor: participateBorder,
-                      paddingHorizontal: 18,
-                      paddingVertical: 10,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
                     }}
                   >
-                    <View
+                    <IconSymbol
+                      name={
+                        participateInPlan.isPending
+                          ? "clock"
+                          : "person.badge.plus"
+                      }
+                      size={18}
+                      color={participateTextColor}
+                    />
+                    <Text
                       style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 8,
+                        ...typography.subheadline,
+                        fontWeight: "700",
+                        color: participateTextColor,
                       }}
                     >
-                      <IconSymbol
-                        name={
-                          participateInPlan.isPending
-                            ? "clock"
-                            : "person.badge.plus"
-                        }
-                        size={16}
-                        color={participateTextColor}
-                      />
-                      <Text
-                        style={{
-                          ...typography.subheadline,
-                          fontWeight: "600",
-                          color: participateTextColor,
-                        }}
-                      >
                         {participateInPlan.isPending
                           ? "Teilnehmen..."
                           : "Teilnehmen"}
@@ -988,11 +985,11 @@ function InfoRow({
   accentColor?: string;
 }) {
   const interactive = typeof onPress === "function";
-  const background = tinycolor(accentColor).setAlpha(0.06).toRgbString();
-  const border = tinycolor(accentColor).setAlpha(0.1).toRgbString();
-  const iconBg = tinycolor(accentColor).setAlpha(0.12).toRgbString();
-  const labelColor = tinycolor(accentColor).darken(10).toHexString();
-  const valueColor = tinycolor(accentColor).darken(25).toHexString();
+  const background = tinycolor(accentColor).setAlpha(0.1).toRgbString();
+  const border = tinycolor(accentColor).setAlpha(0.16).toRgbString();
+  const iconBg = tinycolor(accentColor).setAlpha(0.18).toRgbString();
+  const labelColor = tinycolor(accentColor).darken(18).toHexString();
+  const valueColor = tinycolor(accentColor).darken(32).toHexString();
   return (
     <Pressable
       onPress={onPress}
@@ -1095,7 +1092,7 @@ function SectionCard({
             <Text
               style={{
                 ...typography.caption1,
-                color: "#6B7280",
+                color: "#4B5563",
                 marginTop: 2,
               }}
               numberOfLines={2}
@@ -1544,12 +1541,12 @@ function Locations({
 
   if (!plan) return null;
 
-  const chipBackground = tinycolor(accentColor).setAlpha(0.08).toRgbString();
-  const chipBorder = tinycolor(accentColor).setAlpha(0.18).toRgbString();
-  const primaryText = tinycolor(accentColor).darken(12).toHexString();
+  const chipBackground = tinycolor(accentColor).setAlpha(0.12).toRgbString();
+  const chipBorder = tinycolor(accentColor).setAlpha(0.22).toRgbString();
+  const primaryText = tinycolor(accentColor).darken(22).toHexString();
   const mutedText = tinycolor(accentColor)
-    .darken(24)
-    .setAlpha(0.75)
+    .darken(30)
+    .setAlpha(0.85)
     .toRgbString();
   const actionText = accentColor;
 

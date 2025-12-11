@@ -41,6 +41,18 @@ const planSchema = z.object({
     .describe("If true, the user has not fully confirmed the plan yet"),
 });
 
+const locationArraySchema = (planSchema.shape.locations as z.ZodOptional<
+  z.ZodArray<any>
+>).unwrap();
+
+const getGroupIdFromActivity = (
+  activityId?: ActivityId
+): keyof typeof activities | undefined => {
+  if (!activityId) return undefined;
+  const [groupId] = (activityId as string).split("/");
+  return groupId as keyof typeof activities;
+};
+
 export const planRouter = {
   create: protectedRoute
     .input(
@@ -121,7 +133,7 @@ export const planRouter = {
               `  - ${subActivityId}: ${description.name}`
           ),
         ]),
-        `If a event is referenced, search after the event using the web_search tool. And fill in correct information for the plan.`,
+        `If an event or specific place is referenced, use the web_search tool to verify details.`,
         input.location
           ? `The user's approximate location is ${
               [resolved?.city, resolved?.region, resolved?.country]
@@ -130,6 +142,9 @@ export const planRouter = {
               `lat ${input.location.latitude}, lon ${input.location.longitude}`
             }. Prefer suggestions relevant around this location.`
           : `If no location is provided, do not assume a specific city; keep suggestions generic or ask clarifying questions.`,
+        `Every plan MUST include at least one concrete location.`,
+        `Use the search_location tool to find real places. If the user input is vague, search for 2-3 plausible locations near the user (e.g. parks, cafes, gyms) and include them all so the user can delete wrong ones.`,
+        `Only return locations that have a name and coordinates from search_location results. Never invent coordinates.`,
         `Today is ${now.toLocaleDateString("de-DE", {
           weekday: "long",
           day: "2-digit",
@@ -148,8 +163,14 @@ export const planRouter = {
         "Every plan must be in the future.",
       ].join("\n");
 
-      //TODO: pass location properly
-      //TODO: integrate location search properly
+      const aiPlanSchema = planSchema.extend({
+        locations: locationArraySchema
+          .min(1)
+          .describe(
+            "At least one concrete location. Prefer 2-3 suggestions if uncertain."
+          ),
+      });
+
       const aiResult = await generateText({
         model: openai("gpt-4o-mini"),
         abortSignal: signal,
@@ -157,21 +178,37 @@ export const planRouter = {
         prompt: input.text,
         toolChoice: "required",
         prepareStep: ({ stepNumber, steps }) => {
-          if (
-            stepNumber > 2 &&
-            !steps.some((s) =>
-              s.toolCalls.some((t) => t.toolName === "search_location")
+          const hasSearchCall = steps.some((s) =>
+            s.toolCalls.some((t) => t.toolName === "search_location")
+          );
+          const hasSearchResults = steps.some((s) =>
+            (s.toolResults ?? []).some(
+              (r: any) =>
+                r.toolName === "search_location" &&
+                Array.isArray(r.result?.locations) &&
+                r.result.locations.length > 0
             )
-          )
+          );
+
+          if (stepNumber === 0) {
+            return {
+              toolChoice: "required",
+              activeTools: ["web_search", "search_location"],
+            };
+          }
+
+          if (!hasSearchResults && stepNumber < 3) {
             return { toolChoice: "required", activeTools: ["search_location"] };
-          if (stepNumber > 3) {
+          }
+
+          if (hasSearchCall && stepNumber >= 2) {
             return { toolChoice: "required", activeTools: ["create_plan"] };
           }
         },
         stopWhen: stepCountIs(5),
         tools: {
           create_plan: tool({
-            inputSchema: planSchema,
+            inputSchema: aiPlanSchema,
             description: "Create a plan",
           }),
           web_search: openai.tools.webSearchPreview({
@@ -230,6 +267,76 @@ export const planRouter = {
           res.plan.startDate = adjusted.toISOString();
         }
       }
+
+      if (res.plan?.endDate) {
+        const parsedEnd = new Date(res.plan.endDate);
+        if (!isNaN(parsedEnd.getTime())) {
+          const adjustedEnd = new Date(parsedEnd);
+          if (res.plan.startDate) {
+            const start = new Date(res.plan.startDate);
+            if (adjustedEnd.getTime() <= start.getTime()) {
+              adjustedEnd.setTime(start.getTime() + 60 * 60 * 1000);
+            }
+          }
+          res.plan.endDate = adjustedEnd.toISOString();
+        }
+      }
+
+      const ensureLocations = async () => {
+        if (!res.plan) return;
+        if (Array.isArray(res.plan.locations) && res.plan.locations.length > 0)
+          return;
+        const cityHint = resolved?.city || resolved?.region || undefined;
+        const activityHint =
+          res.plan.activity &&
+          activities[getGroupIdFromActivity(res.plan.activity)]?.nameDe;
+        const queryParts = [
+          input.text,
+          activityHint,
+          cityHint,
+        ].filter(Boolean);
+        const query = queryParts.join(" ");
+        const fallbackSearch = query
+          ? await placesService.search({
+              query,
+              userLocation: input.location
+                ? {
+                    lat: input.location.latitude,
+                    lng: input.location.longitude,
+                  }
+                : undefined,
+              radius: input.location?.radius,
+              limit: 5,
+            })
+          : [];
+        const fallbackLocations =
+          fallbackSearch?.slice(0, 3).map((place) => ({
+            title: place.name,
+            address: place.formatted_address ?? undefined,
+            latitude: place.geometry.location.lat,
+            longitude: place.geometry.location.lng,
+          })) ?? [];
+
+        if (fallbackLocations.length > 0) {
+          res.plan.locations = fallbackLocations as any;
+          res.plan.maybe = true;
+          return;
+        }
+
+        if (input.location) {
+          res.plan.locations = [
+            {
+              title: cityHint || "Treffpunkt",
+              latitude: input.location.latitude,
+              longitude: input.location.longitude,
+              address: cityHint,
+            },
+          ] as any;
+          res.plan.maybe = true;
+        }
+      };
+
+      await ensureLocations();
       console.log(res);
       return res;
     }),
