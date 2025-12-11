@@ -36,181 +36,180 @@ export default function WebLanding() {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-[#F5F5F7] dark:bg-black">
       <ScrollView className="flex-1">
-        {/* Modern Header */}
-        <View className="flex-row justify-between items-center px-8 py-6 bg-white/80 backdrop-blur-md border-b border-gray-100/50 sticky top-0 z-50">
+        {/* Apple-like Glass Header */}
+        <View className="flex-row justify-between items-center px-6 md:px-10 py-4 bg-white/60 dark:bg-black/40 backdrop-blur-xl border-b border-white/30 dark:border-white/10 sticky top-0 z-50">
           <View className="flex-row items-center">
-            <View className="w-10 h-10 mr-3 shadow-lg rounded-xl overflow-hidden">
+            <View className="w-9 h-9 mr-3 rounded-xl overflow-hidden shadow-md">
               <img
                 src={require("../assets/images/icon.png").uri}
                 alt="Realite App Icon"
-                className="w-full h-full scale-125 object-cover rounded-2xl"
+                className="w-full h-full scale-110 object-cover rounded-xl"
               />
             </View>
-            <Text className="text-2xl font-bold text-gray-900">Realite</Text>
-            <Text className="ml-3 px-3 py-1 bg-gradient-to-r from-pink-100 to-rose-100 text-pink-700 text-xs font-bold rounded-full border border-pink-200">
+            <Text className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">
+              Realite
+            </Text>
+            <Text className="ml-3 px-2.5 py-1 bg-white/70 dark:bg-white/10 text-gray-700 dark:text-white/80 text-[11px] font-semibold rounded-full border border-white/60 dark:border-white/20 backdrop-blur-md">
               CLOSED BETA
             </Text>
           </View>
 
-          <View className="flex-row items-center gap-8">
-            <Pressable
-              onPress={() => scrollToSection("features")}
-              className="text-gray-700 hover:text-pink-600 transition-colors font-medium"
-            >
-              <Text className="font-medium">Features</Text>
+          <View className="flex-row items-center gap-6 md:gap-8">
+            <Pressable onPress={() => scrollToSection("features")}>
+              <Text className="text-gray-700 dark:text-white/80 hover:text-black dark:hover:text-white transition-colors font-medium">
+                Features
+              </Text>
+            </Pressable>
+            <Pressable onPress={() => scrollToSection("how-it-works")}>
+              <Text className="text-gray-700 dark:text-white/80 hover:text-black dark:hover:text-white transition-colors font-medium">
+                So funktioniert&apos;s
+              </Text>
+            </Pressable>
+            <Pressable onPress={() => scrollToSection("security")}>
+              <Text className="text-gray-700 dark:text-white/80 hover:text-black dark:hover:text-white transition-colors font-medium">
+                Sicherheit
+              </Text>
             </Pressable>
             <Pressable
-              onPress={() => scrollToSection("how-it-works")}
-              className="text-gray-700 hover:text-pink-600 transition-colors font-medium"
-            >
-              <Text className="font-medium">So funktioniert&apos;s</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => scrollToSection("security")}
-              className="text-gray-700 hover:text-pink-600 transition-colors font-medium"
-            >
-              <Text className="font-medium">Sicherheit</Text>
-            </Pressable>
-            <Pressable
-              className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all hover:brightness-110"
+              className="bg-black/90 dark:bg-white/90 px-5 py-2.5 rounded-full shadow-lg hover:shadow-xl transition-all"
               onPress={openWhatsAppChannel}
             >
-              <Text className="text-white font-semibold">🔔 Updates</Text>
+              <Text className="text-white dark:text-black font-semibold tracking-tight">
+                Updates erhalten
+              </Text>
             </Pressable>
           </View>
         </View>
 
-        {/* Enhanced Hero Section */}
-        <View className="relative bg-gradient-to-br from-slate-50 via-pink-50 to-rose-100 px-8 py-32 overflow-hidden">
-          {/* Animated Emoji background */}
-          <View pointerEvents="none" className="absolute inset-0 opacity-15">
-            <Text className="absolute -top-8 -left-6 rotate-[-12deg] text-8xl animate-pulse">
-              🎮
-            </Text>
-            <Text className="absolute top-20 left-1/3 rotate-6 text-7xl animate-bounce">
-              ☕️
-            </Text>
-            <Text className="absolute top-1/4 right-8 -rotate-6 text-8xl animate-pulse">
-              🎨
-            </Text>
-            <Text className="absolute top-1/2 left-6 rotate-12 text-8xl animate-bounce">
-              ⚽️
-            </Text>
-            <Text className="absolute top-[60%] right-1/3 rotate-3 text-7xl animate-pulse">
-              🎭
-            </Text>
-            <Text className="absolute bottom-20 right-8 -rotate-12 text-8xl animate-bounce">
-              🎵
-            </Text>
-            <Text className="absolute bottom-32 left-1/4 rotate-12 text-7xl animate-pulse">
-              🍽️
-            </Text>
-            <Text className="absolute top-[70%] left-8 rotate-[-6deg] text-8xl animate-bounce">
-              🏃‍♂️
-            </Text>
+        {/* Hero Section with subtle glass + color blobs */}
+        <View className="relative px-6 md:px-10 py-24 md:py-32 overflow-hidden">
+          <View pointerEvents="none" className="absolute inset-0">
+            <View className="absolute -top-24 -left-20 w-[420px] h-[420px] bg-emerald-300/40 dark:bg-emerald-500/25 rounded-full blur-3xl" />
+            <View className="absolute top-0 right-0 w-[520px] h-[520px] bg-sky-300/35 dark:bg-sky-500/20 rounded-full blur-3xl" />
+            <View className="absolute bottom-[-180px] left-1/3 w-[560px] h-[560px] bg-fuchsia-300/35 dark:bg-fuchsia-500/20 rounded-full blur-3xl" />
           </View>
 
-          <View className="max-w-6xl w-full mx-auto text-center">
-            <View className="mb-12">
-              <Text className="text-7xl font-black text-center bg-gradient-to-r from-gray-900 via-pink-600 to-rose-600 bg-clip-text text-transparent mb-6 leading-tight tracking-tight">
+          <View className="max-w-6xl w-full mx-auto flex-col lg:flex-row items-center gap-12 lg:gap-16">
+            {/* Copy */}
+            <View className="flex-1">
+              <Text className="text-[52px] md:text-[64px] font-semibold text-gray-900 dark:text-white leading-[1.05] tracking-tight">
                 Die App für echte{"\n"}Verbindungen
               </Text>
-              <Text className="text-3xl font-bold text-center text-gray-700 mb-8 leading-relaxed">
+              <Text className="text-xl md:text-2xl font-medium text-gray-700 dark:text-white/80 mt-5 leading-relaxed">
                 Leg dein Handy weg. Erlebe echte Momente.
               </Text>
-              <Text className="text-xl text-center text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8">
-                Realite ist deine App für echte Begegnungen statt endlosem
-                Scrollen. Plane mühelos Aktivitäten mit Freunden oder finde neue
-                Kontakte durch gemeinsame Interessen.
+              <Text className="text-base md:text-lg text-gray-600 dark:text-white/70 mt-4 leading-relaxed max-w-xl">
+                Realite bringt Menschen im echten Leben zusammen. Erstelle Pläne
+                in Sekunden, finde Aktivitäten in deiner Nähe und triff Leute,
+                die deine Interessen teilen – ohne endloses Scrollen.
               </Text>
 
-              {/* Status Banner */}
-              <View className="inline-flex items-center bg-gradient-to-r from-amber-100 to-orange-100 px-6 py-3 rounded-2xl border border-amber-200 shadow-sm mb-10">
-                <View className="w-3 h-3 rounded-full bg-amber-500 mr-3 animate-pulse"></View>
-                <Text className="text-amber-800 font-semibold">
-                  Geschlossene Beta • Apps derzeit nicht verfügbar
-                </Text>
+              <View className="mt-8 flex-row items-center flex-wrap gap-4">
+                <Pressable
+                  className="bg-black/90 dark:bg-white/90 px-7 py-4 rounded-full shadow-2xl"
+                  onPress={openWhatsAppChannel}
+                >
+                  <Text className="text-white dark:text-black font-semibold text-base md:text-lg tracking-tight">
+                    WhatsApp‑Kanal abonnieren
+                  </Text>
+                </Pressable>
+                <View className="px-4 py-2 rounded-full bg-white/70 dark:bg-white/10 border border-white/60 dark:border-white/20 backdrop-blur-md">
+                  <Text className="text-sm text-gray-700 dark:text-white/80 font-medium">
+                    Geschlossene Beta • Apps bald verfügbar
+                  </Text>
+                </View>
+              </View>
+
+              <View className="mt-10 flex-row gap-6">
+                {[
+                  { icon: "🤝", label: "Echte Menschen" },
+                  { icon: "🎯", label: "Gemeinsame Interessen" },
+                  { icon: "🔒", label: "Invite‑only & sicher" },
+                ].map((f) => (
+                  <View key={f.label} className="items-center">
+                    <View className="w-12 h-12 bg-white/70 dark:bg-white/10 rounded-2xl items-center justify-center border border-white/60 dark:border-white/20 backdrop-blur-md shadow-sm">
+                      <Text className="text-xl">{f.icon}</Text>
+                    </View>
+                    <Text className="mt-2 text-sm text-gray-700 dark:text-white/80 font-medium">
+                      {f.label}
+                    </Text>
+                  </View>
+                ))}
               </View>
             </View>
 
-            {/* CTA Section */}
-            <View className="flex-row gap-6 justify-center items-center flex-wrap mb-16">
-              <Pressable
-                className="bg-gradient-to-r from-green-500 to-emerald-600 px-10 py-5 rounded-2xl shadow-2xl hover:shadow-emerald-500/25 transition-all hover:brightness-110 flex-row items-center"
-                onPress={openWhatsAppChannel}
-              >
-                <Text className="text-white text-2xl mr-3">🔔</Text>
-                <Text className="text-white font-bold text-xl">
-                  WhatsApp-Kanal abonnieren
-                </Text>
-              </Pressable>
-
-              <Text className="text-gray-500 text-lg">
-                Erhalte Updates zur Verfügbarkeit
-              </Text>
-            </View>
-
-            {/* Key Features Preview */}
-            <View className="flex-row justify-center gap-12 items-center">
-              <View className="text-center">
-                <View className="w-16 h-16 bg-white rounded-3xl items-center justify-center shadow-lg mb-3 mx-auto">
-                  <Text className="text-3xl">🤝</Text>
+            {/* Glass mockup */}
+            <View className="flex-1 w-full max-w-md">
+              <View className="rounded-[44px] bg-white/70 dark:bg-white/10 border border-white/70 dark:border-white/20 backdrop-blur-2xl shadow-2xl p-6">
+                <View className="items-center mb-4">
+                  <View className="w-10 h-1.5 rounded-full bg-black/10 dark:bg-white/15" />
                 </View>
-                <Text className="text-gray-700 font-semibold">
-                  Echte Menschen
+                <Text className="text-sm text-gray-500 dark:text-white/60 font-semibold tracking-widest uppercase mb-3">
+                  Heute
                 </Text>
-              </View>
-
-              <View className="text-center">
-                <View className="w-16 h-16 bg-white rounded-3xl items-center justify-center shadow-lg mb-3 mx-auto">
-                  <Text className="text-3xl">🎯</Text>
+                <View className="gap-3">
+                  {[
+                    {
+                      title: "Coffee Run",
+                      meta: "10:00 · Café‑Bar Human",
+                    },
+                    {
+                      title: "Spaziergang im Park",
+                      meta: "18:30 · Schönbusch",
+                    },
+                    {
+                      title: "Boardgame Night",
+                      meta: "20:00 · Bei dir zuhause",
+                    },
+                  ].map((p) => (
+                    <View
+                      key={p.title}
+                      className="rounded-3xl bg-white/80 dark:bg-white/10 border border-white/70 dark:border-white/20 backdrop-blur-md px-4 py-3 shadow-sm"
+                    >
+                      <Text className="text-base font-semibold text-gray-900 dark:text-white">
+                        {p.title}
+                      </Text>
+                      <Text className="text-sm text-gray-600 dark:text-white/70 mt-1">
+                        {p.meta}
+                      </Text>
+                    </View>
+                  ))}
                 </View>
-                <Text className="text-gray-700 font-semibold">
-                  Gemeinsame Interessen
-                </Text>
-              </View>
-
-              <View className="text-center">
-                <View className="w-16 h-16 bg-white rounded-3xl items-center justify-center shadow-lg mb-3 mx-auto">
-                  <Text className="text-3xl">🔒</Text>
-                </View>
-                <Text className="text-gray-700 font-semibold">
-                  Sicher & Vertrauenswürdig
-                </Text>
               </View>
             </View>
           </View>
         </View>
 
         {/* Mission & Vision */}
-        <View className="px-8 py-16 bg-white">
-          <View className="max-w-4xl mx-auto text-center">
-            <Text className="text-3xl font-bold text-gray-900 mb-4">
-              Unsere Mission
-            </Text>
-            <Text className="text-lg text-gray-600 leading-relaxed">
-              Menschen im echten Leben verbinden – ob Freunde, Bekannte oder
-              noch Unbekannte. Realite ist die Gegenbewegung zu ständig online
-              sein, virtuellen Freundschaften und Teilen der
-              Social-Media-Kultur. Wir machen reale Treffen so einfach wie eine
-              Nachricht zu schreiben.
-            </Text>
+        <View className="px-6 md:px-10 py-14">
+          <View className="max-w-4xl mx-auto">
+            <View className="bg-white/70 dark:bg-white/10 border border-white/70 dark:border-white/20 backdrop-blur-xl rounded-3xl p-8 md:p-10 shadow-xl">
+              <Text className="text-3xl font-semibold text-gray-900 dark:text-white mb-3 tracking-tight text-center">
+                Unsere Mission
+              </Text>
+              <Text className="text-base md:text-lg text-gray-700 dark:text-white/80 leading-relaxed text-center">
+                Menschen im echten Leben verbinden – ob Freunde, Bekannte oder
+                noch Unbekannte. Realite ist die Gegenbewegung zu ständig online
+                sein. Wir machen reale Treffen so einfach wie eine Nachricht zu
+                schreiben.
+              </Text>
+            </View>
           </View>
         </View>
 
         {/* Modern Activity Categories */}
         <View
           id="features"
-          className="px-8 py-24 bg-gradient-to-b from-white to-gray-50"
+          className="px-6 md:px-10 py-24 bg-transparent"
         >
           <View className="max-w-7xl mx-auto">
             <View className="text-center mb-20">
-              <Text className="text-5xl font-black text-gray-900 mb-6 leading-tight">
+              <Text className="text-5xl font-semibold text-gray-900 dark:text-white mb-6 leading-tight tracking-tight">
                 Entdecke unendliche{"\n"}Möglichkeiten
               </Text>
-              <Text className="text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              <Text className="text-xl md:text-2xl text-gray-700 dark:text-white/80 max-w-4xl mx-auto leading-relaxed">
                 Von Gaming bis Kultur, von Sport bis Musik – finde Menschen, die
                 deine Leidenschaften teilen
               </Text>
@@ -296,14 +295,14 @@ export default function WebLanding() {
                   className="group transition-all duration-300 hover:shadow-2xl"
                 >
                   <View
-                    className={`${category.bg} p-8 rounded-3xl items-center shadow-lg hover:shadow-2xl transition-all border border-white/50 backdrop-blur-sm`}
+                    className="p-7 rounded-3xl items-center bg-white/70 dark:bg-white/10 border border-white/70 dark:border-white/20 backdrop-blur-xl shadow-lg hover:shadow-2xl transition-all"
                   >
                     <View
                       className={`w-16 h-16 bg-gradient-to-br ${category.color} rounded-2xl items-center justify-center shadow-lg mb-4`}
                     >
                       <Text className="text-3xl">{category.icon}</Text>
                     </View>
-                    <Text className="text-gray-800 font-bold text-center text-base">
+                    <Text className="text-gray-900 dark:text-white font-semibold text-center text-base tracking-tight">
                       {category.title}
                     </Text>
                   </View>
@@ -314,13 +313,13 @@ export default function WebLanding() {
         </View>
 
         {/* Enhanced How it works */}
-        <View id="how-it-works" className="px-8 py-24 bg-white">
+        <View id="how-it-works" className="px-6 md:px-10 py-24 bg-transparent">
           <View className="max-w-7xl mx-auto">
             <View className="text-center mb-20">
-              <Text className="text-5xl font-black text-gray-900 mb-6 leading-tight">
+              <Text className="text-5xl font-semibold text-gray-900 dark:text-white mb-6 leading-tight tracking-tight">
                 Einfach & Effizient
               </Text>
-              <Text className="text-2xl text-gray-600 mb-4">
+              <Text className="text-xl md:text-2xl text-gray-700 dark:text-white/80 mb-4">
                 So funktioniert&apos;s – in nur drei einfachen Schritten zu
                 echten Verbindungen
               </Text>
