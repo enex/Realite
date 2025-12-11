@@ -363,7 +363,7 @@ export default function WebLanding() {
                 },
               ].map((item, index) => (
                 <View key={index} className="relative">
-                  <View className="bg-white p-10 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 border border-gray-100 hover:border-blue-200">
+                  <View className="bg-white/70 dark:bg-white/10 p-10 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 border border-white/70 dark:border-white/20 backdrop-blur-xl">
                     <View className="relative mb-8">
                       <View
                         className={`w-20 h-20 bg-gradient-to-br ${item.color} rounded-3xl items-center justify-center shadow-xl mx-auto`}
@@ -373,22 +373,22 @@ export default function WebLanding() {
                         </Text>
                       </View>
                       {/* Step connector dot */}
-                      <View className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full shadow-lg border-2 border-gray-200 hidden lg:block"></View>
+                      <View className="absolute -top-2 -right-2 w-6 h-6 bg-white/80 dark:bg-white/10 rounded-full shadow-md border border-white/70 dark:border-white/20 hidden lg:block backdrop-blur-md"></View>
                     </View>
 
-                    <Text className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                    <Text className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 text-center tracking-tight">
                       {item.title}
                     </Text>
 
-                    <Text className="text-gray-600 leading-relaxed mb-8 text-lg">
+                    <Text className="text-gray-700 dark:text-white/80 leading-relaxed mb-8 text-lg">
                       {item.description}
                     </Text>
 
                     <View
-                      className={`${item.bgColor} p-6 rounded-2xl border border-gray-100`}
+                      className="bg-white/80 dark:bg-white/10 p-6 rounded-2xl border border-white/70 dark:border-white/20 backdrop-blur-md"
                     >
                       <Text
-                        className={`${item.tipColor} font-semibold text-base`}
+                        className="text-gray-900 dark:text-white font-medium text-base"
                       >
                         {item.tip}
                       </Text>
@@ -401,19 +401,16 @@ export default function WebLanding() {
         </View>
 
         {/* Modern Security Section */}
-        <View
-          id="security"
-          className="px-8 py-24 bg-gradient-to-br from-slate-50 to-blue-50"
-        >
+        <View id="security" className="px-6 md:px-10 py-24 bg-transparent">
           <View className="max-w-7xl mx-auto">
             <View className="text-center mb-20">
-              <Text className="text-sm font-bold text-blue-600 bg-blue-100 px-4 py-2 rounded-full mb-6 self-center">
+              <Text className="text-sm font-semibold text-gray-700 dark:text-white/80 bg-white/70 dark:bg-white/10 px-4 py-2 rounded-full mb-6 self-center border border-white/70 dark:border-white/20 backdrop-blur-md">
                 Sicherheit & Vertrauen
               </Text>
-              <Text className="text-5xl font-black text-gray-900 mb-6 leading-tight">
+              <Text className="text-5xl font-semibold text-gray-900 dark:text-white mb-6 leading-tight tracking-tight">
                 Sicher & Vertrauenswürdig
               </Text>
-              <Text className="text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              <Text className="text-xl md:text-2xl text-gray-700 dark:text-white/80 max-w-4xl mx-auto leading-relaxed">
                 Realite setzt auf ein einzigartiges Sicherheitskonzept, das
                 echte Verbindungen fördert und Fake-Profile verhindert.
               </Text>
@@ -447,18 +444,16 @@ export default function WebLanding() {
                 },
               ].map((item, index) => (
                 <View key={index} className="group">
-                  <View
-                    className={`${item.bgColor} backdrop-blur-sm p-10 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 border border-white/50 hover:border-white/80`}
-                  >
+                  <View className="bg-white/70 dark:bg-white/10 backdrop-blur-xl p-10 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 border border-white/70 dark:border-white/20">
                     <View
                       className={`w-20 h-20 bg-gradient-to-br ${item.color} rounded-3xl items-center justify-center mx-auto mb-8 shadow-xl transition-all duration-300`}
                     >
                       <Text className="text-4xl">{item.icon}</Text>
                     </View>
-                    <Text className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                    <Text className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 text-center tracking-tight">
                       {item.title}
                     </Text>
-                    <Text className="text-gray-700 leading-relaxed text-lg text-center">
+                    <Text className="text-gray-700 dark:text-white/80 leading-relaxed text-lg text-center">
                       {item.description}
                     </Text>
                   </View>
@@ -467,16 +462,16 @@ export default function WebLanding() {
             </View>
 
             {/* Security Promise Banner */}
-            <View className="bg-gradient-to-r from-blue-600 to-indigo-700 p-12 rounded-3xl shadow-2xl text-center">
+            <View className="bg-white/70 dark:bg-white/10 p-12 rounded-3xl shadow-2xl text-center border border-white/70 dark:border-white/20 backdrop-blur-xl">
               <View className="flex-row items-center justify-center mb-6">
-                <View className="w-16 h-16 bg-white/20 rounded-2xl items-center justify-center mr-4">
+                <View className="w-16 h-16 bg-black/5 dark:bg-white/10 rounded-2xl items-center justify-center mr-4">
                   <Text className="text-4xl">🛡️</Text>
                 </View>
-                <Text className="text-3xl font-bold text-white">
+                <Text className="text-3xl font-semibold text-gray-900 dark:text-white tracking-tight">
                   Deine Sicherheit hat höchste Priorität
                 </Text>
               </View>
-              <Text className="text-xl text-blue-100 leading-relaxed max-w-3xl mx-auto">
+              <Text className="text-lg md:text-xl text-gray-700 dark:text-white/80 leading-relaxed max-w-3xl mx-auto">
                 Mit unserem dreistufigen Sicherheitskonzept kannst du dich voll
                 und ganz auf das Kennenlernen neuer Menschen konzentrieren.
               </Text>
@@ -485,16 +480,16 @@ export default function WebLanding() {
         </View>
 
         {/* Events & Spontantreffen */}
-        <View className="px-8 py-20 bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50">
+        <View className="px-6 md:px-10 py-20 bg-transparent">
           <View className="max-w-7xl mx-auto">
             <View className="mb-16">
-              <Text className="text-sm font-bold text-purple-600 bg-purple-100 px-4 py-2 rounded-full mb-6 self-start">
+              <Text className="text-sm font-semibold text-gray-700 dark:text-white/80 bg-white/70 dark:bg-white/10 px-4 py-2 rounded-full mb-6 self-start border border-white/70 dark:border-white/20 backdrop-blur-md">
                 Events & Spontantreffen
               </Text>
-              <Text className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
+              <Text className="text-5xl font-semibold text-gray-900 dark:text-white mb-6 leading-tight tracking-tight">
                 Entdecke Events &{"\n"}finde spontane{"\n"}Aktivitäten
               </Text>
-              <Text className="text-xl text-gray-600 leading-relaxed max-w-2xl">
+              <Text className="text-lg md:text-xl text-gray-700 dark:text-white/80 leading-relaxed max-w-2xl">
                 Von großen Festivals bis zu spontanen Spielerunden – Realite
                 hilft dir, keine spannenden Events zu verpassen.
               </Text>
@@ -508,10 +503,10 @@ export default function WebLanding() {
                     <Text className="text-white text-2xl">✨</Text>
                   </View>
                   <View className="flex-1 pt-2">
-                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                    <Text className="text-2xl font-semibold text-gray-900 dark:text-white mb-3 tracking-tight">
                       Veranstaltungen entdecken
                     </Text>
-                    <Text className="text-gray-600 text-lg leading-relaxed">
+                    <Text className="text-gray-700 dark:text-white/80 text-lg leading-relaxed">
                       Finde spannende Events in deiner Nähe – von Konzerten bis
                       Sportveranstaltungen. Veranstalter können ihre Events
                       direkt bewerben und du findest passende Gruppen zum
@@ -525,10 +520,10 @@ export default function WebLanding() {
                     <Text className="text-white text-2xl">👥</Text>
                   </View>
                   <View className="flex-1 pt-2">
-                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                    <Text className="text-2xl font-semibold text-gray-900 dark:text-white mb-3 tracking-tight">
                       Spontane Aktivitäten
                     </Text>
-                    <Text className="text-gray-600 text-lg leading-relaxed">
+                    <Text className="text-gray-700 dark:text-white/80 text-lg leading-relaxed">
                       Finde spontan Mitspieler für eine Runde Basketball oder
                       Brettspiele. Die App zeigt dir in Echtzeit, wer in deiner
                       Nähe Lust auf die gleiche Aktivität hat.
@@ -541,10 +536,10 @@ export default function WebLanding() {
                     <Text className="text-white text-2xl">📅</Text>
                   </View>
                   <View className="flex-1 pt-2">
-                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                    <Text className="text-2xl font-semibold text-gray-900 dark:text-white mb-3 tracking-tight">
                       Intelligente Integration
                     </Text>
-                    <Text className="text-gray-600 text-lg leading-relaxed">
+                    <Text className="text-gray-700 dark:text-white/80 text-lg leading-relaxed">
                       Die App synchronisiert sich mit deinem Kalender und
                       schlägt nur Zeiten vor, die für alle passen.
                       Benachrichtigungen sind intelligent und stören nur, wenn
@@ -556,72 +551,72 @@ export default function WebLanding() {
 
               {/* Right side - Event Cards */}
               <View className="space-y-6">
-                <View className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100">
+                <View className="bg-white/70 dark:bg-white/10 p-6 rounded-3xl shadow-xl border border-white/70 dark:border-white/20 backdrop-blur-xl">
                   <View className="flex-row items-center mb-4">
                     <View className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 items-center justify-center mr-4">
                       <Text className="text-white text-xl">✨</Text>
                     </View>
                     <View className="flex-1">
-                      <Text className="text-xl font-bold text-gray-900">
+                      <Text className="text-xl font-semibold text-gray-900 dark:text-white tracking-tight">
                         Mainwiesen Festival
                       </Text>
-                      <Text className="text-gray-500">15. - 17. Juli</Text>
+                      <Text className="text-gray-600 dark:text-white/70">15. - 17. Juli</Text>
                     </View>
-                    <View className="w-10 h-10 rounded-full bg-blue-100 items-center justify-center">
-                      <Text className="text-blue-600 text-lg">👥</Text>
+                    <View className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/10 items-center justify-center">
+                      <Text className="text-gray-800 dark:text-white text-lg">👥</Text>
                     </View>
                   </View>
                   <View className="flex-row items-center justify-between">
-                    <Text className="text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full font-semibold">
+                    <Text className="text-emerald-800 dark:text-emerald-200 bg-emerald-100/80 dark:bg-emerald-500/15 px-3 py-1 rounded-full font-semibold">
                       Offiziell
                     </Text>
-                    <Text className="text-gray-600">
+                    <Text className="text-gray-700 dark:text-white/80">
                       8 Gruppen suchen noch Mitglieder
                     </Text>
                   </View>
                 </View>
 
-                <View className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100">
+                <View className="bg-white/70 dark:bg-white/10 p-6 rounded-3xl shadow-xl border border-white/70 dark:border-white/20 backdrop-blur-xl">
                   <View className="flex-row items-center mb-4">
                     <View className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 items-center justify-center mr-4">
                       <Text className="text-white text-xl">🏐</Text>
                     </View>
                     <View className="flex-1">
-                      <Text className="text-xl font-bold text-gray-900">
+                      <Text className="text-xl font-semibold text-gray-900 dark:text-white tracking-tight">
                         Spontanes Beachvolleyball
                       </Text>
-                      <Text className="text-gray-500">Mainwiesen Beach</Text>
+                      <Text className="text-gray-600 dark:text-white/70">Mainwiesen Beach</Text>
                     </View>
-                    <Text className="text-orange-700 bg-orange-100 px-3 py-1 rounded-full font-semibold">
+                    <Text className="text-orange-800 dark:text-orange-200 bg-orange-100/80 dark:bg-orange-500/15 px-3 py-1 rounded-full font-semibold">
                       Jetzt
                     </Text>
                   </View>
-                  <Text className="text-gray-600">
+                  <Text className="text-gray-700 dark:text-white/80">
                     2 von 6 Spielern gefunden
                   </Text>
                 </View>
 
-                <View className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100">
+                <View className="bg-white/70 dark:bg-white/10 p-6 rounded-3xl shadow-xl border border-white/70 dark:border-white/20 backdrop-blur-xl">
                   <View className="flex-row items-center mb-4">
                     <View className="w-12 h-12 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-900 items-center justify-center mr-4">
                       <Text className="text-white text-xl">🔔</Text>
                     </View>
                     <View className="flex-1">
-                      <Text className="text-xl font-bold text-gray-900">
+                      <Text className="text-xl font-semibold text-gray-900 dark:text-white tracking-tight">
                         Benachrichtigungen
                       </Text>
-                      <Text className="text-gray-500">
+                      <Text className="text-gray-600 dark:text-white/70">
                         Intelligent & nicht störend
                       </Text>
                     </View>
                     <View className="flex-row items-center">
                       <View className="w-3 h-3 rounded-full bg-green-500 mr-2"></View>
-                      <Text className="text-green-600 font-semibold">
+                      <Text className="text-green-700 dark:text-green-300 font-semibold">
                         Aktiviert
                       </Text>
                     </View>
                   </View>
-                  <Text className="text-gray-600">
+                  <Text className="text-gray-700 dark:text-white/80">
                     Realite benachrichtigt dich nur bei relevanten Events und
                     Aktivitäten in deiner Nähe.
                   </Text>
@@ -632,16 +627,16 @@ export default function WebLanding() {
         </View>
 
         {/* Orte & Aktivitäten */}
-        <View className="px-8 py-20 bg-white">
+        <View className="px-6 md:px-10 py-20 bg-transparent">
           <View className="max-w-7xl mx-auto">
             <View className="mb-16 text-center">
-              <Text className="text-sm font-bold text-blue-600 bg-blue-100 px-4 py-2 rounded-full mb-6 self-center">
+              <Text className="text-sm font-semibold text-gray-700 dark:text-white/80 bg-white/70 dark:bg-white/10 px-4 py-2 rounded-full mb-6 self-center border border-white/70 dark:border-white/20 backdrop-blur-md">
                 Orte & Aktivitäten
               </Text>
-              <Text className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
+              <Text className="text-5xl font-semibold text-gray-900 dark:text-white mb-6 leading-tight tracking-tight">
                 Entdecke spannende Spots
               </Text>
-              <Text className="text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
+              <Text className="text-lg md:text-xl text-gray-700 dark:text-white/80 leading-relaxed max-w-2xl mx-auto">
                 Von der Lieblings-Kletterhalle bis zum geheimen Wanderweg –
                 finde die perfekten Orte für deine Aktivitäten.
               </Text>
@@ -655,10 +650,10 @@ export default function WebLanding() {
                     <Text className="text-white text-2xl">📍</Text>
                   </View>
                   <View className="flex-1 pt-2">
-                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                    <Text className="text-2xl font-semibold text-gray-900 dark:text-white mb-3 tracking-tight">
                       Öffentliche & Private Spots
                     </Text>
-                    <Text className="text-gray-600 text-lg leading-relaxed">
+                    <Text className="text-gray-700 dark:text-white/80 text-lg leading-relaxed">
                       Entdecke öffentliche Spots in deiner Nähe oder erstelle
                       private Spots, die nur mit ausgewählten Kreisen geteilt
                       werden.
@@ -687,10 +682,10 @@ export default function WebLanding() {
                     <Text className="text-white text-2xl">🔗</Text>
                   </View>
                   <View className="flex-1 pt-2">
-                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                    <Text className="text-2xl font-semibold text-gray-900 dark:text-white mb-3 tracking-tight">
                       Spot-Sharing
                     </Text>
-                    <Text className="text-gray-600 text-lg leading-relaxed">
+                    <Text className="text-gray-700 dark:text-white/80 text-lg leading-relaxed">
                       Teile deine Lieblingsorte mit Freunden oder bestimmten
                       Kreisen. Gemeinsam entstehen so die besten Empfehlungen.
                     </Text>
@@ -700,73 +695,73 @@ export default function WebLanding() {
 
               {/* Right side - Spot Cards */}
               <View className="space-y-6">
-                <View className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100">
+                <View className="bg-white/70 dark:bg-white/10 p-6 rounded-3xl shadow-xl border border-white/70 dark:border-white/20 backdrop-blur-xl">
                   <View className="flex-row items-center mb-4">
                     <View className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-500 items-center justify-center mr-4">
                       <Text className="text-white text-xl">🧗‍♂️</Text>
                     </View>
                     <View className="flex-1">
-                      <Text className="text-xl font-bold text-gray-900">
+                      <Text className="text-xl font-semibold text-gray-900 dark:text-white tracking-tight">
                         Kletterhalle Aschaffenburg
                       </Text>
                       <View className="flex-row items-center mt-1">
                         <Text className="text-green-600 font-semibold">
                           4.8 ★
                         </Text>
-                        <Text className="text-gray-500 ml-2">
+                        <Text className="text-gray-600 dark:text-white/70 ml-2">
                           142 Bewertungen
                         </Text>
                       </View>
                     </View>
-                    <View className="w-10 h-10 rounded-full bg-blue-100 items-center justify-center">
-                      <Text className="text-blue-600 text-lg">🔗</Text>
+                    <View className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/10 items-center justify-center">
+                      <Text className="text-gray-800 dark:text-white text-lg">🔗</Text>
                     </View>
                   </View>
                 </View>
 
-                <View className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100">
+                <View className="bg-white/70 dark:bg-white/10 p-6 rounded-3xl shadow-xl border border-white/70 dark:border-white/20 backdrop-blur-xl">
                   <View className="flex-row items-center mb-4">
                     <View className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 items-center justify-center mr-4">
                       <Text className="text-white text-xl">🥾</Text>
                     </View>
                     <View className="flex-1">
-                      <Text className="text-xl font-bold text-gray-900">
+                      <Text className="text-xl font-semibold text-gray-900 dark:text-white tracking-tight">
                         Wanderweg Spessart
                       </Text>
                       <View className="flex-row items-center mt-1">
                         <Text className="text-green-600 font-semibold">
                           4.9 ★
                         </Text>
-                        <Text className="text-gray-500 ml-2">
+                        <Text className="text-gray-600 dark:text-white/70 ml-2">
                           89 Bewertungen
                         </Text>
                       </View>
                     </View>
-                    <View className="w-10 h-10 rounded-full bg-green-100 items-center justify-center">
-                      <Text className="text-green-600 text-lg">🔗</Text>
+                    <View className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/10 items-center justify-center">
+                      <Text className="text-gray-800 dark:text-white text-lg">🔗</Text>
                     </View>
                   </View>
                 </View>
 
-                <View className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100">
+                <View className="bg-white/70 dark:bg-white/10 p-6 rounded-3xl shadow-xl border border-white/70 dark:border-white/20 backdrop-blur-xl">
                   <View className="flex-row items-center mb-4">
                     <View className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 items-center justify-center mr-4">
                       <Text className="text-white text-xl">🍽️</Text>
                     </View>
                     <View className="flex-1">
-                      <Text className="text-xl font-bold text-gray-900">
+                      <Text className="text-xl font-semibold text-gray-900 dark:text-white tracking-tight">
                         Geheimtipp Restaurant
                       </Text>
                       <View className="flex-row items-center mt-1">
                         <Text className="text-green-600 font-semibold">
                           4.7 ★
                         </Text>
-                        <Text className="text-gray-500 ml-2">
+                        <Text className="text-gray-600 dark:text-white/70 ml-2">
                           23 Bewertungen
                         </Text>
                       </View>
                     </View>
-                    <Text className="text-purple-700 bg-purple-100 px-3 py-1 rounded-full font-semibold">
+                    <Text className="text-purple-800 dark:text-purple-200 bg-purple-100/80 dark:bg-purple-500/15 px-3 py-1 rounded-full font-semibold">
                       Privat
                     </Text>
                   </View>
@@ -777,13 +772,13 @@ export default function WebLanding() {
         </View>
 
         {/* Enhanced Value Propositions */}
-        <View className="px-8 py-24 bg-white">
+        <View className="px-6 md:px-10 py-24 bg-transparent">
           <View className="max-w-7xl mx-auto">
             <View className="text-center mb-20">
-              <Text className="text-5xl font-black text-gray-900 mb-6 leading-tight">
+              <Text className="text-5xl font-semibold text-gray-900 dark:text-white mb-6 leading-tight tracking-tight">
                 Warum Realite?
               </Text>
-              <Text className="text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              <Text className="text-xl md:text-2xl text-gray-700 dark:text-white/80 max-w-3xl mx-auto leading-relaxed">
                 Schluss mit endlosem Scrollen – hier sind die echten Vorteile
                 für dein soziales Leben
               </Text>
@@ -831,12 +826,12 @@ export default function WebLanding() {
               ].map((benefit, i) => (
                 <View
                   key={i}
-                  className="flex-row items-start bg-gradient-to-br from-gray-50 to-blue-50/30 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100/50 hover:border-blue-200/50"
+                  className="flex-row items-start bg-white/70 dark:bg-white/10 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 border border-white/70 dark:border-white/20 backdrop-blur-xl"
                 >
-                  <View className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl items-center justify-center mr-6 shadow-lg">
+                  <View className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl items-center justify-center mr-6 shadow-md">
                     <Text className="text-xl">{benefit.icon}</Text>
                   </View>
-                  <Text className="text-gray-800 leading-relaxed text-lg font-medium flex-1">
+                  <Text className="text-gray-900 dark:text-white leading-relaxed text-lg font-medium flex-1">
                     {benefit.text}
                   </Text>
                 </View>
@@ -846,16 +841,16 @@ export default function WebLanding() {
         </View>
 
         {/* Modern Monetization Info */}
-        <View className="px-8 py-20 bg-gradient-to-br from-emerald-50 to-green-50">
+        <View className="px-6 md:px-10 py-20 bg-transparent">
           <View className="max-w-5xl mx-auto text-center">
-            <View className="bg-white p-12 rounded-3xl shadow-xl border border-green-100">
+            <View className="bg-white/70 dark:bg-white/10 p-12 rounded-3xl shadow-xl border border-white/70 dark:border-white/20 backdrop-blur-xl">
               <View className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-3xl items-center justify-center mx-auto mb-8 shadow-lg">
                 <Text className="text-4xl">💚</Text>
               </View>
-              <Text className="text-4xl font-black text-gray-900 mb-6">
+              <Text className="text-4xl font-semibold text-gray-900 dark:text-white mb-6 tracking-tight">
                 Kostenlos für Nutzer
               </Text>
-              <Text className="text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
+              <Text className="text-lg md:text-xl text-gray-700 dark:text-white/80 leading-relaxed max-w-3xl mx-auto">
                 Realite ist und bleibt für Nutzer kostenlos. Die Plattform
                 finanziert sich über die Bewerbung von Events und Locations – so
                 können wir dir echte Verbindungen ermöglichen, ohne dass du
