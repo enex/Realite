@@ -29,7 +29,6 @@ import {
   type ActivityGroupId,
   type ActivityId,
 } from "@/shared/activities";
-import { formatLocalDateTime } from "@/shared/utils/datetime";
 import { calculateDistance, isWithinRadius } from "@/shared/utils/distance";
 import {
   useMutation,
@@ -98,21 +97,6 @@ const getActivityIcon = (activityId?: ActivityId) => {
       return "calendar";
   }
 };
-
-const formatPlanDateLabel = (value: unknown): string =>
-  formatLocalDateTime(value as Date | string | number | null | undefined, {
-    dateOptions: {
-      weekday: "long",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    },
-    timeOptions: {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    },
-  });
 
 export default function PlanDetails() {
   const router = useRouter();
@@ -511,9 +495,17 @@ export default function PlanDetails() {
           : ""
       }`
     : undefined;
-  const relativeTimeLabel = startDateObj
-    ? getRelativeTimeLabel(startDateObj)
+  const primaryLocation = safeLocations[0];
+  const locationLabel = primaryLocation
+    ? primaryLocation.title || primaryLocation.address || undefined
     : undefined;
+  const locationAddress =
+    primaryLocation?.title &&
+    primaryLocation?.address &&
+    primaryLocation.title !== primaryLocation.address
+      ? (primaryLocation.address as string)
+      : undefined;
+  const isMaybe = plan?.maybe === true;
   const gradientColors = [
     tinycolor(c1).lighten(10).desaturate(8).toHexString(),
     tinycolor.mix(c1, c2, 40).desaturate(6).toHexString(),
@@ -694,18 +686,60 @@ export default function PlanDetails() {
             </View>
 
             <View style={{ marginTop: spacing.lg, gap: spacing.xs }}>
-              {dayLabel && dateLabel && (
-                <Text
-                  style={{
-                    ...typography.caption1,
-                    color: heroMutedColor,
-                    textTransform: "uppercase",
-                    letterSpacing: 1.1,
-                  }}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: spacing.sm,
+                }}
+              >
+                <Pressable
+                  onPress={isOwner ? handleEditStart : undefined}
+                  onLongPress={isOwner ? handleEditEnd : undefined}
+                  disabled={!isOwner}
                 >
-                  {`${dayLabel} · ${dateLabel}`}
-                </Text>
-              )}
+                  {dayLabel && dateLabel && (
+                    <Text
+                      style={{
+                        ...typography.caption1,
+                        color: heroMutedColor,
+                        textTransform: "uppercase",
+                        letterSpacing: 1.1,
+                      }}
+                    >
+                      {`${dayLabel} · ${dateLabel}${
+                        timeRangeLabel ? ` · ${timeRangeLabel}` : ""
+                      }`}
+                    </Text>
+                  )}
+                </Pressable>
+                {activityLabel && (
+                  <Pressable
+                    onPress={isOwner ? handleEditActivity : undefined}
+                    disabled={!isOwner}
+                    style={{
+                      backgroundColor: heroSurfaceBold,
+                      borderRadius: 14,
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      borderWidth: 1,
+                      borderColor: heroBorder,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        ...typography.caption1,
+                        color: heroTextColor,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {activityLabel}
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
               <Pressable
                 onPress={isOwner ? handleEditTitle : undefined}
                 disabled={!isOwner}
@@ -736,6 +770,46 @@ export default function PlanDetails() {
                     {plan.description || "Beschreibung hinzufügen"}
                   </Text>
                 </Pressable>
+              )}
+              {locationLabel && (
+                <View
+                  style={{
+                    marginTop: spacing.sm,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  <IconSymbol
+                    name="mappin.and.ellipse"
+                    size={14}
+                    color={heroMutedColor}
+                  />
+                  <View style={{ flexShrink: 1 }}>
+                    <Text
+                      style={{
+                        ...typography.subheadline,
+                        color: heroMutedColor,
+                        fontWeight: "600",
+                      }}
+                      numberOfLines={1}
+                    >
+                      {locationLabel}
+                    </Text>
+                    {locationAddress && (
+                      <Text
+                        style={{
+                          ...typography.caption1,
+                          color: heroMutedColor,
+                          marginTop: 2,
+                        }}
+                        numberOfLines={1}
+                      >
+                        {locationAddress}
+                      </Text>
+                    )}
+                  </View>
+                </View>
               )}
             </View>
 
@@ -769,82 +843,37 @@ export default function PlanDetails() {
                   }}
                 >
                   {isOwner ? "Organisiert von dir" : "Veranstalter"}
+                  {isMaybe && (
+                    <Text
+                      style={{
+                        color: tinycolor(heroMutedColor)
+                          .setAlpha(0.75)
+                          .toRgbString(),
+                        fontWeight: "500",
+                      }}
+                    >
+                      {" · vielleicht"}
+                    </Text>
+                  )}
                 </Text>
               </View>
             </View>
-
-            <View style={{ marginTop: spacing.md, gap: spacing.sm }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  gap: spacing.sm,
-                }}
-              >
+            {copiedFromMatch && (
+              <View style={{ marginTop: spacing.md }}>
                 <HeroMetaItem
-                  icon="clock"
-                  label="Zeitfenster"
-                  primary={timeRangeLabel || "Zeit hinzufügen"}
-                  secondary={
-                    startDateObj
-                      ? `${formatPlanDateLabel(plan.startDate)}${
-                          plan?.endDate
-                            ? `\nEnde: ${formatPlanDateLabel(plan.endDate)}`
-                            : ""
-                        }`
-                      : undefined
+                  icon="doc.on.doc"
+                  label="Quelle"
+                  primary={
+                    copiedFromMatch.creator?.name ||
+                    "Plan eines anderen Nutzers"
                   }
                   accent={heroTextColor}
-                  surface={heroSurfaceBold}
+                  surface={heroSurface}
                   border={heroBorder}
-                  onPress={isOwner ? handleEditStart : undefined}
-                  onLongPress={isOwner ? handleEditEnd : undefined}
-                />
-                <HeroMetaItem
-                  icon={icon}
-                  label="Kategorie"
-                  primary={activityLabel || "Auswählen"}
-                  secondary={isOwner ? "Tippen zum Ändern" : undefined}
-                  accent={heroTextColor}
-                  surface={heroSurfaceBold}
-                  border={heroBorder}
-                  onPress={isOwner ? handleEditActivity : undefined}
+                  disabled
                 />
               </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  gap: spacing.sm,
-                }}
-              >
-                {relativeTimeLabel && (
-                  <HeroMetaItem
-                    icon="sparkles"
-                    label="Startet"
-                    primary={relativeTimeLabel}
-                    accent={heroTextColor}
-                    surface={heroSurface}
-                    border={heroBorder}
-                    disabled
-                  />
-                )}
-                {copiedFromMatch && (
-                  <HeroMetaItem
-                    icon="doc.on.doc"
-                    label="Quelle"
-                    primary={
-                      copiedFromMatch.creator?.name ||
-                      "Plan eines anderen Nutzers"
-                    }
-                    accent={heroTextColor}
-                    surface={heroSurface}
-                    border={heroBorder}
-                    disabled
-                  />
-                )}
-              </View>
-            </View>
+            )}
           </LinearGradient>
           <View
             style={{
@@ -899,9 +928,9 @@ export default function PlanDetails() {
             {(exactMatches.length > 0 || similarMatches.length > 0) && (
               <SectionCard
                 icon="person.2"
-                title="Überlappende Pläne"
+                title="Ähnliche Pläne"
                 accentColor={accentToken}
-                subtitle="Entdecke ähnliche Aktivitäten in deinem Umfeld"
+                subtitle="Von anderen Personen in deiner Nähe"
               >
                 {exactMatches.length > 0 && (
                   <View style={{ gap: 8 }}>
@@ -1233,28 +1262,6 @@ function SectionCard({
       <View style={{ gap: spacing.sm }}>{children}</View>
     </View>
   );
-}
-
-function getRelativeTimeLabel(date: Date) {
-  const now = new Date();
-  const diffMinutes = Math.round(
-    (date.getTime() - now.getTime()) / (1000 * 60)
-  );
-  if (diffMinutes === 0) return "Beginnt jetzt";
-  const absMinutes = Math.abs(diffMinutes);
-  const prefix = diffMinutes > 0 ? "In" : "Vor";
-  if (absMinutes < 60) {
-    const unit = absMinutes === 1 ? "Minute" : "Minuten";
-    return `${prefix} ${absMinutes} ${unit}`;
-  }
-  if (absMinutes < 60 * 24) {
-    const hours = Math.round(absMinutes / 60);
-    const unit = hours === 1 ? "Stunde" : "Stunden";
-    return `${prefix} ${hours} ${unit}`;
-  }
-  const days = Math.round(absMinutes / (60 * 24));
-  const unit = days === 1 ? "Tag" : "Tagen";
-  return `${prefix} ${days} ${unit}`;
 }
 
 function getActivityLabel(id?: ActivityId) {
@@ -1761,12 +1768,32 @@ function Locations({
                 borderRadius: 16,
                 borderWidth: 1,
                 borderColor: chipBorder,
-                paddingHorizontal: spacing.sm,
-                paddingVertical: spacing.sm,
+                paddingHorizontal: spacing.md,
+                paddingVertical: spacing.sm + 2,
                 gap: spacing.sm,
               }}
             >
-              <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10, flex: 1 }}>
+                <View
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 17,
+                    backgroundColor: tinycolor(accentColor)
+                      .setAlpha(0.14)
+                      .toRgbString(),
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <IconSymbol
+                    name="mappin.and.ellipse"
+                    size={16}
+                    color={primaryText}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
                 <Text
                   style={{
                     ...typography.subheadline,
@@ -1791,6 +1818,7 @@ function Locations({
                       {location.address}
                     </Text>
                   )}
+                </View>
               </View>
               {isOwner && (
                 <Pressable
