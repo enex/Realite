@@ -316,9 +316,18 @@ async function captureScreenshotsForRoute(
       viewportWidth = Math.round(viewportHeight * targetAspectRatio);
     }
 
+    // Berechne deviceScaleFactor basierend auf dem Verhältnis zwischen Zielgröße und Viewport
+    // Das sorgt für scharfe Screenshots ohne Verpixelung
+    const scaleFactor = Math.max(
+      2,
+      Math.ceil(
+        Math.max(size.width / viewportWidth, size.height / viewportHeight)
+      )
+    );
+
     const context = await browser.newContext({
       viewport: { width: viewportWidth, height: viewportHeight },
-      deviceScaleFactor: 1,
+      deviceScaleFactor: scaleFactor, // Höhere Auflösung für bessere Qualität
       storageState: storageState,
     });
 
@@ -334,7 +343,7 @@ async function captureScreenshotsForRoute(
 
       const url = `${BASE_URL}${route.path}`;
       console.log(
-        `  → ${size.name} (${size.width}x${size.height}, viewport: ${viewportWidth}x${viewportHeight})`
+        `  → ${size.name} (${size.width}x${size.height}, viewport: ${viewportWidth}x${viewportHeight}, scale: ${scaleFactor}x)`
       );
 
       await page.goto(url, { waitUntil: "networkidle" });
@@ -349,11 +358,13 @@ async function captureScreenshotsForRoute(
       });
 
       // Skaliere auf die exakte Zielgröße mit sharp
+      // Mit deviceScaleFactor ist das Screenshot bereits höher aufgelöst
       const sharp = (await import("sharp")).default;
       await sharp(screenshotBuffer)
         .resize(size.width, size.height, {
           fit: "cover", // Fülle die gesamte Fläche
           position: "center",
+          kernel: "lanczos3", // Bessere Interpolation für schärfere Bilder
         })
         .png()
         .toFile(filepath);
