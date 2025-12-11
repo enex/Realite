@@ -5,14 +5,19 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Alert,
   Image,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import { useSession } from "@/client/auth";
 import { orpc } from "@/client/orpc";
@@ -113,6 +118,10 @@ export default function PlanDetails() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id: string }>();
   const id = params.id as string;
+  const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
+  const isWebLarge = Platform.OS === "web" && windowWidth >= 1024;
+  const pageMaxWidth = 860;
 
   const queryClient = useQueryClient();
   const { session } = useSession();
@@ -505,10 +514,6 @@ export default function PlanDetails() {
   const relativeTimeLabel = startDateObj
     ? getRelativeTimeLabel(startDateObj)
     : undefined;
-  const primaryLocation = safeLocations[0];
-  const locationLabel = primaryLocation
-    ? primaryLocation.title || primaryLocation.address || undefined
-    : undefined;
   const gradientColors = [
     tinycolor(c1).lighten(10).desaturate(8).toHexString(),
     tinycolor.mix(c1, c2, 40).desaturate(6).toHexString(),
@@ -550,7 +555,7 @@ export default function PlanDetails() {
 
   return (
     <View style={{ flex: 1, backgroundColor: pageBackground }}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }} edges={["left", "right", "bottom"]}>
         <ScrollView
           refreshControl={
             <RefreshControl
@@ -566,8 +571,16 @@ export default function PlanDetails() {
               tintColor="#007AFF"
             />
           }
-          contentContainerStyle={{ paddingBottom: spacing.xl }}
+          contentContainerStyle={{
+            paddingBottom: spacing.xl,
+            ...(isWebLarge ? { alignItems: "center" } : null),
+          }}
         >
+          <View
+            style={
+              isWebLarge ? { width: "100%", maxWidth: pageMaxWidth } : null
+            }
+          >
           <LinearGradient
             colors={[
               gradientColors[0],
@@ -580,7 +593,7 @@ export default function PlanDetails() {
               borderBottomLeftRadius: 32,
               borderBottomRightRadius: 32,
               paddingHorizontal: spacing.md,
-              paddingTop: spacing.md,
+              paddingTop: insets.top + spacing.md,
               paddingBottom: spacing.lg,
               marginBottom: spacing.lg,
               position: "relative",
@@ -758,20 +771,6 @@ export default function PlanDetails() {
                   {isOwner ? "Organisiert von dir" : "Veranstalter"}
                 </Text>
               </View>
-              <View
-                style={{
-                  backgroundColor: heroSurfaceBold,
-                  borderRadius: 16,
-                  paddingHorizontal: 10,
-                  paddingVertical: 4,
-                  borderWidth: 1,
-                  borderColor: heroBorder,
-                }}
-              >
-                <Text style={{ ...typography.caption1, color: heroTextColor }}>
-                  {activityLabel || "Aktivität"}
-                </Text>
-              </View>
             </View>
 
             <View style={{ marginTop: spacing.md, gap: spacing.sm }}>
@@ -788,30 +787,18 @@ export default function PlanDetails() {
                   primary={timeRangeLabel || "Zeit hinzufügen"}
                   secondary={
                     startDateObj
-                      ? formatPlanDateLabel(plan.startDate)
+                      ? `${formatPlanDateLabel(plan.startDate)}${
+                          plan?.endDate
+                            ? `\nEnde: ${formatPlanDateLabel(plan.endDate)}`
+                            : ""
+                        }`
                       : undefined
                   }
                   accent={heroTextColor}
                   surface={heroSurfaceBold}
                   border={heroBorder}
                   onPress={isOwner ? handleEditStart : undefined}
-                />
-                <HeroMetaItem
-                  icon="location"
-                  label="Treffpunkt"
-                  primary={
-                    locationLabel ||
-                    (isOwner ? "Ort hinzufügen" : "Ort wird noch geteilt")
-                  }
-                  secondary={
-                    primaryLocation?.address
-                      ? (primaryLocation.address as string)
-                      : undefined
-                  }
-                  accent={heroTextColor}
-                  surface={heroSurfaceBold}
-                  border={heroBorder}
-                  disabled
+                  onLongPress={isOwner ? handleEditEnd : undefined}
                 />
                 <HeroMetaItem
                   icon={icon}
@@ -867,38 +854,6 @@ export default function PlanDetails() {
               paddingBottom: spacing.lg,
             }}
           >
-            <SectionCard
-              icon="info.circle"
-              title="Planüberblick"
-              accentColor={accentToken}
-            >
-              <InfoRow
-                icon="calendar"
-                label="Start"
-                value={formatPlanDateLabel(plan.startDate)}
-                onPress={isOwner ? handleEditStart : undefined}
-                accentColor={accentToken}
-              />
-              <InfoRow
-                icon="clock"
-                label="Endet"
-                value={
-                  plan?.endDate
-                    ? formatPlanDateLabel(plan.endDate)
-                    : "Noch offen"
-                }
-                onPress={isOwner ? handleEditEnd : undefined}
-                accentColor={accentToken}
-              />
-              <InfoRow
-                icon="tag"
-                label="Aktivität"
-                value={activityLabel || "Kategorie wählen"}
-                onPress={isOwner ? handleEditActivity : undefined}
-                accentColor={accentToken}
-              />
-            </SectionCard>
-
             <SectionCard
               icon="mappin.and.ellipse"
               title="Orte"
@@ -984,6 +939,7 @@ export default function PlanDetails() {
                 )}
               </SectionCard>
             )}
+          </View>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -1115,6 +1071,7 @@ function HeroMetaItem({
   surface,
   border,
   onPress,
+  onLongPress,
   disabled,
 }: {
   icon: Parameters<typeof IconSymbol>[0]["name"];
@@ -1125,6 +1082,7 @@ function HeroMetaItem({
   surface: string;
   border: string;
   onPress?: () => void;
+  onLongPress?: () => void;
   disabled?: boolean;
 }) {
   const interactive = typeof onPress === "function" && !disabled;
@@ -1202,9 +1160,13 @@ function HeroMetaItem({
       ) : null}
     </View>
   );
-  if (!interactive) return body;
+  if (!interactive && !onLongPress) return body;
   return (
-    <Pressable onPress={onPress} style={{ flexShrink: 0 }}>
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      style={{ flexShrink: 0 }}
+    >
       {body}
     </Pressable>
   );
