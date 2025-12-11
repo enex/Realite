@@ -47,26 +47,30 @@ const AIPlanBottomSheet = forwardRef<
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === "web";
   const isSmallScreen = width < 768;
-  const useBottomSheet = !isWeb || isSmallScreen;
+  const useNativeBottomSheet = !isWeb;
+  const useWebSheet = isWeb && isSmallScreen;
+  const useDialog = isWeb && !isSmallScreen;
 
   // Snap points for the bottom sheet
   const snapPoints = useMemo(() => ["50%", "75%", "90%"], []);
 
   const handlePresentModalPress = useCallback(() => {
-    if (useBottomSheet) {
+    if (useNativeBottomSheet) {
       bottomSheetRef.current?.present();
+    } else if (useWebSheet) {
+      setIsDialogOpen(true);
     } else {
       setIsDialogOpen(true);
     }
-  }, [useBottomSheet]);
+  }, [useNativeBottomSheet, useWebSheet]);
 
   const handleDismissModalPress = useCallback(() => {
-    if (useBottomSheet) {
+    if (useNativeBottomSheet) {
       bottomSheetRef.current?.dismiss();
     } else {
       setIsDialogOpen(false);
     }
-  }, [useBottomSheet]);
+  }, [useNativeBottomSheet]);
 
   // Expose methods to parent component
   React.useImperativeHandle(
@@ -140,15 +144,15 @@ const AIPlanBottomSheet = forwardRef<
   }, []);
 
   useEffect(() => {
-    if (!isDialogOpen && isWeb && !useBottomSheet) {
+    if (!isDialogOpen && isWeb) {
       setText("");
     }
-  }, [isDialogOpen, isWeb, useBottomSheet]);
+  }, [isDialogOpen, isWeb]);
 
-  const InputComponent: any = useBottomSheet
+  const InputComponent: any = useNativeBottomSheet
     ? BottomSheetTextInput
     : TextInput;
-  const ContentWrapper: any = useBottomSheet ? BottomSheetView : View;
+  const ContentWrapper: any = useNativeBottomSheet ? BottomSheetView : View;
 
   const content = (
     <ContentWrapper className="flex-1 px-6 pt-4 pb-8">
@@ -215,7 +219,7 @@ const AIPlanBottomSheet = forwardRef<
     </ContentWrapper>
   );
 
-  if (useBottomSheet) {
+  if (useNativeBottomSheet) {
     return (
       <BottomSheetModal
         ref={bottomSheetRef}
@@ -235,15 +239,37 @@ const AIPlanBottomSheet = forwardRef<
     );
   }
 
+  if (useDialog) {
+    return (
+      <Modal
+        visible={isDialogOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={handleDismissModalPress}
+      >
+        <View className="flex-1 items-center justify-center bg-black/50 p-4">
+          <View className="w-full max-w-xl rounded-2xl bg-secondary shadow-xl">
+            {content}
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+
+  // Web small-screen fallback: native-like bottom sheet via Modal to avoid
+  // @gorhom/bottom-sheet layout quirks on mobile web.
   return (
     <Modal
       visible={isDialogOpen}
       transparent
-      animationType="fade"
+      animationType="slide"
       onRequestClose={handleDismissModalPress}
     >
-      <View className="flex-1 items-center justify-center bg-black/50 p-4">
-        <View className="w-full max-w-xl rounded-2xl bg-secondary shadow-xl">
+      <View className="flex-1 justify-end bg-black/30">
+        <View className="w-full rounded-t-3xl bg-secondary shadow-xl max-h-[90%]">
+          <View className="items-center pt-2">
+            <View className="h-1.5 w-12 rounded-full bg-muted-foreground/30" />
+          </View>
           {content}
         </View>
       </View>
