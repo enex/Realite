@@ -1,15 +1,18 @@
 import { Tabs } from "expo-router";
-import { useFeatureFlag } from "posthog-react-native";
 import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
+import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  const simpleAppBar = Boolean(useFeatureFlag("simple-appbar-for-starpage"));
+  const simpleAppBar = useFeatureFlagBoolean(
+    "simple-appbar-for-starpage",
+    false,
+  );
 
   return (
     <Tabs

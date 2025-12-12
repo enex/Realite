@@ -1,6 +1,5 @@
 import * as Haptics from "expo-haptics";
 import { useNavigation, useRouter } from "expo-router";
-import { useFeatureFlag } from "posthog-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
@@ -27,6 +26,7 @@ import PlanFilterBottomSheet, {
 } from "@/components/PlanFilterBottomSheet";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 import type { ActivityId } from "@/shared/activities";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -70,7 +70,10 @@ type GroupedPlans = {
 export default function PlansScreen() {
   const router = useRouter();
   const navigation = useNavigation();
-  const simpleAppBar = useFeatureFlag("simple-appbar-for-starpage");
+  const simpleAppBar = useFeatureFlagBoolean(
+    "simple-appbar-for-starpage",
+    false,
+  );
   const aiPlanBottomSheetRef = useRef<AIPlanBottomSheetRef>(null);
   const filterRef = useRef<PlanFilterBottomSheetRef>(null);
   const [filter, setFilter] = useState<PlanFilter | undefined>(undefined);
@@ -118,7 +121,7 @@ export default function PlansScreen() {
   } = useQuery(
     orpc.plan.myPlans.queryOptions({
       input: filter ?? {},
-    })
+    }),
   );
 
   // Extract unique participant creator IDs from similarOverlappingPlans
@@ -252,12 +255,12 @@ export default function PlansScreen() {
         const date = new Date(y, (m as number) - 1, d as number);
         const today = new Date();
         const todayKey = `${today.getFullYear()}-${String(
-          today.getMonth() + 1
+          today.getMonth() + 1,
         ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
         const tmr = new Date(today);
         tmr.setDate(tmr.getDate() + 1);
         const tomorrowKey = `${tmr.getFullYear()}-${String(
-          tmr.getMonth() + 1
+          tmr.getMonth() + 1,
         ).padStart(2, "0")}-${String(tmr.getDate()).padStart(2, "0")}`;
 
         let dayLabel = date.toLocaleDateString("de-DE", {
@@ -276,7 +279,7 @@ export default function PlansScreen() {
           date: dateKey,
           dayLabel,
           plans: plans.sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
           ),
         };
       })
@@ -546,7 +549,7 @@ export default function PlansScreen() {
             ? undefined
             : Animated.event(
                 [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                { useNativeDriver: false }
+                { useNativeDriver: false },
               )
         }
         scrollEventThrottle={16}

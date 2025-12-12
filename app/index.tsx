@@ -1,8 +1,8 @@
 import { useSession } from "@/client/auth";
 import orpc from "@/client/orpc";
+import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { useFeatureFlag } from "posthog-react-native";
 import { useEffect } from "react";
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,7 +15,7 @@ export default function NativeLanding() {
   };
 
   const meRes = useQuery(orpc.auth.me.queryOptions());
-  const onboardingEnabled = useFeatureFlag("onboarding");
+  const onboardingEnabled = useFeatureFlagBoolean("onboarding", false);
   useEffect(() => {
     if (meRes.isLoading || !meRes.data) return;
     // Check Onboarding-Status

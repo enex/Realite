@@ -1,9 +1,9 @@
 import rpc from "@/client/orpc";
+import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 import { genders, relationshipStatuses } from "@/shared/validation";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "expo-router";
-import { useFeatureFlag } from "posthog-react-native";
 import { useMemo, useState } from "react";
 import {
   Alert,
@@ -25,7 +25,10 @@ import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const simpleAppBar = useFeatureFlag("simple-appbar-for-starpage");
+  const simpleAppBar = useFeatureFlagBoolean(
+    "simple-appbar-for-starpage",
+    false,
+  );
   const me = useQuery(rpc.auth.me.queryOptions());
 
   const [name, setName] = useState<string | null>(null);
@@ -82,7 +85,7 @@ export default function ProfileScreen() {
           queryClient.setQueryData(rpc.auth.me.key(), ctx.old);
         }
       },
-    })
+    }),
   );
 
   const openNotificationSettings = async () => {
@@ -95,7 +98,7 @@ export default function ProfileScreen() {
     } catch {
       Alert.alert(
         "Hinweis",
-        "Bitte öffne die System-Einstellungen und erlaube Benachrichtigungen für diese App."
+        "Bitte öffne die System-Einstellungen und erlaube Benachrichtigungen für diese App.",
       );
     }
   };
@@ -305,7 +308,11 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView className="flex-1">
       <GradientBackdrop variant="cool" />
-      <ThemedView className="flex-1" lightColor="transparent" darkColor="transparent">
+      <ThemedView
+        className="flex-1"
+        lightColor="transparent"
+        darkColor="transparent"
+      >
         <View className="px-6 pt-2 pb-4">
           <Text
             className="text-zinc-900 dark:text-zinc-50"

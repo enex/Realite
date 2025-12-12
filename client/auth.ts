@@ -74,7 +74,7 @@ export const useSession = () => {
       enabled: !localIsLoading && localSession !== null,
       staleTime: 15 * 60 * 1000, // 15 Minuten
       retry: false, // Nicht wiederholen bei Fehlern, um schnell zu erkennen wenn Token ungültig ist
-    })
+    }),
   );
 
   // Automatische Behandlung von ungültigen Tokens
@@ -124,6 +124,7 @@ export const useSignInWithPhone = () => {
       onSuccess: async (data) => {
         setToken(data.token);
         posthog?.identify(data.id);
+        posthog?.reloadFeatureFlags();
 
         // Invalidiere lokale Session Query um neue Session zu laden
         await queryClient.invalidateQueries();
@@ -153,7 +154,7 @@ export const useSignInWithPhone = () => {
         console.error("Error signing in with phone:", error);
         // Error will be handled by the calling component
       },
-    })
+    }),
   );
   return async (phoneNumber: string, code: string) =>
     verifySMSCode.mutateAsync({ phoneNumber, code });

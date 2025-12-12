@@ -9,7 +9,7 @@ import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { PostHogProvider } from "posthog-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
@@ -32,7 +32,6 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     nativewindColorScheme.set(colorScheme ?? "system");
@@ -46,10 +45,6 @@ export default function RootLayout() {
       NavigationBar.setVisibilityAsync("visible");
     } catch {}
   }, [colorScheme]);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   if (!loaded) {
     // Async font loading only occurs in development.
@@ -82,10 +77,15 @@ export default function RootLayout() {
     </QueryClientProvider>
   );
 
+  // Expo Router does server-side rendering for web; PostHog RN depends on `window` via AsyncStorage.
+  const shouldInitPostHog =
+    Platform.OS !== "web" ||
+    (typeof window !== "undefined" && typeof document !== "undefined");
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        {isClient ? (
+        {shouldInitPostHog ? (
           <PostHogProvider
             apiKey={POSTHOG_API_KEY}
             options={{

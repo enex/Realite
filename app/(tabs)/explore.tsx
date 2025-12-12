@@ -1,6 +1,5 @@
 import * as Haptics from "expo-haptics";
 import { useNavigation } from "expo-router";
-import { useFeatureFlag } from "posthog-react-native";
 import React, {
   useCallback,
   useEffect,
@@ -29,6 +28,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { GlassSurface } from "@/components/ui/glass";
 import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 import { useLocation } from "@/hooks/useLocation";
 import type { ActivityId } from "@/shared/activities";
 import { isWithinRadius } from "@/shared/utils/distance";
@@ -76,7 +76,10 @@ type GroupedPlans = {
 
 export default function ExploreScreen() {
   const navigation = useNavigation();
-  const simpleAppBar = useFeatureFlag("simple-appbar-for-starpage");
+  const simpleAppBar = useFeatureFlagBoolean(
+    "simple-appbar-for-starpage",
+    false,
+  );
   const [showSearch, setShowSearch] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [filter, setFilter] = useState<PlanFilter | undefined>(undefined);
@@ -141,7 +144,7 @@ export default function ExploreScreen() {
               }
             : undefined,
       },
-    })
+    }),
   );
 
   // Collect unique creator IDs for profile lookup
@@ -217,26 +220,26 @@ export default function ExploreScreen() {
       return false;
     };
     const adj: number[][] = Array.from({ length: n }, () => []);
-      for (let i = 0; i < n; i++) {
-        const a = plans[i];
-        const aStart = new Date(a.startDate);
-        const aEnd = a.endDate ? new Date(a.endDate) : new Date(a.startDate);
-        for (let j = i + 1; j < n; j++) {
-          const b = plans[j];
-          const bStart = new Date(b.startDate);
-          const bEnd = b.endDate ? new Date(b.endDate) : new Date(b.startDate);
-          const timeOverlap = aStart <= bEnd && bStart <= aEnd;
-          const timeClose =
-            Math.abs(aStart.getTime() - bStart.getTime()) <= 60 * 60 * 1000;
-          if (!timeOverlap && !timeClose) continue;
-          if (!sameLocation(a, b)) continue;
-          const activityMatch = a.activity === b.activity;
-          const titleMatch = sharesToken(a.title, b.title);
-          if (!activityMatch && !titleMatch) continue;
-          adj[i].push(j);
-          adj[j].push(i);
-        }
+    for (let i = 0; i < n; i++) {
+      const a = plans[i];
+      const aStart = new Date(a.startDate);
+      const aEnd = a.endDate ? new Date(a.endDate) : new Date(a.startDate);
+      for (let j = i + 1; j < n; j++) {
+        const b = plans[j];
+        const bStart = new Date(b.startDate);
+        const bEnd = b.endDate ? new Date(b.endDate) : new Date(b.startDate);
+        const timeOverlap = aStart <= bEnd && bStart <= aEnd;
+        const timeClose =
+          Math.abs(aStart.getTime() - bStart.getTime()) <= 60 * 60 * 1000;
+        if (!timeOverlap && !timeClose) continue;
+        if (!sameLocation(a, b)) continue;
+        const activityMatch = a.activity === b.activity;
+        const titleMatch = sharesToken(a.title, b.title);
+        if (!activityMatch && !titleMatch) continue;
+        adj[i].push(j);
+        adj[j].push(i);
       }
+    }
     const visited = new Array(n).fill(false);
     const groups: any[][] = [];
     for (let i = 0; i < n; i++) {
@@ -271,7 +274,7 @@ export default function ExploreScreen() {
         .slice()
         .sort(
           (a: any, b: any) =>
-            new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+            new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
         );
       let base = sortedByStart[0];
       if (session?.id) {
@@ -281,7 +284,7 @@ export default function ExploreScreen() {
 
       // Participants: exactly all creators in this cluster (base first)
       const allCreatorIds: string[] = Array.from(
-        new Set(group.map((g: any) => g.creatorId as string))
+        new Set(group.map((g: any) => g.creatorId as string)),
       );
       const orderedCreatorIds = [
         base.creatorId as string,
@@ -343,12 +346,12 @@ export default function ExploreScreen() {
         const date = new Date(y, (m as number) - 1, d as number);
         const today = new Date();
         const todayKey = `${today.getFullYear()}-${String(
-          today.getMonth() + 1
+          today.getMonth() + 1,
         ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
         const tmr = new Date(today);
         tmr.setDate(tmr.getDate() + 1);
         const tomorrowKey = `${tmr.getFullYear()}-${String(
-          tmr.getMonth() + 1
+          tmr.getMonth() + 1,
         ).padStart(2, "0")}-${String(tmr.getDate()).padStart(2, "0")}`;
 
         let dayLabel = date.toLocaleDateString("de-DE", {
@@ -367,7 +370,7 @@ export default function ExploreScreen() {
           date: dateKey,
           dayLabel,
           plans: plans.sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
           ),
         };
       })
@@ -670,7 +673,7 @@ export default function ExploreScreen() {
         <Animated.ScrollView
           onScroll={Animated.event(
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: false }
+            { useNativeDriver: false },
           )}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
