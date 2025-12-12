@@ -93,6 +93,7 @@ export interface RealiteEvents {
   "realite.profile.updated": {
     gender?: Gender;
     name?: string;
+    image?: string;
     birthDate?: string; // ISO date string
     relationshipStatus?: RelationshipStatus;
     privacySettings?: {

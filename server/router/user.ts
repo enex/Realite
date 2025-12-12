@@ -1,11 +1,14 @@
 import { genderSchema, relationshipStatusSchema } from "@/shared/validation";
 import { pick } from "radash";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { protectedRoute } from "../orpc";
+import { createPresignedPutUrl } from "../utils/s3";
 
 const updateUserInputSchema = z.object({
   gender: genderSchema.optional(),
   name: z.string().optional(),
+  image: z.string().optional(),
   birthDate: z.string().optional(),
   relationshipStatus: relationshipStatusSchema.optional(),
   privacySettings: z
@@ -29,6 +32,45 @@ export const userRouter = {
         data: input,
       });
     }),
+  getAvatarUploadUrl: protectedRoute
+    .input(
+      z.object({
+        contentType: z.string().optional(),
+      }),
+    )
+    .handler(async ({ context, input }) => {
+      const bucket = process.env.S3_BUCKET;
+      const region = process.env.S3_REGION;
+      const accessKeyId = process.env.S3_ACCESS_KEY_ID;
+      const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
+      const endpoint = process.env.S3_ENDPOINT;
+      const publicBaseUrl = process.env.S3_PUBLIC_BASE_URL;
+
+      if (!bucket || !region || !accessKeyId || !secretAccessKey) {
+        throw new Error(
+          "S3 env missing: set S3_BUCKET, S3_REGION, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY",
+        );
+      }
+
+      const extension =
+        input.contentType === "image/png"
+          ? "png"
+          : input.contentType === "image/webp"
+            ? "webp"
+            : "jpg";
+      const key = `avatars/${context.session.id}/${randomUUID()}.${extension}`;
+
+      return createPresignedPutUrl({
+        accessKeyId,
+        secretAccessKey,
+        region,
+        bucket,
+        key,
+        expiresSeconds: 60 * 5,
+        endpoint: endpoint || undefined,
+        publicBaseUrl: publicBaseUrl || undefined,
+      });
+    }),
   completeOnboarding: protectedRoute.handler(async ({ context }) => {
     await context.es.add({
       type: "realite.user.onboarded",
@@ -43,7 +85,7 @@ export const userRouter = {
     .input(
       z
         .object({ id: z.uuid() })
-        .or(z.object({ phoneNumberHash: z.string().uuid() }))
+        .or(z.object({ phoneNumberHash: z.string().uuid() })),
     )
     .errors({
       NOT_FOUND: { message: "User not found" },
@@ -52,7 +94,7 @@ export const userRouter = {
       let id = "id" in input ? input.id : null;
       if ("phoneNumberHash" in input) {
         id = await context.es.projections.auth.getUserIdByPhoneNumber(
-          input.phoneNumberHash
+          input.phoneNumberHash,
         );
       }
       if (!id) throw errors.NOT_FOUND();
@@ -82,7 +124,7 @@ export const userRouter = {
             "birthDate",
             "relationshipStatus",
           ]);
-        })
+        }),
       );
       return profiles.filter(Boolean);
     }),

@@ -6,7 +6,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
+  Image,
   Linking,
   Platform,
   Pressable,
@@ -30,6 +32,10 @@ export default function ProfileScreen() {
     false,
   );
   const me = useQuery(rpc.auth.me.queryOptions());
+  const avatarUpload = useMutation(
+    rpc.user.getAvatarUploadUrl.mutationOptions(),
+  );
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const [name, setName] = useState<string | null>(null);
 
@@ -103,13 +109,107 @@ export default function ProfileScreen() {
     }
   };
 
+  const pickAndUploadAvatar = async () => {
+    try {
+      setIsUploadingAvatar(true);
+
+      const ImagePicker = await import("expo-image-picker");
+      const FileSystem = await import("expo-file-system");
+
+      const permission =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert(
+          "Berechtigung benötigt",
+          "Bitte erlaube den Zugriff auf deine Fotos, um ein Profilbild auszuwählen.",
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.9,
+      });
+
+      if (result.canceled || !result.assets?.[0]?.uri) return;
+      const asset = result.assets[0];
+      const contentType = asset.mimeType || "image/jpeg";
+
+      const { uploadUrl, publicUrl } = await avatarUpload.mutateAsync({
+        contentType,
+      });
+
+      const uploadRes = await FileSystem.uploadAsync(uploadUrl, asset.uri, {
+        httpMethod: "PUT",
+        uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+        headers: { "Content-Type": contentType },
+      });
+
+      if (uploadRes.status < 200 || uploadRes.status >= 300) {
+        throw new Error(`Upload failed (${uploadRes.status})`);
+      }
+
+      await update.mutateAsync({ image: publicUrl });
+    } catch (e: any) {
+      Alert.alert(
+        "Fehler",
+        e?.message || "Profilbild konnte nicht gespeichert werden.",
+      );
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   const content = (
     <View className="px-6 pt-4 flex-col gap-y-8">
-      <View className="items-center">
-        <View className="h-24 w-24 rounded-full bg-white/70 dark:bg-white/10 border border-white/70 dark:border-white/20 items-center justify-center mb-3">
-          <ThemedText className="text-3xl">👤</ThemedText>
+      <GlassCard padded={false} className="rounded-3xl p-5 shadow-sm">
+        <View className="flex-row items-center gap-4">
+          <Pressable
+            onPress={pickAndUploadAvatar}
+            className="relative"
+            accessibilityRole="button"
+            accessibilityLabel="Profilbild ändern"
+          >
+            <View className="h-24 w-24 rounded-full overflow-hidden border border-white/30 dark:border-white/15 bg-white/50 dark:bg-white/10 items-center justify-center">
+              {me.data?.image ? (
+                <Image
+                  source={{ uri: me.data.image }}
+                  style={{ width: 96, height: 96 }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <ThemedText className="text-3xl">👤</ThemedText>
+              )}
+            </View>
+            <View className="absolute -bottom-1 -right-1 h-9 w-9 rounded-full bg-primary items-center justify-center border border-white/60">
+              {isUploadingAvatar ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
+                <Text
+                  className="text-white"
+                  style={{ fontSize: 16, fontWeight: "700" }}
+                >
+                  ✎
+                </Text>
+              )}
+            </View>
+          </Pressable>
+
+          <View className="flex-1">
+            <ThemedText
+              type="title"
+              className="text-zinc-900 dark:text-zinc-50"
+            >
+              {me.data?.name?.trim() ? me.data.name : "Dein Profil"}
+            </ThemedText>
+            <ThemedText className="mt-1 text-zinc-600 dark:text-zinc-300">
+              Tippe auf dein Foto, um es zu ändern
+            </ThemedText>
+          </View>
         </View>
-      </View>
+      </GlassCard>
 
       <GlassCard padded={false} className="rounded-2xl p-5 shadow-sm">
         <ThemedText
