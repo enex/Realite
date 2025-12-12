@@ -20,6 +20,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { GlassCard } from "@/components/ui/card";
+import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -101,12 +103,12 @@ export default function ProfileScreen() {
   const content = (
     <View className="px-6 pt-4 flex-col gap-y-8">
       <View className="items-center">
-        <View className="h-24 w-24 rounded-full bg-white dark:bg-gray-700 items-center justify-center mb-3">
+        <View className="h-24 w-24 rounded-full bg-white/70 dark:bg-white/10 border border-white/70 dark:border-white/20 items-center justify-center mb-3">
           <ThemedText className="text-3xl">👤</ThemedText>
         </View>
       </View>
 
-      <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700 p-5 shadow-sm">
+      <GlassCard padded={false} className="rounded-2xl p-5 shadow-sm">
         <ThemedText
           type="subtitle"
           className="text-zinc-900 dark:text-zinc-50 mb-4"
@@ -204,9 +206,9 @@ export default function ProfileScreen() {
             ))}
           </View>
         </View>
-      </View>
+      </GlassCard>
 
-      <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
+      <GlassCard padded={false} className="rounded-2xl p-5 shadow-sm">
         <ThemedText
           type="subtitle"
           className="text-gray-900 dark:text-white mb-4"
@@ -234,9 +236,9 @@ export default function ProfileScreen() {
             })
           }
         />
-      </View>
+      </GlassCard>
 
-      <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
+      <GlassCard padded={false} className="rounded-2xl p-5 shadow-sm">
         <ThemedText
           type="subtitle"
           className="text-gray-900 dark:text-white mb-2"
@@ -253,9 +255,9 @@ export default function ProfileScreen() {
         >
           <Text className="text-primary">Benachrichtigungen verwalten</Text>
         </Pressable>
-      </View>
+      </GlassCard>
 
-      <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 p-5 shadow-sm">
+      <GlassCard padded={false} className="rounded-2xl p-5 shadow-sm">
         <ThemedText
           type="subtitle"
           className="text-gray-900 dark:text-white mb-2"
@@ -272,7 +274,7 @@ export default function ProfileScreen() {
         >
           <Text className="text-primary">Onboarding wiederholen</Text>
         </Pressable>
-      </View>
+      </GlassCard>
 
       <View className="opacity-80">
         <ThemedText className="text-center text-gray-500 dark:text-gray-400">
@@ -287,20 +289,24 @@ export default function ProfileScreen() {
   // Simple app bar version
   if (simpleAppBar) {
     return (
-      <ScrollView
-        className="flex-1 bg-zinc-100 dark:bg-zinc-950"
-        contentContainerStyle={{ paddingTop: 16, paddingBottom: 24 }}
-      >
-        {content}
-      </ScrollView>
+      <View className="flex-1">
+        <GradientBackdrop variant="cool" />
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ paddingTop: 16, paddingBottom: 24 }}
+        >
+          {content}
+        </ScrollView>
+      </View>
     );
   }
 
   // Original complex app bar version
   return (
-    <SafeAreaView className="flex-1 bg-zinc-100 dark:bg-zinc-950">
-      <ThemedView className="flex-1 bg-zinc-100 dark:bg-zinc-950">
-        <View className="px-6 pt-2 pb-4 bg-zinc-100 dark:bg-zinc-950">
+    <SafeAreaView className="flex-1">
+      <GradientBackdrop variant="cool" />
+      <ThemedView className="flex-1" lightColor="transparent" darkColor="transparent">
+        <View className="px-6 pt-2 pb-4">
           <Text
             className="text-zinc-900 dark:text-zinc-50"
             style={{
@@ -318,7 +324,7 @@ export default function ProfileScreen() {
         </View>
 
         <ScrollView
-          className="flex-1 bg-zinc-100 dark:bg-zinc-950"
+          className="flex-1"
           contentContainerStyle={{ paddingBottom: 24 }}
         >
           {content}

@@ -1,4 +1,3 @@
-import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { useNavigation, useRouter } from "expo-router";
 import { useFeatureFlag } from "posthog-react-native";
@@ -13,6 +12,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button, buttonTextVariants } from "@/components/ui/button";
+import { GlassSurface } from "@/components/ui/glass";
+import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
 import { Text } from "@/components/ui/text";
 
 import orpc from "@/client/orpc";
@@ -466,7 +467,8 @@ export default function PlansScreen() {
 
   // Original complex app bar version
   return (
-    <SafeAreaView edges={["top"]} className={`flex-1 ${surfaceClass}`}>
+    <SafeAreaView edges={["top"]} className="flex-1">
+      <GradientBackdrop variant="cool" />
       {/* Large Title Header (animated on iOS, moved into ScrollView on Android) */}
       {/* iOS Large Header with inline actions */}
       {!isAndroid && (
@@ -676,16 +678,14 @@ export default function PlansScreen() {
           pointerEvents="box-none"
         >
           <SafeAreaView style={{ backgroundColor: "transparent" }}>
-            <BlurView
+            <GlassSurface
               intensity={80}
+              tint={colorScheme === "dark" ? "dark" : "light"}
+              className="border-b border-white/30 dark:border-white/10 bg-white/60 dark:bg-black/40"
               style={{
                 height: 44,
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundColor:
-                  colorScheme === "dark"
-                    ? "rgba(24, 24, 27, 0.85)"
-                    : "rgba(242, 242, 247, 0.8)",
               }}
             >
               <Text
@@ -728,7 +728,7 @@ export default function PlansScreen() {
                   <IconSymbol name="plus" size={16} color="#FFFFFF" />
                 </Pressable>
               </View>
-            </BlurView>
+            </GlassSurface>
           </SafeAreaView>
         </Animated.View>
       )}

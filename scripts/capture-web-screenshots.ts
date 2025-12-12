@@ -32,37 +32,29 @@ const SCREENSHOT_ROUTES = [
   { path: "/profile", name: "tabs-profile" }, // Profile Tab
 ];
 
-// Direkt die benötigten App Store Screenshot-Größen
+// Direkt die benötigten App Store Screenshot-Größen (nur Portrait)
 const APPLE_SCREENSHOT_SIZES = [
   // iPhone 6.9" (neueste Modelle - iPhone 16 Pro Max, iPhone 16 Plus)
   { width: 1290, height: 2796, name: "iphone-6.9-portrait" },
-  { width: 2796, height: 1290, name: "iphone-6.9-landscape" },
 
   // iPhone 6.5" (ältere Modelle - iPhone 14 Plus, iPhone 13 Pro Max)
   { width: 1242, height: 2688, name: "iphone-6.5-portrait" },
-  { width: 2688, height: 1242, name: "iphone-6.5-landscape" },
 
   // iPad 13" (neueste Modelle - iPad Pro M5, M4)
   { width: 2064, height: 2752, name: "ipad-13-portrait" },
-  { width: 2752, height: 2064, name: "ipad-13-landscape" },
 
   // iPad 12.9" (iPad Pro 2nd generation)
   { width: 2048, height: 2732, name: "ipad-12.9-portrait" },
-  { width: 2732, height: 2048, name: "ipad-12.9-landscape" },
 ];
 
 const GOOGLE_SCREENSHOT_SIZES = [
   // Phone Screenshots
   { width: 1080, height: 1920, name: "phone-portrait-hd" },
   { width: 1440, height: 2560, name: "phone-portrait-fhd" },
-  { width: 1920, height: 1080, name: "phone-landscape-hd" },
-  { width: 2560, height: 1440, name: "phone-landscape-fhd" },
 
   // Tablet Screenshots
   { width: 1920, height: 2560, name: "tablet-7-portrait" },
-  { width: 2560, height: 1920, name: "tablet-7-landscape" },
   { width: 2560, height: 3840, name: "tablet-10-portrait" },
-  { width: 3840, height: 2560, name: "tablet-10-landscape" },
 ];
 
 /**

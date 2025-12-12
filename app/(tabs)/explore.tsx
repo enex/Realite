@@ -1,4 +1,3 @@
-import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { useNavigation } from "expo-router";
 import { useFeatureFlag } from "posthog-react-native";
@@ -27,6 +26,9 @@ import PlanFilterBottomSheet, {
   type PlanFilter,
 } from "@/components/PlanFilterBottomSheet";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { GlassSurface } from "@/components/ui/glass";
+import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import { useLocation } from "@/hooks/useLocation";
 import type { ActivityId } from "@/shared/activities";
 import { isWithinRadius } from "@/shared/utils/distance";
@@ -78,6 +80,7 @@ export default function ExploreScreen() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [filter, setFilter] = useState<PlanFilter | undefined>(undefined);
+  const colorScheme = useColorScheme();
 
   const filterRef = useRef<PlanFilterBottomSheetRef>(null);
 
@@ -563,7 +566,8 @@ export default function ExploreScreen() {
 
   // Original complex app bar version
   return (
-    <View className="flex-1 bg-zinc-100 dark:bg-zinc-950">
+    <View className="flex-1">
+      <GradientBackdrop variant="cool" />
       <SafeAreaView style={{ flex: 1 }}>
         {/* Large Title Header */}
         <Animated.View
@@ -705,18 +709,19 @@ export default function ExploreScreen() {
 
         {/* Navigation Bar Overlay */}
         <Animated.View
-          className="bg-zinc-100 dark:bg-zinc-950 absolute top-0 left-0 right-0 z-1000 pointer-events-none"
+          className="absolute top-0 left-0 right-0 z-1000 pointer-events-none"
           style={{ opacity: navTitleOpacity }}
           pointerEvents="none"
         >
           <SafeAreaView style={{ backgroundColor: "transparent" }}>
-            <BlurView
+            <GlassSurface
               intensity={80}
+              tint={colorScheme === "dark" ? "dark" : "light"}
+              className="border-b border-white/30 dark:border-white/10 bg-white/60 dark:bg-black/40"
               style={{
                 height: 44,
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundColor: "rgba(242, 242, 247, 0.8)",
               }}
             >
               <Text
@@ -728,7 +733,7 @@ export default function ExploreScreen() {
               >
                 Entdecken
               </Text>
-            </BlurView>
+            </GlassSurface>
           </SafeAreaView>
         </Animated.View>
 
