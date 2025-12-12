@@ -111,3 +111,4 @@ Beispiel: `home_iphone-6.9-portrait.png`
 - Die Quell-Screenshots bleiben unverändert
 - Für automatische Screenshots wird Playwright verwendet (Chromium Browser)
 - Die Web-App muss auf `http://localhost:8081` laufen (oder setze `WEB_URL` Umgebungsvariable)
+

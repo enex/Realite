@@ -2,12 +2,13 @@ import { useSession } from "@/client/auth";
 import orpc from "@/client/orpc";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 
 export default function WebLanding() {
   const { session, isLoading } = useSession();
   const meRes = useQuery(orpc.auth.me.queryOptions());
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   useEffect(() => {
     if (isLoading || !meRes.data) return;
     if (meRes.data.onboarded) {
@@ -33,68 +34,139 @@ export default function WebLanding() {
       const element = document.getElementById(sectionId);
       element?.scrollIntoView({ behavior: "smooth" });
     }
+    setMobileMenuOpen(false);
   };
 
   return (
     <View className="flex-1 bg-[#F5F5F7] dark:bg-black">
       <ScrollView className="flex-1">
         {/* Apple-like Glass Header */}
-        <View className="flex-row justify-between items-center px-6 md:px-10 py-4 bg-white/60 dark:bg-black/40 backdrop-blur-xl border-b border-white/30 dark:border-white/10 sticky top-0 z-50">
-          <View className="flex-row items-center">
-            <View className="w-9 h-9 mr-3 rounded-xl overflow-hidden shadow-md">
-              <img
-                src={require("../assets/images/icon.png").uri}
-                alt="Realite App Icon"
-                className="w-full h-full scale-110 object-cover rounded-xl"
-              />
+        <View className="px-4 md:px-10 py-3 md:py-4 bg-white/60 dark:bg-black/40 backdrop-blur-xl border-b border-white/30 dark:border-white/10 sticky top-0 z-50">
+          <View className="flex-row justify-between items-center">
+            <View className="flex-row items-center min-w-0">
+              <View className="w-9 h-9 mr-3 rounded-xl overflow-hidden shadow-md">
+                <img
+                  src={require("../assets/images/icon.png").uri}
+                  alt="Realite App Icon"
+                  className="w-full h-full scale-110 object-cover rounded-xl"
+                />
+              </View>
+              <Text className="text-lg md:text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">
+                Realite
+              </Text>
+              <Text className="hidden sm:flex ml-3 px-2.5 py-1 bg-white/70 dark:bg-white/10 text-gray-700 dark:text-white/80 text-[11px] font-semibold rounded-full border border-white/60 dark:border-white/20 backdrop-blur-md">
+                CLOSED BETA
+              </Text>
             </View>
-            <Text className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">
-              Realite
-            </Text>
-            <Text className="ml-3 px-2.5 py-1 bg-white/70 dark:bg-white/10 text-gray-700 dark:text-white/80 text-[11px] font-semibold rounded-full border border-white/60 dark:border-white/20 backdrop-blur-md">
-              CLOSED BETA
-            </Text>
+
+            {/* Desktop nav */}
+            <View className="hidden md:flex flex-row items-center gap-8">
+              <Pressable onPress={() => scrollToSection("features")}>
+                <Text className="text-gray-700 dark:text-white/80 hover:text-black dark:hover:text-white transition-colors font-medium">
+                  Features
+                </Text>
+              </Pressable>
+              <Pressable onPress={() => scrollToSection("how-it-works")}>
+                <Text className="text-gray-700 dark:text-white/80 hover:text-black dark:hover:text-white transition-colors font-medium">
+                  So funktioniert&apos;s
+                </Text>
+              </Pressable>
+              <Pressable onPress={() => scrollToSection("security")}>
+                <Text className="text-gray-700 dark:text-white/80 hover:text-black dark:hover:text-white transition-colors font-medium">
+                  Sicherheit
+                </Text>
+              </Pressable>
+              <Pressable
+                className="bg-black/90 dark:bg-white/90 px-5 py-2.5 rounded-full shadow-lg hover:shadow-xl transition-all"
+                onPress={openWhatsAppChannel}
+              >
+                <Text className="text-white dark:text-black font-semibold tracking-tight">
+                  Updates erhalten
+                </Text>
+              </Pressable>
+            </View>
+
+            {/* Mobile menu button */}
+            <Pressable
+              className="md:hidden w-10 h-10 rounded-full bg-white/70 dark:bg-white/10 border border-white/60 dark:border-white/20 items-center justify-center"
+              accessibilityRole="button"
+              accessibilityLabel={
+                mobileMenuOpen ? "Menü schließen" : "Menü öffnen"
+              }
+              onPress={() => setMobileMenuOpen((v) => !v)}
+            >
+              {mobileMenuOpen ? (
+                <View className="w-5 h-5 items-center justify-center">
+                  <View className="absolute w-5 h-0.5 bg-gray-900 dark:bg-white rounded-full rotate-45" />
+                  <View className="absolute w-5 h-0.5 bg-gray-900 dark:bg-white rounded-full -rotate-45" />
+                </View>
+              ) : (
+                <View className="w-5 h-5 justify-center">
+                  <View className="w-5 h-0.5 bg-gray-900 dark:bg-white rounded-full" />
+                  <View className="w-5 h-0.5 bg-gray-900 dark:bg-white rounded-full mt-1.5" />
+                  <View className="w-5 h-0.5 bg-gray-900 dark:bg-white rounded-full mt-1.5" />
+                </View>
+              )}
+            </Pressable>
           </View>
 
-          <View className="flex-row items-center gap-6 md:gap-8">
-            <Pressable onPress={() => scrollToSection("features")}>
-              <Text className="text-gray-700 dark:text-white/80 hover:text-black dark:hover:text-white transition-colors font-medium">
-                Features
-              </Text>
-            </Pressable>
-            <Pressable onPress={() => scrollToSection("how-it-works")}>
-              <Text className="text-gray-700 dark:text-white/80 hover:text-black dark:hover:text-white transition-colors font-medium">
-                So funktioniert&apos;s
-              </Text>
-            </Pressable>
-            <Pressable onPress={() => scrollToSection("security")}>
-              <Text className="text-gray-700 dark:text-white/80 hover:text-black dark:hover:text-white transition-colors font-medium">
-                Sicherheit
-              </Text>
-            </Pressable>
-            <Pressable
-              className="bg-black/90 dark:bg-white/90 px-5 py-2.5 rounded-full shadow-lg hover:shadow-xl transition-all"
-              onPress={openWhatsAppChannel}
-            >
-              <Text className="text-white dark:text-black font-semibold tracking-tight">
-                Updates erhalten
-              </Text>
-            </Pressable>
-          </View>
+          {/* Mobile dropdown */}
+          {mobileMenuOpen ? (
+            <View className="md:hidden mt-3 rounded-2xl bg-white/80 dark:bg-black/50 border border-white/60 dark:border-white/15 backdrop-blur-xl overflow-hidden">
+              <Pressable
+                className="px-4 py-3"
+                onPress={() => scrollToSection("features")}
+              >
+                <Text className="text-gray-800 dark:text-white/90 font-medium">
+                  Features
+                </Text>
+              </Pressable>
+              <View className="h-px bg-black/5 dark:bg-white/10" />
+              <Pressable
+                className="px-4 py-3"
+                onPress={() => scrollToSection("how-it-works")}
+              >
+                <Text className="text-gray-800 dark:text-white/90 font-medium">
+                  So funktioniert&apos;s
+                </Text>
+              </Pressable>
+              <View className="h-px bg-black/5 dark:bg-white/10" />
+              <Pressable
+                className="px-4 py-3"
+                onPress={() => scrollToSection("security")}
+              >
+                <Text className="text-gray-800 dark:text-white/90 font-medium">
+                  Sicherheit
+                </Text>
+              </Pressable>
+              <View className="h-px bg-black/5 dark:bg-white/10" />
+              <Pressable
+                className="m-3 bg-black/90 dark:bg-white/90 px-5 py-3 rounded-full shadow-lg"
+                onPress={() => {
+                  setMobileMenuOpen(false);
+                  openWhatsAppChannel();
+                }}
+              >
+                <Text className="text-white dark:text-black font-semibold tracking-tight text-center">
+                  Updates erhalten
+                </Text>
+              </Pressable>
+            </View>
+          ) : null}
         </View>
 
         {/* Hero Section with subtle glass + color blobs */}
-        <View className="relative px-6 md:px-10 py-24 md:py-32 overflow-hidden">
+        <View className="relative px-6 md:px-10 pt-10 pb-16 sm:pt-16 sm:pb-24 md:py-32 overflow-hidden">
           <View pointerEvents="none" className="absolute inset-0">
             <View className="absolute -top-24 -left-20 w-[420px] h-[420px] bg-emerald-300/40 dark:bg-emerald-500/25 rounded-full blur-3xl" />
             <View className="absolute top-0 right-0 w-[520px] h-[520px] bg-sky-300/35 dark:bg-sky-500/20 rounded-full blur-3xl" />
             <View className="absolute bottom-[-180px] left-1/3 w-[560px] h-[560px] bg-fuchsia-300/35 dark:bg-fuchsia-500/20 rounded-full blur-3xl" />
           </View>
 
-          <View className="max-w-6xl w-full mx-auto flex-col lg:flex-row items-center gap-12 lg:gap-16">
+          <View className="max-w-6xl w-full mx-auto flex-col md:flex-row items-center md:items-start">
             {/* Copy */}
-            <View className="flex-1">
-              <Text className="text-[52px] md:text-[64px] font-semibold text-gray-900 dark:text-white leading-[1.05] tracking-tight">
+            <View className="flex-1 md:pr-6 relative z-20 pb-12 md:pb-0">
+              <Text className="text-4xl sm:text-5xl md:text-[64px] font-semibold text-gray-900 dark:text-white leading-[1.05] tracking-tight break-words">
                 Die App für echte{"\n"}Verbindungen
               </Text>
               <Text className="text-xl md:text-2xl font-medium text-gray-700 dark:text-white/80 mt-5 leading-relaxed">
@@ -106,33 +178,36 @@ export default function WebLanding() {
                 die deine Interessen teilen – ohne endloses Scrollen.
               </Text>
 
-              <View className="mt-8 flex-row items-center flex-wrap gap-4">
+              <View className="mt-8 flex-col sm:flex-row items-stretch sm:items-center flex-wrap gap-4">
                 <Pressable
-                  className="bg-black/90 dark:bg-white/90 px-7 py-4 rounded-full shadow-2xl"
+                  className="bg-black/90 dark:bg-white/90 px-7 py-4 rounded-full shadow-2xl w-full sm:w-auto"
                   onPress={openWhatsAppChannel}
                 >
-                  <Text className="text-white dark:text-black font-semibold text-base md:text-lg tracking-tight">
+                  <Text className="text-white dark:text-black font-semibold text-base md:text-lg tracking-tight text-center">
                     WhatsApp‑Kanal abonnieren
                   </Text>
                 </Pressable>
-                <View className="px-4 py-2 rounded-full bg-white/70 dark:bg-white/10 border border-white/60 dark:border-white/20 backdrop-blur-md">
-                  <Text className="text-sm text-gray-700 dark:text-white/80 font-medium">
+                <View className="px-4 py-2 rounded-full bg-white/70 dark:bg-white/10 border border-white/60 dark:border-white/20 backdrop-blur-md w-full sm:w-auto">
+                  <Text className="text-sm text-gray-700 dark:text-white/80 font-medium text-center break-words">
                     Geschlossene Beta • Apps bald verfügbar
                   </Text>
                 </View>
               </View>
 
-              <View className="mt-10 flex-row gap-6">
+              <View className="mt-10 flex-row flex-wrap justify-center sm:justify-start -mx-2 relative z-20">
                 {[
                   { icon: "🤝", label: "Echte Menschen" },
                   { icon: "🎯", label: "Gemeinsame Interessen" },
                   { icon: "🔒", label: "Invite‑only & sicher" },
                 ].map((f) => (
-                  <View key={f.label} className="items-center">
+                  <View
+                    key={f.label}
+                    className="items-center w-1/3 px-2 py-2 relative z-20"
+                  >
                     <View className="w-12 h-12 bg-white/70 dark:bg-white/10 rounded-2xl items-center justify-center border border-white/60 dark:border-white/20 backdrop-blur-md shadow-sm">
                       <Text className="text-xl">{f.icon}</Text>
                     </View>
-                    <Text className="mt-2 text-sm text-gray-700 dark:text-white/80 font-medium">
+                    <Text className="mt-2 text-sm text-gray-700 dark:text-white/80 font-medium text-center break-words">
                       {f.label}
                     </Text>
                   </View>
@@ -140,8 +215,10 @@ export default function WebLanding() {
               </View>
             </View>
 
+            <View className="h-10 sm:h-12 md:hidden" />
+
             {/* Glass mockup */}
-            <View className="flex-1 w-full max-w-md">
+            <View className="flex-1 w-full max-w-md md:max-w-sm lg:max-w-md relative z-0 mt-6 md:mt-0 md:self-end">
               <View className="rounded-[44px] bg-white/70 dark:bg-white/10 border border-white/70 dark:border-white/20 backdrop-blur-2xl shadow-2xl p-6">
                 <View className="items-center mb-4">
                   <View className="w-10 h-1.5 rounded-full bg-black/10 dark:bg-white/15" />
@@ -200,10 +277,7 @@ export default function WebLanding() {
         </View>
 
         {/* Modern Activity Categories */}
-        <View
-          id="features"
-          className="px-6 md:px-10 py-24 bg-transparent"
-        >
+        <View id="features" className="px-6 md:px-10 py-24 bg-transparent">
           <View className="max-w-7xl mx-auto">
             <View className="text-center mb-20">
               <Text className="text-5xl font-semibold text-gray-900 dark:text-white mb-6 leading-tight tracking-tight">
@@ -294,9 +368,7 @@ export default function WebLanding() {
                   key={index}
                   className="group transition-all duration-300 hover:shadow-2xl"
                 >
-                  <View
-                    className="p-7 rounded-3xl items-center bg-white/70 dark:bg-white/10 border border-white/70 dark:border-white/20 backdrop-blur-xl shadow-lg hover:shadow-2xl transition-all"
-                  >
+                  <View className="p-7 rounded-3xl items-center bg-white/70 dark:bg-white/10 border border-white/70 dark:border-white/20 backdrop-blur-xl shadow-lg hover:shadow-2xl transition-all">
                     <View
                       className={`w-16 h-16 bg-gradient-to-br ${category.color} rounded-2xl items-center justify-center shadow-lg mb-4`}
                     >
@@ -384,12 +456,8 @@ export default function WebLanding() {
                       {item.description}
                     </Text>
 
-                    <View
-                      className="bg-white/80 dark:bg-white/10 p-6 rounded-2xl border border-white/70 dark:border-white/20 backdrop-blur-md"
-                    >
-                      <Text
-                        className="text-gray-900 dark:text-white font-medium text-base"
-                      >
+                    <View className="bg-white/80 dark:bg-white/10 p-6 rounded-2xl border border-white/70 dark:border-white/20 backdrop-blur-md">
+                      <Text className="text-gray-900 dark:text-white font-medium text-base">
                         {item.tip}
                       </Text>
                     </View>
@@ -560,10 +628,14 @@ export default function WebLanding() {
                       <Text className="text-xl font-semibold text-gray-900 dark:text-white tracking-tight">
                         Mainwiesen Festival
                       </Text>
-                      <Text className="text-gray-600 dark:text-white/70">15. - 17. Juli</Text>
+                      <Text className="text-gray-600 dark:text-white/70">
+                        15. - 17. Juli
+                      </Text>
                     </View>
                     <View className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/10 items-center justify-center">
-                      <Text className="text-gray-800 dark:text-white text-lg">👥</Text>
+                      <Text className="text-gray-800 dark:text-white text-lg">
+                        👥
+                      </Text>
                     </View>
                   </View>
                   <View className="flex-row items-center justify-between">
@@ -585,7 +657,9 @@ export default function WebLanding() {
                       <Text className="text-xl font-semibold text-gray-900 dark:text-white tracking-tight">
                         Spontanes Beachvolleyball
                       </Text>
-                      <Text className="text-gray-600 dark:text-white/70">Mainwiesen Beach</Text>
+                      <Text className="text-gray-600 dark:text-white/70">
+                        Mainwiesen Beach
+                      </Text>
                     </View>
                     <Text className="text-orange-800 dark:text-orange-200 bg-orange-100/80 dark:bg-orange-500/15 px-3 py-1 rounded-full font-semibold">
                       Jetzt
@@ -714,7 +788,9 @@ export default function WebLanding() {
                       </View>
                     </View>
                     <View className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/10 items-center justify-center">
-                      <Text className="text-gray-800 dark:text-white text-lg">🔗</Text>
+                      <Text className="text-gray-800 dark:text-white text-lg">
+                        🔗
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -738,7 +814,9 @@ export default function WebLanding() {
                       </View>
                     </View>
                     <View className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/10 items-center justify-center">
-                      <Text className="text-gray-800 dark:text-white text-lg">🔗</Text>
+                      <Text className="text-gray-800 dark:text-white text-lg">
+                        🔗
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -863,7 +941,7 @@ export default function WebLanding() {
         {/* Modern CTA Section */}
         <View
           id="download"
-          className="px-8 py-32 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden"
+          className="px-6 sm:px-8 py-20 sm:py-32 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden"
         >
           {/* Background Pattern */}
           <View className="absolute inset-0 opacity-10">
@@ -873,15 +951,15 @@ export default function WebLanding() {
           </View>
 
           <View className="max-w-5xl mx-auto text-center relative z-10">
-            <Text className="text-6xl font-black text-white mb-8 leading-tight">
+            <Text className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6 sm:mb-8 leading-tight break-words">
               Bereit für echte{"\n"}Begegnungen?
             </Text>
 
-            <Text className="text-2xl text-blue-100 mb-6 leading-relaxed max-w-3xl mx-auto">
+            <Text className="text-lg sm:text-2xl text-blue-100 mb-5 sm:mb-6 leading-relaxed max-w-3xl mx-auto break-words">
               Realite befindet sich in einer geschlossenen Beta
             </Text>
 
-            <Text className="text-xl text-gray-300 mb-16 leading-relaxed max-w-2xl mx-auto">
+            <Text className="text-base sm:text-xl text-gray-300 mb-10 sm:mb-16 leading-relaxed max-w-2xl mx-auto break-words">
               Die Apps sind derzeit noch nicht verfügbar. Abonniere unseren
               WhatsApp-Kanal, um die neuesten Updates und Versionen zu erhalten.
             </Text>
@@ -889,13 +967,13 @@ export default function WebLanding() {
             {/* Main CTA */}
             <View className="mb-12">
               <Pressable
-                className="bg-gradient-to-r from-green-500 to-emerald-600 px-12 py-6 rounded-3xl shadow-2xl hover:shadow-emerald-500/25 transition-all hover:brightness-110 inline-flex flex-row items-center"
+                className="bg-gradient-to-r from-green-500 to-emerald-600 w-full max-w-xl mx-auto px-6 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-3xl shadow-2xl hover:shadow-emerald-500/25 transition-all hover:brightness-110 inline-flex flex-col sm:flex-row items-center justify-center"
                 onPress={openWhatsAppChannel}
               >
-                <View className="w-8 h-8 bg-white/20 rounded-full items-center justify-center mr-4">
+                <View className="w-8 h-8 bg-white/20 rounded-full items-center justify-center sm:mr-4 mb-3 sm:mb-0">
                   <Text className="text-white text-lg">🔔</Text>
                 </View>
-                <Text className="text-white font-bold text-2xl">
+                <Text className="text-white font-bold text-xl sm:text-2xl text-center break-words">
                   WhatsApp-Kanal abonnieren
                 </Text>
               </Pressable>
@@ -903,10 +981,10 @@ export default function WebLanding() {
 
             {/* Additional Info */}
             <View className="bg-white/5 backdrop-blur-sm p-8 rounded-3xl border border-white/10">
-              <Text className="text-gray-300 text-lg mb-4">
+              <Text className="text-gray-300 text-base sm:text-lg mb-4 break-words">
                 🚀 Werde Teil der ersten Nutzer und gestalte Realite mit
               </Text>
-              <Text className="text-gray-400">
+              <Text className="text-gray-400 text-sm sm:text-base break-words">
                 Exklusive Updates • Beta-Zugang • Behind-the-Scenes
               </Text>
             </View>
@@ -916,8 +994,8 @@ export default function WebLanding() {
         {/* Modern Footer */}
         <View className="px-8 py-16 bg-gradient-to-br from-gray-900 to-slate-900">
           <View className="max-w-7xl mx-auto">
-            <View className="flex-row justify-between items-start mb-12">
-              <View>
+            <View className="flex-col md:flex-row justify-between items-start mb-12 gap-12 md:gap-0">
+              <View className="max-w-xl">
                 <View className="flex-row items-center mb-4">
                   <View className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl items-center justify-center mr-4 shadow-lg">
                     <Text className="text-white text-xl font-bold">R</Text>
@@ -939,7 +1017,7 @@ export default function WebLanding() {
                 </Pressable>
               </View>
 
-              <View className="flex-row gap-12">
+              <View className="flex-col sm:flex-row flex-wrap gap-10 sm:gap-12 w-full md:w-auto">
                 <View>
                   <Text className="text-white font-bold text-lg mb-4">
                     Rechtliches
