@@ -8,11 +8,8 @@ import {
   RefreshControl,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button, buttonTextVariants } from "@/components/ui/button";
-import { GlassSurface } from "@/components/ui/glass";
-import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
 import { Text } from "@/components/ui/text";
 
 import orpc from "@/client/orpc";
@@ -327,213 +324,12 @@ export default function PlansScreen() {
     </View>
   );
 
-  const scrollY = useRef(new Animated.Value(0)).current;
   const isAndroid = Platform.OS === "android";
-
-  // Large title animations
-  const headerOpacity = scrollY.interpolate({
-    inputRange: [0, 80],
-    outputRange: [1, 0],
-    extrapolate: "clamp",
-  });
-
-  const headerHeight = scrollY.interpolate({
-    inputRange: [0, 80],
-    outputRange: [120, 0],
-    extrapolate: "clamp",
-  });
-
-  const navTitleOpacity = scrollY.interpolate({
-    inputRange: [60, 120],
-    outputRange: [0, 1],
-    extrapolate: "clamp",
-  });
 
   const bottomPadding = isAndroid ? 80 : 140;
 
-  // Simple app bar version
-  if (simpleAppBar) {
-    return (
-      <View className={`flex-1 ${surfaceClass}`}>
-        {error && (
-          <View style={{ padding: spacing.lg }}>
-            <Text className="text-red-500" style={typography.subheadline}>
-              {error.message}
-            </Text>
-          </View>
-        )}
-        <Animated.ScrollView
-          style={{ flex: 1 }}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={Boolean(isRefetching || isFetching)}
-              onRefresh={async () => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                try {
-                  await refetch();
-                } catch (e) {
-                  console.error("Refresh error", e);
-                }
-              }}
-              tintColor="#007AFF"
-            />
-          }
-          contentContainerStyle={{
-            paddingTop: spacing.md,
-            paddingHorizontal: spacing.lg,
-            paddingBottom: bottomPadding,
-          }}
-        >
-          {groupedPlans.map((group, index) => (
-            <View key={group.date}>
-              {renderDayGroup({ item: group, index })}
-            </View>
-          ))}
-          {groupedPlans.length === 0 && (
-            <View
-              style={{
-                alignItems: "center",
-                justifyContent: "center",
-                paddingTop: spacing.xl,
-                paddingBottom: spacing.xl,
-                gap: 16,
-              }}
-            >
-              <View
-                className="h-24 w-24 items-center justify-center rounded-full border border-indigo-200 bg-indigo-100 dark:border-indigo-500/40 dark:bg-indigo-500/10"
-                style={{ ...shadows.small }}
-              >
-                <IconSymbol name="calendar" size={44} color="#007AFF" />
-              </View>
-              <Text className={strongTextClass} style={typography.headline}>
-                Noch keine Pläne
-              </Text>
-              <Text
-                className={`${mutedTextClass} text-center`}
-                style={typography.subheadline}
-              >
-                Lege fest, was du vor hast – andere sehen es und können
-                dazukommen.
-              </Text>
-              <WhatIsAPlan />
-              <Button
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  aiPlanBottomSheetRef.current?.present();
-                }}
-                variant="default"
-                size="lg"
-              >
-                <Text
-                  className={buttonTextVariants({
-                    variant: "default",
-                    size: "lg",
-                  })}
-                >
-                  Plan erstellen
-                </Text>
-              </Button>
-            </View>
-          )}
-        </Animated.ScrollView>
-
-        {isAndroid && groupedPlans.length > 0 && (
-          <NativeFAB onPress={() => aiPlanBottomSheetRef.current?.present()} />
-        )}
-
-        <AIPlanBottomSheet
-          ref={aiPlanBottomSheetRef}
-          onPlanCreated={(plan: any) => {
-            console.log("Plan created:", plan);
-            queryClient.invalidateQueries({
-              queryKey: orpc.plan.myPlans.queryOptions({
-                input: filter ?? {},
-              }).queryKey,
-            });
-            if (plan?.id) {
-              setTimeout(() => {
-                router.push(`/plan/${plan.id}` as any);
-              }, 0);
-            }
-          }}
-        />
-
-        <PlanFilterBottomSheet
-          ref={filterRef}
-          initial={filter}
-          onApply={(f) => setFilter(f)}
-          hideLocation
-        />
-      </View>
-    );
-  }
-
-  // Original complex app bar version
   return (
-    <SafeAreaView edges={["top"]} className="flex-1">
-      <GradientBackdrop variant="cool" />
-      {/* Large Title Header (animated on iOS, moved into ScrollView on Android) */}
-      {/* iOS Large Header with inline actions */}
-      {!isAndroid && (
-        <Animated.View
-          className={`${surfaceClass} overflow-hidden`}
-          style={{
-            height: headerHeight,
-            paddingHorizontal: spacing.lg,
-            paddingTop: spacing.sm,
-            paddingBottom: spacing.md,
-            opacity: headerOpacity,
-          }}
-        >
-          <View
-            className="flex-row items-center justify-between"
-            style={{ gap: 10 }}
-          >
-            <View>
-              <Text
-                className={strongTextClass}
-                style={{
-                  ...typography.largeTitle,
-                  marginBottom: spacing.xs,
-                }}
-              >
-                Meine Pläne
-              </Text>
-              <Text className={mutedTextClass} style={typography.subheadline}>
-                Alle deine Pläne
-              </Text>
-            </View>
-            <View className="flex-row" style={{ gap: 10 }}>
-              <Pressable
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  aiPlanBottomSheetRef.current?.present();
-                }}
-                className="h-9 w-9 items-center justify-center rounded-full bg-blue-600"
-                style={{ ...shadows.small }}
-              >
-                <IconSymbol name="plus" size={18} color="#FFFFFF" />
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  filterRef.current?.present();
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }}
-                className={`h-9 w-9 items-center justify-center rounded-full border ${elevatedSurfaceClass} border-zinc-200 dark:border-zinc-700`}
-                style={{ ...shadows.small }}
-              >
-                <IconSymbol
-                  name="line.3.horizontal.decrease.circle"
-                  size={18}
-                  color={iconPrimary}
-                />
-              </Pressable>
-            </View>
-          </View>
-        </Animated.View>
-      )}
-
+    <View className={`flex-1 ${surfaceClass}`}>
       {error && (
         <View style={{ padding: spacing.lg }}>
           <Text className="text-red-500" style={typography.subheadline}>
@@ -541,22 +337,9 @@ export default function PlansScreen() {
           </Text>
         </View>
       )}
-
-      {/* Scrollable Content */}
       <Animated.ScrollView
         style={{ flex: 1 }}
-        onScroll={
-          isAndroid
-            ? undefined
-            : Animated.event(
-                [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                { useNativeDriver: false }
-              )
-        }
-        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        removeClippedSubviews={isAndroid}
-        nestedScrollEnabled={isAndroid}
         refreshControl={
           <RefreshControl
             refreshing={Boolean(isRefetching || isFetching)}
@@ -565,7 +348,6 @@ export default function PlansScreen() {
               try {
                 await refetch();
               } catch (e) {
-                // Swallow errors; UI already surfaces query errors
                 console.error("Refresh error", e);
               }
             }}
@@ -573,61 +355,16 @@ export default function PlansScreen() {
           />
         }
         contentContainerStyle={{
+          paddingTop: spacing.md,
           paddingHorizontal: spacing.lg,
           paddingBottom: bottomPadding,
         }}
       >
-        {isAndroid && (
-          <View style={{ paddingTop: spacing.sm, paddingBottom: spacing.md }}>
-            <View
-              className="flex-row items-center justify-between"
-              style={{ gap: 10 }}
-            >
-              <View>
-                <Text
-                  className={strongTextClass}
-                  style={{
-                    ...typography.largeTitle,
-                    marginBottom: spacing.xs,
-                  }}
-                >
-                  Meine Pläne
-                </Text>
-                <Text className={mutedTextClass} style={typography.subheadline}>
-                  Alle deine Pläne
-                </Text>
-              </View>
-              <Pressable
-                onPress={() => {
-                  filterRef.current?.present();
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }}
-                className={`h-9 w-9 items-center justify-center rounded-full border border-indigo-500/60 ${elevatedSurfaceClass}`}
-                style={{ ...shadows.small }}
-              >
-                <IconSymbol
-                  name="line.3.horizontal.decrease.circle"
-                  size={18}
-                  color={iconPrimary}
-                />
-              </Pressable>
-            </View>
-          </View>
-        )}
         {groupedPlans.map((group, index) => (
           <View key={group.date}>{renderDayGroup({ item: group, index })}</View>
         ))}
         {groupedPlans.length === 0 && (
-          <View
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              paddingTop: spacing.xl,
-              paddingBottom: spacing.xl,
-              gap: 16,
-            }}
-          >
-            {/* Illustration */}
+          <View className="items-center justify-center py-8 gap-4">
             <View
               className="h-24 w-24 items-center justify-center rounded-full border border-indigo-200 bg-indigo-100 dark:border-indigo-500/40 dark:bg-indigo-500/10"
               style={{ ...shadows.small }}
@@ -644,8 +381,6 @@ export default function PlansScreen() {
               Lege fest, was du vor hast – andere sehen es und können
               dazukommen.
             </Text>
-
-            {/* What is a plan */}
             <WhatIsAPlan />
             <Button
               onPress={() => {
@@ -668,94 +403,20 @@ export default function PlansScreen() {
         )}
       </Animated.ScrollView>
 
-      {/* Navigation Bar Overlay */}
-      {!isAndroid && (
-        <Animated.View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            opacity: navTitleOpacity,
-            zIndex: 1000,
-          }}
-          pointerEvents="box-none"
-        >
-          <SafeAreaView style={{ backgroundColor: "transparent" }}>
-            <GlassSurface
-              intensity={80}
-              tint={colorScheme === "dark" ? "dark" : "light"}
-              className="border-b border-white/30 dark:border-white/10 bg-white/60 dark:bg-black/40"
-              style={{
-                height: 44,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Text
-                className={strongTextClass}
-                style={{
-                  ...typography.headline,
-                  fontWeight: "600",
-                }}
-              >
-                Meine Pläne
-              </Text>
-              {/* Right action (+) in overlay */}
-              <View
-                style={{
-                  position: "absolute",
-                  right: spacing.lg,
-                  top: 6,
-                  height: 32,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-                pointerEvents="box-none"
-              >
-                <Pressable
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    aiPlanBottomSheetRef.current?.present();
-                  }}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 16,
-                    backgroundColor: "#007AFF",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    ...shadows.small,
-                  }}
-                >
-                  <IconSymbol name="plus" size={16} color="#FFFFFF" />
-                </Pressable>
-              </View>
-            </GlassSurface>
-          </SafeAreaView>
-        </Animated.View>
-      )}
-
-      {/* Platform FAB: only show on Android */}
       {isAndroid && groupedPlans.length > 0 && (
         <NativeFAB onPress={() => aiPlanBottomSheetRef.current?.present()} />
       )}
 
-      {/* AI Plan Bottom Sheet */}
       <AIPlanBottomSheet
         ref={aiPlanBottomSheetRef}
         onPlanCreated={(plan: any) => {
           console.log("Plan created:", plan);
-          // Refresh the plans list so the new plan appears (also refreshes participants via similarOverlappingPlans)
           queryClient.invalidateQueries({
             queryKey: orpc.plan.myPlans.queryOptions({
               input: filter ?? {},
             }).queryKey,
           });
-          // Navigate to the plan details for quick editing
           if (plan?.id) {
-            // Slight defer to ensure bottom sheet dismiss animation doesn't conflict
             setTimeout(() => {
               router.push(`/plan/${plan.id}` as any);
             }, 0);
@@ -763,14 +424,13 @@ export default function PlansScreen() {
         }}
       />
 
-      {/* Filter Bottom Sheet */}
       <PlanFilterBottomSheet
         ref={filterRef}
         initial={filter}
         onApply={(f) => setFilter(f)}
         hideLocation
       />
-    </SafeAreaView>
+    </View>
   );
 }
 

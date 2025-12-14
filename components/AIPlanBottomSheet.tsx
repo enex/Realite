@@ -14,7 +14,8 @@ import React, {
   forwardRef,
   useCallback,
   useEffect,
-  useMemo,
+  useImperativeHandle,
+  useRef,
   useState,
 } from "react";
 import {
@@ -44,15 +45,13 @@ const AIPlanBottomSheet = forwardRef<
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const bottomSheetRef = React.useRef<BottomSheetModal>(null);
+  const textInputRef = useRef<TextInput>(null);
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === "web";
   const isSmallScreen = width < 768;
   const useNativeBottomSheet = !isWeb;
   const useWebSheet = isWeb && isSmallScreen;
   const useDialog = isWeb && !isSmallScreen;
-
-  // Snap points for the bottom sheet
-  const snapPoints = useMemo(() => ["50%", "75%", "90%"], []);
 
   const handlePresentModalPress = useCallback(() => {
     if (useNativeBottomSheet) {
@@ -73,7 +72,7 @@ const AIPlanBottomSheet = forwardRef<
   }, [useNativeBottomSheet]);
 
   // Expose methods to parent component
-  React.useImperativeHandle(
+  useImperativeHandle(
     ref,
     () => ({
       present: handlePresentModalPress,
@@ -140,22 +139,31 @@ const AIPlanBottomSheet = forwardRef<
     if (index === -1) {
       // Sheet is dismissed
       setText("");
+    } else if (index >= 0) {
+      // Sheet is opened - focus the input after a short delay to ensure the sheet is fully rendered
+      setTimeout(() => {
+        (textInputRef.current as any)?.focus();
+      }, 300);
     }
   }, []);
 
   useEffect(() => {
     if (!isDialogOpen && isWeb) {
       setText("");
+    } else if (isDialogOpen && isWeb) {
+      // Focus the input when dialog opens on web
+      setTimeout(() => {
+        (textInputRef.current as any)?.focus();
+      }, 100);
     }
   }, [isDialogOpen, isWeb]);
 
   const InputComponent: any = useNativeBottomSheet
     ? BottomSheetTextInput
     : TextInput;
-  const ContentWrapper: any = useNativeBottomSheet ? BottomSheetView : View;
 
   const content = (
-    <ContentWrapper className="flex-1 px-6 pt-4 pb-8">
+    <React.Fragment>
       {/* Header */}
       <View className="mb-5">
         <Text variant="h3" className="text-foreground mb-1.5">
@@ -169,6 +177,7 @@ const AIPlanBottomSheet = forwardRef<
 
       {/* Text Input */}
       <InputComponent
+        ref={textInputRef}
         className="bg-background rounded-xl p-4 text-base text-foreground min-h-[120px] border border-input mb-4"
         style={{ textAlignVertical: "top" }}
         placeholder="z.B. Ich möchte dieses Wochenende mit Freunden wandern gehen oder ein gemütliches Abendessen zu Hause haben..."
@@ -177,6 +186,7 @@ const AIPlanBottomSheet = forwardRef<
         value={text}
         onChangeText={setText}
         maxLength={500}
+        autoFocus={false}
       />
 
       {/* Character Counter */}
@@ -216,17 +226,19 @@ const AIPlanBottomSheet = forwardRef<
           )}
         </Button>
       </View>
-    </ContentWrapper>
+    </React.Fragment>
   );
 
   if (useNativeBottomSheet) {
     return (
       <BottomSheetModal
         ref={bottomSheetRef}
-        snapPoints={snapPoints}
         index={1}
         onChange={handleSheetChanges}
         enablePanDownToClose
+        enableDynamicSizing
+        snapPoints={["50%", "75%", "90%"]}
+        keyboardBehavior="extend"
         backgroundStyle={{
           backgroundColor: "#F2F2F7",
         }}
@@ -234,7 +246,7 @@ const AIPlanBottomSheet = forwardRef<
           backgroundColor: "#C6C6C8",
         }}
       >
-        {content}
+        <BottomSheetView className="px-6 pt-4">{content}</BottomSheetView>
       </BottomSheetModal>
     );
   }
@@ -248,7 +260,7 @@ const AIPlanBottomSheet = forwardRef<
         onRequestClose={handleDismissModalPress}
       >
         <View className="flex-1 items-center justify-center bg-black/50 p-4">
-          <View className="w-full max-w-xl rounded-2xl bg-secondary shadow-xl">
+          <View className="w-full max-w-xl rounded-2xl bg-secondary shadow-xl px-6 pt-4 pb-8">
             {content}
           </View>
         </View>
@@ -270,7 +282,7 @@ const AIPlanBottomSheet = forwardRef<
           <View className="items-center pt-2">
             <View className="h-1.5 w-12 rounded-full bg-muted-foreground/30" />
           </View>
-          {content}
+          <View className="px-6 pt-4 pb-8">{content}</View>
         </View>
       </View>
     </Modal>
