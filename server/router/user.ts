@@ -268,4 +268,48 @@ export const userRouter = {
       );
       return profiles.filter(Boolean);
     }),
+  getShareLink: protectedRoute.handler(async ({ context }) => {
+    // Create a share link for the user's profile
+    const linkId = randomUUID();
+    await context.es.add({
+      type: "realite.link.created",
+      subject: linkId,
+      data: {
+        linkType: "profile",
+        targetId: context.session.id,
+      },
+    });
+    // Use the full UUID as the share code
+    const baseUrl = process.env.BASE_URL || "https://realite.app";
+    return {
+      url: `${baseUrl}/share/${linkId}`,
+      code: linkId,
+    };
+  }),
+  getShareLinkInfo: protectedRoute
+    .input(z.object({ code: z.string().uuid() }))
+    .errors({
+      NOT_FOUND: { message: "Share link not found" },
+    })
+    .handler(async ({ context, input, errors }) => {
+      // Query events to find the link-created event
+      const events = await context.db.query.events.findMany({
+        where: (t, { eq, and }) =>
+          and(eq(t.type, "realite.link.created"), eq(t.subject, input.code)),
+      });
+
+      if (events.length === 0) {
+        throw errors.NOT_FOUND();
+      }
+
+      const eventData = events[events.length - 1]?.data as any;
+      if (!eventData || eventData.linkType !== "profile") {
+        throw errors.NOT_FOUND();
+      }
+
+      return {
+        targetId: eventData.targetId,
+        linkType: eventData.linkType,
+      };
+    }),
 };

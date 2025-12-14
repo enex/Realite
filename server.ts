@@ -17,6 +17,66 @@ Bun.serve({
     const url = new URL(req.url);
     console.log("Request URL:", url.pathname);
 
+    // OG Image endpoint for user profile shares
+    if (url.pathname.startsWith("/api/og/share/")) {
+      const { ImageResponse } = await import("@vercel/og");
+      const code = url.pathname.replace("/api/og/share/", "");
+
+      try {
+        // Get link info to find user ID
+        const { db } = await import("./server/db");
+        const { eq, and } = await import("drizzle-orm");
+        const { events } = await import("./server/db/schema");
+
+        const linkEvents = await db.query.events.findMany({
+          where: and(
+            eq(events.type, "realite.link.created"),
+            eq(events.subject, code)
+          ),
+        });
+
+        if (linkEvents.length === 0) {
+          return new Response("Link not found", { status: 404 });
+        }
+
+        const eventData = linkEvents[linkEvents.length - 1]?.data as any;
+        const userId = eventData?.targetId;
+
+        if (!userId) {
+          return new Response("Invalid link", { status: 400 });
+        }
+
+        // Fetch user profile and plans
+        // es is already initialized with db, so we can use it directly
+        const { es: esInstance } = await import("./server/es");
+        const userProfile =
+          await esInstance.projections.lazy.user.getProfile(userId);
+        const plans = await esInstance.projections.inline.plan.findPlans({
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days ahead
+          creatorId: userId,
+          limit: 5,
+        });
+
+        const UserProfileOG = (await import("./server/og/user-profile"))
+          .default;
+        const element = React.createElement(UserProfileOG, {
+          userName: userProfile?.name || "Benutzer",
+          userImage: userProfile?.image || null,
+          plansCount: plans?.length || 0,
+          upcomingPlans: (plans || []).slice(0, 3).map((p: any) => ({
+            title: p.title || "",
+            startDate: p.startDate?.toISOString() || new Date().toISOString(),
+            activity: p.activity,
+          })),
+        });
+        return new ImageResponse(element, { width: 1200, height: 630 });
+      } catch (error) {
+        console.error("OG image generation error:", error);
+        return new Response("Error generating image", { status: 500 });
+      }
+    }
+
     if (url.pathname === "/api/image") {
       const { ImageResponse } = await import("@vercel/og");
       const element = React.createElement(Test, {}, []);

@@ -110,4 +110,9 @@ export interface RealiteEvents {
     userA: string;
     userB: string;
   };
+
+  "realite.link.created": {
+    linkType: "profile" | "plan";
+    targetId: string;
+  };
 }

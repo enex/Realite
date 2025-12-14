@@ -13,6 +13,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  Share,
   Text,
   TextInput,
   View,
@@ -36,6 +37,7 @@ export default function ProfileScreen() {
   const avatarUploadViaServer = useMutation(
     rpc.user.uploadAvatar.mutationOptions()
   );
+  const getShareLink = useMutation(rpc.user.getShareLink.mutationOptions());
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const [name, setName] = useState<string | null>(null);
@@ -411,6 +413,64 @@ export default function ProfileScreen() {
           className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
         >
           <Text className="text-primary">Benachrichtigungen verwalten</Text>
+        </Pressable>
+      </Card>
+
+      <Card className="rounded-2xl p-5 shadow-sm">
+        <ThemedText
+          type="subtitle"
+          className="text-gray-900 dark:text-white mb-2"
+        >
+          Teilen
+        </ThemedText>
+        <ThemedText className="mb-3 text-gray-600 dark:text-gray-400">
+          Teile deine Pläne mit anderen. Sie können sehen, was du vorhast und
+          mitmachen.
+        </ThemedText>
+        <Pressable
+          onPress={async () => {
+            try {
+              const result = await getShareLink.mutateAsync(undefined);
+              const shareUrl = result.url;
+
+              if (Platform.OS === "web") {
+                // Web: Copy to clipboard
+                if (typeof navigator !== "undefined" && navigator.clipboard) {
+                  await navigator.clipboard.writeText(shareUrl);
+                  Alert.alert(
+                    "Erfolg",
+                    "Link wurde in die Zwischenablage kopiert!"
+                  );
+                } else {
+                  // Fallback: Show the URL
+                  Alert.alert("Teilen", shareUrl);
+                }
+              } else {
+                // Native: Use Share API
+                try {
+                  await Share.share({
+                    message: shareUrl,
+                    title: "Meine Pläne teilen",
+                  });
+                } catch (error: any) {
+                  if (error?.message !== "User did not share") {
+                    Alert.alert("Teilen", shareUrl);
+                  }
+                }
+              }
+            } catch (error: any) {
+              Alert.alert(
+                "Fehler",
+                error?.message || "Link konnte nicht erstellt werden."
+              );
+            }
+          }}
+          disabled={getShareLink.isPending}
+          className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
+        >
+          <Text className="text-primary">
+            {getShareLink.isPending ? "Wird erstellt..." : "Meine Pläne teilen"}
+          </Text>
         </Pressable>
       </Card>
 
