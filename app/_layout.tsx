@@ -73,6 +73,10 @@ export default function RootLayout() {
               name="user/[id]/index"
               options={{ headerShown: false }}
             />
+            <Stack.Screen
+              name="share/[code]"
+              options={{ headerShown: false }}
+            />
             <Stack.Screen name="+not-found" />
           </Stack>
           <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />

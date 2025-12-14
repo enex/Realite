@@ -24,6 +24,7 @@ import { BirthdateField } from "@/components/BirthdateField";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { ToggleRow } from "@/components/ToggleRow";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/Card";
 import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
 
@@ -408,12 +409,9 @@ export default function ProfileScreen() {
           Push-Benachrichtigungen können in den System-Einstellungen verwaltet
           werden.
         </ThemedText>
-        <Pressable
-          onPress={openNotificationSettings}
-          className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
-        >
-          <Text className="text-primary">Benachrichtigungen verwalten</Text>
-        </Pressable>
+        <Button onPress={openNotificationSettings} variant="default">
+          Benachrichtigungen verwalten
+        </Button>
       </Card>
 
       <Card className="rounded-2xl p-5 shadow-sm">
@@ -427,7 +425,7 @@ export default function ProfileScreen() {
           Teile deine Pläne mit anderen. Sie können sehen, was du vorhast und
           mitmachen.
         </ThemedText>
-        <Pressable
+        <Button
           onPress={async () => {
             try {
               const result = await getShareLink.mutateAsync(undefined);
@@ -435,15 +433,63 @@ export default function ProfileScreen() {
 
               if (Platform.OS === "web") {
                 // Web: Copy to clipboard
-                if (typeof navigator !== "undefined" && navigator.clipboard) {
-                  await navigator.clipboard.writeText(shareUrl);
-                  Alert.alert(
-                    "Erfolg",
-                    "Link wurde in die Zwischenablage kopiert!"
-                  );
-                } else {
-                  // Fallback: Show the URL
-                  Alert.alert("Teilen", shareUrl);
+                try {
+                  if (
+                    typeof navigator !== "undefined" &&
+                    navigator.clipboard &&
+                    navigator.clipboard.writeText
+                  ) {
+                    await navigator.clipboard.writeText(shareUrl);
+                    // Use window.alert for web as Alert.alert might not work properly
+                    if (typeof window !== "undefined") {
+                      window.alert("Link wurde in die Zwischenablage kopiert!");
+                    } else {
+                      Alert.alert(
+                        "Erfolg",
+                        "Link wurde in die Zwischenablage kopiert!"
+                      );
+                    }
+                  } else {
+                    // Fallback: Use legacy clipboard API or show URL
+                    const textArea = document.createElement("textarea");
+                    textArea.value = shareUrl;
+                    textArea.style.position = "fixed";
+                    textArea.style.left = "-999999px";
+                    textArea.style.top = "-999999px";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                      document.execCommand("copy");
+                      textArea.remove();
+                      if (typeof window !== "undefined") {
+                        window.alert(
+                          "Link wurde in die Zwischenablage kopiert!"
+                        );
+                      } else {
+                        Alert.alert(
+                          "Erfolg",
+                          "Link wurde in die Zwischenablage kopiert!"
+                        );
+                      }
+                    } catch (err) {
+                      textArea.remove();
+                      // Last resort: show the URL
+                      if (typeof window !== "undefined") {
+                        window.prompt("Kopiere diesen Link:", shareUrl);
+                      } else {
+                        Alert.alert("Teilen", shareUrl);
+                      }
+                    }
+                  }
+                } catch (clipboardError: any) {
+                  console.error("Clipboard error:", clipboardError);
+                  // Fallback: show the URL
+                  if (typeof window !== "undefined") {
+                    window.prompt("Kopiere diesen Link:", shareUrl);
+                  } else {
+                    Alert.alert("Teilen", shareUrl);
+                  }
                 }
               } else {
                 // Native: Use Share API
@@ -466,12 +512,10 @@ export default function ProfileScreen() {
             }
           }}
           disabled={getShareLink.isPending}
-          className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
+          variant="default"
         >
-          <Text className="text-primary">
-            {getShareLink.isPending ? "Wird erstellt..." : "Meine Pläne teilen"}
-          </Text>
-        </Pressable>
+          {getShareLink.isPending ? "Wird erstellt..." : "Meine Pläne teilen"}
+        </Button>
       </Card>
 
       <Card className="rounded-2xl p-5 shadow-sm">
@@ -485,12 +529,12 @@ export default function ProfileScreen() {
           Wiederhole das Onboarding, um deine Einstellungen und Berechtigungen
           zu konfigurieren.
         </ThemedText>
-        <Pressable
+        <Button
           onPress={() => router.push("/onboarding/welcome")}
-          className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
+          variant="default"
         >
-          <Text className="text-primary">Onboarding wiederholen</Text>
-        </Pressable>
+          Onboarding wiederholen
+        </Button>
       </Card>
 
       <View className="opacity-80">
