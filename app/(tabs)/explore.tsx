@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import {
   Animated,
+  Platform,
   Pressable,
   RefreshControl,
   Text,
@@ -32,7 +33,8 @@ import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 import { useLocation } from "@/hooks/useLocation";
 import type { ActivityId } from "@/shared/activities";
 import { isWithinRadius } from "@/shared/utils/distance";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { startOfDay } from "date-fns";
 
 // iOS Design System (matching Plans screen)
 const typography = {
@@ -123,16 +125,21 @@ export default function ExploreScreen() {
     useLocation();
 
   const {
-    data: foundPlans,
+    data: foundPlansData,
     error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     refetch,
     isFetching,
     isRefetching,
-  } = useQuery(
-    orpc.plan.find.queryOptions({
+  } = useInfiniteQuery({
+    ...orpc.plan.find.queryOptions({
       input: {
         query: searchText || undefined,
-        startDate: filter?.startDate,
+        // Standardmäßig nur zukünftige Pläne (startDate >= startOfDay(now))
+        // Filter-Daten werden nur verwendet, wenn explizit gesetzt
+        startDate: filter?.startDate || startOfDay(new Date()),
         endDate: filter?.endDate,
         activity: filter?.activity,
         location:
@@ -143,9 +150,35 @@ export default function ExploreScreen() {
                 radius: Math.max(1, (filter?.radiusKm ?? 50) * 1000),
               }
             : undefined,
+        limit: 20,
       },
-    })
-  );
+    }),
+    getNextPageParam: (lastPage: any[], allPages: any[][]) => {
+      if (!lastPage || lastPage.length === 0) return undefined;
+      // If we got fewer items than the limit, we've reached the end
+      if (lastPage.length < 20) return undefined;
+      // Use the startDate of the last item as cursor
+      const lastItem = lastPage[lastPage.length - 1];
+      return lastItem?.startDate
+        ? new Date(lastItem.startDate as unknown as string)
+        : undefined;
+    },
+    initialPageParam: undefined,
+  });
+
+  // Flatten all pages into a single array and deduplicate by id
+  const foundPlans = useMemo(() => {
+    if (!foundPlansData?.pages) return [];
+    const allPlans = foundPlansData.pages.flat();
+    // Deduplicate by id to avoid showing the same plan twice
+    const seen = new Set<string>();
+    return allPlans.filter((plan: any) => {
+      const id = plan?.id;
+      if (!id || seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+  }, [foundPlansData]);
 
   // Collect unique creator IDs for profile lookup
   const creatorIds = useMemo(() => {
@@ -540,6 +573,20 @@ export default function ExploreScreen() {
               tintColor="#007AFF"
             />
           }
+          onScroll={({ nativeEvent }) => {
+            const { layoutMeasurement, contentOffset, contentSize } =
+              nativeEvent;
+            const paddingToBottom = 100; // Increased for better detection
+            const isNearBottom =
+              layoutMeasurement.height + contentOffset.y >=
+              contentSize.height - paddingToBottom;
+
+            if (isNearBottom && hasNextPage && !isFetchingNextPage) {
+              // Near bottom, load more
+              fetchNextPage();
+            }
+          }}
+          scrollEventThrottle={Platform.OS === "web" ? 100 : 400}
           contentContainerStyle={{
             paddingTop: showSearch ? 0 : spacing.md,
             paddingHorizontal: spacing.lg,
@@ -551,6 +598,16 @@ export default function ExploreScreen() {
               {renderDayGroup({ item: group, index })}
             </View>
           ))}
+          {isFetchingNextPage && hasNextPage && (
+            <View className="py-4 items-center">
+              <Text
+                style={{ ...typography.subheadline, color: "#8E8E93" }}
+                className="text-zinc-500 dark:text-zinc-400"
+              >
+                Lade weitere Pläne...
+              </Text>
+            </View>
+          )}
           {groupedPlans.length === 0 && (
             <View style={{ paddingTop: spacing.lg }}>
               <Text

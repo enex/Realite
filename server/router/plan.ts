@@ -430,15 +430,26 @@ export const planRouter = {
   myPlans: protectedRoute
     .input(
       z.object({
-        startDate: z.coerce.date().default(new Date()),
-        endDate: z.coerce.date().default(addWeeks(new Date(), 10)),
+        startDate: z.coerce.date().optional(),
+        endDate: z.coerce.date().optional(),
+        limit: z.number().min(1).max(100).default(20),
+        cursor: z.coerce.date().optional(), // cursor is the startDate of the last item
       })
     )
     .handler(async ({ context, input, signal }) => {
       try {
+        // If cursor is provided, use it for pagination (start after cursor)
+        // Otherwise, use startDate from filter or now
+        const now = new Date();
+        const queryStartDate = input.cursor
+          ? new Date(input.cursor.getTime() + 1) // Start after cursor to avoid duplicates
+          : input.startDate || now;
+        const endDate = input.endDate || addWeeks(now, 52); // 1 year ahead
+
         const plans = await context.es.projections.plan.listMyPlans(
           context.session.id,
-          [input.startDate, input.endDate]
+          [queryStartDate, endDate],
+          input.limit
         );
         return plans;
       } catch (err) {
@@ -501,8 +512,8 @@ export const planRouter = {
     .input(
       z.object({
         query: z.string().optional(),
-        startDate: z.coerce.date().default(new Date()),
-        endDate: z.coerce.date().default(addWeeks(new Date(), 10)),
+        startDate: z.coerce.date().optional(),
+        endDate: z.coerce.date().optional(),
         activity: z.enum(activityIds).optional(),
         location: z
           .object({
@@ -512,10 +523,25 @@ export const planRouter = {
           })
           .optional(),
         creatorId: z.string().optional(),
+        limit: z.number().min(1).max(100).default(20),
+        cursor: z.coerce.date().optional(), // cursor is the startDate of the last item
       })
     )
     .handler(async ({ context, input, signal }) => {
-      const plans = await context.es.projections.plan.findPlans(input);
+      // If cursor is provided, use it for pagination (start after cursor)
+      // Otherwise, use startDate from filter or now
+      const now = new Date();
+      const queryStartDate = input.cursor
+        ? new Date(input.cursor.getTime() + 1) // Start after cursor to avoid duplicates
+        : input.startDate || now;
+      const endDate = input.endDate || addWeeks(now, 52); // 1 year ahead
+
+      const plans = await context.es.projections.plan.findPlans({
+        ...input,
+        startDate: queryStartDate,
+        endDate,
+        limit: input.limit,
+      });
       return plans;
     }),
   getUserPlans: protectedRoute

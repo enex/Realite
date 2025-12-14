@@ -25,7 +25,12 @@ import { Icon } from "@/components/ui/Icon";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 import type { ActivityId } from "@/shared/activities";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { startOfDay } from "date-fns";
 
 // iOS Design System (reduced to what's needed for this screen)
 const typography = {
@@ -110,16 +115,50 @@ export default function PlansScreen() {
     }
   }, [simpleAppBar, navigation]);
   const {
-    data: plans,
+    data: plansData,
     error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     refetch,
     isFetching,
     isRefetching,
-  } = useQuery(
-    orpc.plan.myPlans.queryOptions({
-      input: filter ?? {},
-    })
-  );
+  } = useInfiniteQuery({
+    ...orpc.plan.myPlans.queryOptions({
+      input: {
+        // Standardmäßig nur zukünftige Pläne (startDate >= startOfDay(now))
+        // Filter-Daten werden nur verwendet, wenn explizit gesetzt
+        startDate: filter?.startDate || startOfDay(new Date()),
+        endDate: filter?.endDate,
+        limit: 20,
+      },
+    }),
+    getNextPageParam: (lastPage: any[], allPages: any[][]) => {
+      if (!lastPage || lastPage.length === 0) return undefined;
+      // If we got fewer items than the limit, we've reached the end
+      if (lastPage.length < 20) return undefined;
+      // Use the startDate of the last item as cursor
+      const lastItem = lastPage[lastPage.length - 1];
+      return lastItem?.startDate
+        ? new Date(lastItem.startDate as unknown as string)
+        : undefined;
+    },
+    initialPageParam: undefined,
+  });
+
+  // Flatten all pages into a single array and deduplicate by id
+  const plans = useMemo(() => {
+    if (!plansData?.pages) return [];
+    const allPlans = plansData.pages.flat();
+    // Deduplicate by id to avoid showing the same plan twice
+    const seen = new Set<string>();
+    return allPlans.filter((plan: any) => {
+      const id = plan?.id;
+      if (!id || seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+  }, [plansData]);
 
   // Extract unique participant creator IDs from similarOverlappingPlans
   const participantCreatorIds = useMemo(() => {
@@ -215,20 +254,8 @@ export default function PlansScreen() {
   const filteredData = useMemo(() => {
     if (!data) return [] as PlanListItem[];
 
-    // Default: only today and future
-    const defaultStart = new Date();
-    defaultStart.setHours(0, 0, 0, 0);
-
-    const startDate =
-      typeof filter === "undefined"
-        ? defaultStart
-        : (filter?.startDate ?? undefined);
-    const endDate = filter?.endDate ?? undefined;
-
+    // Only filter by activity if filter is set, no date filtering (lazy loading handles that)
     return data.filter((p) => {
-      const t = new Date(p.date).getTime();
-      if (startDate && t < startDate.getTime()) return false;
-      if (endDate && t > endDate.getTime()) return false;
       if (filter?.activity && p.activity !== filter.activity) return false;
       return true;
     });
@@ -362,6 +389,19 @@ export default function PlansScreen() {
             tintColor="#007AFF"
           />
         }
+        onScroll={({ nativeEvent }) => {
+          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+          const paddingToBottom = 100; // Increased for better detection
+          const isNearBottom =
+            layoutMeasurement.height + contentOffset.y >=
+            contentSize.height - paddingToBottom;
+
+          if (isNearBottom && hasNextPage && !isFetchingNextPage) {
+            // Near bottom, load more
+            fetchNextPage();
+          }
+        }}
+        scrollEventThrottle={isWeb ? 100 : 400}
         contentContainerStyle={{
           paddingTop: spacing.md,
           paddingHorizontal: spacing.lg,
@@ -371,6 +411,13 @@ export default function PlansScreen() {
         {groupedPlans.map((group, index) => (
           <View key={group.date}>{renderDayGroup({ item: group, index })}</View>
         ))}
+        {isFetchingNextPage && hasNextPage && (
+          <View className="py-4 items-center">
+            <Text className={mutedTextClass} style={typography.subheadline}>
+              Lade weitere Pläne...
+            </Text>
+          </View>
+        )}
         {groupedPlans.length === 0 && (
           <View className="items-center justify-center py-8 gap-4">
             <View

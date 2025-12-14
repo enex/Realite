@@ -1,6 +1,6 @@
 import { ActivityId } from "@/shared/activities";
 import { addSeconds } from "date-fns";
-import { and, eq, gte, ilike, lte, ne, or, sql } from "drizzle-orm";
+import { and, asc, eq, gte, ilike, lte, ne, or, sql } from "drizzle-orm";
 import * as schema from "../db/schema";
 import { builder } from "./builder";
 import {
@@ -163,7 +163,12 @@ export const es = builder.store({
           },
         },
         queries: {
-          async listMyPlans(ctx, actor: string, range: [Date, Date]) {
+          async listMyPlans(
+            ctx,
+            actor: string,
+            range: [Date, Date],
+            limit?: number
+          ) {
             const baseQuery = ctx.db
               .select({
                 id: schema.plans.id,
@@ -304,7 +309,9 @@ export const es = builder.store({
                 sql`"ownPlansWithLocation"."plan_description"`,
                 sql`"ownPlansWithLocation"."plan_url"`,
                 ownPlansWithLocation.repetition
-              );
+              )
+              .orderBy(asc(ownPlansWithLocation.startDate))
+              .limit(limit ?? 100);
 
             console.log(q.toSQL());
             return await q;
@@ -349,6 +356,7 @@ export const es = builder.store({
                 radius?: number;
               };
               creatorId?: string;
+              limit?: number;
             }
           ) {
             // TODO: only show plans visible to the user
@@ -356,7 +364,11 @@ export const es = builder.store({
             // TODO: Only group if activity is the same
             const where = and(
               gte(schema.plans.startDate, input.startDate),
-              lte(schema.plans.startDate, input.endDate),
+              lte(
+                schema.plans.startDate,
+                input.endDate ||
+                  new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+              ), // Default to 1 year ahead if not provided
               input.activity && eq(schema.plans.activity, input.activity),
               input.creatorId && eq(schema.plans.creatorId, input.creatorId),
               input?.query
@@ -400,7 +412,9 @@ export const es = builder.store({
                 schema.planLocations,
                 eq(schema.plans.id, schema.planLocations.planId)
               )
-              .where(where);
+              .where(where)
+              .orderBy(asc(schema.plans.startDate))
+              .limit(input.limit ?? 100);
 
             return plans;
           },

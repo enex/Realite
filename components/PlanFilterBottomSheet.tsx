@@ -25,12 +25,7 @@ export type PlanFilterBottomSheetRef = {
   dismiss: () => void;
 };
 
-const quickRanges = [
-  { id: "today", label: "Heute" },
-  { id: "7d", label: "7 Tage" },
-  { id: "30d", label: "30 Tage" },
-  { id: "all", label: "Alle" },
-] as const;
+// Zeitraum-Filter entfernt - lazy loading ermöglicht einfaches Scrollen
 
 export const PlanFilterBottomSheet = forwardRef<
   PlanFilterBottomSheetRef,
@@ -46,8 +41,6 @@ export const PlanFilterBottomSheet = forwardRef<
     },
     ref
   ) => {
-    const [selectedQuick, setSelectedQuick] =
-      useState<(typeof quickRanges)[number]["id"]>("7d");
     const [selectedActivity, setSelectedActivity] = useState<
       ActivityId | undefined
     >(initial?.activity);
@@ -83,55 +76,19 @@ export const PlanFilterBottomSheet = forwardRef<
       return items;
     }, []);
 
-    const computeDates = useCallback((): {
-      startDate?: Date;
-      endDate?: Date;
-    } => {
-      const now = new Date();
-      if (selectedQuick === "today") {
-        const start = new Date(now);
-        const end = new Date(now);
-        end.setHours(23, 59, 59, 999);
-        return { startDate: start, endDate: end };
-      }
-      if (selectedQuick === "7d") {
-        const start = new Date(now);
-        const end = new Date(now);
-        end.setDate(end.getDate() + 7);
-        return { startDate: start, endDate: end };
-      }
-      if (selectedQuick === "30d") {
-        const start = new Date(now);
-        const end = new Date(now);
-        end.setDate(end.getDate() + 30);
-        return { startDate: start, endDate: end };
-      }
-      return { startDate: undefined, endDate: undefined };
-    }, [selectedQuick]);
-
     const handleReset = useCallback(() => {
-      setSelectedQuick("7d");
       setSelectedActivity(undefined);
     }, []);
 
     const handleApply = useCallback(() => {
-      const { startDate, endDate } = computeDates();
       onApply({
-        startDate,
-        endDate,
+        // Keine Datumsfilterung mehr - lazy loading übernimmt das
         activity: selectedActivity,
         useLocation: canUseLocation ? radiusKm !== null : false,
         radiusKm,
       });
       handleDismiss();
-    }, [
-      computeDates,
-      onApply,
-      selectedActivity,
-      handleDismiss,
-      radiusKm,
-      canUseLocation,
-    ]);
+    }, [onApply, selectedActivity, handleDismiss, radiusKm, canUseLocation]);
 
     return (
       <BottomSheetModal
@@ -250,46 +207,6 @@ export const PlanFilterBottomSheet = forwardRef<
               )}
             </View>
           )}
-
-          {/* Quick ranges */}
-          <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontSize: 14, color: "#8E8E93", marginBottom: 8 }}>
-              Zeitraum
-            </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                gap: 8,
-                flexWrap: "wrap" as const,
-              }}
-            >
-              {quickRanges.map((range) => (
-                <Pressable
-                  key={range.id}
-                  onPress={() => setSelectedQuick(range.id)}
-                  style={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 8,
-                    borderRadius: 16,
-                    backgroundColor:
-                      selectedQuick === range.id ? "#007AFF" : "white",
-                    borderWidth: 1,
-                    borderColor:
-                      selectedQuick === range.id ? "#007AFF" : "#E5E5EA",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: selectedQuick === range.id ? "white" : "#1C1C1E",
-                      fontWeight: "600",
-                    }}
-                  >
-                    {range.label}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
 
           {/* Activity selection */}
           <View style={{ marginBottom: 8 }}>
