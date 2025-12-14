@@ -1,5 +1,5 @@
+import { events } from "@/db/schema";
 import { db } from "@/server/db";
-import { events } from "@/server/db/schema";
 import { es } from "@/server/es";
 import { startOfDay } from "date-fns";
 import { and, eq } from "drizzle-orm";
@@ -36,13 +36,13 @@ export async function GET(request: Request) {
     }
 
     // Fetch user profile
-    const userProfile = await es.projections.lazy.user.getProfile(userId);
+    const userProfile = await es.projections.user.getProfile(userId);
     if (!userProfile) {
       return new Response("User not found", { status: 404 });
     }
 
     // Fetch user's upcoming plans
-    const plans = await es.projections.inline.plan.findPlans({
+    const plans = await es.projections.plan.findPlans({
       startDate: startOfDay(new Date()),
       endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days ahead
       creatorId: userId,
