@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import * as React from "react";
-import { Glass, type GlassSurfaceProps } from "./Glass";
+import { View } from "react-native";
+import { type GlassSurfaceProps } from "./Glass";
 
 export type GlassCardProps = GlassSurfaceProps & {
   padded?: boolean;
@@ -8,7 +9,7 @@ export type GlassCardProps = GlassSurfaceProps & {
 
 export function Card({ className, children, ...props }: GlassCardProps) {
   return (
-    <Glass
+    <View
       intensity={props.intensity ?? 55}
       tint={props.tint ?? "default"}
       borderColor={props.borderColor}
@@ -19,6 +20,6 @@ export function Card({ className, children, ...props }: GlassCardProps) {
       {...props}
     >
       {children}
-    </Glass>
+    </View>
   );
 }

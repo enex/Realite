@@ -158,6 +158,22 @@ export default function PlanDetails() {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [showActivityPicker, setShowActivityPicker] = useState(false);
+  const [showDeleteSheet, setShowDeleteSheet] = useState(false);
+
+  const cancelPlan = useMutation(
+    orpc.plan.cancel.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries();
+        router.back();
+      },
+      onError: (error: any) => {
+        Alert.alert(
+          "Fehler",
+          "Konnte Plan nicht löschen. Bitte versuche es erneut."
+        );
+      },
+    })
+  );
 
   const safeLocations = useMemo(
     () => (Array.isArray(plan?.locations) ? plan.locations : []),
@@ -309,7 +325,10 @@ export default function PlanDetails() {
                   <Icon name="pencil" size={18} color="#FFFFFF" />
                 </Pressable>
               )}
-              <Pressable className="w-10 h-10 rounded-full bg-black/30 items-center justify-center">
+              <Pressable
+                className="w-10 h-10 rounded-full bg-black/30 items-center justify-center"
+                onPress={() => setShowDeleteSheet(true)}
+              >
                 <Icon name="ellipsis" size={18} color="#FFFFFF" />
               </Pressable>
             </View>
@@ -373,7 +392,7 @@ export default function PlanDetails() {
           </Animated.View>
 
           {/* Content Card */}
-          <View className="bg-white dark:bg-zinc-900 rounded-t-[20px] -mt-5 pt-6 px-4 pb-8 min-h-[600px]">
+          <View className="bg-white dark:bg-zinc-900 rounded-t-[20px] -mt-5 pt-6 px-6 pb-8 min-h-[600px]">
             {/* Title Section */}
             <View className="mb-6">
               {/* Activity indicator */}
@@ -427,7 +446,7 @@ export default function PlanDetails() {
             {/* Host Info Row */}
             <InfoRow
               icon="person.circle"
-              label="Veranstalter"
+              label="Ersteller"
               value={hostName}
               accentColor={c3}
             />
@@ -475,6 +494,66 @@ export default function PlanDetails() {
           </View>
         )}
       </SafeAreaView>
+
+      {/* Plan Action Sheet */}
+      {showDeleteSheet && isOwner && plan && (
+        <PlanActionSheet
+          onClose={() => setShowDeleteSheet(false)}
+          onDelete={() => {
+            setShowDeleteSheet(false);
+            Alert.alert(
+              "Plan löschen",
+              "Möchtest du diesen Plan wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+              [
+                {
+                  text: "Abbrechen",
+                  style: "cancel",
+                },
+                {
+                  text: "Löschen",
+                  style: "destructive",
+                  onPress: () => {
+                    cancelPlan.mutate({ id });
+                  },
+                },
+              ]
+            );
+          }}
+          onDuplicate={() => {
+            setShowDeleteSheet(false);
+            // Prepare plan data for duplication
+            const planData = {
+              title: plan.title,
+              description: plan.description || undefined,
+              activity: plan.activity,
+              startDate: plan.startDate
+                ? new Date(plan.startDate as unknown as string).toISOString()
+                : new Date().toISOString(),
+              endDate: plan.endDate
+                ? new Date(plan.endDate as unknown as string).toISOString()
+                : undefined,
+              locations: plan.locations?.map((loc: any) => ({
+                title: loc.title || "",
+                address: loc.address || undefined,
+                latitude: loc.latitude,
+                longitude: loc.longitude,
+                url: loc.url || undefined,
+                description: loc.description || undefined,
+                category: loc.category || undefined,
+              })),
+              url: plan.url || undefined,
+              repetition: plan.repetition || undefined,
+              maybe: plan.maybe || undefined,
+            };
+            router.push({
+              pathname: "/plan/new/edit",
+              params: {
+                planData: JSON.stringify(planData),
+              },
+            } as any);
+          }}
+        />
+      )}
 
       {/* Bottom Sheets */}
       {showActivityPicker && plan && (
@@ -662,6 +741,57 @@ function ActivityBottomSheet({
   );
 }
 
+function PlanActionSheet({
+  onClose,
+  onDelete,
+  onDuplicate,
+}: {
+  onClose: () => void;
+  onDelete: () => void;
+  onDuplicate: () => void;
+}) {
+  return (
+    <View className="absolute inset-0 bg-black/20 justify-end">
+      <Pressable className="flex-1" onPress={onClose} />
+      <View className="bg-white dark:bg-zinc-900 rounded-t-[20px] pb-6 pt-2">
+        <View className="h-1 w-11 bg-gray-300 dark:bg-zinc-700 rounded-sm self-center mb-4" />
+        <Pressable
+          onPress={onDuplicate}
+          className="px-4 py-4 items-center border-b border-gray-200 dark:border-white/10"
+        >
+          <View className="flex-row items-center gap-3">
+            <Icon name="doc.on.doc" size={20} color="#007AFF" />
+            <Text className="text-[17px] leading-[22px] text-black dark:text-white font-medium">
+              Plan duplizieren
+            </Text>
+          </View>
+        </Pressable>
+        <Pressable
+          onPress={onDelete}
+          className="px-4 py-4 items-center border-b border-gray-200 dark:border-white/10"
+        >
+          <View className="flex-row items-center gap-3">
+            <Icon name="trash" size={20} color="#FF3B30" />
+            <Text className="text-[17px] leading-[22px] text-red-500 font-medium">
+              Plan löschen
+            </Text>
+          </View>
+        </Pressable>
+        <View className="px-4 pt-2">
+          <Pressable
+            onPress={onClose}
+            className="bg-gray-200 dark:bg-zinc-800 rounded-xl py-3 items-center"
+          >
+            <Text className="text-[15px] leading-5 text-black dark:text-zinc-50">
+              Abbrechen
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  );
+}
+
 function DateTimeBottomSheet({
   title,
   initialDate,
@@ -675,8 +805,6 @@ function DateTimeBottomSheet({
   onSelect: (d: Date) => void;
   accentColor: string;
 }) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
   const [selected, setSelected] = useState<Date[]>([initialDate]);
   return (
     <View className="absolute inset-0 bg-black/20 justify-end">

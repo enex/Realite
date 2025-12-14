@@ -24,9 +24,9 @@ import PlanFilterBottomSheet, {
   PlanFilterBottomSheetRef,
   type PlanFilter,
 } from "@/components/PlanFilterBottomSheet";
-import { Icon } from "@/components/ui/Icon";
-import { GlassSurface } from "@/components/ui/glass";
+import { Glass } from "@/components/ui/Glass";
 import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
+import { Icon } from "@/components/ui/Icon";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 import { useLocation } from "@/hooks/useLocation";
@@ -717,7 +717,7 @@ export default function ExploreScreen() {
           pointerEvents="none"
         >
           <SafeAreaView style={{ backgroundColor: "transparent" }}>
-            <GlassSurface
+            <Glass
               intensity={80}
               tint={colorScheme === "dark" ? "dark" : "light"}
               className="border-b border-white/30 dark:border-white/10 bg-white/60 dark:bg-black/40"
@@ -736,7 +736,7 @@ export default function ExploreScreen() {
               >
                 Entdecken
               </Text>
-            </GlassSurface>
+            </Glass>
           </SafeAreaView>
         </Animated.View>
 

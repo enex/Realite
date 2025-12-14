@@ -41,9 +41,9 @@ const planSchema = z.object({
     .describe("If true, the user has not fully confirmed the plan yet"),
 });
 
-const locationArraySchema = (planSchema.shape.locations as z.ZodOptional<
-  z.ZodArray<any>
->).unwrap();
+const locationArraySchema = (
+  planSchema.shape.locations as z.ZodOptional<z.ZodArray<any>>
+).unwrap();
 
 const getGroupIdFromActivity = (
   activityId?: ActivityId
@@ -121,11 +121,88 @@ export const planRouter = {
             input.location.longitude
           )
         : null;
+
+      // Determine timezone from location
+      const getTimezoneFromLocation = (
+        countryCode?: string,
+        lat?: number,
+        lng?: number
+      ): string => {
+        // Map common country codes to timezones
+        const countryTimezoneMap: Record<string, string> = {
+          DE: "Europe/Berlin",
+          AT: "Europe/Vienna",
+          CH: "Europe/Zurich",
+          FR: "Europe/Paris",
+          IT: "Europe/Rome",
+          ES: "Europe/Madrid",
+          NL: "Europe/Amsterdam",
+          BE: "Europe/Brussels",
+          PL: "Europe/Warsaw",
+          CZ: "Europe/Prague",
+          DK: "Europe/Copenhagen",
+          SE: "Europe/Stockholm",
+          NO: "Europe/Oslo",
+          FI: "Europe/Helsinki",
+          GB: "Europe/London",
+          IE: "Europe/Dublin",
+          PT: "Europe/Lisbon",
+          GR: "Europe/Athens",
+        };
+
+        if (countryCode && countryTimezoneMap[countryCode]) {
+          return countryTimezoneMap[countryCode];
+        }
+
+        // Fallback: try to infer from coordinates (rough approximation)
+        if (lat !== undefined && lng !== undefined) {
+          // Germany and Central Europe: roughly 47-55°N, 5-15°E
+          if (lat >= 47 && lat <= 55 && lng >= 5 && lng <= 15) {
+            return "Europe/Berlin";
+          }
+          // Western Europe
+          if (lat >= 40 && lat <= 51 && lng >= -5 && lng <= 10) {
+            return "Europe/Paris";
+          }
+          // Eastern Europe
+          if (lat >= 45 && lat <= 55 && lng >= 10 && lng <= 25) {
+            return "Europe/Warsaw";
+          }
+        }
+
+        // Default fallback
+        return "Europe/Berlin";
+      };
+
+      const timeZone = input.location
+        ? getTimezoneFromLocation(
+            resolved?.countryCode,
+            input.location.latitude,
+            input.location.longitude
+          )
+        : Intl.DateTimeFormat().resolvedOptions().timeZone;
+
       const now = new Date();
-      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      // Format current time in the user's timezone
+      const nowInTimezone = new Date(now.toLocaleString("en-US", { timeZone }));
+      const localDateStr = now.toLocaleDateString("de-DE", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        timeZone,
+      });
+      const localTimeStr = now.toLocaleTimeString("de-DE", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+        timeZone,
+      });
+
       const systemPrompt = [
-        `You receive the input of a user that mentions what he or she wants to do. You create a plan out of this input.`,
-        `Decide on the correct activity for the plan. Use the most appropriate activity form the list:`,
+        `Du erhältst eine Eingabe eines Benutzers, der erwähnt, was er oder sie tun möchte. Du erstellst einen Plan aus dieser Eingabe.`,
+        `WICHTIG: Alle Inhalte (Titel, Beschreibungen, Ortsnamen, etc.) müssen auf Deutsch sein.`,
+        `Entscheide dich für die richtige Aktivität für den Plan. Verwende die passendste Aktivität aus der Liste:`,
         ...Object.entries(activities).flatMap(([groupId, group]) => [
           `- ${groupId}: ${group.name}`,
           ...Object.entries(group.subActivities).map(
@@ -133,34 +210,24 @@ export const planRouter = {
               `  - ${subActivityId}: ${description.name}`
           ),
         ]),
-        `If an event or specific place is referenced, use the web_search tool to verify details.`,
+        `Wenn ein Event oder ein spezifischer Ort erwähnt wird, verwende das web_search Tool, um Details zu überprüfen.`,
         input.location
-          ? `The user's approximate location is ${
+          ? `Der ungefähre Standort des Benutzers ist ${
               [resolved?.city, resolved?.region, resolved?.country]
                 .filter(Boolean)
                 .join(", ") ||
               `lat ${input.location.latitude}, lon ${input.location.longitude}`
-            }. Prefer suggestions relevant around this location.`
-          : `If no location is provided, do not assume a specific city; keep suggestions generic or ask clarifying questions.`,
-        `Every plan MUST include at least one concrete location.`,
-        `Use the search_location tool to find real places. If the user input is vague, search for 2-3 plausible locations near the user (e.g. parks, cafes, gyms) and include them all so the user can delete wrong ones.`,
-        `Only return locations that have a name and coordinates from search_location results. Never invent coordinates.`,
-        `Today is ${now.toLocaleDateString("de-DE", {
-          weekday: "long",
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
-        })} (${now.toISOString().slice(0, 10)}). The local time is ${now.toLocaleTimeString(
-          "de-DE",
-          {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          }
-        )} in time zone ${timeZone}.`,
-        "All date-times must be in ISO 8601 UTC format: YYYY-MM-DDTHH:mm:ssZ. Always include the correct year.",
-        "If a month/day or weekday would be in the past this year, schedule the next future occurrence (possibly next year).",
-        "Every plan must be in the future.",
+            }. Bevorzuge Vorschläge, die für diese Umgebung relevant sind.`
+          : `Wenn kein Standort angegeben ist, nimm keine spezifische Stadt an; halte Vorschläge generisch oder stelle Klärungsfragen.`,
+        `Jeder Plan MUSS mindestens einen konkreten Ort enthalten.`,
+        `Verwende das search_location Tool, um echte Orte zu finden. Wenn die Benutzereingabe vage ist, suche nach 2-3 plausiblen Orten in der Nähe des Benutzers (z.B. Parks, Cafés, Fitnessstudios) und füge sie alle hinzu, damit der Benutzer falsche löschen kann.`,
+        `Gib nur Orte zurück, die einen Namen und Koordinaten aus den search_location Ergebnissen haben. Erfinde niemals Koordinaten.`,
+        `Heute ist ${localDateStr} (${now.toISOString().slice(0, 10)}). Die lokale Zeit ist ${localTimeStr} in der Zeitzone ${timeZone}.`,
+        `ALLE Datums- und Zeitangaben müssen im ISO 8601 Format mit korrekter Zeitzone sein: YYYY-MM-DDTHH:mm:ss+HH:mm oder YYYY-MM-DDTHH:mm:ssZ für UTC.`,
+        `WICHTIG: Berücksichtige die Zeitzone ${timeZone} bei allen Datums- und Zeitangaben. Wenn der Benutzer eine Zeit angibt (z.B. "15:00" oder "3 Uhr nachmittags"), interpretiere diese als lokale Zeit in ${timeZone} und konvertiere sie entsprechend.`,
+        `Wenn ein Monat/Tag oder Wochentag in diesem Jahr in der Vergangenheit wäre, plane das nächste zukünftige Vorkommen (möglicherweise nächstes Jahr).`,
+        `Jeder Plan muss in der Zukunft liegen.`,
+        `Alle Texte (Titel, Beschreibungen, etc.) müssen auf Deutsch sein.`,
       ].join("\n");
 
       const aiPlanSchema = planSchema.extend({
@@ -209,7 +276,8 @@ export const planRouter = {
         tools: {
           create_plan: tool({
             inputSchema: aiPlanSchema,
-            description: "Create a plan",
+            description:
+              "Erstelle einen Plan. Alle Texte (Titel, Beschreibungen) müssen auf Deutsch sein. Datumsangaben müssen im ISO 8601 Format mit korrekter Zeitzone sein.",
           }),
           web_search: openai.tools.webSearchPreview({
             searchContextSize: "high",
@@ -225,7 +293,7 @@ export const planRouter = {
           search_location: tool({
             inputSchema: locationRouter.search["~orpc"].inputSchema!,
             description:
-              "Search for a location. This is necessary in order to to create a plan, because every plan must have at least one location.",
+              "Suche nach einem Ort. Dies ist notwendig, um einen Plan zu erstellen, da jeder Plan mindestens einen Ort haben muss.",
             execute: async ({ query }) => {
               const res = await placesService.search({
                 query,
@@ -252,8 +320,20 @@ export const planRouter = {
           ?.input as z.infer<typeof planSchema>,
       };
       // Normalize AI result: enforce ISO-8601 and ensure startDate is in the future
+      // Handle timezone-aware dates properly
       if (res.plan?.startDate) {
-        const parsed = new Date(res.plan.startDate);
+        let parsed = new Date(res.plan.startDate);
+        if (isNaN(parsed.getTime())) {
+          // If parsing failed, try to interpret as local time in the user's timezone
+          // This handles cases where AI might return dates without timezone info
+          const localDateStr = res.plan.startDate;
+          // Try to parse as if it's in the user's timezone
+          const tempDate = new Date(localDateStr);
+          if (!isNaN(tempDate.getTime())) {
+            parsed = tempDate;
+          }
+        }
+
         if (!isNaN(parsed.getTime())) {
           let adjusted = new Date(parsed);
           const now = new Date();
@@ -264,12 +344,20 @@ export const planRouter = {
               adjusted.setFullYear(now.getFullYear() + 1);
             }
           }
+          // Always return in ISO format (UTC)
           res.plan.startDate = adjusted.toISOString();
         }
       }
 
       if (res.plan?.endDate) {
-        const parsedEnd = new Date(res.plan.endDate);
+        let parsedEnd = new Date(res.plan.endDate);
+        if (isNaN(parsedEnd.getTime())) {
+          const tempDate = new Date(res.plan.endDate);
+          if (!isNaN(tempDate.getTime())) {
+            parsedEnd = tempDate;
+          }
+        }
+
         if (!isNaN(parsedEnd.getTime())) {
           const adjustedEnd = new Date(parsedEnd);
           if (res.plan.startDate) {
@@ -278,6 +366,7 @@ export const planRouter = {
               adjustedEnd.setTime(start.getTime() + 60 * 60 * 1000);
             }
           }
+          // Always return in ISO format (UTC)
           res.plan.endDate = adjustedEnd.toISOString();
         }
       }
@@ -290,11 +379,7 @@ export const planRouter = {
         const activityHint =
           res.plan.activity &&
           activities[getGroupIdFromActivity(res.plan.activity)]?.nameDe;
-        const queryParts = [
-          input.text,
-          activityHint,
-          cityHint,
-        ].filter(Boolean);
+        const queryParts = [input.text, activityHint, cityHint].filter(Boolean);
         const query = queryParts.join(" ");
         const fallbackSearch = query
           ? await placesService.search({
@@ -382,6 +467,33 @@ export const planRouter = {
         data: input.plan,
       });
       return plan;
+    }),
+  cancel: protectedRoute
+    .errors({
+      NOT_FOUND: { message: "Plan not found" },
+      NOT_OWNER: { message: "You are not the owner of this plan" },
+    })
+    .input(
+      z.object({
+        id: z.string(),
+        reason: z.enum(["schedule-conflict", "other"]).optional(),
+        comment: z.string().optional(),
+      })
+    )
+    .handler(async ({ context, input, errors }) => {
+      const plan = await context.es.projections.plan.get(input.id);
+      if (!plan) throw errors.NOT_FOUND();
+      // check that this plan is owned by the user
+      if (plan.creatorId !== context.session.id) throw errors.NOT_OWNER();
+      await context.es.add({
+        type: "realite.plan.cancelled",
+        subject: input.id,
+        data: {
+          reason: input.reason || "other",
+          comment: input.comment,
+        },
+      });
+      return { success: true };
     }),
   find: protectedRoute
     .input(

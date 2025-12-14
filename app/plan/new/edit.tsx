@@ -5,7 +5,6 @@ import {
   Alert,
   Pressable,
   ScrollView,
-  Switch,
   Text,
   TextInput,
   useColorScheme,
@@ -182,25 +181,6 @@ export default function NewPlanEdit() {
 
           {/* Event Details Section */}
           <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
-            {/* All-day Toggle */}
-            <EditRow
-              icon="paperplane"
-              label="Ganztägig"
-              value={null}
-              rightComponent={
-                <Switch
-                  value={isAllDay}
-                  onValueChange={setIsAllDay}
-                  trackColor={{
-                    false: isDark ? "#3F3F3F" : "#E5E5EA",
-                    true: accentColor,
-                  }}
-                  thumbColor="#FFFFFF"
-                />
-              }
-              accentColor={accentColor}
-            />
-
             {/* Start Date/Time */}
             <EditRow
               icon="clock"
@@ -246,38 +226,6 @@ export default function NewPlanEdit() {
             />
           </View>
 
-          {/* Actions Section */}
-          <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
-            <EditRow
-              icon="person.2"
-              label="Personen hinzufügen"
-              value={null}
-              onPress={() => {}}
-              accentColor={accentColor}
-            />
-            <EditRow
-              icon="video"
-              label="Videokonferenz hinzufügen"
-              value={null}
-              onPress={() => {}}
-              accentColor={accentColor}
-            />
-            <EditRow
-              icon="building.2"
-              label="Raum hinzufügen"
-              value={null}
-              onPress={() => {}}
-              accentColor={accentColor}
-            />
-            <EditRow
-              icon="mappin.and.ellipse"
-              label="Ort hinzufügen"
-              value={null}
-              onPress={() => {}}
-              accentColor={accentColor}
-            />
-          </View>
-
           {/* Description */}
           <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
             <View className="px-4 py-4">
@@ -292,40 +240,6 @@ export default function NewPlanEdit() {
                 className="text-[17px] leading-[22px] text-black dark:text-white min-h-[100px]"
               />
             </View>
-          </View>
-
-          {/* Reminders Section */}
-          <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
-            <EditRow
-              icon="bell"
-              label="Zum Zeitpunkt des Termins"
-              value={null}
-              rightComponent={
-                <Pressable>
-                  <Icon
-                    name="xmark"
-                    size={16}
-                    color={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"}
-                  />
-                </Pressable>
-              }
-              accentColor={accentColor}
-            />
-            <EditRow
-              icon="bell"
-              label="5 Minuten vorher"
-              value={null}
-              rightComponent={
-                <Pressable>
-                  <Icon
-                    name="xmark"
-                    size={16}
-                    color={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"}
-                  />
-                </Pressable>
-              }
-              accentColor={accentColor}
-            />
           </View>
         </ScrollView>
       </View>

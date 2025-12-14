@@ -5,7 +5,6 @@ import {
   Alert,
   Pressable,
   ScrollView,
-  Switch,
   Text,
   TextInput,
   useColorScheme,
@@ -58,7 +57,6 @@ export default function PlanEdit() {
   // Form state
   const [title, setTitle] = useState(plan?.title || "");
   const [description, setDescription] = useState(plan?.description || "");
-  const [isAllDay, setIsAllDay] = useState(false);
   const [startDate, setStartDate] = useState<Date>(
     plan?.startDate ? new Date(plan.startDate as unknown as string) : new Date()
   );
@@ -167,25 +165,6 @@ export default function PlanEdit() {
 
           {/* Event Details Section */}
           <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
-            {/* All-day Toggle */}
-            <EditRow
-              icon="paperplane"
-              label="Ganztägig"
-              value={null}
-              rightComponent={
-                <Switch
-                  value={isAllDay}
-                  onValueChange={setIsAllDay}
-                  trackColor={{
-                    false: isDark ? "#3F3F3F" : "#E5E5EA",
-                    true: accentColor,
-                  }}
-                  thumbColor="#FFFFFF"
-                />
-              }
-              accentColor={accentColor}
-            />
-
             {/* Start Date/Time */}
             <EditRow
               icon="clock"
@@ -204,61 +183,12 @@ export default function PlanEdit() {
               accentColor={accentColor}
             />
 
-            {/* Time Zone */}
-            <EditRow
-              icon="globe"
-              label="Mitteleuropäische Normalzeit"
-              value={null}
-              accentColor={accentColor}
-            />
-
-            {/* Recurrence */}
-            <EditRow
-              icon="arrow.clockwise"
-              label="Wiederholung"
-              value="Täglich"
-              onPress={() => {}}
-              accentColor={accentColor}
-            />
-
             {/* Activity */}
             <EditRow
               icon="calendar"
               label="Aktivität"
               value={getActivityLabel(selectedActivity)}
               onPress={() => setShowActivityPicker(true)}
-              accentColor={accentColor}
-            />
-          </View>
-
-          {/* Actions Section */}
-          <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
-            <EditRow
-              icon="person.2"
-              label="Personen hinzufügen"
-              value={null}
-              onPress={() => {}}
-              accentColor={accentColor}
-            />
-            <EditRow
-              icon="video"
-              label="Videokonferenz hinzufügen"
-              value={null}
-              onPress={() => {}}
-              accentColor={accentColor}
-            />
-            <EditRow
-              icon="building.2"
-              label="Raum hinzufügen"
-              value={null}
-              onPress={() => {}}
-              accentColor={accentColor}
-            />
-            <EditRow
-              icon="mappin.and.ellipse"
-              label="Ort hinzufügen"
-              value={null}
-              onPress={() => {}}
               accentColor={accentColor}
             />
           </View>
@@ -277,40 +207,6 @@ export default function PlanEdit() {
                 className="text-[17px] leading-[22px] text-black dark:text-white min-h-[100px]"
               />
             </View>
-          </View>
-
-          {/* Reminders Section */}
-          <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
-            <EditRow
-              icon="bell"
-              label="Zum Zeitpunkt des Termins"
-              value={null}
-              rightComponent={
-                <Pressable>
-                  <Icon
-                    name="xmark"
-                    size={16}
-                    color={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"}
-                  />
-                </Pressable>
-              }
-              accentColor={accentColor}
-            />
-            <EditRow
-              icon="bell"
-              label="5 Minuten vorher"
-              value={null}
-              rightComponent={
-                <Pressable>
-                  <Icon
-                    name="xmark"
-                    size={16}
-                    color={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"}
-                  />
-                </Pressable>
-              }
-              accentColor={accentColor}
-            />
           </View>
         </ScrollView>
       </View>

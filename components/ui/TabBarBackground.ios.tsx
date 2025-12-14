@@ -1,10 +1,10 @@
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { StyleSheet } from 'react-native';
-import { GlassSurface } from './glass';
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { StyleSheet } from "react-native";
+import { Glass } from "./Glass";
 
 export default function BlurTabBarBackground() {
   return (
-    <GlassSurface
+    <Glass
       // System chrome material automatically adapts to the system's theme
       // and matches the native tab bar appearance on iOS.
       tint="systemChromeMaterial"

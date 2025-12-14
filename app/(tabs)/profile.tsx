@@ -2,10 +2,9 @@ import rpc from "@/client/orpc";
 import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 import { genders, relationshipStatuses } from "@/shared/validation";
 import { isDefinedError } from "@orpc/client";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -14,16 +13,17 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  Switch,
   Text,
   TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { BirthdateField } from "@/components/BirthdateField";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { GlassCard } from "@/components/ui/card";
+import { ToggleRow } from "@/components/ToggleRow";
+import { Card } from "@/components/ui/Card";
 import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
 
 export default function ProfileScreen() {
@@ -218,7 +218,7 @@ export default function ProfileScreen() {
 
   const content = (
     <View className="px-6 pt-4 flex-col gap-y-8">
-      <GlassCard padded={false} className="rounded-3xl p-5 shadow-sm">
+      <Card className="rounded-3xl p-5 shadow-sm">
         <View className="flex-row items-center gap-4">
           <Pressable
             onPress={pickAndUploadAvatar}
@@ -263,9 +263,9 @@ export default function ProfileScreen() {
             </ThemedText>
           </View>
         </View>
-      </GlassCard>
+      </Card>
 
-      <GlassCard padded={false} className="rounded-2xl p-5 shadow-sm">
+      <Card className="rounded-2xl p-5 shadow-sm">
         <ThemedText
           type="subtitle"
           className="text-zinc-900 dark:text-zinc-50 mb-4"
@@ -363,9 +363,9 @@ export default function ProfileScreen() {
             ))}
           </View>
         </View>
-      </GlassCard>
+      </Card>
 
-      <GlassCard padded={false} className="rounded-2xl p-5 shadow-sm">
+      <Card className="rounded-2xl p-5 shadow-sm">
         <ThemedText
           type="subtitle"
           className="text-gray-900 dark:text-white mb-4"
@@ -393,9 +393,9 @@ export default function ProfileScreen() {
             })
           }
         />
-      </GlassCard>
+      </Card>
 
-      <GlassCard padded={false} className="rounded-2xl p-5 shadow-sm">
+      <Card className="rounded-2xl p-5 shadow-sm">
         <ThemedText
           type="subtitle"
           className="text-gray-900 dark:text-white mb-2"
@@ -412,9 +412,9 @@ export default function ProfileScreen() {
         >
           <Text className="text-primary">Benachrichtigungen verwalten</Text>
         </Pressable>
-      </GlassCard>
+      </Card>
 
-      <GlassCard padded={false} className="rounded-2xl p-5 shadow-sm">
+      <Card className="rounded-2xl p-5 shadow-sm">
         <ThemedText
           type="subtitle"
           className="text-gray-900 dark:text-white mb-2"
@@ -431,7 +431,7 @@ export default function ProfileScreen() {
         >
           <Text className="text-primary">Onboarding wiederholen</Text>
         </Pressable>
-      </GlassCard>
+      </Card>
 
       <View className="opacity-80">
         <ThemedText className="text-center text-gray-500 dark:text-gray-400">
@@ -492,100 +492,5 @@ export default function ProfileScreen() {
         </ScrollView>
       </ThemedView>
     </SafeAreaView>
-  );
-}
-
-function ToggleRow({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <View className="flex-row items-center justify-between py-3">
-      <ThemedText className="text-gray-700 dark:text-gray-300">
-        {label}
-      </ThemedText>
-      <Switch
-        value={value}
-        onValueChange={onChange}
-        trackColor={{ false: "#D1D5DB", true: "#6366F1" }}
-        thumbColor={
-          Platform.OS === "android"
-            ? value
-              ? "#ffffff"
-              : "#f4f4f5"
-            : undefined
-        }
-        ios_backgroundColor="#D1D5DB"
-      />
-    </View>
-  );
-}
-
-function BirthdateField({
-  value,
-  onChange,
-}: {
-  value: string | undefined;
-  onChange: (v?: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const date = useMemo(() => {
-    if (!value) return undefined;
-    const d = new Date(value);
-    return isNaN(d.getTime()) ? undefined : d;
-  }, [value]);
-
-  return (
-    <View className="mb-4">
-      <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
-        Geburtstag
-      </ThemedText>
-      <Pressable
-        onPress={() => setOpen(true)}
-        className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3"
-      >
-        <ThemedText className="text-gray-900 dark:text-white">
-          {date ? date.toLocaleDateString() : "Auswählen"}
-        </ThemedText>
-      </Pressable>
-
-      {open && (
-        <View className="mt-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3">
-          <DateTimePicker
-            value={date ?? new Date(2000, 0, 1)}
-            mode="date"
-            display={Platform.OS === "ios" ? "spinner" : "calendar"}
-            maximumDate={new Date()}
-            onChange={(_, selectedDate) => {
-              if (!selectedDate) return;
-              const iso = selectedDate.toISOString().slice(0, 10);
-              onChange(iso);
-            }}
-          />
-          <View className="mt-3 flex-row justify-between">
-            <Pressable
-              onPress={() => {
-                onChange(undefined);
-                setOpen(false);
-              }}
-              className="rounded-lg bg-muted px-4 py-2"
-            >
-              <ThemedText className="text-foreground">Entfernen</ThemedText>
-            </Pressable>
-            <Pressable
-              onPress={() => setOpen(false)}
-              className="rounded-lg bg-blue-600 px-4 py-2"
-            >
-              <ThemedText className="text-white">Fertig</ThemedText>
-            </Pressable>
-          </View>
-        </View>
-      )}
-    </View>
   );
 }

@@ -19,7 +19,7 @@ export type GlassSurfaceProps = ViewProps & {
   style?: StyleProp<ViewStyle>;
 };
 
-export function GlassSurface({
+export function Glass({
   blur = true,
   intensity = 60,
   tint = "default",

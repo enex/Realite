@@ -1,13 +1,13 @@
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { StyleSheet, useColorScheme } from "react-native";
-import { GlassSurface } from "./glass";
+import { Glass } from "./Glass";
 
 export default function GlassTabBarBackground() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
 
   return (
-    <GlassSurface
+    <Glass
       intensity={70}
       tint={isDark ? "dark" : "light"}
       androidFallback={false}

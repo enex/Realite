@@ -3,8 +3,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useCallback, useMemo, useRef } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 
+import { Glass } from "@/components/ui/Glass";
 import { Icon } from "@/components/ui/Icon";
-import { GlassSurface } from "@/components/ui/glass";
 import {
   getActivityGradient,
   getActivityIcon,
@@ -154,7 +154,7 @@ export function PlanCard({ item, index }: PlanCardProps) {
 
             {/* Time chip - absolute top-right for consistent placement */}
             <View className="absolute top-3 right-3" pointerEvents="none">
-              <GlassSurface
+              <Glass
                 intensity={80}
                 className="rounded-xl px-3 py-1.5 overflow-hidden border border-white/60 dark:border-white/20"
                 style={shadows.small}
@@ -168,7 +168,7 @@ export function PlanCard({ item, index }: PlanCardProps) {
                 >
                   {formatLocalTime(item.date)}
                 </Text>
-              </GlassSurface>
+              </Glass>
             </View>
 
             {/* Content */}
