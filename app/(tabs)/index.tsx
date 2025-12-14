@@ -318,14 +318,10 @@ export default function PlansScreen() {
 
   // Participants are now fetched as part of myPlans via similarOverlappingPlans
 
-  const colorScheme = useColorScheme();
-
   const surfaceClass = "bg-zinc-100 dark:bg-zinc-950";
-  const elevatedSurfaceClass = "bg-white dark:bg-zinc-900";
   // Better text contrast in dark mode
   const mutedTextClass = "text-zinc-500 dark:text-zinc-300";
   const strongTextClass = "text-zinc-900 dark:text-zinc-50";
-  const iconPrimary = colorScheme === "dark" ? "#f4f4f5" : "#1C1C1E";
 
   const renderDayGroup = ({
     item,
@@ -351,9 +347,11 @@ export default function PlansScreen() {
           {item.dayLabel}
         </Text>
       </View>
-      {item.plans.map((plan, planIndex) => (
-        <PlanCard key={plan.id} item={plan} index={index * 3 + planIndex} />
-      ))}
+      <View className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+        {item.plans.map((plan, planIndex) => (
+          <PlanCard key={plan.id} item={plan} index={index * 3 + planIndex} />
+        ))}
+      </View>
     </View>
   );
 

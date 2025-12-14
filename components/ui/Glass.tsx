@@ -17,6 +17,7 @@ export type GlassSurfaceProps = ViewProps & {
   fallbackBackground?: string;
   borderColor?: string;
   style?: StyleProp<ViewStyle>;
+  className?: string;
 };
 
 export function Glass({
