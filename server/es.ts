@@ -19,14 +19,29 @@ export const es = builder.store({
         handlers: {
           async "realite.plan.created"(ev, ctx) {
             console.log(ev, "will be added");
+            const startDate = new Date(ev.data.startDate);
+            let endDate: Date | null = null;
+
+            if (ev.data.endDate) {
+              const parsedEndDate = new Date(ev.data.endDate);
+              // Ensure endDate is always >= startDate to satisfy the tsrange constraint
+              if (parsedEndDate >= startDate) {
+                endDate = parsedEndDate;
+              } else {
+                // If endDate is before startDate, set it to startDate + 1 hour as default duration
+                endDate = new Date(startDate);
+                endDate.setHours(endDate.getHours() + 1);
+              }
+            }
+
             await ctx.db
               .insert(schema.plans)
               .values({
                 id: ev.subject,
                 creatorId: ev.actor,
                 activity: ev.data.activity,
-                startDate: new Date(ev.data.startDate),
-                endDate: ev.data.endDate ? new Date(ev.data.endDate) : null,
+                startDate: startDate,
+                endDate: endDate,
                 title: ev.data.title ?? "",
                 description: ev.data.description,
                 url: ev.data.url,
@@ -50,10 +65,26 @@ export const es = builder.store({
             }
           },
           async "realite.plan.cancelled"(ev, ctx) {
+            // Get the plan to check startDate
+            const plan = await ctx.db.query.plans.findFirst({
+              where: eq(schema.plans.id, ev.subject),
+            });
+
+            if (!plan) {
+              console.warn(`Plan ${ev.subject} not found for cancellation`);
+              return;
+            }
+
+            // Ensure endDate is always >= startDate to satisfy the tsrange constraint
+            // If the plan is in the future, set endDate to startDate (cancelled before it happened)
+            // If the plan is in the past or ongoing, set endDate to the cancellation time
+            const endDate =
+              ev.time >= plan.startDate ? ev.time : plan.startDate;
+
             await ctx.db
               .update(schema.plans)
               .set({
-                endDate: ev.time,
+                endDate: endDate,
               })
               .where(eq(schema.plans.id, ev.subject));
           },

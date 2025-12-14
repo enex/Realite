@@ -1,6 +1,7 @@
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Pressable,
@@ -17,6 +18,7 @@ import { ActivityBottomSheet } from "@/components/ActivityBottomSheet";
 import { DateTimeBottomSheet } from "@/components/DateTimeBottomSheet";
 import { EditRow } from "@/components/EditRow";
 import { Icon } from "@/components/ui/Icon";
+import { useLocation } from "@/hooks/useLocation";
 import {
   getActivityGradient,
   getActivityLabel,
@@ -72,6 +74,40 @@ export default function PlanEdit() {
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [showActivityPicker, setShowActivityPicker] = useState(false);
 
+  // Location state
+  type Location = {
+    title: string;
+    address?: string;
+    latitude: number;
+    longitude: number;
+    url?: string;
+    description?: string;
+    category?: string;
+  };
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [showLocationSearch, setShowLocationSearch] = useState(false);
+  const [locationSearchQuery, setLocationSearchQuery] = useState("");
+  const { latitude, longitude, hasPermission } = useLocation();
+
+  const locationSearchSheetRef = React.useRef<BottomSheet>(null);
+
+  // Initialize locations from plan data
+  useEffect(() => {
+    if (plan?.locations && Array.isArray(plan.locations)) {
+      setLocations(
+        plan.locations.map((loc: any) => ({
+          title: loc.title || "",
+          address: loc.address || undefined,
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          url: loc.url || undefined,
+          description: loc.description || undefined,
+          category: loc.category || undefined,
+        }))
+      );
+    }
+  }, [plan]);
+
   const handleSave = () => {
     if (!title.trim()) {
       Alert.alert("Fehler", "Bitte gib einen Titel ein.");
@@ -87,6 +123,7 @@ export default function PlanEdit() {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         activity: selectedActivity,
+        locations: locations.length > 0 ? locations : undefined,
       },
     });
   };
@@ -108,6 +145,47 @@ export default function PlanEdit() {
     });
   };
 
+  // Location search query
+  const { data: locationSearchResults, isLoading: isSearchingLocations } =
+    useQuery({
+      ...orpc.location.search.queryOptions({
+        input: {
+          query: locationSearchQuery,
+          limit: 10,
+          userLocation:
+            hasPermission && latitude && longitude
+              ? { lat: latitude, lng: longitude }
+              : undefined,
+          radius: 50000,
+        },
+      }),
+      enabled: locationSearchQuery.length > 2 && showLocationSearch,
+    });
+
+  const handleRemoveLocation = (index: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setLocations((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAddLocation = (location: {
+    name: string;
+    address: string;
+    latitude: number;
+    longitude: number;
+  }) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const newLocation: Location = {
+      title: location.name,
+      address: location.address,
+      latitude: location.latitude,
+      longitude: location.longitude,
+    };
+    setLocations((prev) => [...prev, newLocation]);
+    setLocationSearchQuery("");
+    setShowLocationSearch(false);
+    locationSearchSheetRef.current?.close();
+  };
+
   if (!plan) {
     return (
       <SafeAreaView className="flex-1 bg-black dark:bg-black">
@@ -127,7 +205,10 @@ export default function PlanEdit() {
       <View className="flex-1">
         {/* Fixed Header */}
         <View className="pt-safe px-4 pb-2 flex-row items-center justify-between border-b border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-900">
-          <Pressable className="w-10 h-10 rounded-full items-center justify-center">
+          <Pressable
+            className="w-10 h-10 rounded-full items-center justify-center"
+            onPress={() => router.back()}
+          >
             <Icon
               name="xmark"
               size={20}
@@ -193,6 +274,68 @@ export default function PlanEdit() {
             />
           </View>
 
+          {/* Locations Section */}
+          <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
+            <View className="px-4 py-2">
+              <View className="flex-row items-center justify-between mb-2">
+                <Text className="text-[17px] font-semibold text-black dark:text-white">
+                  Orte
+                </Text>
+                <Pressable
+                  onPress={() => {
+                    setShowLocationSearch(true);
+                    locationSearchSheetRef.current?.expand();
+                  }}
+                  className="flex-row items-center"
+                >
+                  <Icon name="plus.circle.fill" size={20} color={accentColor} />
+                  <Text
+                    className="text-[15px] ml-1"
+                    style={{ color: accentColor }}
+                  >
+                    Hinzufügen
+                  </Text>
+                </Pressable>
+              </View>
+
+              {locations.length === 0 ? (
+                <Text className="text-[15px] text-gray-500 dark:text-gray-400">
+                  Keine Orte hinzugefügt
+                </Text>
+              ) : (
+                <View className="gap-2">
+                  {locations.map((location, index) => (
+                    <View
+                      key={index}
+                      className="flex-row items-center justify-between p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg"
+                    >
+                      <View className="flex-1 mr-2">
+                        <Text className="text-[15px] font-medium text-black dark:text-white">
+                          {location.title}
+                        </Text>
+                        {location.address && (
+                          <Text className="text-[13px] text-gray-500 dark:text-gray-400 mt-1">
+                            {location.address}
+                          </Text>
+                        )}
+                      </View>
+                      <Pressable
+                        onPress={() => handleRemoveLocation(index)}
+                        className="w-8 h-8 items-center justify-center"
+                      >
+                        <Icon
+                          name="xmark.circle.fill"
+                          size={20}
+                          color={isDark ? "#EF4444" : "#DC2626"}
+                        />
+                      </Pressable>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          </View>
+
           {/* Description */}
           <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
             <View className="px-4 py-4">
@@ -246,6 +389,112 @@ export default function PlanEdit() {
           }}
         />
       )}
+
+      {/* Location Search Bottom Sheet */}
+      <BottomSheet
+        ref={locationSearchSheetRef}
+        index={-1}
+        snapPoints={["80%"]}
+        enablePanDownToClose
+        onClose={() => {
+          setShowLocationSearch(false);
+          setLocationSearchQuery("");
+        }}
+        backgroundStyle={{
+          backgroundColor: isDark ? "#18181B" : "#FFFFFF",
+        }}
+        handleIndicatorStyle={{
+          backgroundColor: isDark ? "#FFFFFF" : "#000000",
+        }}
+      >
+        <BottomSheetView className="flex-1 px-4">
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="text-[20px] font-bold text-black dark:text-white">
+              Ort suchen
+            </Text>
+            <Pressable
+              onPress={() => {
+                locationSearchSheetRef.current?.close();
+              }}
+            >
+              <Icon
+                name="xmark"
+                size={20}
+                color={isDark ? "#FFFFFF" : "#000000"}
+              />
+            </Pressable>
+          </View>
+
+          <TextInput
+            value={locationSearchQuery}
+            onChangeText={setLocationSearchQuery}
+            placeholder="Ort suchen..."
+            placeholderTextColor={
+              isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"
+            }
+            className="text-[17px] text-black dark:text-white bg-gray-100 dark:bg-zinc-800 rounded-lg px-4 py-3 mb-4"
+            autoFocus
+          />
+
+          {isSearchingLocations && (
+            <View className="py-8 items-center">
+              <Text className="text-[15px] text-gray-500 dark:text-gray-400">
+                Suche...
+              </Text>
+            </View>
+          )}
+
+          {!isSearchingLocations &&
+            locationSearchQuery.length > 2 &&
+            locationSearchResults &&
+            "locations" in locationSearchResults &&
+            locationSearchResults.locations && (
+              <ScrollView className="flex-1">
+                {locationSearchResults.locations.length === 0 ? (
+                  <View className="py-8 items-center">
+                    <Text className="text-[15px] text-gray-500 dark:text-gray-400">
+                      Keine Ergebnisse gefunden
+                    </Text>
+                  </View>
+                ) : (
+                  <View className="gap-2">
+                    {locationSearchResults.locations.map((location) => (
+                      <Pressable
+                        key={location.id}
+                        onPress={() =>
+                          handleAddLocation({
+                            name: location.name,
+                            address: location.address,
+                            latitude: location.latitude,
+                            longitude: location.longitude,
+                          })
+                        }
+                        className="p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg"
+                      >
+                        <Text className="text-[15px] font-medium text-black dark:text-white">
+                          {location.name}
+                        </Text>
+                        {location.address && (
+                          <Text className="text-[13px] text-gray-500 dark:text-gray-400 mt-1">
+                            {location.address}
+                          </Text>
+                        )}
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </ScrollView>
+            )}
+
+          {locationSearchQuery.length <= 2 && (
+            <View className="py-8 items-center">
+              <Text className="text-[15px] text-gray-500 dark:text-gray-400">
+                Gib mindestens 3 Zeichen ein, um zu suchen
+              </Text>
+            </View>
+          )}
+        </BottomSheetView>
+      </BottomSheet>
     </View>
   );
 }
