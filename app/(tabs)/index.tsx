@@ -172,9 +172,15 @@ export default function PlansScreen() {
         plan.similarOverlappingPlans.forEach((overlap: any) => {
           const creatorId = overlap?.creatorId;
           if (creatorId && participantNameById[creatorId]) {
+            // Find the profile to get the image
+            const profile = Array.isArray(participantProfiles)
+              ? (participantProfiles as any[]).find(
+                  (p: any) => p.id === creatorId
+                )
+              : null;
             participants.push({
               name: participantNameById[creatorId],
-              image: undefined, // Can be extended later if profile images are available
+              image: profile?.image || undefined,
             });
           }
         });
@@ -325,6 +331,8 @@ export default function PlansScreen() {
   );
 
   const isAndroid = Platform.OS === "android";
+  const isWeb = Platform.OS === "web";
+  const showFAB = isAndroid || isWeb;
 
   const bottomPadding = isAndroid ? 80 : 140;
 
@@ -403,7 +411,7 @@ export default function PlansScreen() {
         )}
       </Animated.ScrollView>
 
-      {isAndroid && groupedPlans.length > 0 && (
+      {showFAB && groupedPlans.length > 0 && (
         <NativeFAB onPress={() => aiPlanBottomSheetRef.current?.present()} />
       )}
 
@@ -438,6 +446,8 @@ export default function PlansScreen() {
 // Native iOS FAB Component
 function NativeFAB({ onPress }: { onPress: () => void }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
 
   const handlePressIn = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -477,16 +487,16 @@ function NativeFAB({ onPress }: { onPress: () => void }) {
       >
         <View
           style={{
-            width: 52,
-            height: 52,
-            borderRadius: 26,
-            backgroundColor: "#007AFF",
+            width: 64,
+            height: 64,
+            borderRadius: 16,
+            backgroundColor: isDark ? "#FFFFFF" : "#000000",
             alignItems: "center",
             justifyContent: "center",
             ...shadows.medium,
           }}
         >
-          <Icon name="plus" size={22} color="white" />
+          <Icon name="plus" size={28} color={isDark ? "#000000" : "#FFFFFF"} />
         </View>
       </Animated.View>
     </Pressable>

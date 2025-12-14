@@ -173,6 +173,17 @@ export default function ExploreScreen() {
     return map;
   }, [creatorProfiles]);
 
+  const imageById = useMemo(() => {
+    const map: Record<string, string | null> = {};
+    const arr = Array.isArray(creatorProfiles)
+      ? (creatorProfiles as any[])
+      : [];
+    arr.forEach((u: any) => {
+      if (u?.id) map[u.id] = (u.image as string) || null;
+    });
+    return map;
+  }, [creatorProfiles]);
+
   // Cluster plans (same activity, overlapping time, same/near location)
   const clusters = useMemo(() => {
     const plans = (foundPlans ?? []) as any[];
@@ -316,11 +327,14 @@ export default function ExploreScreen() {
               ]
             : undefined,
         participants: orderedCreatorIds
-          .map((id) => ({ name: nameById[id] ?? "" }))
+          .map((id) => ({
+            name: nameById[id] ?? "",
+            image: imageById[id] ?? undefined,
+          }))
           .filter((p) => p.name),
       } as PlanListItem;
     });
-  }, [foundPlans, clusters, nameById, session?.id]);
+  }, [foundPlans, clusters, nameById, imageById, session?.id]);
 
   const groupedPlans = useMemo(() => {
     const groups: Record<string, PlanListItem[]> = {};

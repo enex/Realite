@@ -348,6 +348,7 @@ export const es = builder.store({
                 longitude: number;
                 radius?: number;
               };
+              creatorId?: string;
             }
           ) {
             // TODO: only show plans visible to the user
@@ -357,6 +358,7 @@ export const es = builder.store({
               gte(schema.plans.startDate, input.startDate),
               lte(schema.plans.startDate, input.endDate),
               input.activity && eq(schema.plans.activity, input.activity),
+              input.creatorId && eq(schema.plans.creatorId, input.creatorId),
               input?.query
                 ? or(
                     ilike(schema.plans.title, `%${input.query}%`),

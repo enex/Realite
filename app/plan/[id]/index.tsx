@@ -1,9 +1,11 @@
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
+import * as Linking from "expo-linking";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Alert,
   Image,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -25,6 +27,7 @@ import {
 
 import { useSession } from "@/client/auth";
 import { orpc } from "@/client/orpc";
+import { Avatar } from "@/components/Avatar";
 import SmartDateTimePicker from "@/components/SmartDateTimePicker";
 import { Icon } from "@/components/ui/Icon";
 import {
@@ -122,6 +125,88 @@ export default function PlanDetails() {
     })
   );
 
+  // Get primary location for participant queries
+  const planPrimaryLocationForQuery = useMemo(() => {
+    const safeLocations = Array.isArray(plan?.locations) ? plan.locations : [];
+    return safeLocations[0];
+  }, [plan?.locations]);
+
+  // Find similar/overlapping plans to get participants
+  const { data: similarPlans } = useQuery({
+    ...orpc.plan.find.queryOptions({
+      input: {
+        startDate: plan?.startDate
+          ? new Date(plan.startDate as unknown as string)
+          : new Date(),
+        endDate: plan?.endDate
+          ? new Date(plan.endDate as unknown as string)
+          : new Date(Date.now() + 24 * 60 * 60 * 1000),
+        activity: plan?.activity as ActivityId | undefined,
+        location:
+          planPrimaryLocationForQuery &&
+          planPrimaryLocationForQuery.latitude &&
+          planPrimaryLocationForQuery.longitude
+            ? {
+                latitude: planPrimaryLocationForQuery.latitude,
+                longitude: planPrimaryLocationForQuery.longitude,
+                radius: 50, // 50 meters
+              }
+            : undefined,
+      },
+    }),
+    enabled:
+      Boolean(plan?.startDate) &&
+      Boolean(planPrimaryLocationForQuery?.latitude) &&
+      Boolean(planPrimaryLocationForQuery?.longitude),
+  });
+
+  // Check if current user already participates (has a similar plan)
+  const alreadyParticipates = useMemo(() => {
+    if (!similarPlans || !plan || !session?.id) return false;
+    return (similarPlans as any[]).some(
+      (similarPlan: any) =>
+        (similarPlan?.creatorId || similarPlan?.creator_id) === session.id &&
+        similarPlan.id !== plan.id
+    );
+  }, [similarPlans, plan, session?.id]);
+
+  // Extract participant IDs (creators of similar plans, excluding the current plan owner)
+  const participantIds = useMemo(() => {
+    if (!similarPlans || !plan) return [];
+    const ids = new Set<string>();
+    (similarPlans as any[]).forEach((similarPlan: any) => {
+      const creatorId = similarPlan?.creatorId || similarPlan?.creator_id;
+      if (
+        creatorId &&
+        creatorId !== plan.creatorId &&
+        similarPlan.id !== plan.id
+      ) {
+        ids.add(creatorId);
+      }
+    });
+    return Array.from(ids);
+  }, [similarPlans, plan]);
+
+  // Fetch participant profiles
+  const { data: participantProfiles } = useQuery({
+    ...orpc.user.getMany.queryOptions({
+      input: { ids: participantIds },
+    }),
+    enabled: participantIds.length > 0,
+  });
+
+  // Map participant IDs to names and images
+  const participants = useMemo(() => {
+    if (!participantProfiles || !Array.isArray(participantProfiles)) return [];
+    return (participantProfiles as any[])
+      .map((profile: any) => ({
+        id: profile.id,
+        name: profile.name || "",
+        image: profile.image || null,
+      }))
+      .filter((p) => p.name);
+  }, [participantProfiles]);
+
   const changePlan = useMutation(
     orpc.plan.change.mutationOptions({
       onSuccess: async () => {
@@ -131,12 +216,17 @@ export default function PlanDetails() {
   );
   const participateInPlan = useMutation(
     orpc.plan.participate.mutationOptions({
-      onSuccess: async () => {
+      onSuccess: async (result) => {
         await queryClient.invalidateQueries();
-        Alert.alert(
-          "Erfolgreich teilgenommen!",
-          "Der Plan wurde zu deinen Plänen hinzugefügt."
-        );
+        // Navigate to the duplicated plan
+        if (result?.id) {
+          router.replace(`/plan/${result.id}` as any);
+        } else {
+          Alert.alert(
+            "Erfolgreich!",
+            "Der Plan wurde zu deinen Plänen hinzugefügt."
+          );
+        }
       },
       onError: (error: any) => {
         if (error?.code === "ALREADY_OWNER") {
@@ -144,7 +234,7 @@ export default function PlanDetails() {
         } else {
           Alert.alert(
             "Fehler",
-            "Konnte nicht am Plan teilnehmen. Bitte versuche es erneut."
+            "Konnte den Plan nicht kopieren. Bitte versuche es erneut."
           );
         }
       },
@@ -270,6 +360,51 @@ export default function PlanDetails() {
       ? (primaryLocation.address as string)
       : undefined;
 
+  // Function to open location in Maps
+  const openLocationInMaps = () => {
+    if (!primaryLocation) return;
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    const lat = primaryLocation.latitude;
+    const lng = primaryLocation.longitude;
+    const address = primaryLocation.address || primaryLocation.title;
+
+    let url: string;
+
+    if (lat && lng) {
+      // Use coordinates if available
+      if (Platform.OS === "ios") {
+        url = `maps://maps.apple.com/?q=${lat},${lng}`;
+      } else {
+        url = `geo:${lat},${lng}?q=${lat},${lng}(${encodeURIComponent(
+          address || ""
+        )})`;
+      }
+    } else if (address) {
+      // Fallback to address search
+      if (Platform.OS === "ios") {
+        url = `maps://maps.apple.com/?q=${encodeURIComponent(address)}`;
+      } else {
+        url = `geo:0,0?q=${encodeURIComponent(address)}`;
+      }
+    } else {
+      return;
+    }
+
+    // Try to open native maps, fallback to Google Maps web
+    Linking.openURL(url).catch(() => {
+      // Fallback to Google Maps web
+      const googleMapsUrl =
+        lat && lng
+          ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+          : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+              address || ""
+            )}`;
+      Linking.openURL(googleMapsUrl);
+    });
+  };
+
   // Create placeholder gradient if no image
   const placeholderGradient = [
     tinycolor(c1)
@@ -309,7 +444,7 @@ export default function PlanDetails() {
           }}
           pointerEvents="box-none"
         >
-          <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center justify-between pt-2">
             <Pressable
               onPress={() => router.back()}
               className="w-10 h-10 rounded-full bg-black/30 items-center justify-center"
@@ -379,7 +514,7 @@ export default function PlanDetails() {
                 colors={placeholderGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                className="w-full h-full items-center justify-center"
+                className="w-full h-full items-center justify-center pt-safe"
               >
                 <Icon name={icon} size={120} color="rgba(255,255,255,0.3)" />
               </LinearGradient>
@@ -427,7 +562,7 @@ export default function PlanDetails() {
                 icon="mappin.and.ellipse"
                 label={locationLabel}
                 value={locationAddress || undefined}
-                onPress={isOwner ? () => {} : undefined}
+                onPress={openLocationInMaps}
                 accentColor={c3}
               />
             )}
@@ -448,8 +583,62 @@ export default function PlanDetails() {
               icon="person.circle"
               label="Ersteller"
               value={hostName}
+              onPress={() => {
+                if (plan?.creatorId) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push(`/user/${plan.creatorId}` as any);
+                }
+              }}
               accentColor={c3}
             />
+
+            {/* Participants Section */}
+            {participants.length > 0 && (
+              <View className="mt-4 pt-4 border-t border-gray-200 dark:border-white/10">
+                <View className="flex-row items-center mb-3">
+                  <View
+                    className="w-8 h-8 rounded-full items-center justify-center mr-3"
+                    style={{
+                      backgroundColor: isDark
+                        ? "rgba(255,255,255,0.1)"
+                        : tinycolor(c3).setAlpha(0.1).toRgbString(),
+                    }}
+                  >
+                    <Icon name="person.2" size={18} color={c3} />
+                  </View>
+                  <Text className="text-[17px] font-semibold text-black dark:text-white">
+                    Teilnehmer ({participants.length})
+                  </Text>
+                </View>
+                <View className="gap-2">
+                  {participants.map((participant) => (
+                    <Pressable
+                      key={participant.id}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        router.push(`/user/${participant.id}` as any);
+                      }}
+                      className="flex-row items-center py-2"
+                    >
+                      <Avatar
+                        name={participant.name}
+                        image={participant.image}
+                        size={40}
+                        className="mr-3"
+                      />
+                      <Text className="text-[15px] text-black dark:text-white flex-1">
+                        {participant.name}
+                      </Text>
+                      <Icon
+                        name="chevron.right"
+                        size={16}
+                        color={isDark ? "#9CA3AF" : "#6B7280"}
+                      />
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            )}
 
             {/* Description if available */}
             {plan.description && (
@@ -463,32 +652,27 @@ export default function PlanDetails() {
         </Animated.ScrollView>
 
         {/* Fixed Action Buttons */}
-        {!isOwner && (
+        {!isOwner && !alreadyParticipates && (
           <View
-            className="absolute bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-white/10 flex-row gap-2 px-4 pt-2"
+            className="absolute bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-white/10 px-4 pt-2"
             style={{
               paddingBottom: insets.bottom + 8,
             }}
           >
             <Pressable
-              onPress={() => participateInPlan.mutate({ id })}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                participateInPlan.mutate({ id });
+              }}
               disabled={participateInPlan.isPending}
-              className="flex-1 rounded-xl py-4 items-center justify-center flex-row gap-1"
+              className="w-full rounded-xl py-4 items-center justify-center flex-row gap-2"
               style={{ backgroundColor: c3 }}
             >
-              <Icon name="checkmark" size={18} color="#FFFFFF" />
-              <Text className="text-[15px] leading-5 text-white font-semibold">
-                Ja
-              </Text>
-            </Pressable>
-            <Pressable className="flex-1 rounded-xl py-4 items-center justify-center bg-gray-100 dark:bg-zinc-800">
-              <Text className="text-[15px] leading-5 text-black dark:text-white font-semibold">
-                Nein
-              </Text>
-            </Pressable>
-            <Pressable className="flex-1 rounded-xl py-4 items-center justify-center bg-gray-100 dark:bg-zinc-800">
-              <Text className="text-[15px] leading-5 text-black dark:text-white font-semibold">
-                Vielleicht
+              <Icon name="plus.circle.fill" size={20} color="#FFFFFF" />
+              <Text className="text-[17px] leading-5 text-white font-semibold">
+                {participateInPlan.isPending
+                  ? "Wird hinzugefügt..."
+                  : "Ich auch"}
               </Text>
             </Pressable>
           </View>

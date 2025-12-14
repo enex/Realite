@@ -184,7 +184,6 @@ export const planRouter = {
 
       const now = new Date();
       // Format current time in the user's timezone
-      const nowInTimezone = new Date(now.toLocaleString("en-US", { timeZone }));
       const localDateStr = now.toLocaleDateString("de-DE", {
         weekday: "long",
         day: "2-digit",
@@ -378,7 +377,10 @@ export const planRouter = {
         const cityHint = resolved?.city || resolved?.region || undefined;
         const activityHint =
           res.plan.activity &&
-          activities[getGroupIdFromActivity(res.plan.activity)]?.nameDe;
+          getGroupIdFromActivity(res.plan.activity) &&
+          activities[
+            getGroupIdFromActivity(res.plan.activity) as keyof typeof activities
+          ]?.nameDe;
         const queryParts = [input.text, activityHint, cityHint].filter(Boolean);
         const query = queryParts.join(" ");
         const fallbackSearch = query
@@ -509,10 +511,37 @@ export const planRouter = {
             radius: z.number().optional(),
           })
           .optional(),
+        creatorId: z.string().optional(),
       })
     )
     .handler(async ({ context, input, signal }) => {
       const plans = await context.es.projections.plan.findPlans(input);
+      return plans;
+    }),
+  getUserPlans: protectedRoute
+    .input(
+      z.object({
+        userId: z.string(),
+        startDate: z.coerce.date().optional(),
+        endDate: z.coerce.date().optional(),
+        includePast: z.boolean().optional().default(false),
+      })
+    )
+    .handler(async ({ context, input, signal }) => {
+      const now = new Date();
+      const startDate = input.startDate || now;
+      const endDate = input.endDate || addWeeks(now, 10);
+
+      // If includePast is true, extend startDate to include past plans
+      const actualStartDate = input.includePast
+        ? new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000) // 90 days ago
+        : startDate;
+
+      const plans = await context.es.projections.plan.findPlans({
+        startDate: actualStartDate,
+        endDate: endDate,
+        creatorId: input.userId,
+      });
       return plans;
     }),
   participate: protectedRoute

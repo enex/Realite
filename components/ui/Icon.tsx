@@ -68,6 +68,12 @@ const MAPPING = {
   "system-update": "refresh",
   pencil: "edit",
   ellipsis: "more-vert",
+  trash: "delete",
+  "trash.fill": "delete",
+  "xmark.circle.fill": "cancel",
+  "plus.circle.fill": "add-circle",
+  "mappin.and.ellipse": "place",
+  "person.circle": "account-circle",
 } as Partial<IconMapping>;
 
 /**

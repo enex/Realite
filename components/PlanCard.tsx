@@ -3,6 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useCallback, useMemo, useRef } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 
+import { Avatar } from "@/components/Avatar";
 import { Glass } from "@/components/ui/Glass";
 import { Icon } from "@/components/ui/Icon";
 import {
@@ -224,29 +225,16 @@ export function PlanCard({ item, index }: PlanCardProps) {
                         <View
                           key={`${p.name}-${idx}`}
                           style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: 14,
-                            backgroundColor: "rgba(255, 255, 255, 0.9)",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderWidth: 2,
-                            borderColor: "rgba(255, 255, 255, 0.5)",
                             marginLeft: idx > 0 ? -10 : 0,
                             zIndex: item.participants!.length - idx,
                             ...shadows.small,
+                            borderWidth: 2,
+                            borderColor: "rgba(255, 255, 255, 0.5)",
+                            borderRadius: 14,
+                            backgroundColor: "rgba(255, 255, 255, 0.9)",
                           }}
                         >
-                          {/* If we had images, we'd render Image here; fallback to initials */}
-                          <Text
-                            style={{
-                              ...typography.caption1,
-                              fontWeight: "600",
-                              color: "#1C1C1E",
-                            }}
-                          >
-                            {getInitials(p.name)}
-                          </Text>
+                          <Avatar name={p.name} image={p.image} size={28} />
                         </View>
                       ))}
                     </View>

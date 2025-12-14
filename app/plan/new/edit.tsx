@@ -305,7 +305,7 @@ export default function NewPlanEdit() {
                       key={index}
                       className="flex-row items-center justify-between p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg"
                     >
-                      <View className="flex-1 mr-2">
+                      <View className="flex-1 mr-3">
                         <Text className="text-[15px] font-medium text-black dark:text-white">
                           {location.title}
                         </Text>
@@ -318,9 +318,10 @@ export default function NewPlanEdit() {
                       <Pressable
                         onPress={() => handleRemoveLocation(index)}
                         className="w-8 h-8 items-center justify-center"
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                       >
                         <Icon
-                          name="xmark.circle.fill"
+                          name="trash"
                           size={20}
                           color={isDark ? "#EF4444" : "#DC2626"}
                         />
