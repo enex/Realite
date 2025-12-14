@@ -1,6 +1,7 @@
 import rpc from "@/client/orpc";
 import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 import { genders, relationshipStatuses } from "@/shared/validation";
+import { isDefinedError } from "@orpc/client";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "expo-router";
@@ -29,11 +30,11 @@ export default function ProfileScreen() {
   const router = useRouter();
   const simpleAppBar = useFeatureFlagBoolean(
     "simple-appbar-for-starpage",
-    false,
+    false
   );
   const me = useQuery(rpc.auth.me.queryOptions());
-  const avatarUpload = useMutation(
-    rpc.user.getAvatarUploadUrl.mutationOptions(),
+  const avatarUploadViaServer = useMutation(
+    rpc.user.uploadAvatar.mutationOptions()
   );
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
@@ -91,7 +92,7 @@ export default function ProfileScreen() {
           queryClient.setQueryData(rpc.auth.me.key(), ctx.old);
         }
       },
-    }),
+    })
   );
 
   const openNotificationSettings = async () => {
@@ -104,7 +105,7 @@ export default function ProfileScreen() {
     } catch {
       Alert.alert(
         "Hinweis",
-        "Bitte öffne die System-Einstellungen und erlaube Benachrichtigungen für diese App.",
+        "Bitte öffne die System-Einstellungen und erlaube Benachrichtigungen für diese App."
       );
     }
   };
@@ -113,21 +114,58 @@ export default function ProfileScreen() {
     try {
       setIsUploadingAvatar(true);
 
-      const ImagePicker = await import("expo-image-picker");
-      const FileSystem = await import("expo-file-system");
+      const showError = (message: string) => {
+        if (Platform.OS === "web" && typeof window !== "undefined") {
+          window.alert(message);
+          return;
+        }
+        Alert.alert("Fehler", message);
+      };
+
+      if (Platform.OS === "web") {
+        const file = await new Promise<File | null>((resolve) => {
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = "image/*";
+          input.onchange = () => resolve(input.files?.[0] ?? null);
+          input.click();
+        });
+
+        if (!file) return;
+        const contentType = file.type || "image/jpeg";
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onerror = () => reject(new Error("Failed to read file"));
+          reader.onload = () => resolve(String(reader.result));
+          reader.readAsDataURL(file);
+        });
+
+        const res = await avatarUploadViaServer.mutateAsync({
+          dataUrl,
+          contentType,
+        });
+        queryClient.setQueryData(rpc.auth.me.key(), (old: any) => ({
+          ...old,
+          image: res.publicUrl,
+        }));
+        await queryClient.invalidateQueries({ queryKey: rpc.auth.me.key() });
+        return;
+      }
+
+      const ImagePickerModule = await import("expo-image-picker");
+      const ImagePicker = ImagePickerModule.default || ImagePickerModule;
 
       const permission =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        Alert.alert(
-          "Berechtigung benötigt",
-          "Bitte erlaube den Zugriff auf deine Fotos, um ein Profilbild auszuwählen.",
+        showError(
+          "Bitte erlaube den Zugriff auf deine Fotos, um ein Profilbild auszuwählen."
         );
         return;
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: "images",
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.9,
@@ -137,25 +175,41 @@ export default function ProfileScreen() {
       const asset = result.assets[0];
       const contentType = asset.mimeType || "image/jpeg";
 
-      const { uploadUrl, publicUrl } = await avatarUpload.mutateAsync({
+      // Read file as base64 using native expo-file-system (legacy API)
+      // We cannot use z.file() here due to an incompatibility between Expo/React Native
+      // and oRPC's file handling. oRPC's FormData serialization tries to set the 'name'
+      // property on File/Blob objects, but Expo's polyfill only provides a getter,
+      // causing "Cannot assign to property 'name' which has only a getter" errors.
+      // Using base64 data URLs works reliably across all platforms.
+      const FileSystemLegacy = await import("expo-file-system/legacy");
+      const base64 = await FileSystemLegacy.readAsStringAsync(asset.uri, {
+        encoding: FileSystemLegacy.EncodingType.Base64,
+      });
+      const dataUrl = `data:${contentType};base64,${base64}`;
+
+      // Upload via server (ORPC) - server handles S3 upload
+      const res = await avatarUploadViaServer.mutateAsync({
+        dataUrl,
         contentType,
       });
 
-      const uploadRes = await FileSystem.uploadAsync(uploadUrl, asset.uri, {
-        httpMethod: "PUT",
-        uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
-        headers: { "Content-Type": contentType },
-      });
-
-      if (uploadRes.status < 200 || uploadRes.status >= 300) {
-        throw new Error(`Upload failed (${uploadRes.status})`);
-      }
-
-      await update.mutateAsync({ image: publicUrl });
+      queryClient.setQueryData(rpc.auth.me.key(), (old: any) => ({
+        ...old,
+        image: res.publicUrl,
+      }));
+      await queryClient.invalidateQueries({ queryKey: rpc.auth.me.key() });
     } catch (e: any) {
+      console.error("Avatar upload failed:", e);
+      if (isDefinedError(e) && e.code === "MISCONFIGURED") {
+        Alert.alert(
+          "Upload nicht verfügbar",
+          "Der Server ist noch nicht für S3 konfiguriert (S3_BUCKET/S3_ENDPOINT/S3_ACCESS_KEY/S3_SECRET_KEY). Optional: S3_OBJECT_ACL, S3_CACHE_CONTROL, S3_PATH_STYLE."
+        );
+        return;
+      }
       Alert.alert(
         "Fehler",
-        e?.message || "Profilbild konnte nicht gespeichert werden.",
+        e?.message || "Profilbild konnte nicht gespeichert werden."
       );
     } finally {
       setIsUploadingAvatar(false);

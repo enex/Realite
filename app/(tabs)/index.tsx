@@ -72,7 +72,7 @@ export default function PlansScreen() {
   const navigation = useNavigation();
   const simpleAppBar = useFeatureFlagBoolean(
     "simple-appbar-for-starpage",
-    false,
+    false
   );
   const aiPlanBottomSheetRef = useRef<AIPlanBottomSheetRef>(null);
   const filterRef = useRef<PlanFilterBottomSheetRef>(null);
@@ -121,7 +121,7 @@ export default function PlansScreen() {
   } = useQuery(
     orpc.plan.myPlans.queryOptions({
       input: filter ?? {},
-    }),
+    })
   );
 
   // Extract unique participant creator IDs from similarOverlappingPlans
@@ -255,12 +255,12 @@ export default function PlansScreen() {
         const date = new Date(y, (m as number) - 1, d as number);
         const today = new Date();
         const todayKey = `${today.getFullYear()}-${String(
-          today.getMonth() + 1,
+          today.getMonth() + 1
         ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
         const tmr = new Date(today);
         tmr.setDate(tmr.getDate() + 1);
         const tomorrowKey = `${tmr.getFullYear()}-${String(
-          tmr.getMonth() + 1,
+          tmr.getMonth() + 1
         ).padStart(2, "0")}-${String(tmr.getDate()).padStart(2, "0")}`;
 
         let dayLabel = date.toLocaleDateString("de-DE", {
@@ -279,7 +279,7 @@ export default function PlansScreen() {
           date: dateKey,
           dayLabel,
           plans: plans.sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
           ),
         };
       })
@@ -292,7 +292,8 @@ export default function PlansScreen() {
 
   const surfaceClass = "bg-zinc-100 dark:bg-zinc-950";
   const elevatedSurfaceClass = "bg-white dark:bg-zinc-900";
-  const mutedTextClass = "text-zinc-500 dark:text-zinc-400";
+  // Better text contrast in dark mode
+  const mutedTextClass = "text-zinc-500 dark:text-zinc-300";
   const strongTextClass = "text-zinc-900 dark:text-zinc-50";
   const iconPrimary = colorScheme === "dark" ? "#f4f4f5" : "#1C1C1E";
 
@@ -549,7 +550,7 @@ export default function PlansScreen() {
             ? undefined
             : Animated.event(
                 [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                { useNativeDriver: false },
+                { useNativeDriver: false }
               )
         }
         scrollEventThrottle={16}
@@ -833,10 +834,14 @@ function NativeFAB({ onPress }: { onPress: () => void }) {
 
 function WhatIsAPlan() {
   const colorScheme = useColorScheme();
-  const detailIconColor = colorScheme === "dark" ? "#a1a1aa" : "#3C3C43";
+  const isDark = colorScheme === "dark";
+  // Better contrast for icons in dark mode - use lighter color
+  const detailIconColor = isDark ? "#d4d4d8" : "#3C3C43";
+  // Better contrast for badge background in dark mode
   const badgeBgClass =
-    "rounded-xl border border-zinc-200 bg-zinc-100 p-1.5 dark:border-zinc-800 dark:bg-zinc-900/70";
-  const detailTextClass = "text-sm text-zinc-600 dark:text-zinc-300";
+    "rounded-xl border border-zinc-200 bg-zinc-100 p-1.5 dark:border-zinc-700 dark:bg-zinc-800/80";
+  // Better text contrast in dark mode
+  const detailTextClass = "text-sm text-zinc-600 dark:text-zinc-200";
 
   return (
     <View

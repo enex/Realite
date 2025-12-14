@@ -1,5 +1,6 @@
 import { Tabs } from "expo-router";
 import React from "react";
+import { useColorScheme } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/HapticTab";
@@ -9,16 +10,20 @@ import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
   const simpleAppBar = useFeatureFlagBoolean(
     "simple-appbar-for-starpage",
-    false,
+    false
   );
+
+  // Better contrast for inactive tabs in dark mode
+  const inactiveTintColor = colorScheme === "dark" ? "#9CA3AF" : "#8E8E93";
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: "#6366F1",
-        tabBarInactiveTintColor: "#8E8E93",
+        tabBarInactiveTintColor: inactiveTintColor,
         headerShown: simpleAppBar,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,

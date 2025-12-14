@@ -1,15 +1,20 @@
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { StyleSheet } from "react-native";
+import { StyleSheet, useColorScheme } from "react-native";
 import { GlassSurface } from "./glass";
 
 export default function GlassTabBarBackground() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+
   return (
     <GlassSurface
       intensity={70}
-      tint="default"
+      tint={isDark ? "dark" : "light"}
       androidFallback={false}
-      fallbackBackground="rgba(255,255,255,0.9)"
-      borderColor="rgba(255,255,255,0.4)"
+      fallbackBackground={
+        isDark ? "rgba(24,24,27,0.95)" : "rgba(255,255,255,0.9)"
+      }
+      borderColor={isDark ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.4)"}
       style={StyleSheet.absoluteFill}
     />
   );
@@ -18,4 +23,3 @@ export default function GlassTabBarBackground() {
 export function useBottomTabOverflow() {
   return useBottomTabBarHeight();
 }
-
