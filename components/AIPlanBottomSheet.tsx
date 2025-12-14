@@ -1,4 +1,4 @@
-import orpc, { client } from "@/client/orpc";
+import { client } from "@/client/orpc";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/Icon";
 import { Text } from "@/components/ui/text";
@@ -105,19 +105,10 @@ const AIPlanBottomSheet = forwardRef<
       });
 
       if (result.plan) {
-        // Create the actual plan using the create endpoint
-        const created = await client.plan.create(result.plan);
-
-        // Provide the new plan id to the parent for navigation
-        onPlanCreated?.({ ...result.plan, id: (created as any)?.id });
+        // Return the plan data without creating it - will be created in edit view
+        onPlanCreated?.(result.plan);
         setText("");
         handleDismissModalPress();
-
-        queryClient.invalidateQueries(
-          orpc.plan.myPlans.queryOptions({
-            input: {},
-          })
-        );
       } else {
         Alert.alert(
           "Fehler",

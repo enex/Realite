@@ -36,22 +36,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import tinycolor from "tinycolor2";
 
-const typography = {
-  largeTitle: { fontSize: 34, fontWeight: "700" as const, lineHeight: 41 },
-  title2: { fontSize: 22, fontWeight: "700" as const, lineHeight: 28 },
-  body: { fontSize: 17, fontWeight: "400" as const, lineHeight: 22 },
-  subheadline: { fontSize: 15, fontWeight: "400" as const, lineHeight: 20 },
-  caption1: { fontSize: 12, fontWeight: "400" as const, lineHeight: 16 },
-};
-
-const spacing = {
-  xs: 4,
-  sm: 8,
-  md: 16,
-  lg: 24,
-  xl: 32,
-};
-
 const HEADER_HEIGHT = 280;
 
 const getGroupIdFromActivity = (
@@ -220,19 +204,9 @@ export default function PlanDetails() {
 
   if (!plan) {
     return (
-      <SafeAreaView
-        style={{
-          flex: 1,
-          backgroundColor: isDark ? "#000000" : "#F2F2F7",
-        }}
-      >
-        <View style={{ padding: spacing.lg }}>
-          <Text
-            style={{
-              ...typography.subheadline,
-              color: isDark ? "#9CA3AF" : "#8E8E93",
-            }}
-          >
+      <SafeAreaView className="flex-1 bg-black dark:bg-black">
+        <View className="p-6">
+          <Text className="text-[15px] leading-5 text-gray-500 dark:text-gray-400">
             Plan nicht gefunden
           </Text>
         </View>
@@ -307,69 +281,35 @@ export default function PlanDetails() {
       : timeRangeLabel || "";
 
   return (
-    <View style={{ flex: 1, backgroundColor: isDark ? "#000000" : "#F2F2F7" }}>
-      <SafeAreaView style={{ flex: 1 }} edges={[]}>
+    <View className="flex-1 bg-gray-100 dark:bg-black">
+      <SafeAreaView className="flex-1" edges={[]}>
         {/* Fixed Header (always visible, over image) */}
         <View
+          className="absolute top-0 left-0 right-0 z-[1000] bg-transparent"
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 1000,
             paddingTop: insets.top,
-            paddingHorizontal: spacing.md,
-            paddingBottom: spacing.sm,
-            backgroundColor: "transparent",
+            paddingHorizontal: 16,
+            paddingBottom: 8,
           }}
           pointerEvents="box-none"
         >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
+          <View className="flex-row items-center justify-between">
             <Pressable
               onPress={() => router.back()}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: "rgba(0,0,0,0.3)",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              className="w-10 h-10 rounded-full bg-black/30 items-center justify-center"
             >
               <Icon name="xmark" size={18} color="#FFFFFF" />
             </Pressable>
-            <View style={{ flexDirection: "row", gap: spacing.sm }}>
+            <View className="flex-row gap-2">
               {isOwner && (
                 <Pressable
                   onPress={() => router.push(`/plan/${id}/edit` as any)}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 20,
-                    backgroundColor: "rgba(0,0,0,0.3)",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
+                  className="w-10 h-10 rounded-full bg-black/30 items-center justify-center"
                 >
                   <Icon name="pencil" size={18} color="#FFFFFF" />
                 </Pressable>
               )}
-              <Pressable
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  backgroundColor: "rgba(0,0,0,0.3)",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
+              <Pressable className="w-10 h-10 rounded-full bg-black/30 items-center justify-center">
                 <Icon name="ellipsis" size={18} color="#FFFFFF" />
               </Pressable>
             </View>
@@ -400,10 +340,10 @@ export default function PlanDetails() {
         >
           {/* Header Image */}
           <Animated.View
+            className="overflow-hidden"
             style={[
               {
                 height: HEADER_HEIGHT + insets.top,
-                overflow: "hidden",
                 marginTop: -insets.top,
               },
               headerImageStyle,
@@ -412,10 +352,7 @@ export default function PlanDetails() {
             {locationImageUrl ? (
               <Image
                 source={{ uri: locationImageUrl }}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                }}
+                className="w-full h-full"
                 resizeMode="cover"
               />
             ) : (
@@ -423,101 +360,43 @@ export default function PlanDetails() {
                 colors={placeholderGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                className="w-full h-full items-center justify-center"
               >
                 <Icon name={icon} size={120} color="rgba(255,255,255,0.3)" />
               </LinearGradient>
             )}
             {/* Dark overlay */}
             <Animated.View
-              style={[
-                {
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: "rgba(0,0,0,0.3)",
-                },
-                headerOverlayStyle,
-              ]}
+              className="absolute inset-0 bg-black/30"
+              style={headerOverlayStyle}
             />
           </Animated.View>
 
           {/* Content Card */}
-          <View
-            style={{
-              backgroundColor: isDark ? "#1F1F1F" : "#FFFFFF",
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              marginTop: -20,
-              paddingTop: spacing.lg,
-              paddingHorizontal: spacing.md,
-              paddingBottom: spacing.xl,
-              minHeight: 600,
-            }}
-          >
+          <View className="bg-white dark:bg-zinc-900 rounded-t-[20px] -mt-5 pt-6 px-4 pb-8 min-h-[600px]">
             {/* Title Section */}
-            <View style={{ marginBottom: spacing.lg }}>
+            <View className="mb-6">
               {/* Activity indicator */}
               {activityLabel && (
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginBottom: spacing.sm,
-                  }}
-                >
+                <View className="flex-row items-center mb-2">
                   <View
-                    style={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: 6,
-                      backgroundColor: c3,
-                      marginRight: spacing.sm,
-                    }}
+                    className="w-3 h-3 rounded-full mr-2"
+                    style={{ backgroundColor: c3 }}
                   />
-                  <Text
-                    style={{
-                      ...typography.caption1,
-                      color: isDark
-                        ? "rgba(255,255,255,0.7)"
-                        : "rgba(0,0,0,0.6)",
-                      textTransform: "uppercase",
-                      letterSpacing: 0.5,
-                    }}
-                  >
+                  <Text className="text-[12px] leading-4 text-gray-600 dark:text-white/70 uppercase tracking-wide">
                     {activityLabel}
                   </Text>
                 </View>
               )}
 
               {/* Title */}
-              <Text
-                style={{
-                  ...typography.largeTitle,
-                  color: isDark ? "#FFFFFF" : "#000000",
-                  fontWeight: "700",
-                  marginBottom: spacing.xs,
-                }}
-              >
+              <Text className="text-[34px] leading-[41px] font-bold text-black dark:text-white mb-1">
                 {plan.title}
               </Text>
 
               {/* Date/Time */}
               {dateTimeLabel && (
-                <Text
-                  style={{
-                    ...typography.subheadline,
-                    color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
-                    marginBottom: spacing.xs,
-                  }}
-                >
+                <Text className="text-[15px] leading-5 text-gray-600 dark:text-white/70 mb-1">
                   {dateTimeLabel}
                 </Text>
               )}
@@ -555,23 +434,8 @@ export default function PlanDetails() {
 
             {/* Description if available */}
             {plan.description && (
-              <View
-                style={{
-                  marginTop: spacing.md,
-                  paddingTop: spacing.md,
-                  borderTopWidth: 1,
-                  borderTopColor: isDark
-                    ? "rgba(255,255,255,0.1)"
-                    : "rgba(0,0,0,0.1)",
-                }}
-              >
-                <Text
-                  style={{
-                    ...typography.body,
-                    color: isDark ? "#FFFFFF" : "#000000",
-                    lineHeight: 24,
-                  }}
-                >
+              <View className="mt-4 pt-4 border-t border-gray-200 dark:border-white/10">
+                <Text className="text-[17px] leading-6 text-black dark:text-white">
                   {plan.description}
                 </Text>
               </View>
@@ -582,85 +446,29 @@ export default function PlanDetails() {
         {/* Fixed Action Buttons */}
         {!isOwner && (
           <View
+            className="absolute bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-white/10 flex-row gap-2 px-4 pt-2"
             style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              paddingBottom: insets.bottom + spacing.sm,
-              paddingHorizontal: spacing.md,
-              paddingTop: spacing.sm,
-              backgroundColor: isDark ? "#1F1F1F" : "#FFFFFF",
-              borderTopWidth: 1,
-              borderTopColor: isDark
-                ? "rgba(255,255,255,0.1)"
-                : "rgba(0,0,0,0.1)",
-              flexDirection: "row",
-              gap: spacing.sm,
+              paddingBottom: insets.bottom + 8,
             }}
           >
             <Pressable
               onPress={() => participateInPlan.mutate({ id })}
               disabled={participateInPlan.isPending}
-              style={{
-                flex: 1,
-                backgroundColor: c3,
-                borderRadius: 12,
-                paddingVertical: spacing.md,
-                alignItems: "center",
-                justifyContent: "center",
-                flexDirection: "row",
-                gap: spacing.xs,
-              }}
+              className="flex-1 rounded-xl py-4 items-center justify-center flex-row gap-1"
+              style={{ backgroundColor: c3 }}
             >
               <Icon name="checkmark" size={18} color="#FFFFFF" />
-              <Text
-                style={{
-                  ...typography.subheadline,
-                  color: "#FFFFFF",
-                  fontWeight: "600",
-                }}
-              >
+              <Text className="text-[15px] leading-5 text-white font-semibold">
                 Ja
               </Text>
             </Pressable>
-            <Pressable
-              style={{
-                flex: 1,
-                backgroundColor: isDark ? "#2F2F2F" : "#F2F2F7",
-                borderRadius: 12,
-                paddingVertical: spacing.md,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text
-                style={{
-                  ...typography.subheadline,
-                  color: isDark ? "#FFFFFF" : "#000000",
-                  fontWeight: "600",
-                }}
-              >
+            <Pressable className="flex-1 rounded-xl py-4 items-center justify-center bg-gray-100 dark:bg-zinc-800">
+              <Text className="text-[15px] leading-5 text-black dark:text-white font-semibold">
                 Nein
               </Text>
             </Pressable>
-            <Pressable
-              style={{
-                flex: 1,
-                backgroundColor: isDark ? "#2F2F2F" : "#F2F2F7",
-                borderRadius: 12,
-                paddingVertical: spacing.md,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text
-                style={{
-                  ...typography.subheadline,
-                  color: isDark ? "#FFFFFF" : "#000000",
-                  fontWeight: "600",
-                }}
-              >
+            <Pressable className="flex-1 rounded-xl py-4 items-center justify-center bg-gray-100 dark:bg-zinc-800">
+              <Text className="text-[15px] leading-5 text-black dark:text-white font-semibold">
                 Vielleicht
               </Text>
             </Pressable>
@@ -738,46 +546,25 @@ function InfoRow({
     <Pressable
       onPress={onPress}
       disabled={!interactive}
-      style={{
-        flexDirection: "row",
-        alignItems: "flex-start",
-        paddingVertical: spacing.md,
-        opacity: interactive ? 1 : 0.9,
-      }}
+      className="flex-row items-start py-4"
+      style={{ opacity: interactive ? 1 : 0.9 }}
     >
       <View
+        className="w-10 h-10 rounded-full items-center justify-center mr-4 bg-white/10 dark:bg-white/10"
         style={{
-          width: 40,
-          height: 40,
-          borderRadius: 20,
           backgroundColor: isDark
             ? "rgba(255,255,255,0.1)"
             : tinycolor(effectiveAccent).setAlpha(0.1).toRgbString(),
-          alignItems: "center",
-          justifyContent: "center",
-          marginRight: spacing.md,
         }}
       >
         <Icon name={icon} size={20} color={effectiveAccent} />
       </View>
-      <View style={{ flex: 1 }}>
-        <Text
-          style={{
-            ...typography.subheadline,
-            color: isDark ? "#FFFFFF" : "#000000",
-            fontWeight: "500",
-            marginBottom: spacing.xs,
-          }}
-        >
+      <View className="flex-1">
+        <Text className="text-[15px] leading-5 text-black dark:text-white font-medium mb-1">
           {label}
         </Text>
         {value && (
-          <Text
-            style={{
-              ...typography.body,
-              color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
-            }}
-          >
+          <Text className="text-[17px] leading-[22px] text-gray-600 dark:text-white/70">
             {value}
           </Text>
         )}
@@ -805,76 +592,30 @@ function ActivityBottomSheet({
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   return (
-    <View
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        top: 0,
-        backgroundColor: "rgba(0,0,0,0.2)",
-        justifyContent: "flex-end",
-      }}
-    >
-      <Pressable style={{ flex: 1 }} onPress={onClose} />
-      <View
-        style={{
-          backgroundColor: isDark ? "#1F1F1F" : "#fff",
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-          paddingBottom: 24,
-          paddingTop: 8,
-          maxHeight: "80%",
-        }}
-      >
-        <View
-          style={{
-            height: 4,
-            width: 44,
-            backgroundColor: isDark ? "#3F3F3F" : "#D1D1D6",
-            borderRadius: 2,
-            alignSelf: "center",
-            marginBottom: 8,
-          }}
-        />
-        <ScrollView style={{ maxHeight: 500 }}>
+    <View className="absolute inset-0 bg-black/20 justify-end">
+      <Pressable className="flex-1" onPress={onClose} />
+      <View className="bg-white dark:bg-zinc-900 rounded-t-[20px] pb-6 pt-2 max-h-[80%]">
+        <View className="h-1 w-11 bg-gray-300 dark:bg-zinc-700 rounded-sm self-center mb-2" />
+        <ScrollView className="max-h-[500px]">
           {Object.entries(activities).map(([groupId, group]) => (
-            <View
-              key={groupId}
-              style={{ paddingHorizontal: 16, paddingTop: 12 }}
-            >
-              <Text
-                style={{
-                  ...typography.caption1,
-                  color: isDark ? "#9CA3AF" : "#8E8E93",
-                  textTransform: "uppercase",
-                  marginBottom: 6,
-                }}
-              >
+            <View key={groupId} className="px-4 pt-3">
+              <Text className="text-[12px] leading-4 text-gray-500 dark:text-gray-400 uppercase mb-1.5">
                 {group.nameDe || group.name}
               </Text>
-              <View style={{ gap: 8 }}>
+              <View className="gap-2">
                 <Pressable
                   onPress={() => onSelect(groupId as ActivityId)}
-                  style={{
-                    backgroundColor:
-                      (selected as string) === groupId
-                        ? isDark
-                          ? "rgba(59,130,246,0.3)"
-                          : "#E5F2FF"
-                        : isDark
-                          ? "#2F2F2F"
-                          : "#F2F2F7",
-                    paddingHorizontal: 12,
-                    paddingVertical: 12,
-                    borderRadius: 12,
-                  }}
+                  className={`px-3 py-3 rounded-xl ${
+                    (selected as string) === groupId
+                      ? isDark
+                        ? "bg-blue-500/30"
+                        : "bg-blue-50"
+                      : isDark
+                        ? "bg-zinc-800"
+                        : "bg-gray-100"
+                  }`}
                 >
-                  <Text
-                    style={{
-                      color: isDark ? "#F9FAFB" : "#1C1C1E",
-                    }}
-                  >
+                  <Text className="text-white dark:text-zinc-50">
                     {group.nameDe || group.name}
                   </Text>
                 </Pressable>
@@ -885,24 +626,17 @@ function ActivityBottomSheet({
                     <Pressable
                       key={value}
                       onPress={() => onSelect(value)}
-                      style={{
-                        backgroundColor: isSelected
+                      className={`px-3 py-3 rounded-xl ${
+                        isSelected
                           ? isDark
-                            ? "rgba(59,130,246,0.3)"
-                            : "#E5F2FF"
+                            ? "bg-blue-500/30"
+                            : "bg-blue-50"
                           : isDark
-                            ? "#2F2F2F"
-                            : "#F2F2F7",
-                        paddingHorizontal: 12,
-                        paddingVertical: 12,
-                        borderRadius: 12,
-                      }}
+                            ? "bg-zinc-800"
+                            : "bg-gray-100"
+                      }`}
                     >
-                      <Text
-                        style={{
-                          color: isDark ? "#F9FAFB" : "#1C1C1E",
-                        }}
-                      >
+                      <Text className="text-white dark:text-zinc-50">
                         {(sub as any).nameDe || (sub as any).name}
                       </Text>
                     </Pressable>
@@ -911,24 +645,14 @@ function ActivityBottomSheet({
               </View>
             </View>
           ))}
-          <View style={{ height: 16 }} />
+          <View className="h-4" />
         </ScrollView>
-        <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
+        <View className="px-4 pt-2">
           <Pressable
             onPress={onClose}
-            style={{
-              backgroundColor: isDark ? "#2F2F2F" : "#E5E5EA",
-              borderRadius: 12,
-              paddingVertical: 12,
-              alignItems: "center",
-            }}
+            className="bg-gray-200 dark:bg-zinc-800 rounded-xl py-3 items-center"
           >
-            <Text
-              style={{
-                color: isDark ? "#F9FAFB" : "#1C1C1E",
-                ...typography.subheadline,
-              }}
-            >
+            <Text className="text-[15px] leading-5 text-black dark:text-zinc-50">
               Abbrechen
             </Text>
           </Pressable>
@@ -955,38 +679,15 @@ function DateTimeBottomSheet({
   const isDark = colorScheme === "dark";
   const [selected, setSelected] = useState<Date[]>([initialDate]);
   return (
-    <View
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        top: 0,
-        backgroundColor: "rgba(0,0,0,0.2)",
-        justifyContent: "flex-end",
-      }}
-    >
-      <Pressable style={{ flex: 1 }} onPress={onClose} />
-      <View
-        style={{
-          backgroundColor: isDark ? "#1F1F1F" : "#fff",
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-          paddingBottom: 12,
-          paddingTop: 8,
-        }}
-      >
-        <View style={{ alignItems: "center", paddingVertical: 6 }}>
-          <Text
-            style={{
-              ...typography.subheadline,
-              color: isDark ? "#F9FAFB" : "#1C1C1E",
-            }}
-          >
+    <View className="absolute inset-0 bg-black/20 justify-end">
+      <Pressable className="flex-1" onPress={onClose} />
+      <View className="bg-white dark:bg-zinc-900 rounded-t-[20px] pb-3 pt-2">
+        <View className="items-center py-1.5">
+          <Text className="text-[15px] leading-5 text-black dark:text-zinc-50">
             {title}
           </Text>
         </View>
-        <View style={{ height: 420 }}>
+        <View className="h-[420px]">
           <SmartDateTimePicker
             selectedDates={selected}
             onDateSelect={(d) => {
@@ -997,22 +698,12 @@ function DateTimeBottomSheet({
             accentColor={accentColor}
           />
         </View>
-        <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
+        <View className="px-4 pt-2">
           <Pressable
             onPress={onClose}
-            style={{
-              backgroundColor: isDark ? "#2F2F2F" : "#E5E5EA",
-              borderRadius: 12,
-              paddingVertical: 12,
-              alignItems: "center",
-            }}
+            className="bg-gray-200 dark:bg-zinc-800 rounded-xl py-3 items-center"
           >
-            <Text
-              style={{
-                color: isDark ? "#F9FAFB" : "#1C1C1E",
-                ...typography.subheadline,
-              }}
-            >
+            <Text className="text-[15px] leading-5 text-black dark:text-zinc-50">
               Abbrechen
             </Text>
           </Pressable>

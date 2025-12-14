@@ -410,15 +410,16 @@ export default function PlansScreen() {
       <AIPlanBottomSheet
         ref={aiPlanBottomSheetRef}
         onPlanCreated={(plan: any) => {
-          console.log("Plan created:", plan);
-          queryClient.invalidateQueries({
-            queryKey: orpc.plan.myPlans.queryOptions({
-              input: filter ?? {},
-            }).queryKey,
-          });
-          if (plan?.id) {
+          console.log("AI plan generated:", plan);
+          // Navigate to edit page with plan data as params
+          if (plan) {
             setTimeout(() => {
-              router.push(`/plan/${plan.id}` as any);
+              router.push({
+                pathname: "/plan/new/edit",
+                params: {
+                  planData: JSON.stringify(plan),
+                },
+              } as any);
             }, 0);
           }
         }}

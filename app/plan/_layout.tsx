@@ -15,6 +15,12 @@ export default function PlanLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="new/edit"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }
