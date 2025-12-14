@@ -369,8 +369,12 @@ export const es = builder.store({
                 input.endDate ||
                   new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
               ), // Default to 1 year ahead if not provided
-              input.activity && eq(schema.plans.activity, input.activity),
-              input.creatorId && eq(schema.plans.creatorId, input.creatorId),
+              input.activity
+                ? eq(schema.plans.activity, input.activity)
+                : undefined,
+              input.creatorId
+                ? eq(schema.plans.creatorId, input.creatorId)
+                : undefined,
               input?.query
                 ? or(
                     ilike(schema.plans.title, `%${input.query}%`),

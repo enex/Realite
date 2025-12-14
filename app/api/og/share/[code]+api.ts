@@ -32,10 +32,8 @@ export async function GET(request: Request) {
     // Fetch user profile and plans
     // es.projections are already bound to the correct context, so we can call them directly
     // TypeScript has issues with the complex type, so we use type assertion
-    const userProfile = await (es.projections.lazy.user as any).getProfile(
-      userId
-    );
-    const plans = await (es.projections.inline.plan as any).findPlans({
+    const userProfile = await es.projections.user.getProfile(userId);
+    const plans = await es.projections.plan.findPlans({
       startDate: new Date(),
       endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days ahead
       creatorId: userId,
