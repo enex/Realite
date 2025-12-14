@@ -21,7 +21,7 @@ import PlanFilterBottomSheet, {
   type PlanFilter,
   type PlanFilterBottomSheetRef,
 } from "@/components/PlanFilterBottomSheet";
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Icon } from "@/components/ui/Icon";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 import type { ActivityId } from "@/shared/activities";
@@ -89,7 +89,7 @@ export default function PlansScreen() {
               }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <IconSymbol
+              <Icon
                 name="line.3.horizontal.decrease.circle"
                 size={22}
                 color="#007AFF"
@@ -102,7 +102,7 @@ export default function PlansScreen() {
               }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <IconSymbol name="plus" size={22} color="#007AFF" />
+              <Icon name="plus" size={22} color="#007AFF" />
             </Pressable>
           </View>
         ),
@@ -369,7 +369,7 @@ export default function PlansScreen() {
               className="h-24 w-24 items-center justify-center rounded-full border border-indigo-200 bg-indigo-100 dark:border-indigo-500/40 dark:bg-indigo-500/10"
               style={{ ...shadows.small }}
             >
-              <IconSymbol name="calendar" size={44} color="#007AFF" />
+              <Icon name="calendar" size={44} color="#007AFF" />
             </View>
             <Text className={strongTextClass} style={typography.headline}>
               Noch keine Pläne
@@ -485,7 +485,7 @@ function NativeFAB({ onPress }: { onPress: () => void }) {
             ...shadows.medium,
           }}
         >
-          <IconSymbol name="plus" size={22} color="white" />
+          <Icon name="plus" size={22} color="white" />
         </View>
       </Animated.View>
     </Pressable>
@@ -514,7 +514,7 @@ function WhatIsAPlan() {
       <View style={{ gap: 8 }}>
         <View className="flex-row items-center" style={{ gap: 10 }}>
           <View className={badgeBgClass}>
-            <IconSymbol name="tag" size={14} color={detailIconColor} />
+            <Icon name="tag" size={14} color={detailIconColor} />
           </View>
           <Text className={detailTextClass}>
             Aktivität mit Titel und Beschreibung
@@ -522,19 +522,19 @@ function WhatIsAPlan() {
         </View>
         <View className="flex-row items-center" style={{ gap: 10 }}>
           <View className={badgeBgClass}>
-            <IconSymbol name="clock" size={14} color={detailIconColor} />
+            <Icon name="clock" size={14} color={detailIconColor} />
           </View>
           <Text className={detailTextClass}>Zeitpunkt oder Zeitraum</Text>
         </View>
         <View className="flex-row items-center" style={{ gap: 10 }}>
           <View className={badgeBgClass}>
-            <IconSymbol name="location" size={14} color={detailIconColor} />
+            <Icon name="location" size={14} color={detailIconColor} />
           </View>
           <Text className={detailTextClass}>Ort (optional)</Text>
         </View>
         <View className="flex-row items-center" style={{ gap: 10 }}>
           <View className={badgeBgClass}>
-            <IconSymbol name="person.2" size={14} color={detailIconColor} />
+            <Icon name="person.2" size={14} color={detailIconColor} />
           </View>
           <Text className={detailTextClass}>Andere können dazukommen</Text>
         </View>

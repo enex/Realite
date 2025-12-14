@@ -1,6 +1,6 @@
 import orpc, { client } from "@/client/orpc";
 import { Button } from "@/components/ui/button";
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Icon } from "@/components/ui/Icon";
 import { Text } from "@/components/ui/text";
 import { useLocation } from "@/hooks/useLocation";
 import {
@@ -220,7 +220,7 @@ const AIPlanBottomSheet = forwardRef<
             </>
           ) : (
             <>
-              <IconSymbol name="sparkles" size={16} color="white" />
+              <Icon name="sparkles" size={16} color="white" />
               <Text>Mit KI erstellen</Text>
             </>
           )}

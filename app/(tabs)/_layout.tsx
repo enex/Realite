@@ -4,7 +4,7 @@ import { useColorScheme } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/HapticTab";
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Icon } from "@/components/ui/Icon";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 
@@ -36,7 +36,7 @@ export default function TabLayout() {
           title: "Meine Pläne",
           headerTitle: "Meine Pläne",
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol size={24} name={"calendar"} color={color} />
+            <Icon size={24} name={"calendar"} color={color} />
           ),
         }}
       />
@@ -46,7 +46,7 @@ export default function TabLayout() {
           title: "Entdecken",
           headerTitle: "Entdecken",
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol
+            <Icon
               size={24}
               name={focused ? "location.fill" : "location"}
               color={color}
@@ -60,7 +60,7 @@ export default function TabLayout() {
           title: "Profil",
           headerTitle: "Profil",
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol
+            <Icon
               size={24}
               name={focused ? "person.fill" : "person"}
               color={color}

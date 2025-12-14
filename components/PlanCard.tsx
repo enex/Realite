@@ -1,18 +1,18 @@
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCallback, useMemo, useRef } from "react";
-import { Animated, ColorValue, Pressable, Text, View } from "react-native";
+import { Animated, Pressable, Text, View } from "react-native";
 
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Icon } from "@/components/ui/Icon";
 import { GlassSurface } from "@/components/ui/glass";
 import {
-  activities,
-  type ActivityGroupId,
+  getActivityGradient,
+  getActivityIcon,
+  getActivityIconColor,
   type ActivityId,
 } from "@/shared/activities";
 import { formatLocalTime } from "@/shared/utils/datetime";
 import { useRouter } from "expo-router";
-import tinycolor from "tinycolor2";
 
 // iOS Design System
 const typography = {
@@ -64,54 +64,6 @@ interface PlanCardProps {
   item: PlanListItem;
   index: number;
 }
-
-const getGroupIdFromActivity = (activityId: ActivityId): ActivityGroupId => {
-  const [groupId] = (activityId as string).split("/");
-  return (groupId as ActivityGroupId) ?? (activityId as ActivityGroupId);
-};
-
-const getActivityGradient = (
-  activityId: ActivityId
-): [ColorValue, ColorValue, ColorValue] => {
-  const groupId = getGroupIdFromActivity(activityId);
-  const base = activities[groupId]?.color ?? "#94a3b8";
-  const c1 = tinycolor(base).lighten(35).toHexString();
-  const c2 = tinycolor(base).lighten(15).toHexString();
-  const c3 = tinycolor(base).toHexString();
-  return [c1, c2, c3];
-};
-
-const getActivityIconColor = (activityId: ActivityId) => {
-  const groupId = getGroupIdFromActivity(activityId);
-  const base = activities[groupId]?.color ?? "#64748b";
-  return tinycolor(base).darken(10).toHexString();
-};
-
-const getActivityIcon = (activityId: ActivityId) => {
-  const groupId = getGroupIdFromActivity(activityId);
-  switch (groupId) {
-    case "food_drink":
-      return "fork.knife";
-    case "outdoors":
-      return "mountain.2";
-    case "social":
-      return "person.2";
-    case "sport":
-      return "figure.run";
-    case "arts_culture":
-      return "theatermasks";
-    case "learning":
-      return "book";
-    case "travel":
-      return "airplane";
-    case "wellness":
-      return "heart";
-    case "home":
-      return "house";
-    default:
-      return "calendar";
-  }
-};
 
 const getInitials = (name: string): string => {
   const parts = String(name).trim().split(/\s+/).filter(Boolean);
@@ -193,7 +145,7 @@ export function PlanCard({ item, index }: PlanCardProps) {
           >
             {/* Large background icon */}
             <View className="absolute -top-4 -right-4 opacity-35 z-0">
-              <IconSymbol
+              <Icon
                 name={getActivityIcon(item.activity)}
                 size={120}
                 color={getActivityIconColor(item.activity)}
@@ -241,7 +193,7 @@ export function PlanCard({ item, index }: PlanCardProps) {
                         marginBottom: spacing.sm,
                       }}
                     >
-                      <IconSymbol
+                      <Icon
                         name="mappin.and.ellipse"
                         size={14}
                         color="#1C1C1E"

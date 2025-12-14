@@ -1,3 +1,5 @@
+import tinycolor from "tinycolor2";
+
 export const activities = {
   sport: {
     name: "Sport",
@@ -194,4 +196,66 @@ export const getSearchTermForActivity = (activityId: ActivityId): string => {
     group.subActivities[subActivityId as keyof typeof group.subActivities];
   if (!subActivity) return "";
   return activityId;
+};
+
+export const getGroupIdFromActivity = (
+  activityId?: ActivityId
+): ActivityGroupId | undefined => {
+  if (!activityId) return undefined;
+  const [groupId] = (activityId as string).split("/");
+  return groupId as ActivityGroupId;
+};
+
+export const getActivityGradient = (activityId?: ActivityId) => {
+  const groupId = getGroupIdFromActivity(activityId);
+  const base = (groupId && activities[groupId]?.color) || "#94a3b8";
+  const c1 = tinycolor(base).lighten(35).toHexString();
+  const c2 = tinycolor(base).lighten(15).toHexString();
+  const c3 = tinycolor(base).toHexString();
+  return [c1, c2, c3] as const;
+};
+
+export const getActivityLabel = (id?: ActivityId) => {
+  if (!id) return "";
+  const [groupId, subId] = (id as string).split("/");
+  const group = activities[groupId as keyof typeof activities];
+  if (!group) return id as string;
+  if (!subId) return group.nameDe || group.name;
+  const sub: any =
+    group.subActivities[subId as keyof typeof group.subActivities];
+  return sub
+    ? `${group.nameDe || group.name}/${sub.nameDe || sub.name}`
+    : (id as string);
+};
+
+export const getActivityIconColor = (activityId: ActivityId) => {
+  const groupId = getGroupIdFromActivity(activityId);
+  const base = activities[groupId!]?.color ?? "#64748b";
+  return tinycolor(base).darken(10).toHexString();
+};
+
+export const getActivityIcon = (activityId: ActivityId) => {
+  const groupId = getGroupIdFromActivity(activityId);
+  switch (groupId) {
+    case "food_drink":
+      return "fork.knife";
+    case "outdoors":
+      return "mountain.2";
+    case "social":
+      return "person.2";
+    case "sport":
+      return "figure.run";
+    case "arts_culture":
+      return "theatermasks";
+    case "learning":
+      return "book";
+    case "travel":
+      return "airplane";
+    case "wellness":
+      return "heart";
+    case "home":
+      return "house";
+    default:
+      return "calendar";
+  }
 };

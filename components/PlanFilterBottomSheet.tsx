@@ -1,4 +1,4 @@
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Icon } from "@/components/ui/Icon";
 import { activities, type ActivityId } from "@/shared/activities";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import React, { forwardRef, useCallback, useMemo, useState } from "react";
@@ -318,7 +318,7 @@ export const PlanFilterBottomSheet = forwardRef<
                     Alle Aktivitäten
                   </Text>
                   {selectedActivity === undefined && (
-                    <IconSymbol name="checkmark" size={16} color="#007AFF" />
+                    <Icon name="checkmark" size={16} color="#007AFF" />
                   )}
                 </Pressable>
                 {activityList.map((a) => (
@@ -343,7 +343,7 @@ export const PlanFilterBottomSheet = forwardRef<
                       {a.name}
                     </Text>
                     {selectedActivity === a.id && (
-                      <IconSymbol name="checkmark" size={16} color="#007AFF" />
+                      <Icon name="checkmark" size={16} color="#007AFF" />
                     )}
                   </Pressable>
                 ))}
@@ -384,7 +384,7 @@ export const PlanFilterBottomSheet = forwardRef<
                 gap: 8,
               }}
             >
-              <IconSymbol
+              <Icon
                 name="line.3.horizontal.decrease.circle"
                 size={18}
                 color="white"

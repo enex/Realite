@@ -24,7 +24,7 @@ import PlanFilterBottomSheet, {
   PlanFilterBottomSheetRef,
   type PlanFilter,
 } from "@/components/PlanFilterBottomSheet";
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Icon } from "@/components/ui/Icon";
 import { GlassSurface } from "@/components/ui/glass";
 import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -78,7 +78,7 @@ export default function ExploreScreen() {
   const navigation = useNavigation();
   const simpleAppBar = useFeatureFlagBoolean(
     "simple-appbar-for-starpage",
-    false,
+    false
   );
   const [showSearch, setShowSearch] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -100,7 +100,7 @@ export default function ExploreScreen() {
             }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <IconSymbol name="magnifyingglass" size={22} color="#007AFF" />
+            <Icon name="magnifyingglass" size={22} color="#007AFF" />
           </Pressable>
           <Pressable
             onPress={() => {
@@ -109,7 +109,7 @@ export default function ExploreScreen() {
             }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <IconSymbol
+            <Icon
               name="line.3.horizontal.decrease.circle"
               size={22}
               color="#007AFF"
@@ -144,7 +144,7 @@ export default function ExploreScreen() {
               }
             : undefined,
       },
-    }),
+    })
   );
 
   // Collect unique creator IDs for profile lookup
@@ -274,7 +274,7 @@ export default function ExploreScreen() {
         .slice()
         .sort(
           (a: any, b: any) =>
-            new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+            new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
         );
       let base = sortedByStart[0];
       if (session?.id) {
@@ -284,7 +284,7 @@ export default function ExploreScreen() {
 
       // Participants: exactly all creators in this cluster (base first)
       const allCreatorIds: string[] = Array.from(
-        new Set(group.map((g: any) => g.creatorId as string)),
+        new Set(group.map((g: any) => g.creatorId as string))
       );
       const orderedCreatorIds = [
         base.creatorId as string,
@@ -346,12 +346,12 @@ export default function ExploreScreen() {
         const date = new Date(y, (m as number) - 1, d as number);
         const today = new Date();
         const todayKey = `${today.getFullYear()}-${String(
-          today.getMonth() + 1,
+          today.getMonth() + 1
         ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
         const tmr = new Date(today);
         tmr.setDate(tmr.getDate() + 1);
         const tomorrowKey = `${tmr.getFullYear()}-${String(
-          tmr.getMonth() + 1,
+          tmr.getMonth() + 1
         ).padStart(2, "0")}-${String(tmr.getDate()).padStart(2, "0")}`;
 
         let dayLabel = date.toLocaleDateString("de-DE", {
@@ -370,7 +370,7 @@ export default function ExploreScreen() {
           date: dateKey,
           dayLabel,
           plans: plans.sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
           ),
         };
       })
@@ -461,7 +461,7 @@ export default function ExploreScreen() {
               }}
               className="dark:bg-zinc-800"
             >
-              <IconSymbol name="magnifyingglass" size={17} color="#8E8E93" />
+              <Icon name="magnifyingglass" size={17} color="#8E8E93" />
               <TextInput
                 placeholder="Suche"
                 placeholderTextColor="#8E8E93"
@@ -493,7 +493,7 @@ export default function ExploreScreen() {
                       justifyContent: "center",
                     }}
                   >
-                    <IconSymbol name="xmark" size={10} color="#FFFFFF" />
+                    <Icon name="xmark" size={10} color="#FFFFFF" />
                   </View>
                 </Pressable>
               )}
@@ -638,7 +638,7 @@ export default function ExploreScreen() {
                 paddingHorizontal: 12,
               }}
             >
-              <IconSymbol name="magnifyingglass" size={18} color="#8E8E93" />
+              <Icon name="magnifyingglass" size={18} color="#8E8E93" />
               <TextInput
                 placeholder="Suche nach Titel oder Ort"
                 placeholderTextColor="#8E8E93"
@@ -654,7 +654,7 @@ export default function ExploreScreen() {
               />
               {!!searchText && (
                 <Pressable onPress={() => setSearchText("")}>
-                  <IconSymbol name="xmark" size={18} color="#8E8E93" />
+                  <Icon name="xmark" size={18} color="#8E8E93" />
                 </Pressable>
               )}
             </View>
@@ -673,7 +673,7 @@ export default function ExploreScreen() {
         <Animated.ScrollView
           onScroll={Animated.event(
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: false },
+            { useNativeDriver: false }
           )}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
@@ -764,7 +764,7 @@ function HeaderIconButton({
   icon,
   onPress,
 }: {
-  icon: Parameters<typeof IconSymbol>[0]["name"];
+  icon: Parameters<typeof Icon>[0]["name"];
   onPress: () => void;
 }) {
   return (
@@ -772,7 +772,7 @@ function HeaderIconButton({
       onPress={onPress}
       className="w-9 h-9 rounded-9 border border-zinc-200 dark:border-zinc-800 shadow-sm justify-center items-center flex"
     >
-      <IconSymbol name={icon as any} size={18} color="#1C1C1E" />
+      <Icon name={icon as any} size={18} color="#1C1C1E" />
     </Pressable>
   );
 }

@@ -66,6 +66,8 @@ const MAPPING = {
   "bug-report": "bug",
   "event-busy": "calendar",
   "system-update": "refresh",
+  pencil: "edit",
+  ellipsis: "more-vert",
 } as Partial<IconMapping>;
 
 /**
@@ -73,7 +75,7 @@ const MAPPING = {
  * This ensures a consistent look across platforms, and optimal resource usage.
  * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
  */
-export function IconSymbol({
+export function Icon({
   name,
   size = 24,
   color,

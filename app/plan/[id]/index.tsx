@@ -26,7 +26,7 @@ import {
 import { useSession } from "@/client/auth";
 import { orpc } from "@/client/orpc";
 import SmartDateTimePicker from "@/components/SmartDateTimePicker";
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Icon } from "@/components/ui/Icon";
 import {
   activities,
   type ActivityGroupId,
@@ -342,11 +342,12 @@ export default function PlanDetails() {
                 justifyContent: "center",
               }}
             >
-              <IconSymbol name="xmark" size={18} color="#FFFFFF" />
+              <Icon name="xmark" size={18} color="#FFFFFF" />
             </Pressable>
             <View style={{ flexDirection: "row", gap: spacing.sm }}>
               {isOwner && (
                 <Pressable
+                  onPress={() => router.push(`/plan/${id}/edit` as any)}
                   style={{
                     width: 40,
                     height: 40,
@@ -356,7 +357,7 @@ export default function PlanDetails() {
                     justifyContent: "center",
                   }}
                 >
-                  <IconSymbol name="pencil" size={18} color="#FFFFFF" />
+                  <Icon name="pencil" size={18} color="#FFFFFF" />
                 </Pressable>
               )}
               <Pressable
@@ -369,7 +370,7 @@ export default function PlanDetails() {
                   justifyContent: "center",
                 }}
               >
-                <IconSymbol name="ellipsis" size={18} color="#FFFFFF" />
+                <Icon name="ellipsis" size={18} color="#FFFFFF" />
               </Pressable>
             </View>
           </View>
@@ -429,11 +430,7 @@ export default function PlanDetails() {
                   justifyContent: "center",
                 }}
               >
-                <IconSymbol
-                  name={icon}
-                  size={120}
-                  color="rgba(255,255,255,0.3)"
-                />
+                <Icon name={icon} size={120} color="rgba(255,255,255,0.3)" />
               </LinearGradient>
             )}
             {/* Dark overlay */}
@@ -616,7 +613,7 @@ export default function PlanDetails() {
                 gap: spacing.xs,
               }}
             >
-              <IconSymbol name="checkmark" size={18} color="#FFFFFF" />
+              <Icon name="checkmark" size={18} color="#FFFFFF" />
               <Text
                 style={{
                   ...typography.subheadline,
@@ -725,7 +722,7 @@ function InfoRow({
   onPress,
   accentColor = "#0F172A",
 }: {
-  icon: Parameters<typeof IconSymbol>[0]["name"];
+  icon: Parameters<typeof Icon>[0]["name"];
   label: string;
   value?: string;
   onPress?: () => void;
@@ -761,7 +758,7 @@ function InfoRow({
           marginRight: spacing.md,
         }}
       >
-        <IconSymbol name={icon} size={20} color={effectiveAccent} />
+        <Icon name={icon} size={20} color={effectiveAccent} />
       </View>
       <View style={{ flex: 1 }}>
         <Text
@@ -786,7 +783,7 @@ function InfoRow({
         )}
       </View>
       {interactive && (
-        <IconSymbol
+        <Icon
           name="chevron.right"
           size={16}
           color={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"}
