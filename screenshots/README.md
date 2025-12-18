@@ -113,3 +113,5 @@ Beispiel: `home_iphone-6.9-portrait.png`
 - Die Web-App muss auf `http://localhost:8081` laufen (oder setze `WEB_URL` Umgebungsvariable)
 
 
+
+

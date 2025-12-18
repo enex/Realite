@@ -537,6 +537,28 @@ export default function ProfileScreen() {
         </Button>
       </Card>
 
+      <Card className="rounded-2xl p-5 shadow-sm border-red-200 dark:border-red-900/50">
+        <ThemedText
+          type="subtitle"
+          className="text-red-600 dark:text-red-400 mb-2"
+        >
+          Gefährliche Zone
+        </ThemedText>
+        <ThemedText className="mb-3 text-gray-600 dark:text-gray-400">
+          Du kannst deinen Account unwiderruflich löschen. Alle deine Daten
+          werden dabei gelöscht.
+        </ThemedText>
+        <Button
+          onPress={() => router.push("/delete-account")}
+          variant="outline"
+          className="border-red-300 dark:border-red-800"
+        >
+          <Text className="text-red-600 dark:text-red-400">
+            Account löschen
+          </Text>
+        </Button>
+      </Card>
+
       <View className="opacity-80">
         <ThemedText className="text-center text-gray-500 dark:text-gray-400">
           Änderungen werden automatisch gespeichert

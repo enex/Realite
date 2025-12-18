@@ -111,6 +111,10 @@ export interface RealiteEvents {
     userB: string;
   };
 
+  "realite.user.deleted": {
+    reason?: string;
+  };
+
   "realite.link.created": {
     linkType: "profile" | "plan";
     targetId: string;

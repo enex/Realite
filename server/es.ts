@@ -454,6 +454,10 @@ export const es = builder.store({
                     };
                   }
                   return acc;
+                case "realite.user.deleted":
+                  acc.deleted = true;
+                  acc.deletedAt = event.time;
+                  return acc;
                 default:
                   return acc;
               }
@@ -467,6 +471,8 @@ export const es = builder.store({
               birthDate: "asdf",
               relationshipStatus: "asdf",
               onboarded: false,
+              deleted: false,
+              deletedAt: null,
               privacySettings: {
                 showGender: true,
                 showAge: true,

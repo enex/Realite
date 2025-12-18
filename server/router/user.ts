@@ -312,4 +312,20 @@ export const userRouter = {
         linkType: eventData.linkType,
       };
     }),
+  deleteAccount: protectedRoute
+    .input(
+      z.object({
+        reason: z.string().optional(),
+      })
+    )
+    .handler(async ({ context }) => {
+      await context.es.add({
+        type: "realite.user.deleted",
+        subject: context.session.id,
+        data: {
+          reason: context.input.reason,
+        },
+      });
+      return { success: true };
+    }),
 };

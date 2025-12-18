@@ -77,6 +77,10 @@ export default function RootLayout() {
               name="share/[code]"
               options={{ headerShown: false }}
             />
+            <Stack.Screen
+              name="delete-account"
+              options={{ headerShown: false }}
+            />
             <Stack.Screen name="+not-found" />
           </Stack>
           <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
