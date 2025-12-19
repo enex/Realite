@@ -34,12 +34,14 @@ export default function AuthLayout() {
       <Stack.Screen
         name="phone"
         options={{
+          headerShown: false,
           title: "Phone Authentication",
         }}
       />
       <Stack.Screen
         name="verify"
         options={{
+          headerShown: false,
           title: "Verify Code",
         }}
       />

@@ -8,12 +8,8 @@ import { getToken } from "./session-store";
 
 export const link = new RPCLink({
   url: () => {
-    if (typeof window !== "undefined") {
-      // Web environment - use current origin
-      return `${window.location.origin}/rpc`;
-    }
     // React Native environment - use localhost for development
-    return `${getBaseUrl()}/rpc`;
+    return `${window?.location?.origin ?? getBaseUrl()}/rpc`;
   },
   headers: async ({ context }) => {
     const token = getToken();

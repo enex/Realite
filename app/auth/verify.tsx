@@ -1,84 +1,166 @@
 import { useSignInWithPhone } from "@/client/auth";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, Pressable, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/Card";
+import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
+import { Icon } from "@/components/ui/Icon";
+import { Text } from "@/components/ui/text";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export default function VerifyCodeScreen() {
   const { phoneNumber } = useLocalSearchParams<{ phoneNumber: string }>();
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const router = useRouter();
   const signInWithPhone = useSignInWithPhone();
+  const textColor = useThemeColor({}, "text");
+  const placeholderColor = useThemeColor({}, "icon");
+  const primaryColor = "#4F46E5";
 
   const handleVerifyCode = async () => {
     if (!code || code.length !== 6) {
-      Alert.alert("Invalid Code", "Please enter the 6-digit verification code");
+      Alert.alert(
+        "Code ungültig",
+        "Bitte gib den 6-stelligen Verifizierungscode ein."
+      );
       return;
     }
 
     setIsLoading(true);
     try {
       await signInWithPhone(phoneNumber || "", code);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error verifying code:", error);
-      Alert.alert(
-        "Fehler",
-        "Code konnte nicht verifiziert werden. Bitte versuchen Sie es erneut."
-      );
+      if (error?.message?.includes("Network request failed")) {
+        Alert.alert(
+          "Verbindungsfehler",
+          "Der Server konnte nicht erreicht werden. Bitte stelle sicher, dass du das Backend mit 'bun run dev' gestartet hast."
+        );
+      } else {
+        Alert.alert(
+          "Fehler",
+          "Code konnte nicht verifiziert werden. Bitte versuchen Sie es erneut."
+        );
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <View className="flex flex-1 flex-col justify-center bg-background p-5">
-      <Stack.Screen
-        options={{
-          title: "Verify Code",
-          headerShown: false,
-          headerStyle: {
-            backgroundColor: "#4F46E5",
-          },
-        }}
-      />
+    <View className="flex-1">
+      <GradientBackdrop variant="cool" />
 
-      <Text className="mb-2 text-center text-2xl font-bold text-foreground">
-        Verifikationscode eingeben
-      </Text>
-      <Text className="mb-8 text-center text-base text-muted-foreground">
-        Wir haben einen 6-stelligen Code an {phoneNumber} gesendet
-      </Text>
+      <SafeAreaView className="flex-1">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="flex-1"
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <ScrollView
+              contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+              className="px-6"
+              keyboardShouldPersistTaps="handled"
+            >
+              <View className="mb-10 items-center">
+                <View className="mb-6 h-24 w-24 items-center justify-center rounded-[32px] bg-primary/10">
+                  <Icon name="verified" size={48} color={primaryColor} />
+                </View>
+                <Text variant="titleLarge" className="text-center font-bold text-zinc-900 dark:text-zinc-50">
+                  Code bestätigen
+                </Text>
+                <Text variant="subtitle" className="mt-2 px-8 text-center text-zinc-600 dark:text-zinc-400">
+                  Wir haben dir einen Code an{" "}
+                  <Text className="font-bold text-zinc-900 dark:text-zinc-50">
+                    {phoneNumber}
+                  </Text>{" "}
+                  gesendet.
+                </Text>
+              </View>
 
-      <TextInput
-        className="mb-5 rounded-lg border border-input bg-white p-4 text-center text-base tracking-widest"
-        placeholder="6-digit code"
-        value={code}
-        onChangeText={setCode}
-        keyboardType="number-pad"
-        maxLength={6}
-        autoFocus
-        testID="verify-code-input"
-        accessibilityLabel="Verifizierungscode eingeben"
-      />
+              <Card className="p-8 shadow-2xl">
+                <View className="mb-10">
+                  <Text
+                    variant="small"
+                    className="mb-3 ml-1 uppercase tracking-widest text-zinc-500 dark:text-zinc-400"
+                  >
+                    Verifizierungscode
+                  </Text>
+                  <View
+                    className={`flex-row items-center justify-center rounded-2xl border bg-white/60 dark:bg-black/30 px-4 py-5 ${
+                      isFocused
+                        ? "border-primary"
+                        : "border-zinc-200 dark:border-zinc-800"
+                    }`}
+                  >
+                    <TextInput
+                      className="flex-1 text-center text-3xl font-bold tracking-[12px]"
+                      style={{ color: textColor }}
+                      placeholder="000000"
+                      placeholderTextColor={placeholderColor}
+                      value={code}
+                      onChangeText={setCode}
+                      onFocus={() => setIsFocused(true)}
+                      onBlur={() => setIsFocused(false)}
+                      keyboardType="number-pad"
+                      maxLength={6}
+                      autoFocus
+                    />
+                  </View>
+                </View>
 
-      <Pressable
-        className={`mb-3 flex items-center rounded-lg bg-primary p-3 ${isLoading ? "opacity-70" : ""}`}
-        onPress={handleVerifyCode}
-        disabled={isLoading}
-        testID="verify-code-button"
-        accessibilityLabel="Code verifizieren"
-      >
-        <Text className="text-base font-semibold text-white">
-          {isLoading ? "Verifying..." : "Verify Code"}
-        </Text>
-      </Pressable>
-      <View className="flex-1" />
-      <Pressable
-        className="flex items-center rounded-lg bg-muted p-3"
-        onPress={() => router.back()}
-      >
-        <Text className="text-base font-semibold text-foreground">Zurück</Text>
-      </Pressable>
+                <Button
+                  onPress={handleVerifyCode}
+                  disabled={isLoading || code.length !== 6}
+                  size="pill"
+                  className="h-14 w-full shadow-lg shadow-primary/30"
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text className="text-lg font-bold text-white">
+                      Code bestätigen
+                    </Text>
+                  )}
+                </Button>
+
+                <Pressable
+                  className="mt-6 self-center"
+                  onPress={() => router.back()}
+                >
+                  <Text variant="small" className="font-semibold text-zinc-500">
+                    Nummer ändern
+                  </Text>
+                </Pressable>
+              </Card>
+
+              <Text
+                variant="caption"
+                className="mt-10 px-8 text-center leading-4 opacity-50"
+              >
+                Du hast keinen Code erhalten? Bitte warte einen Moment oder
+                kontaktiere unseren Support.
+              </Text>
+            </ScrollView>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </View>
   );
 }
