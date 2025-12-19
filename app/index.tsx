@@ -1,10 +1,9 @@
-import { useSession } from "@/client/auth";
 import orpc from "@/client/orpc";
 import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useEffect } from "react";
-import { Linking, Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function NativeLanding() {
@@ -99,32 +98,9 @@ export default function NativeLanding() {
               onPress={handleSignIn}
             >
               <Text className="text-white font-bold text-xl text-center">
-                Einladungscode eingeben
+                Log Legen
               </Text>
             </Pressable>
-
-            <Pressable
-              className="bg-green-600 py-4 rounded-2xl active:scale-95 transition-all"
-              onPress={() =>
-                Linking.openURL(
-                  "https://whatsapp.com/channel/0029Vb5w20yKwqSOem15d11O",
-                )
-              }
-            >
-              <Text className="text-white font-semibold text-base text-center">
-                🟢 WhatsApp Updates
-              </Text>
-            </Pressable>
-          </View>
-
-          {/* Security Badge - Simplified */}
-          <View className="mt-8 rounded-2xl border border-zinc-200 bg-white px-6 py-3 shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
-            <View className="flex-row items-center">
-              <Text className="text-xl mr-2">🔒</Text>
-              <Text className="text-center font-semibold text-zinc-800 dark:text-zinc-200">
-                Invite-only • Sicher
-              </Text>
-            </View>
           </View>
         </View>
       </ScrollView>
