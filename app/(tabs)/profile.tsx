@@ -1,3 +1,4 @@
+import { useSignOut } from "@/client/auth";
 import rpc from "@/client/orpc";
 import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 import { genders, relationshipStatuses } from "@/shared/validation";
@@ -30,6 +31,7 @@ import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const signOut = useSignOut();
   const simpleAppBar = useFeatureFlagBoolean(
     "simple-appbar-for-starpage",
     false
@@ -410,7 +412,7 @@ export default function ProfileScreen() {
           werden.
         </ThemedText>
         <Button onPress={openNotificationSettings} variant="default">
-          Benachrichtigungen verwalten
+          <Text>Benachrichtigungen verwalten</Text>
         </Button>
       </Card>
 
@@ -443,11 +445,6 @@ export default function ProfileScreen() {
                     // Use window.alert for web as Alert.alert might not work properly
                     if (typeof window !== "undefined") {
                       window.alert("Link wurde in die Zwischenablage kopiert!");
-                    } else {
-                      Alert.alert(
-                        "Erfolg",
-                        "Link wurde in die Zwischenablage kopiert!"
-                      );
                     }
                   } else {
                     // Fallback: Use legacy clipboard API or show URL
@@ -466,19 +463,12 @@ export default function ProfileScreen() {
                         window.alert(
                           "Link wurde in die Zwischenablage kopiert!"
                         );
-                      } else {
-                        Alert.alert(
-                          "Erfolg",
-                          "Link wurde in die Zwischenablage kopiert!"
-                        );
                       }
                     } catch (err) {
                       textArea.remove();
                       // Last resort: show the URL
                       if (typeof window !== "undefined") {
                         window.prompt("Kopiere diesen Link:", shareUrl);
-                      } else {
-                        Alert.alert("Teilen", shareUrl);
                       }
                     }
                   }
@@ -487,8 +477,6 @@ export default function ProfileScreen() {
                   // Fallback: show the URL
                   if (typeof window !== "undefined") {
                     window.prompt("Kopiere diesen Link:", shareUrl);
-                  } else {
-                    Alert.alert("Teilen", shareUrl);
                   }
                 }
               } else {
@@ -514,7 +502,9 @@ export default function ProfileScreen() {
           disabled={getShareLink.isPending}
           variant="default"
         >
-          {getShareLink.isPending ? "Wird erstellt..." : "Meine Pläne teilen"}
+          <Text>
+            {getShareLink.isPending ? "Wird erstellt..." : "Meine Pläne teilen"}
+          </Text>
         </Button>
       </Card>
 
@@ -533,7 +523,40 @@ export default function ProfileScreen() {
           onPress={() => router.push("/onboarding/welcome")}
           variant="default"
         >
-          Onboarding wiederholen
+          <Text>Onboarding wiederholen</Text>
+        </Button>
+      </Card>
+
+      <Card className="rounded-2xl p-5 shadow-sm">
+        <ThemedText
+          type="subtitle"
+          className="text-zinc-900 dark:text-zinc-50 mb-2"
+        >
+          Abmelden
+        </ThemedText>
+        <ThemedText className="mb-3 text-zinc-600 dark:text-zinc-400">
+          Du bist angemeldet als {me.data?.phoneNumber}.
+        </ThemedText>
+        <Button
+          onPress={() => {
+            if (Platform.OS === "web") {
+              if (confirm("Möchtest du dich wirklich abmelden?")) {
+                signOut();
+              }
+            } else {
+              Alert.alert("Abmelden", "Möchtest du dich wirklich abmelden?", [
+                { text: "Abbrechen", style: "cancel" },
+                {
+                  text: "Abmelden",
+                  style: "destructive",
+                  onPress: () => signOut(),
+                },
+              ]);
+            }
+          }}
+          variant="outline"
+        >
+          <Text>Abmelden</Text>
         </Button>
       </Card>
 
