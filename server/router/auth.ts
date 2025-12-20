@@ -95,7 +95,14 @@ export const authRouter = {
         const code = Math.floor(100000 + Math.random() * 900000).toString();
 
         const message = `Ihr Verifizierungscode für realite.app lautet: ${code}`;
-        await budgetSMS.sendSMS(standardizedNumber, message);
+        const success = await budgetSMS.sendSMS(standardizedNumber, message);
+
+        if (!success) {
+          throw new ORPCError("INTERNAL_SERVER_ERROR", {
+            message:
+              "SMS konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.",
+          });
+        }
 
         await context.es.add({
           actor: phoneHash,

@@ -24,17 +24,32 @@ export class BudgetSMSService {
         })
       );
 
-      const response = await fetch(`${this.baseUrl}?${params.toString()}`, {
+      const submitUrl = `${this.baseUrl}?${params.toString()}`;
+      console.log("submitUrl", submitUrl);
+
+      const response = await fetch(submitUrl, {
         method: "GET",
       });
 
+      const responseText = await response.text();
+
       if (!response.ok) {
-        throw new Error(`SMS sending failed: ${response.statusText}`);
+        console.error(
+          `BudgetSMS API error: ${response.status} ${response.statusText}`,
+          responseText
+        );
+        return false;
       }
 
+      if (responseText.startsWith("ERR")) {
+        console.error(`BudgetSMS returned error: ${responseText}`);
+        return false;
+      }
+
+      console.log(`BudgetSMS success: ${responseText}`);
       return true;
     } catch (error) {
-      console.error("Error sending SMS:", error);
+      console.error("Error sending SMS via BudgetSMS:", error);
       return false;
     }
   }
