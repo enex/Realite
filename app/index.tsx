@@ -1,9 +1,10 @@
 import orpc from "@/client/orpc";
+import { useSession } from "@/client/auth";
 import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useEffect } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function NativeLanding() {
@@ -13,17 +14,51 @@ export default function NativeLanding() {
     router.push("/auth/phone");
   };
 
-  const meRes = useQuery(orpc.auth.me.queryOptions());
+  // Verwende useSession für schnelle lokale Session-Prüfung
+  const { session, isLoading: sessionLoading } = useSession();
+  
+  // Nur me Query ausführen, wenn eine Session vorhanden ist
+  const meRes = useQuery(
+    orpc.auth.me.queryOptions({
+      enabled: !!session && !sessionLoading,
+      retry: false, // Nicht wiederholen bei Fehlern
+    })
+  );
+  
   const onboardingEnabled = useFeatureFlagBoolean("onboarding", false);
+  
   useEffect(() => {
+    // Warte bis Session-Prüfung abgeschlossen ist
+    if (sessionLoading) return;
+    
+    // Wenn keine Session vorhanden ist, zeige Anmelde-Button
+    if (!session) return;
+    
+    // Wenn me Query einen Fehler hat (z.B. ungültiger Token), zeige Anmelde-Button
+    if (meRes.error) return;
+    
+    // Wenn Session vorhanden ist, aber me Query noch lädt, warte
     if (meRes.isLoading || !meRes.data) return;
+    
     // Check Onboarding-Status
     if (meRes.data.onboarded && !onboardingEnabled) {
       router.replace("/(tabs)");
     } else {
       router.replace("/onboarding/welcome");
     }
-  }, [onboardingEnabled, meRes.data, meRes.isLoading]);
+  }, [session, sessionLoading, onboardingEnabled, meRes.data, meRes.isLoading, meRes.error]);
+
+  // Zeige Loading-Screen während Authentifizierung geprüft wird
+  // Aber nicht wenn ein Fehler aufgetreten ist (dann zeige Anmelde-Button)
+  if ((sessionLoading || (session && meRes.isLoading)) && !meRes.error) {
+    return (
+      <SafeAreaView className="flex-1 bg-white dark:bg-zinc-950">
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#2563eb" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-zinc-950">
