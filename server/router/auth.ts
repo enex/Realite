@@ -193,6 +193,16 @@ export const authRouter = {
             userId: context.session.id,
           },
         });
+        // Also create event with subject: userId so getProfile can find it
+        await context.es.add({
+          actor: context.session.id,
+          subject: context.session.id,
+          type: "realite.auth.phone-code-verified",
+          data: {
+            phoneNumber: standardizedNumber,
+            userId: context.session.id,
+          },
+        });
         userId = context.session.id;
       }
 
@@ -209,9 +219,30 @@ export const authRouter = {
             deviceInfo: {},
           },
         });
+        // Also create event with subject: userId so getProfile can find it
+        await context.es.add({
+          actor: userId,
+          subject: userId,
+          type: "realite.user.registered",
+          data: {
+            phoneNumber: standardizedNumber,
+            name: "",
+            deviceInfo: {},
+          },
+        });
         await context.es.add({
           actor: phoneHash,
           subject: phoneHash,
+          type: "realite.auth.phone-code-verified",
+          data: {
+            phoneNumber: standardizedNumber,
+            userId,
+          },
+        });
+        // Also create event with subject: userId so getProfile can find it
+        await context.es.add({
+          actor: userId,
+          subject: userId,
           type: "realite.auth.phone-code-verified",
           data: {
             phoneNumber: standardizedNumber,
