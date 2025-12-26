@@ -28,6 +28,7 @@
     "screenshots": "bun run scripts/generate-screenshots.ts",
     "screenshots:capture": "bun run scripts/capture-web-screenshots.ts",
     "screenshots:all": "bun run screenshots:capture",
+    "icons": "node scripts/generate-app-icons.js",
     "upgrade": "expo install --fix && bunx expo-doctor@latest && echo 'https://docs.expo.dev/workflow/upgrading-expo-sdk-walkthrough/'"
   },
   "dependencies": {
