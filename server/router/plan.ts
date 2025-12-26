@@ -209,7 +209,7 @@ export const planRouter = {
               `  - ${subActivityId}: ${description.name}`
           ),
         ]),
-        `Wenn ein Event oder ein spezifischer Ort erwähnt wird, verwende das web_search Tool, um Details zu überprüfen.`,
+        `Nutze immer das web_search Tool, um erwähnte Orte, Events, etc. zu überprüfen.`,
         input.location
           ? `Der ungefähre Standort des Benutzers ist ${
               [resolved?.city, resolved?.region, resolved?.country]
@@ -219,14 +219,13 @@ export const planRouter = {
             }. Bevorzuge Vorschläge, die für diese Umgebung relevant sind.`
           : `Wenn kein Standort angegeben ist, nimm keine spezifische Stadt an; halte Vorschläge generisch oder stelle Klärungsfragen.`,
         `Jeder Plan MUSS mindestens einen konkreten Ort enthalten.`,
-        `Verwende das search_location Tool, um echte Orte zu finden. Wenn die Benutzereingabe vage ist, suche nach 2-3 plausiblen Orten in der Nähe des Benutzers (z.B. Parks, Cafés, Fitnessstudios) und füge sie alle hinzu, damit der Benutzer falsche löschen kann.`,
+        `Verwende das search_location Tool, um echte Orte zu finden. Wenn die Benutzereingabe uneindeutig ist, suche nach 2-3 plausiblen Orten in der Nähe des Benutzers (z.B. Parks, Cafés, Fitnessstudios) und füge sie alle hinzu, damit der Benutzer falsche löschen kann.`,
         `Gib nur Orte zurück, die einen Namen und Koordinaten aus den search_location Ergebnissen haben. Erfinde niemals Koordinaten.`,
         `Heute ist ${localDateStr} (${now.toISOString().slice(0, 10)}). Die lokale Zeit ist ${localTimeStr} in der Zeitzone ${timeZone}.`,
         `ALLE Datums- und Zeitangaben müssen im ISO 8601 Format mit korrekter Zeitzone sein: YYYY-MM-DDTHH:mm:ss+HH:mm oder YYYY-MM-DDTHH:mm:ssZ für UTC.`,
         `WICHTIG: Berücksichtige die Zeitzone ${timeZone} bei allen Datums- und Zeitangaben. Wenn der Benutzer eine Zeit angibt (z.B. "15:00" oder "3 Uhr nachmittags"), interpretiere diese als lokale Zeit in ${timeZone} und konvertiere sie entsprechend.`,
         `Wenn ein Monat/Tag oder Wochentag in diesem Jahr in der Vergangenheit wäre, plane das nächste zukünftige Vorkommen (möglicherweise nächstes Jahr).`,
         `Jeder Plan muss in der Zukunft liegen.`,
-        `Alle Texte (Titel, Beschreibungen, etc.) müssen auf Deutsch sein.`,
       ].join("\n");
 
       const aiPlanSchema = planSchema.extend({
@@ -278,7 +277,7 @@ export const planRouter = {
             description:
               "Erstelle einen Plan. Alle Texte (Titel, Beschreibungen) müssen auf Deutsch sein. Datumsangaben müssen im ISO 8601 Format mit korrekter Zeitzone sein.",
           }),
-          web_search: openai.tools.webSearchPreview({
+          web_search: openai.tools.webSearch({
             searchContextSize: "high",
             userLocation: input.location
               ? {
