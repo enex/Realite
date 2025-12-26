@@ -1,3 +1,4 @@
+import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Linking from "expo-linking";
@@ -15,10 +16,8 @@ import {
   View,
 } from "react-native";
 import Animated, {
-  interpolate,
   useAnimatedRef,
   useAnimatedScrollHandler,
-  useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
 import {
@@ -29,7 +28,6 @@ import {
 import { useSession } from "@/client/auth";
 import { orpc } from "@/client/orpc";
 import { Avatar } from "@/components/Avatar";
-import SmartDateTimePicker from "@/components/SmartDateTimePicker";
 import { Icon } from "@/components/ui/Icon";
 import {
   activities,
@@ -37,6 +35,7 @@ import {
   type ActivityId,
 } from "@/shared/activities";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isSameYear } from "date-fns";
 import { useMemo, useState } from "react";
 import tinycolor from "tinycolor2";
 
@@ -280,35 +279,6 @@ export default function PlanDetails() {
     },
   });
 
-  // Header animation styles
-  const headerImageStyle = useAnimatedStyle(() => {
-    const scale = interpolate(
-      scrollY.value,
-      [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
-      [1.2, 1, 0.8],
-      "clamp"
-    );
-    const translateY = interpolate(
-      scrollY.value,
-      [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
-      [0, 0, -HEADER_HEIGHT * 0.3],
-      "clamp"
-    );
-    return {
-      transform: [{ scale }, { translateY }],
-    };
-  });
-
-  const headerOverlayStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      scrollY.value,
-      [0, HEADER_HEIGHT * 0.5, HEADER_HEIGHT],
-      [0, 0.3, 0.7],
-      "clamp"
-    );
-    return { opacity };
-  });
-
   if (!plan) {
     return (
       <SafeAreaView className="flex-1 bg-black dark:bg-black">
@@ -334,6 +304,7 @@ export default function PlanDetails() {
     ? startDateObj.toLocaleDateString("de-DE", {
         day: "2-digit",
         month: "long",
+        year: isSameYear(startDateObj, new Date()) ? undefined : "numeric",
       })
     : undefined;
   const timeRangeLabel = startDateObj
@@ -433,7 +404,12 @@ export default function PlanDetails() {
       : timeRangeLabel || "";
 
   return (
-    <View className="flex-1 bg-gray-100 dark:bg-black">
+    <View
+      className="flex-1 bg-gray-100 dark:bg-black"
+      style={{
+        backgroundColor: placeholderGradient[0],
+      }}
+    >
       <StatusBar
         barStyle="light-content"
         translucent
@@ -495,16 +471,11 @@ export default function PlanDetails() {
           }}
         >
           {/* Header Image */}
-          <Animated.View
+          <View
             className="overflow-hidden"
-            style={[
-              {
-                height: HEADER_HEIGHT + insets.top,
-                marginTop: 0,
-                paddingTop: 0,
-              },
-              headerImageStyle,
-            ]}
+            style={{
+              height: HEADER_HEIGHT + insets.top,
+            }}
           >
             {locationImageUrl ? (
               <Image
@@ -517,17 +488,18 @@ export default function PlanDetails() {
                 colors={placeholderGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                className="w-full h-full items-center justify-center pt-safe"
+                style={{
+                  // this is not nativewind because it has problems on ios
+                  height: HEADER_HEIGHT + insets.top,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
                 <Icon name={icon} size={120} color="rgba(255,255,255,0.3)" />
               </LinearGradient>
             )}
-            {/* Dark overlay */}
-            <Animated.View
-              className="absolute inset-0 bg-black/30"
-              style={headerOverlayStyle}
-            />
-          </Animated.View>
+          </View>
 
           {/* Content Card */}
           <View className="bg-white dark:bg-zinc-900 rounded-t-[20px] -mt-5 pt-6 px-6 pb-8 min-h-[600px]">
@@ -989,7 +961,30 @@ function DateTimeBottomSheet({
   onSelect: (d: Date) => void;
   accentColor: string;
 }) {
-  const [selected, setSelected] = useState<Date[]>([initialDate]);
+  const [selected, setSelected] = useState<Date>(initialDate);
+
+  // On Android, the picker is modal and handles its own close
+  // On iOS, we show it inline in the bottom sheet
+  if (Platform.OS === "android") {
+    return (
+      <DateTimePicker
+        value={selected}
+        mode="datetime"
+        display="default"
+        onChange={(event, date) => {
+          if (event.type === "set" && date) {
+            setSelected(date);
+            onSelect(date);
+            onClose();
+          } else if (event.type === "dismissed") {
+            onClose();
+          }
+        }}
+      />
+    );
+  }
+
+  // iOS: Show inline picker in bottom sheet
   return (
     <View className="absolute inset-0 bg-black/20 justify-end">
       <Pressable className="flex-1" onPress={onClose} />
@@ -999,18 +994,32 @@ function DateTimeBottomSheet({
             {title}
           </Text>
         </View>
-        <View className="h-[420px]">
-          <SmartDateTimePicker
-            selectedDates={selected}
-            onDateSelect={(d) => {
-              setSelected([d]);
-              onSelect(d);
+        <View className="h-[420px] items-center justify-center">
+          <DateTimePicker
+            value={selected}
+            mode="datetime"
+            display="spinner"
+            onChange={(_, date) => {
+              if (date) {
+                setSelected(date);
+              }
             }}
-            onDateRemove={() => {}}
-            accentColor={accentColor}
+            style={{ height: 200 }}
           />
         </View>
         <View className="px-4 pt-2">
+          <Pressable
+            onPress={() => {
+              onSelect(selected);
+              onClose();
+            }}
+            className="rounded-xl py-3 items-center mb-2"
+            style={{ backgroundColor: accentColor }}
+          >
+            <Text className="text-[15px] leading-5 text-white font-semibold">
+              Fertig
+            </Text>
+          </Pressable>
           <Pressable
             onPress={onClose}
             className="bg-gray-200 dark:bg-zinc-800 rounded-xl py-3 items-center"

@@ -1,7 +1,6 @@
+import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useState } from "react";
-import { Pressable, Text, View } from "react-native";
-
-import SmartDateTimePicker from "@/components/SmartDateTimePicker";
+import { Platform, Pressable, Text, View } from "react-native";
 
 export function DateTimeBottomSheet({
   title,
@@ -16,7 +15,30 @@ export function DateTimeBottomSheet({
   onSelect: (d: Date) => void;
   accentColor: string;
 }) {
-  const [selected, setSelected] = useState<Date[]>([initialDate]);
+  const [selected, setSelected] = useState<Date>(initialDate);
+
+  // On Android, the picker is modal and handles its own close
+  // On iOS, we show it inline in the bottom sheet
+  if (Platform.OS === "android") {
+    return (
+      <DateTimePicker
+        value={selected}
+        mode="datetime"
+        display="default"
+        onChange={(event, date) => {
+          if (event.type === "set" && date) {
+            setSelected(date);
+            onSelect(date);
+            onClose();
+          } else if (event.type === "dismissed") {
+            onClose();
+          }
+        }}
+      />
+    );
+  }
+
+  // iOS: Show inline picker in bottom sheet
   return (
     <View className="absolute inset-0 bg-black/20 justify-end">
       <Pressable className="flex-1" onPress={onClose} />
@@ -26,18 +48,32 @@ export function DateTimeBottomSheet({
             {title}
           </Text>
         </View>
-        <View className="h-[420px]">
-          <SmartDateTimePicker
-            selectedDates={selected}
-            onDateSelect={(d) => {
-              setSelected([d]);
-              onSelect(d);
+        <View className="h-[420px] items-center justify-center">
+          <DateTimePicker
+            value={selected}
+            mode="datetime"
+            display="spinner"
+            onChange={(_, date) => {
+              if (date) {
+                setSelected(date);
+              }
             }}
-            onDateRemove={() => {}}
-            accentColor={accentColor}
+            style={{ height: 200 }}
           />
         </View>
         <View className="px-4 pt-2">
+          <Pressable
+            onPress={() => {
+              onSelect(selected);
+              onClose();
+            }}
+            className="bg-gray-200 dark:bg-zinc-800 rounded-xl py-3 items-center mb-2"
+            style={{ backgroundColor: accentColor }}
+          >
+            <Text className="text-[15px] leading-5 text-white font-semibold">
+              Fertig
+            </Text>
+          </Pressable>
           <Pressable
             onPress={onClose}
             className="bg-gray-200 dark:bg-zinc-800 rounded-xl py-3 items-center"
