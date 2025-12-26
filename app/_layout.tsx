@@ -41,6 +41,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (Platform.OS !== "android") return;
+    console.log("Setting navigation bar style", colorScheme);
     try {
       // With edge-to-edge enabled on Android, only style & visibility are effective.
       NavigationBar.setStyle(colorScheme === "dark" ? "light" : "dark");
@@ -108,13 +109,13 @@ function RootNavigator() {
         <Stack.Screen name="auth" options={{ headerShown: false }} />
       </Stack.Protected>
       <Stack.Protected guard={!!session}>
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="plan" options={{ headerShown: false }} />
         <Stack.Screen name="user/[id]/index" options={{ headerShown: false }} />
         <Stack.Screen name="share/[code]" options={{ headerShown: false }} />
-        <Stack.Screen name="delete-account" options={{ headerShown: false }} />
       </Stack.Protected>
+      <Stack.Screen name="delete-account" options={{ headerShown: false }} />
       <Stack.Screen name="+not-found" />
     </Stack>
   );

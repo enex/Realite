@@ -35,7 +35,7 @@ export default function PermissionsScreen() {
     orpc.user.completeOnboarding.mutationOptions({
       onSuccess: () => {
         // Weiter zur Haupt-App
-        router.replace("/(tabs)" as never);
+        router.replace("/(tabs)");
       },
       onError: (error) => {
         console.error("Error completing onboarding:", error);

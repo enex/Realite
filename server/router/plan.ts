@@ -2,7 +2,7 @@ import { activities, activityIds, type ActivityId } from "@/shared/activities";
 import { coreRepetitionSchema } from "@/shared/validation/plan";
 import { openai } from "@ai-sdk/openai";
 import { generateText, stepCountIs, tool } from "ai";
-import { addWeeks } from "date-fns";
+import { addWeeks, startOfDay } from "date-fns";
 import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
 import type { RealiteEvents } from "../events";
@@ -529,11 +529,11 @@ export const planRouter = {
     )
     .handler(async ({ context, input, signal }) => {
       // If cursor is provided, use it for pagination (start after cursor)
-      // Otherwise, use startDate from filter or now
+      // Otherwise, use startDate from filter or start of today (to exclude past plans)
       const now = new Date();
       const queryStartDate = input.cursor
         ? new Date(input.cursor.getTime() + 1) // Start after cursor to avoid duplicates
-        : input.startDate || now;
+        : input.startDate || startOfDay(now); // Default to start of today to exclude past plans
       const endDate = input.endDate || addWeeks(now, 52); // 1 year ahead
 
       const plans = await context.es.projections.plan.findPlans({

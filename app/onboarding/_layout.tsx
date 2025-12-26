@@ -28,13 +28,6 @@ export default function OnboardingLayout() {
         }}
       />
       <Stack.Screen
-        name="how-it-works"
-        options={{
-          title: "So funktioniert's",
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
         name="calendar-sync"
         options={{
           title: "Kalender verbinden",

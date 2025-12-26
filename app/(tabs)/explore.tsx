@@ -312,7 +312,7 @@ export default function ExploreScreen() {
     if (!foundPlans) return [];
 
     // One card per cluster: group of creators
-    return clusters.map((group) => {
+    const items = clusters.map((group) => {
       // Prefer user's own plan as base if present
       const sortedByStart = group
         .slice()
@@ -367,6 +367,8 @@ export default function ExploreScreen() {
           .filter((p) => p.name),
       } as PlanListItem;
     });
+
+    return items;
   }, [foundPlans, clusters, nameById, imageById, session?.id]);
 
   const groupedPlans = useMemo(() => {
@@ -386,20 +388,21 @@ export default function ExploreScreen() {
       groups[dateKey].push(plan);
     });
 
+    const today = startOfDay(new Date());
+    const todayKey = `${today.getFullYear()}-${String(
+      today.getMonth() + 1
+    ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const tmr = new Date(today);
+    tmr.setDate(tmr.getDate() + 1);
+    const tomorrowKey = `${tmr.getFullYear()}-${String(
+      tmr.getMonth() + 1
+    ).padStart(2, "0")}-${String(tmr.getDate()).padStart(2, "0")}`;
+
     return Object.entries(groups)
       .map(([dateKey, plans]) => {
-        // Recreate local Date from key and compute today/tomorrow keys
+        // Recreate local Date from key
         const [y, m, d] = dateKey.split("-").map((v) => Number(v));
         const date = new Date(y, (m as number) - 1, d as number);
-        const today = new Date();
-        const todayKey = `${today.getFullYear()}-${String(
-          today.getMonth() + 1
-        ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-        const tmr = new Date(today);
-        tmr.setDate(tmr.getDate() + 1);
-        const tomorrowKey = `${tmr.getFullYear()}-${String(
-          tmr.getMonth() + 1
-        ).padStart(2, "0")}-${String(tmr.getDate()).padStart(2, "0")}`;
 
         let dayLabel = date.toLocaleDateString("de-DE", {
           weekday: "long",
@@ -421,7 +424,14 @@ export default function ExploreScreen() {
           ),
         };
       })
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      .sort((a, b) => {
+        // Sort: "Heute" first, then "Morgen", then chronologically
+        if (a.date === todayKey) return -1;
+        if (b.date === todayKey) return 1;
+        if (a.date === tomorrowKey) return -1;
+        if (b.date === tomorrowKey) return 1;
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      });
   }, [data]);
 
   const renderDayGroup = ({

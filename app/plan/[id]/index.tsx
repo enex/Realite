@@ -439,15 +439,10 @@ export default function PlanDetails() {
         translucent
         backgroundColor="transparent"
       />
-      <SafeAreaView className="flex-1" edges={["bottom", "left", "right"]}>
+      <View>
         {/* Fixed Header (always visible, over image) */}
         <View
-          className="absolute top-0 left-0 right-0 z-[1000] bg-transparent"
-          style={{
-            paddingTop: insets.top,
-            paddingHorizontal: 16,
-            paddingBottom: 8,
-          }}
+          className="absolute top-0 left-0 right-0 z-[1000] bg-transparent px-4 pb-2 pt-safe"
           pointerEvents="box-none"
         >
           <View className="flex-row items-center justify-between pt-2">
@@ -685,7 +680,7 @@ export default function PlanDetails() {
             </Pressable>
           </View>
         )}
-      </SafeAreaView>
+      </View>
 
       {/* Plan Action Sheet */}
       {showDeleteSheet && isOwner && plan && (
@@ -697,10 +692,7 @@ export default function PlanDetails() {
               "Plan löschen",
               "Möchtest du diesen Plan wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
               [
-                {
-                  text: "Abbrechen",
-                  style: "cancel",
-                },
+                { text: "Abbrechen", style: "cancel" },
                 {
                   text: "Löschen",
                   style: "destructive",

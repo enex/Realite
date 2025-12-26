@@ -1,18 +1,36 @@
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useSession } from "@/client/auth";
+import orpc from "@/client/orpc";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/Icon";
 import { Text } from "@/components/ui/text";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useQuery } from "@tanstack/react-query";
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
+  const session = useSession();
+
+  // Nur me Query ausführen, wenn eine Session vorhanden ist
+  const meRes = useQuery(
+    orpc.auth.me.queryOptions({
+      enabled: !!session && !session.isLoading,
+      retry: false, // Nicht wiederholen bei Fehlern
+    })
+  );
+  const onboarded = meRes.data?.onboarded;
+  useEffect(() => {
+    if (onboarded) {
+      router.replace("/(tabs)");
+    }
+  }, [onboarded]);
 
   const iconColor = isDark ? "#d4d4d8" : "#3C3C43";
 
