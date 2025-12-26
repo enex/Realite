@@ -1,8 +1,12 @@
 # Use the official Bun image
 FROM oven/bun:1.0.35-alpine
 
-# Install Node.js to run Expo CLI with Node for export
-RUN apk add --no-cache nodejs npm
+# Install Node.js 20+ to run Expo CLI with Node for export
+# Alpine's default nodejs is v18, so we install Node.js 20 from official binaries
+RUN apk add --no-cache curl && \
+    curl -fsSL https://unofficial-builds.nodejs.org/download/release/v20.18.0/node-v20.18.0-linux-x64-musl.tar.gz | tar -xz -C /usr/local --strip-components=1 && \
+    apk del curl && \
+    node --version && npm --version
 
 # Set working directory
 WORKDIR /app
