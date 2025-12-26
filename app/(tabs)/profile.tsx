@@ -15,7 +15,7 @@ import {
   Pressable,
   ScrollView,
   Share,
-  Text,
+  Text as RNText,
   TextInput,
   View,
 } from "react-native";
@@ -28,6 +28,7 @@ import { ToggleRow } from "@/components/ToggleRow";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/Card";
 import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
+import { Text } from "@/components/ui/text";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -246,12 +247,12 @@ export default function ProfileScreen() {
               {isUploadingAvatar ? (
                 <ActivityIndicator color="#ffffff" />
               ) : (
-                <Text
+                <RNText
                   className="text-white"
                   style={{ fontSize: 16, fontWeight: "700" }}
                 >
                   ✎
-                </Text>
+                </RNText>
               )}
             </View>
           </Pressable>
@@ -306,7 +307,7 @@ export default function ProfileScreen() {
             </ThemedText>
             <Link href="/auth/change-phone" asChild>
               <Pressable className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5">
-                <Text className="text-primary">Ändern</Text>
+                <RNText className="text-primary">Ändern</RNText>
               </Pressable>
             </Link>
           </View>
@@ -325,7 +326,7 @@ export default function ProfileScreen() {
                 }}
                 className={`rounded-xl border px-3 py-2 ${me.data?.gender === g ? "bg-primary border-primary" : "bg-transparent dark:border-zinc-50 border-zinc-700"}`}
               >
-                <Text
+                <RNText
                   className={
                     me.data?.gender === g
                       ? "text-primary-foreground"
@@ -333,7 +334,7 @@ export default function ProfileScreen() {
                   }
                 >
                   {GENDER_LABEL[g]}
-                </Text>
+                </RNText>
               </Pressable>
             ))}
           </View>
@@ -355,7 +356,7 @@ export default function ProfileScreen() {
                 onPress={() => update.mutate({ relationshipStatus: rs })}
                 className={`rounded-xl border px-3 py-2 ${me.data?.relationshipStatus === rs ? "bg-primary border-primary" : "border-separate bg-transparent dark:border-zinc-50 border-zinc-700"}`}
               >
-                <Text
+                <RNText
                   className={
                     me.data?.relationshipStatus === rs
                       ? "text-primary-foreground"
@@ -363,7 +364,7 @@ export default function ProfileScreen() {
                   }
                 >
                   {REL_LABEL[rs]}
-                </Text>
+                </RNText>
               </Pressable>
             ))}
           </View>
@@ -576,9 +577,9 @@ export default function ProfileScreen() {
           variant="outline"
           className="border-red-300 dark:border-red-800"
         >
-          <Text className="text-red-600 dark:text-red-400">
+          <RNText className="text-red-600 dark:text-red-400">
             Account löschen
-          </Text>
+          </RNText>
         </Button>
       </Card>
 
@@ -617,7 +618,7 @@ export default function ProfileScreen() {
         darkColor="transparent"
       >
         <View className="px-6 pt-2 pb-4">
-          <Text
+          <RNText
             className="text-zinc-900 dark:text-zinc-50"
             style={{
               fontSize: 34,
@@ -627,10 +628,10 @@ export default function ProfileScreen() {
             }}
           >
             Profil
-          </Text>
-          <Text style={{ fontSize: 15, lineHeight: 20, color: "#8E8E93" }}>
+          </RNText>
+          <RNText style={{ fontSize: 15, lineHeight: 20, color: "#8E8E93" }}>
             Persönliche Daten und Einstellungen
-          </Text>
+          </RNText>
         </View>
 
         <ScrollView
