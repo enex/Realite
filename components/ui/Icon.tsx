@@ -62,6 +62,8 @@ const MAPPING = {
   "checkmark-circle": "check-circle",
   "add-circle": "add-circle",
   notifications: "notifications",
+  bell: "notifications",
+  "bell.fill": "notifications",
   contacts: "contacts",
   phone: "phone",
   "phone.fill": "phone",

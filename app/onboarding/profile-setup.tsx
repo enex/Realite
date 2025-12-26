@@ -40,9 +40,10 @@ export default function ProfileSetupScreen() {
   const updateProfile = useMutation(
     orpc.user.update.mutationOptions({
       onSuccess: () => {
-        router.push("/onboarding/calendar-sync" as never);
+        router.push("/onboarding/permissions" as never);
       },
       onError: (error) => {
+        console.error(error);
         Alert.alert("Fehler", error.message);
       },
     })
@@ -60,7 +61,7 @@ export default function ProfileSetupScreen() {
 
   const handleSkip = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push("/onboarding/calendar-sync" as never);
+    router.push("/onboarding/permissions" as never);
   };
 
   return (

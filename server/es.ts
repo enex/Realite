@@ -472,7 +472,7 @@ export const es = builder.store({
               relationshipStatus: "asdf",
               onboarded: false,
               deleted: false,
-              deletedAt: null,
+              deletedAt: null as null | Date,
               privacySettings: {
                 showGender: true,
                 showAge: true,
