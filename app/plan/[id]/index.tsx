@@ -434,7 +434,11 @@ export default function PlanDetails() {
 
   return (
     <View className="flex-1 bg-gray-100 dark:bg-black">
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      <StatusBar
+        barStyle="light-content"
+        translucent
+        backgroundColor="transparent"
+      />
       <SafeAreaView className="flex-1" edges={["bottom", "left", "right"]}>
         {/* Fixed Header (always visible, over image) */}
         <View
