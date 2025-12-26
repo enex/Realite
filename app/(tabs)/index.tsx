@@ -254,8 +254,15 @@ export default function PlansScreen() {
   const filteredData = useMemo(() => {
     if (!data) return [] as PlanListItem[];
 
-    // Only filter by activity if filter is set, no date filtering (lazy loading handles that)
+    const today = startOfDay(new Date());
+
+    // Filter: only show plans from today or future, and by activity if filter is set
     return data.filter((p) => {
+      // Only show plans from today or future
+      const planDate = new Date(p.date);
+      if (planDate < today) return false;
+
+      // Filter by activity if filter is set
       if (filter?.activity && p.activity !== filter.activity) return false;
       return true;
     });

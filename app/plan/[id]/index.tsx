@@ -9,6 +9,7 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
+  StatusBar,
   Text,
   useColorScheme,
   View,
@@ -433,7 +434,8 @@ export default function PlanDetails() {
 
   return (
     <View className="flex-1 bg-gray-100 dark:bg-black">
-      <SafeAreaView className="flex-1" edges={[]}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      <SafeAreaView className="flex-1" edges={["bottom", "left", "right"]}>
         {/* Fixed Header (always visible, over image) */}
         <View
           className="absolute top-0 left-0 right-0 z-[1000] bg-transparent"
@@ -474,6 +476,7 @@ export default function PlanDetails() {
           ref={scrollRef}
           onScroll={scrollHandler}
           scrollEventThrottle={16}
+          contentInsetAdjustmentBehavior="never"
           refreshControl={
             <RefreshControl
               refreshing={Boolean(isRefetching || isFetching)}
@@ -498,7 +501,8 @@ export default function PlanDetails() {
             style={[
               {
                 height: HEADER_HEIGHT + insets.top,
-                marginTop: -insets.top,
+                marginTop: 0,
+                paddingTop: 0,
               },
               headerImageStyle,
             ]}
