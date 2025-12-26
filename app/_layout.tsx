@@ -19,6 +19,8 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { colorScheme as nativewindColorScheme } from "nativewind";
 
+import { useSession } from "@/client/auth";
+import { SplashScreenController } from "@/components/SplashScreenController";
 import "../global.css";
 
 const POSTHOG_API_KEY = "phc_3omBpOn5mo0ATpJZOmu7gU4RGpmLoXcef1YAGZY3e4O";
@@ -53,36 +55,12 @@ export default function RootLayout() {
 
   const content = (
     <QueryClientProvider client={queryClient}>
+      <SplashScreenController />
       <BottomSheetModalProvider>
         <ThemeProvider
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         >
-          <Stack>
-            <Stack.Screen
-              name="index"
-              options={{
-                headerShown: false,
-                title: "Realite - Die App für echte Verbindungen",
-              }}
-            />
-            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="auth" options={{ headerShown: false }} />
-            <Stack.Screen name="plan" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="user/[id]/index"
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="share/[code]"
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="delete-account"
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen name="+not-found" />
-          </Stack>
+          <RootNavigator />
           <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
         </ThemeProvider>
       </BottomSheetModalProvider>
@@ -112,5 +90,32 @@ export default function RootLayout() {
         )}
       </SafeAreaProvider>
     </GestureHandlerRootView>
+  );
+}
+
+function RootNavigator() {
+  const { session } = useSession();
+  return (
+    <Stack>
+      <Stack.Protected guard={!session}>
+        <Stack.Screen
+          name="index"
+          options={{
+            headerShown: false,
+            title: "Realite - Die App für echte Verbindungen",
+          }}
+        />
+        <Stack.Screen name="auth" options={{ headerShown: false }} />
+      </Stack.Protected>
+      <Stack.Protected guard={!!session}>
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="plan" options={{ headerShown: false }} />
+        <Stack.Screen name="user/[id]/index" options={{ headerShown: false }} />
+        <Stack.Screen name="share/[code]" options={{ headerShown: false }} />
+        <Stack.Screen name="delete-account" options={{ headerShown: false }} />
+      </Stack.Protected>
+      <Stack.Screen name="+not-found" />
+    </Stack>
   );
 }
