@@ -65,27 +65,14 @@ export const es = builder.store({
             }
           },
           async "realite.plan.cancelled"(ev, ctx) {
-            // Get the plan to check startDate
-            const plan = await ctx.db.query.plans.findFirst({
-              where: eq(schema.plans.id, ev.subject),
-            });
-
-            if (!plan) {
-              console.warn(`Plan ${ev.subject} not found for cancellation`);
-              return;
-            }
-
-            // Ensure endDate is always >= startDate to satisfy the tsrange constraint
-            // If the plan is in the future, set endDate to startDate (cancelled before it happened)
-            // If the plan is in the past or ongoing, set endDate to the cancellation time
-            const endDate =
-              ev.time >= plan.startDate ? ev.time : plan.startDate;
-
+            // Delete plan locations first (due to foreign key constraint)
             await ctx.db
-              .update(schema.plans)
-              .set({
-                endDate: endDate,
-              })
+              .delete(schema.planLocations)
+              .where(eq(schema.planLocations.planId, ev.subject));
+
+            // Delete the plan itself
+            await ctx.db
+              .delete(schema.plans)
               .where(eq(schema.plans.id, ev.subject));
           },
           async "realite.plan.changed"(ev, ctx) {

@@ -199,33 +199,67 @@ export const planRouter = {
       });
 
       const systemPrompt = [
-        `Du erhältst eine Eingabe eines Benutzers, der erwähnt, was er oder sie tun möchte. Du erstellst einen Plan aus dieser Eingabe.`,
-        `WICHTIG: Alle Inhalte (Titel, Beschreibungen, Ortsnamen, etc.) müssen auf Deutsch sein.`,
-        `Entscheide dich für die richtige Aktivität für den Plan. Verwende die passendste Aktivität aus der Liste:`,
+        `You receive user input mentioning what they want to do. Create a plan from this input.`,
+        `CRITICAL: All content (titles, descriptions, location names, etc.) must be in German.`,
+        ``,
+        `## Activity Selection`,
+        `Choose the MOST APPROPRIATE activity from this list. Pay attention to context:`,
         ...Object.entries(activities).flatMap(([groupId, group]) => [
-          `- ${groupId}: ${group.name}`,
+          `- ${groupId}: ${group.nameDe} (${group.name})`,
           ...Object.entries(group.subActivities).map(
             ([subActivityId, description]) =>
-              `  - ${subActivityId}: ${description.name}`
+              `  - ${groupId}/${subActivityId}: ${description.nameDe} (${description.name})`
           ),
         ]),
-        `Nutze immer das web_search Tool, um erwähnte Orte, Events, etc. zu überprüfen.`,
+        ``,
+        `IMPORTANT ACTIVITY RULES:`,
+        `- If a term contains both an activity word and another word (e.g., "coffee run"), use web_search to determine what it actually refers to`,
+        `- "run" or "jog" typically means RUNNING (sport/running), not food/drink`,
+        `- Distinguish between activities: "running" is sport, "coffee" alone is food/drink`,
+        `- When in doubt about what an event or term means, ALWAYS search the web first`,
+        ``,
+        `## Web Search Strategy`,
+        `ALWAYS use web_search FIRST when the user mentions:`,
+        `- Event names, brand names, or specific event titles`,
+        `- Instagram posts, social media events, or hashtags`,
+        `- Specific locations that might be events or venues`,
+        `- Any ambiguous terms that could refer to events or activities`,
+        `- Terms that combine multiple concepts (e.g., activity + location, activity + brand)`,
+        ``,
+        `Search for the EXACT phrase or term the user mentioned to discover:`,
+        `- What the event/term actually refers to (activity type, location, time, details)`,
+        `- Instagram posts or social media content about it`,
+        `- Official event pages or announcements`,
+        `- Location details and meeting points`,
+        `- Any additional context that clarifies the activity type`,
+        ``,
+        `ONLY after understanding what the event/term actually is from web search results, proceed to location search.`,
+        ``,
+        `## Location`,
         input.location
-          ? `Der ungefähre Standort des Benutzers ist ${
+          ? `The user's approximate location is ${
               [resolved?.city, resolved?.region, resolved?.country]
                 .filter(Boolean)
                 .join(", ") ||
               `lat ${input.location.latitude}, lon ${input.location.longitude}`
-            }. Bevorzuge Vorschläge, die für diese Umgebung relevant sind.`
-          : `Wenn kein Standort angegeben ist, nimm keine spezifische Stadt an; halte Vorschläge generisch oder stelle Klärungsfragen.`,
-        `Jeder Plan MUSS mindestens einen konkreten Ort enthalten.`,
-        `Verwende das search_location Tool, um echte Orte zu finden. Wenn die Benutzereingabe uneindeutig ist, suche nach 2-3 plausiblen Orten in der Nähe des Benutzers (z.B. Parks, Cafés, Fitnessstudios) und füge sie alle hinzu, damit der Benutzer falsche löschen kann.`,
-        `Gib nur Orte zurück, die einen Namen und Koordinaten aus den search_location Ergebnissen haben. Erfinde niemals Koordinaten.`,
-        `Heute ist ${localDateStr} (${now.toISOString().slice(0, 10)}). Die lokale Zeit ist ${localTimeStr} in der Zeitzone ${timeZone}.`,
-        `ALLE Datums- und Zeitangaben müssen im ISO 8601 Format mit korrekter Zeitzone sein: YYYY-MM-DDTHH:mm:ss+HH:mm oder YYYY-MM-DDTHH:mm:ssZ für UTC.`,
-        `WICHTIG: Berücksichtige die Zeitzone ${timeZone} bei allen Datums- und Zeitangaben. Wenn der Benutzer eine Zeit angibt (z.B. "15:00" oder "3 Uhr nachmittags"), interpretiere diese als lokale Zeit in ${timeZone} und konvertiere sie entsprechend.`,
-        `Wenn ein Monat/Tag oder Wochentag in diesem Jahr in der Vergangenheit wäre, plane das nächste zukünftige Vorkommen (möglicherweise nächstes Jahr).`,
-        `Jeder Plan muss in der Zukunft liegen.`,
+            }. Prefer suggestions relevant to this area.`
+          : `If no location is provided, don't assume a specific city; keep suggestions generic or ask for clarification.`,
+        ``,
+        `Every plan MUST contain at least one concrete location.`,
+        `Use search_location to find real places. If the input is ambiguous, search for 2-3 plausible locations near the user (e.g., parks, cafés, gyms) and add them all so the user can delete incorrect ones.`,
+        `Only return locations with names and coordinates from search_location results. NEVER invent coordinates.`,
+        ``,
+        `## Date and Time`,
+        `Today is ${localDateStr} (${now.toISOString().slice(0, 10)}). Local time is ${localTimeStr} in timezone ${timeZone}.`,
+        `ALL dates and times must be in ISO 8601 format with correct timezone: YYYY-MM-DDTHH:mm:ss+HH:mm or YYYY-MM-DDTHH:mm:ssZ for UTC.`,
+        `IMPORTANT: Consider timezone ${timeZone} for all date/time values. If the user specifies a time (e.g., "10:00" or "10 am"), interpret it as local time in ${timeZone} and convert accordingly.`,
+        `If a month/day or weekday would be in the past this year, plan the next future occurrence (possibly next year).`,
+        `Every plan must be in the future.`,
+        ``,
+        `## Workflow`,
+        `1. FIRST: Use web_search if user mentions event names, brands, or ambiguous terms`,
+        `2. THEN: Use search_location to find concrete places`,
+        `3. FINALLY: Create the plan with correct activity, location, and time`,
       ].join("\n");
 
       const aiPlanSchema = planSchema.extend({
@@ -243,10 +277,13 @@ export const planRouter = {
         prompt: input.text,
         toolChoice: "required",
         prepareStep: ({ stepNumber, steps }) => {
-          const hasSearchCall = steps.some((s) =>
+          const hasWebSearch = steps.some((s) =>
+            s.toolCalls.some((t) => t.toolName === "web_search")
+          );
+          const hasLocationSearch = steps.some((s) =>
             s.toolCalls.some((t) => t.toolName === "search_location")
           );
-          const hasSearchResults = steps.some((s) =>
+          const hasLocationResults = steps.some((s) =>
             (s.toolResults ?? []).some(
               (r: any) =>
                 r.toolName === "search_location" &&
@@ -254,7 +291,13 @@ export const planRouter = {
                 r.result.locations.length > 0
             )
           );
+          const hasWebSearchResults = steps.some((s) =>
+            (s.toolResults ?? []).some(
+              (r: any) => r.toolName === "web_search" && r.result
+            )
+          );
 
+          // Step 0: Always start with web_search if there are event-like terms
           if (stepNumber === 0) {
             return {
               toolChoice: "required",
@@ -262,20 +305,38 @@ export const planRouter = {
             };
           }
 
-          if (!hasSearchResults && stepNumber < 3) {
+          // Step 1: If we haven't done web_search yet and it seems needed, do it
+          if (!hasWebSearch && stepNumber === 1) {
+            return { toolChoice: "required", activeTools: ["web_search"] };
+          }
+
+          // Step 2+: If we have web search results but no location search, do location search
+          if (hasWebSearchResults && !hasLocationSearch && stepNumber < 4) {
             return { toolChoice: "required", activeTools: ["search_location"] };
           }
 
-          if (hasSearchCall && stepNumber >= 2) {
+          // If we have location results but need more, continue searching
+          if (!hasLocationResults && stepNumber < 4) {
+            return { toolChoice: "required", activeTools: ["search_location"] };
+          }
+
+          // If we have both web search and location search, create the plan
+          if ((hasWebSearch || hasLocationSearch) && stepNumber >= 2) {
             return { toolChoice: "required", activeTools: ["create_plan"] };
           }
+
+          // Default: allow web_search or search_location
+          return {
+            toolChoice: "required",
+            activeTools: ["web_search", "search_location"],
+          };
         },
         stopWhen: stepCountIs(5),
         tools: {
           create_plan: tool({
             inputSchema: aiPlanSchema,
             description:
-              "Erstelle einen Plan. Alle Texte (Titel, Beschreibungen) müssen auf Deutsch sein. Datumsangaben müssen im ISO 8601 Format mit korrekter Zeitzone sein.",
+              "Create a plan. All text content (titles, descriptions) must be in German. Dates must be in ISO 8601 format with correct timezone. Use information from web_search results to determine the correct activity type, location, and details.",
           }),
           web_search: openai.tools.webSearch({
             searchContextSize: "high",
@@ -291,7 +352,7 @@ export const planRouter = {
           search_location: tool({
             inputSchema: locationRouter.search["~orpc"].inputSchema!,
             description:
-              "Suche nach einem Ort. Dies ist notwendig, um einen Plan zu erstellen, da jeder Plan mindestens einen Ort haben muss.",
+              "Search for a physical location/place. This is necessary to create a plan since every plan must have at least one location. Use information from web_search results to find the correct location name.",
             execute: async ({ query }) => {
               const res = await placesService.search({
                 query,
