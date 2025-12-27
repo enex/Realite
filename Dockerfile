@@ -30,7 +30,8 @@ WORKDIR /app
 COPY package.json bun.lock bunfig.toml ./
 
 # Install dependencies with Bun (faster for runtime)
-RUN bun install --production
+# Note: We install all dependencies (not just production) as the server may need them
+RUN bun install
 
 # Copy built web export from builder stage
 COPY --from=builder /app/dist ./dist
