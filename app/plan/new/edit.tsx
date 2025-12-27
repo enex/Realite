@@ -1,9 +1,11 @@
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -105,6 +107,8 @@ export default function NewPlanEdit() {
   const { latitude, longitude, hasPermission } = useLocation();
 
   const locationSearchSheetRef = React.useRef<BottomSheet>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const descriptionInputRef = useRef<TextInput>(null);
 
   // Location search query
   const { data: locationSearchResults, isLoading: isSearchingLocations } =
@@ -191,165 +195,186 @@ export default function NewPlanEdit() {
 
   return (
     <View className="flex-1 bg-gray-100 dark:bg-black">
-      <View className="flex-1">
-        {/* Fixed Header */}
-        <View
-          className="flex-row items-center justify-between border-b border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-900"
-          style={{
-            paddingTop: insets.top,
-            paddingHorizontal: 16,
-            paddingBottom: 8,
-          }}
-        >
-          <Pressable
-            className="w-10 h-10 rounded-full items-center justify-center"
-            onPress={() => router.back()}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+        keyboardVerticalOffset={insets.top}
+      >
+        <View className="flex-1">
+          {/* Fixed Header */}
+          <View
+            className="flex-row items-center justify-between border-b border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-900"
+            style={{
+              paddingTop: insets.top,
+              paddingHorizontal: 16,
+              paddingBottom: 8,
+            }}
           >
-            <Icon
-              name="xmark"
-              size={20}
-              color={isDark ? "#FFFFFF" : "#000000"}
-            />
-          </Pressable>
-          <Pressable
-            onPress={handleSave}
-            disabled={createPlan.isPending}
-            className="px-4 py-2 rounded-full min-w-[100px] items-center"
-            style={{ backgroundColor: accentColor }}
+            <Pressable
+              className="w-10 h-10 rounded-full items-center justify-center"
+              onPress={() => router.back()}
+            >
+              <Icon
+                name="xmark"
+                size={20}
+                color={isDark ? "#FFFFFF" : "#000000"}
+              />
+            </Pressable>
+            <Pressable
+              onPress={handleSave}
+              disabled={createPlan.isPending}
+              className="px-4 py-2 rounded-full min-w-[100px] items-center"
+              style={{ backgroundColor: accentColor }}
+            >
+              <Text className="text-[15px] leading-5 text-white font-semibold">
+                {createPlan.isPending ? "Erstelle..." : "Erstellen"}
+              </Text>
+            </Pressable>
+          </View>
+
+          <ScrollView
+            ref={scrollViewRef}
+            className="flex-1"
+            contentContainerStyle={{ paddingBottom: 200 }}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="interactive"
+            showsVerticalScrollIndicator={true}
           >
-            <Text className="text-[15px] leading-5 text-white font-semibold">
-              {createPlan.isPending ? "Erstelle..." : "Erstellen"}
-            </Text>
-          </Pressable>
-        </View>
-
-        <ScrollView
-          className="flex-1"
-          contentContainerStyle={{ paddingBottom: 32 }}
-        >
-          {/* Title Input */}
-          <View className="bg-white dark:bg-zinc-900 px-4 pt-6 pb-4">
-            <TextInput
-              value={title}
-              onChangeText={setTitle}
-              placeholder="Titel"
-              placeholderTextColor={
-                isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"
-              }
-              className="text-[34px] leading-[41px] font-bold text-black dark:text-white"
-            />
-          </View>
-
-          {/* Event Details Section */}
-          <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
-            {/* Start Date/Time */}
-            <EditRow
-              icon="clock"
-              label={formatDate(startDate)}
-              value={formatTime(startDate)}
-              onPress={() => setShowStartPicker(true)}
-              accentColor={accentColor}
-            />
-
-            {/* End Date/Time */}
-            <EditRow
-              icon="clock"
-              label={formatDate(endDate)}
-              value={formatTime(endDate)}
-              onPress={() => setShowEndPicker(true)}
-              accentColor={accentColor}
-            />
-
-            {/* Activity */}
-            <EditRow
-              icon="calendar"
-              label="Aktivität"
-              value={getActivityLabel(selectedActivity)}
-              onPress={() => setShowActivityPicker(true)}
-              accentColor={accentColor}
-            />
-          </View>
-
-          {/* Locations Section */}
-          <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
-            <View className="px-4 py-2">
-              <View className="flex-row items-center justify-between mb-2">
-                <Text className="text-[17px] font-semibold text-black dark:text-white">
-                  Orte
-                </Text>
-                <Pressable
-                  onPress={() => {
-                    setShowLocationSearch(true);
-                    locationSearchSheetRef.current?.expand();
-                  }}
-                  className="flex-row items-center"
-                >
-                  <Icon name="plus.circle.fill" size={20} color={accentColor} />
-                  <Text
-                    className="text-[15px] ml-1"
-                    style={{ color: accentColor }}
-                  >
-                    Hinzufügen
-                  </Text>
-                </Pressable>
-              </View>
-
-              {locations.length === 0 ? (
-                <Text className="text-[15px] text-gray-500 dark:text-gray-400">
-                  Keine Orte hinzugefügt
-                </Text>
-              ) : (
-                <View className="gap-2">
-                  {locations.map((location, index) => (
-                    <View
-                      key={index}
-                      className="flex-row items-center justify-between p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg"
-                    >
-                      <View className="flex-1 mr-3">
-                        <Text className="text-[15px] font-medium text-black dark:text-white">
-                          {location.title}
-                        </Text>
-                        {location.address && (
-                          <Text className="text-[13px] text-gray-500 dark:text-gray-400 mt-1">
-                            {location.address}
-                          </Text>
-                        )}
-                      </View>
-                      <Pressable
-                        onPress={() => handleRemoveLocation(index)}
-                        className="w-8 h-8 items-center justify-center"
-                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                      >
-                        <Icon
-                          name="trash"
-                          size={20}
-                          color={isDark ? "#EF4444" : "#DC2626"}
-                        />
-                      </Pressable>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </View>
-          </View>
-
-          {/* Description */}
-          <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
-            <View className="px-4 py-4">
+            {/* Title Input */}
+            <View className="bg-white dark:bg-zinc-900 px-4 pt-6 pb-4">
               <TextInput
-                value={description}
-                onChangeText={setDescription}
-                placeholder="Beschreibung hinzufügen"
+                value={title}
+                onChangeText={setTitle}
+                placeholder="Titel"
                 placeholderTextColor={
                   isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"
                 }
-                multiline
-                className="text-[17px] leading-[22px] text-black dark:text-white min-h-[100px]"
+                className="text-[34px] leading-[41px] font-bold text-black dark:text-white"
               />
             </View>
-          </View>
-        </ScrollView>
-      </View>
+
+            {/* Event Details Section */}
+            <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
+              {/* Start Date/Time */}
+              <EditRow
+                icon="clock"
+                label={formatDate(startDate)}
+                value={formatTime(startDate)}
+                onPress={() => setShowStartPicker(true)}
+                accentColor={accentColor}
+              />
+
+              {/* End Date/Time */}
+              <EditRow
+                icon="clock"
+                label={formatDate(endDate)}
+                value={formatTime(endDate)}
+                onPress={() => setShowEndPicker(true)}
+                accentColor={accentColor}
+              />
+
+              {/* Activity */}
+              <EditRow
+                icon="calendar"
+                label="Aktivität"
+                value={getActivityLabel(selectedActivity)}
+                onPress={() => setShowActivityPicker(true)}
+                accentColor={accentColor}
+              />
+            </View>
+
+            {/* Locations Section */}
+            <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
+              <View className="px-4 py-2">
+                <View className="flex-row items-center justify-between mb-2">
+                  <Text className="text-[17px] font-semibold text-black dark:text-white">
+                    Orte
+                  </Text>
+                  <Pressable
+                    onPress={() => {
+                      setShowLocationSearch(true);
+                      locationSearchSheetRef.current?.expand();
+                    }}
+                    className="flex-row items-center"
+                  >
+                    <Icon
+                      name="plus.circle.fill"
+                      size={20}
+                      color={accentColor}
+                    />
+                    <Text
+                      className="text-[15px] ml-1"
+                      style={{ color: accentColor }}
+                    >
+                      Hinzufügen
+                    </Text>
+                  </Pressable>
+                </View>
+
+                {locations.length === 0 ? (
+                  <Text className="text-[15px] text-gray-500 dark:text-gray-400">
+                    Keine Orte hinzugefügt
+                  </Text>
+                ) : (
+                  <View className="gap-2">
+                    {locations.map((location, index) => (
+                      <View
+                        key={index}
+                        className="flex-row items-center justify-between p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg"
+                      >
+                        <View className="flex-1 mr-3">
+                          <Text className="text-[15px] font-medium text-black dark:text-white">
+                            {location.title}
+                          </Text>
+                          {location.address && (
+                            <Text className="text-[13px] text-gray-500 dark:text-gray-400 mt-1">
+                              {location.address}
+                            </Text>
+                          )}
+                        </View>
+                        <Pressable
+                          onPress={() => handleRemoveLocation(index)}
+                          className="w-8 h-8 items-center justify-center"
+                          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        >
+                          <Icon
+                            name="trash"
+                            size={20}
+                            color={isDark ? "#EF4444" : "#DC2626"}
+                          />
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {/* Description */}
+            <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
+              <View className="px-4 py-4">
+                <TextInput
+                  ref={descriptionInputRef}
+                  value={description}
+                  onChangeText={setDescription}
+                  placeholder="Beschreibung hinzufügen"
+                  placeholderTextColor={
+                    isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"
+                  }
+                  multiline
+                  className="text-[17px] leading-[22px] text-black dark:text-white min-h-[100px]"
+                  onFocus={() => {
+                    // Scroll to end when description input is focused
+                    setTimeout(() => {
+                      scrollViewRef.current?.scrollToEnd({ animated: true });
+                    }, 300);
+                  }}
+                />
+              </View>
+            </View>
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
 
       {/* Bottom Sheets */}
       {showActivityPicker && (
