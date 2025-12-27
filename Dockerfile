@@ -2,10 +2,8 @@
 FROM oven/bun:1.0.35-alpine
 
 # Install Node.js 20+ to run Expo CLI with Node for export
-# Alpine's default nodejs is v18, so we install Node.js 20 from official binaries
-RUN apk add --no-cache curl && \
-    curl -fsSL https://unofficial-builds.nodejs.org/download/release/v20.18.0/node-v20.18.0-linux-x64-musl.tar.gz | tar -xz -C /usr/local --strip-components=1 && \
-    apk del curl && \
+# Alpine edge repository has Node.js 20+ which is musl-compatible
+RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main nodejs npm && \
     node --version && npm --version
 
 # Set working directory
