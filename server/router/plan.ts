@@ -266,7 +266,12 @@ export const planRouter = {
         `2. THEN: Use search_location to find concrete places`,
         `3. FINALLY: ALWAYS create the plan with correct activity, location, and time`,
         ``,
-        `CRITICAL: You MUST create a plan. Even if searches don't return perfect results, create the plan with the best information available.`,
+        `CRITICAL RULES:`,
+        `- You MUST create a plan using the create_plan tool. This is not optional.`,
+        `- Even if searches don't return perfect results, create the plan with the best information available.`,
+        `- If web_search found information about an event, use that information to create the plan.`,
+        `- If location search didn't find exact matches, use the location information from web_search or create a reasonable location based on the event details.`,
+        `- The plan MUST be created - never return without creating a plan.`,
       ].join("\n");
 
       const aiPlanSchema = planSchema.extend({
@@ -312,7 +317,7 @@ export const planRouter = {
             return { toolChoice: "required", activeTools: ["create_plan"] };
           }
 
-          // Step 0: Always start with web_search if there are event-like terms
+          // Step 0: Start with web_search or search_location
           if (stepNumber === 0) {
             return {
               toolChoice: "required",
@@ -325,35 +330,45 @@ export const planRouter = {
             return { toolChoice: "required", activeTools: ["web_search"] };
           }
 
-          // Step 2: If we have web search but no location search yet, try location search
-          if (hasWebSearch && !hasLocationSearch && stepNumber === 2) {
-            return { toolChoice: "required", activeTools: ["search_location"] };
+          // Step 2: Priority order:
+          // 1. If we have web search results but no location search, try location search
+          // 2. Otherwise, if we have any search results, create the plan
+          if (stepNumber === 2) {
+            if (hasWebSearchResults && !hasLocationSearch) {
+              return { toolChoice: "required", activeTools: ["search_location"] };
+            }
+            // If we have any search (web or location), create plan
+            if (hasWebSearch || hasLocationSearch) {
+              return { toolChoice: "required", activeTools: ["create_plan"] };
+            }
           }
 
-          // Step 3: If we still don't have location results, try one more location search
-          if (!hasLocationResults && !hasLocationSearch && stepNumber === 3) {
-            return { toolChoice: "required", activeTools: ["search_location"] };
-          }
-
-          // From step 2 onwards: If we've done at least one search, force create_plan
-          // This ensures we always create a plan even if searches didn't return perfect results
-          if (stepNumber >= 2 && (hasWebSearch || hasLocationSearch)) {
+          // Step 3: If we still don't have location results and haven't searched, try one more time
+          if (stepNumber === 3) {
+            if (!hasLocationResults && !hasLocationSearch && hasWebSearchResults) {
+              return { toolChoice: "required", activeTools: ["search_location"] };
+            }
+            // Otherwise, create the plan
             return { toolChoice: "required", activeTools: ["create_plan"] };
           }
 
-          // Step 3+: ALWAYS force create_plan as fallback (even if no searches were done)
-          // This is critical to ensure a plan is always created
-          if (stepNumber >= 3) {
+          // Step 4+: ALWAYS force create_plan (critical fallback)
+          if (stepNumber >= 4) {
             return { toolChoice: "required", activeTools: ["create_plan"] };
           }
 
-          // Default: allow web_search or search_location
+          // Default fallback: create plan if we have any information
+          if (hasWebSearch || hasLocationSearch) {
+            return { toolChoice: "required", activeTools: ["create_plan"] };
+          }
+
+          // Last resort: allow web_search or search_location
           return {
             toolChoice: "required",
             activeTools: ["web_search", "search_location"],
           };
         },
-        stopWhen: stepCountIs(5),
+        stopWhen: stepCountIs(6),
         tools: {
           create_plan: tool({
             inputSchema: aiPlanSchema,
