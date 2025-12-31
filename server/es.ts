@@ -4,12 +4,17 @@ import { and, asc, eq, gte, ilike, lte, ne, or, sql } from "drizzle-orm";
 import * as schema from "../db/schema";
 import { builder } from "./builder";
 import {
+  sendPlanDeletionNotification,
+  sendPlanParticipationNotification,
+} from "./services/plan-notifications";
+import {
   jsonArrayAgg,
   jsonArrayAggWhere,
   jsonBuildObject,
   rangesOverlap,
   tsrange,
 } from "./utils/pg";
+import { isDerivedPlan } from "./utils/plan-helpers";
 import { getPostHogClient } from "./utils/posthog";
 
 export const es = builder.store({
@@ -64,7 +69,30 @@ export const es = builder.store({
                 .onConflictDoNothing();
             }
           },
+          async "realite.plan.participated"(ev, ctx) {
+            // Send push notification to the original plan creator
+            const eventData = ev.data as {
+              originalPlanId: string;
+              originalCreatorId: string;
+            };
+            if (eventData?.originalCreatorId && ev.actor) {
+              // Use fire-and-forget to avoid blocking the event processing
+              sendPlanParticipationNotification(
+                eventData.originalCreatorId,
+                ev.actor,
+                ev.subject
+              ).catch((err) => {
+                console.error(
+                  "Failed to send plan participation notification:",
+                  err
+                );
+              });
+            }
+          },
           async "realite.plan.cancelled"(ev, ctx) {
+            // Check if this is a derived plan (created via participation)
+            const derivedPlanInfo = await isDerivedPlan(ev.subject);
+
             // Delete plan locations first (due to foreign key constraint)
             await ctx.db
               .delete(schema.planLocations)
@@ -74,6 +102,20 @@ export const es = builder.store({
             await ctx.db
               .delete(schema.plans)
               .where(eq(schema.plans.id, ev.subject));
+
+            // If this was a derived plan, notify the original creator
+            if (derivedPlanInfo) {
+              // Use fire-and-forget to avoid blocking the event processing
+              sendPlanDeletionNotification(
+                derivedPlanInfo.originalCreatorId,
+                ev.subject
+              ).catch((err) => {
+                console.error(
+                  "Failed to send plan deletion notification:",
+                  err
+                );
+              });
+            }
           },
           async "realite.plan.changed"(ev, ctx) {
             let {

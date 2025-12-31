@@ -440,11 +440,3 @@ main().catch((error) => {
   console.error("❌ Fehler:", error);
   process.exit(1);
 });
-
-
-
-
-
-
-
-
