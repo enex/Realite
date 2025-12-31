@@ -32,7 +32,7 @@
     "upgrade": "expo install --fix && bunx expo-doctor@latest && echo 'https://docs.expo.dev/workflow/upgrading-expo-sdk-walkthrough/'"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^2.0.59",
+    "@ai-sdk/openai": "^3.0.2",
     "@expo/metro-runtime": "~6.1.2",
     "@expo/server": "0.7.5",
     "@expo/vector-icons": "^15.0.3",
@@ -52,7 +52,7 @@
     "@tanstack/react-query": "^5.90.6",
     "@types/pg": "^8.15.6",
     "@vercel/og": "^0.8.5",
-    "ai": "^5.0.86",
+    "ai": "^6.0.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "color": "^5.0.0",

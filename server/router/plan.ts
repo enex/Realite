@@ -1,7 +1,7 @@
 import { activities, activityIds, type ActivityId } from "@/shared/activities";
 import { coreRepetitionSchema } from "@/shared/validation/plan";
 import { openai } from "@ai-sdk/openai";
-import { generateText, stepCountIs, tool } from "ai";
+import { ToolLoopAgent, stepCountIs, tool } from "ai";
 import { addWeeks, startOfDay } from "date-fns";
 import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
@@ -282,98 +282,15 @@ export const planRouter = {
           ),
       });
 
-      const aiResult = await generateText({
+      // Create the plan agent with ToolLoopAgent
+      const planAgent = new ToolLoopAgent({
         model: openai("gpt-4o-mini"),
-        abortSignal: signal,
-        system: systemPrompt,
-        prompt: input.text,
-        toolChoice: "required",
-        prepareStep: ({ stepNumber, steps }) => {
-          const hasWebSearch = steps.some((s) =>
-            s.toolCalls.some((t) => t.toolName === "web_search")
-          );
-          const hasLocationSearch = steps.some((s) =>
-            s.toolCalls.some((t) => t.toolName === "search_location")
-          );
-          const hasLocationResults = steps.some((s) =>
-            (s.toolResults ?? []).some(
-              (r: any) =>
-                r.toolName === "search_location" &&
-                Array.isArray(r.result?.locations) &&
-                r.result.locations.length > 0
-            )
-          );
-          const hasWebSearchResults = steps.some((s) =>
-            (s.toolResults ?? []).some(
-              (r: any) => r.toolName === "web_search" && r.result
-            )
-          );
-          const hasCreatedPlan = steps.some((s) =>
-            s.toolCalls.some((t) => t.toolName === "create_plan")
-          );
-
-          // If plan was already created, allow only create_plan (shouldn't happen, but safety check)
-          if (hasCreatedPlan) {
-            return { toolChoice: "required", activeTools: ["create_plan"] };
-          }
-
-          // Step 0: Start with web_search or search_location
-          if (stepNumber === 0) {
-            return {
-              toolChoice: "required",
-              activeTools: ["web_search", "search_location"],
-            };
-          }
-
-          // Step 1: Try web_search if not done yet
-          if (!hasWebSearch && stepNumber === 1) {
-            return { toolChoice: "required", activeTools: ["web_search"] };
-          }
-
-          // Step 2: Priority order:
-          // 1. If we have web search results but no location search, try location search
-          // 2. Otherwise, if we have any search results, create the plan
-          if (stepNumber === 2) {
-            if (hasWebSearchResults && !hasLocationSearch) {
-              return { toolChoice: "required", activeTools: ["search_location"] };
-            }
-            // If we have any search (web or location), create plan
-            if (hasWebSearch || hasLocationSearch) {
-              return { toolChoice: "required", activeTools: ["create_plan"] };
-            }
-          }
-
-          // Step 3: If we still don't have location results and haven't searched, try one more time
-          if (stepNumber === 3) {
-            if (!hasLocationResults && !hasLocationSearch && hasWebSearchResults) {
-              return { toolChoice: "required", activeTools: ["search_location"] };
-            }
-            // Otherwise, create the plan
-            return { toolChoice: "required", activeTools: ["create_plan"] };
-          }
-
-          // Step 4+: ALWAYS force create_plan (critical fallback)
-          if (stepNumber >= 4) {
-            return { toolChoice: "required", activeTools: ["create_plan"] };
-          }
-
-          // Default fallback: create plan if we have any information
-          if (hasWebSearch || hasLocationSearch) {
-            return { toolChoice: "required", activeTools: ["create_plan"] };
-          }
-
-          // Last resort: allow web_search or search_location
-          return {
-            toolChoice: "required",
-            activeTools: ["web_search", "search_location"],
-          };
-        },
-        stopWhen: stepCountIs(6),
+        instructions: systemPrompt,
         tools: {
           create_plan: tool({
             inputSchema: aiPlanSchema,
             description:
-              "Create a plan. All text content (titles, descriptions) must be in German. Dates must be in ISO 8601 format with correct timezone. Use information from web_search results to determine the correct activity type, location, and details.",
+              "Create a plan. All text content (titles, descriptions) must be in German. Dates must be in ISO 8601 format with correct timezone. Use information from web_search results to determine the correct activity type, location, and details. You MUST call this tool to create the plan - it is not optional.",
           }),
           web_search: openai.tools.webSearch({
             searchContextSize: "high",
@@ -408,12 +325,31 @@ export const planRouter = {
             },
           }),
         },
+        stopWhen: stepCountIs(10), // Allow up to 10 steps for tool execution
       });
-      console.log(JSON.stringify(aiResult.toolCalls, null, 2));
+
+      // Generate plan using the agent
+      const aiResult = await planAgent.generate({
+        prompt: input.text,
+        abortSignal: signal,
+      });
+
+      console.log(
+        JSON.stringify(
+          aiResult.steps.flatMap((s) => s.toolCalls),
+          null,
+          2
+        )
+      );
+
+      // Extract the plan from tool calls
+      const createPlanCall = aiResult.steps
+        .flatMap((s) => s.toolCalls)
+        .find((t) => t.toolName === "create_plan");
+
       const res = {
         answer: aiResult.text,
-        plan: aiResult.toolCalls.find((r) => r.toolName === "create_plan")
-          ?.input as z.infer<typeof planSchema>,
+        plan: createPlanCall?.input as z.infer<typeof planSchema> | undefined,
       };
       // Normalize AI result: enforce ISO-8601 and ensure startDate is in the future
       // Handle timezone-aware dates properly
