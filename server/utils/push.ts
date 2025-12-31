@@ -1,12 +1,9 @@
 import type { ExpoPushMessage } from "expo-server-sdk";
 import { Expo } from "expo-server-sdk";
 
-import type { EventData } from "@realite/db/events";
-import { and, eq, inArray } from "@realite/db";
-import { db } from "@realite/db/client";
-import { Event } from "@realite/db/schema";
-
-import { saveEventWithAnalytics } from "./events";
+import { events } from "@/db/schema";
+import { and, eq, inArray } from "drizzle-orm";
+import { db } from "../db";
 
 // Create a new Expo SDK client
 // optionally providing an access token if you have enabled push security
@@ -28,28 +25,28 @@ export const expo = new Expo({
 });
 
 async function getPushCountSince(userId: string, since: Date): Promise<number> {
-  const events = await db.query.Event.findMany({
+  const eventResults = await db.query.events.findMany({
     where: (t, { and, eq, gt }) =>
       and(
         eq(t.type, "push-notification-sent"),
-        eq(t.actorId, userId),
-        gt(t.time, since),
+        eq(t.actor, userId),
+        gt(t.time, since)
       ),
     columns: { id: true },
   });
-  return events.length;
+  return eventResults.length;
 }
 
 export async function sendPushesToUser(pushes: ExpoPushMessage[]) {
   const userToToken = await getTokensForUsers(
-    pushes.flatMap((p) => (Array.isArray(p.to) ? p.to : [p.to])),
+    pushes.flatMap((p) => (Array.isArray(p.to) ? p.to : [p.to]))
   );
   const chunks = expo.chunkPushNotifications(
     pushes.map((push) =>
       Array.isArray(push.to)
         ? { ...push, to: push.to.flatMap((to) => userToToken[to] ?? []) }
-        : { ...push, to: userToToken[push.to] ?? [] },
-    ),
+        : { ...push, to: userToToken[push.to] ?? [] }
+    )
   );
   const tokenToUser = (token: string) => {
     for (const [userId, tokens] of Object.entries(userToToken)) {
@@ -70,13 +67,13 @@ export async function sendPushesToUser(pushes: ExpoPushMessage[]) {
               const userId = tokenToUser(token);
               if (userId) {
                 console.error(
-                  `Push failed to send to ${userId}: ${ticket.message}`,
+                  `Push failed to send to ${userId}: ${ticket.message}`
                 );
               }
             }
           }
           console.error(
-            `Push failed to send to ${ticket.details?.expoPushToken}: ${ticket.message}`,
+            `Push failed to send to ${ticket.details?.expoPushToken}: ${ticket.message}`
           );
         }
       }
@@ -87,29 +84,30 @@ export async function sendPushesToUser(pushes: ExpoPushMessage[]) {
 }
 
 export async function getTokensForUsers(
-  usersIds: string[],
+  usersIds: string[]
 ): Promise<Record<string, string[]>> {
-  const tokenEvents = await db.query.Event.findMany({
+  const tokenEvents = await db.query.events.findMany({
     where: and(
-      eq(Event.type, "push-token-set"),
-      inArray(Event.actorId, usersIds),
+      eq(events.type, "push-token-set"),
+      inArray(events.actor, usersIds)
     ),
   });
-  const events = tokenEvents as EventData[];
   const res: Record<string, string[]> = {};
-  for (const event of events) {
+  for (const event of tokenEvents) {
     if (event.type !== "push-token-set") continue;
-    res[event.actorId ?? ""] ??= [];
-    const existingTokens = res[event.actorId ?? ""]!;
-    if (existingTokens.includes(event.data.pushToken)) continue;
-    existingTokens.push(event.data.pushToken);
+    const eventData = event.data as { pushToken?: string };
+    if (!eventData?.pushToken) continue;
+    res[event.actor ?? ""] ??= [];
+    const existingTokens = res[event.actor ?? ""]!;
+    if (existingTokens.includes(eventData.pushToken)) continue;
+    existingTokens.push(eventData.pushToken);
   }
   return res;
 }
 
 export async function sendCappedPushesToUsers(
   pushes: (ExpoPushMessage & { to: string | string[] })[],
-  maxPerDay = 3,
+  maxPerDay = 3
 ) {
   const now = new Date();
   const since = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -122,19 +120,8 @@ export async function sendCappedPushesToUsers(
       tasks.push(
         (async () => {
           await sendPushesToUser([{ ...msg, to: userId }]);
-          await saveEventWithAnalytics(db, {
-            type: "push-notification-sent",
-            actorId: userId,
-            subject: userId,
-            data: {
-              recipientUserId: userId,
-              channel: "expo",
-              title: msg.title ?? "",
-              body: msg.body ?? "",
-              data: (msg.data ?? undefined) as unknown,
-            },
-          });
-        })(),
+          // TODO: Track push notification sent event for analytics
+        })()
       );
     }
   }

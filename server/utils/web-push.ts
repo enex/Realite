@@ -1,7 +1,9 @@
 import type { ExpoPushMessage } from "expo-server-sdk";
 import type { PushSubscription as WebPushSubscription } from "web-push";
 import webpush from "web-push";
-import { DB } from "../db";
+import { and, eq, gt, inArray } from "drizzle-orm";
+import { db as defaultDb, DB } from "../db";
+import { events } from "@/db/schema";
 
 const vapidPublic = process.env.VAPID_PUBLIC_KEY;
 const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
@@ -22,25 +24,23 @@ export async function getWebPushSubscriptionsForUsers(
     { endpoint: string; keys?: { p256dh?: string; auth?: string } }[]
   >
 > {
-  const addEvents = (await db.query.Event.findMany({
-    where: (t, { and, inArray }) =>
-      and(
-        eq(t.type, "web-push-subscription-added"),
-        inArray(t.actorId, userIds)
-      ),
-  })) as EventData[];
+  const addEvents = await db.query.events.findMany({
+    where: and(
+      eq(events.type, "web-push-subscription-added"),
+      inArray(events.actor, userIds)
+    ),
+  });
 
-  const removeEvents = (await db.query.Event.findMany({
-    where: (t, { and, inArray }) =>
-      and(
-        eq(t.type, "web-push-subscription-removed"),
-        inArray(t.actorId, userIds)
-      ),
-  })) as EventData[];
+  const removeEvents = await db.query.events.findMany({
+    where: and(
+      eq(events.type, "web-push-subscription-removed"),
+      inArray(events.actor, userIds)
+    ),
+  });
 
   const removedByUser = new Map<string, Set<string>>();
   for (const ev of removeEvents) {
-    const userId = ev.actorId ?? "";
+    const userId = ev.actor ?? "";
     const endpoint =
       (ev.data as { endpoint?: string } | undefined)?.endpoint ?? "";
     if (!removedByUser.has(userId)) removedByUser.set(userId, new Set());
@@ -52,7 +52,7 @@ export async function getWebPushSubscriptionsForUsers(
     { endpoint: string; keys?: { p256dh?: string; auth?: string } }[]
   > = {};
   for (const ev of addEvents) {
-    const userId = ev.actorId ?? "";
+    const userId = ev.actor ?? "";
     const sub = (
       ev.data as
         | {
@@ -80,16 +80,15 @@ async function getWebPushCountSince(
   since: Date,
   db: DB
 ): Promise<number> {
-  const events = await db.query.Event.findMany({
-    where: (t, { and, eq, gt }) =>
-      and(
-        eq(t.type, "push-notification-sent"),
-        eq(t.actorId, userId),
-        gt(t.time, since)
-      ),
+  const eventResults = await db.query.events.findMany({
+    where: and(
+      eq(events.type, "push-notification-sent"),
+      eq(events.actor, userId),
+      gt(events.time, since)
+    ),
     columns: { id: true },
   });
-  return events.length;
+  return eventResults.length;
 }
 
 export async function sendWebPushToUsers(
@@ -125,18 +124,7 @@ export async function sendWebPushToUsers(
           webpush
             .sendNotification(pushSubscription, payload)
             .then(async () => {
-              await saveEventWithAnalytics(db, {
-                type: "push-notification-sent",
-                actorId: userId,
-                subject: userId,
-                data: {
-                  recipientUserId: userId,
-                  channel: "web",
-                  title: msg.title ?? "",
-                  body: msg.body ?? "",
-                  data: msg.data,
-                },
-              });
+              // TODO: Track push notification sent event for analytics
             })
             .catch(() => undefined)
         );

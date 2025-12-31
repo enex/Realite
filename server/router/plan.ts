@@ -296,6 +296,14 @@ export const planRouter = {
               (r: any) => r.toolName === "web_search" && r.result
             )
           );
+          const hasCreatedPlan = steps.some((s) =>
+            s.toolCalls.some((t) => t.toolName === "create_plan")
+          );
+
+          // If plan was already created, allow only create_plan (shouldn't happen, but safety check)
+          if (hasCreatedPlan) {
+            return { toolChoice: "required", activeTools: ["create_plan"] };
+          }
 
           // Step 0: Always start with web_search if there are event-like terms
           if (stepNumber === 0) {
@@ -315,13 +323,19 @@ export const planRouter = {
             return { toolChoice: "required", activeTools: ["search_location"] };
           }
 
-          // If we have location results but need more, continue searching
-          if (!hasLocationResults && stepNumber < 4) {
+          // If we have location results but need more, continue searching (but only up to step 3)
+          if (!hasLocationResults && stepNumber < 3) {
             return { toolChoice: "required", activeTools: ["search_location"] };
           }
 
-          // If we have both web search and location search, create the plan
-          if ((hasWebSearch || hasLocationSearch) && stepNumber >= 2) {
+          // After step 2, if we have web search OR location search, force create_plan
+          // This ensures we always create a plan even if location search didn't return results
+          if (stepNumber >= 2 && (hasWebSearch || hasLocationSearch)) {
+            return { toolChoice: "required", activeTools: ["create_plan"] };
+          }
+
+          // Step 4+: Force create_plan if we haven't created it yet
+          if (stepNumber >= 4) {
             return { toolChoice: "required", activeTools: ["create_plan"] };
           }
 
