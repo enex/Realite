@@ -3,12 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/Icon";
 import { Text } from "@/components/ui/text";
 import { useLocation } from "@/hooks/useLocation";
-import {
-  BottomSheetModal,
-  BottomSheetTextInput,
-  BottomSheetView,
-} from "@gorhom/bottom-sheet";
-import { useQueryClient } from "@tanstack/react-query";
+import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import React, {
   forwardRef,
@@ -81,7 +76,6 @@ const AIPlanBottomSheet = forwardRef<
     [handlePresentModalPress, handleDismissModalPress]
   );
 
-  const queryClient = useQueryClient();
   const { latitude, longitude, hasPermission } = useLocation();
   const handleSubmit = useCallback(async () => {
     if (!text.trim()) {
@@ -124,7 +118,14 @@ const AIPlanBottomSheet = forwardRef<
     } finally {
       setIsLoading(false);
     }
-  }, [text, onPlanCreated, handleDismissModalPress]);
+  }, [
+    text,
+    onPlanCreated,
+    handleDismissModalPress,
+    hasPermission,
+    latitude,
+    longitude,
+  ]);
 
   const handleSheetChanges = useCallback((index: number) => {
     if (index === -1) {
@@ -149,9 +150,9 @@ const AIPlanBottomSheet = forwardRef<
     }
   }, [isDialogOpen, isWeb]);
 
-  const InputComponent: any = useNativeBottomSheet
-    ? BottomSheetTextInput
-    : TextInput;
+  // Use regular TextInput on Android to avoid cursor jumping issues with BottomSheetTextInput
+  // BottomSheetTextInput has known issues with multiline inputs on Android
+  const InputComponent: any = TextInput;
 
   const content = (
     <React.Fragment>
@@ -178,6 +179,10 @@ const AIPlanBottomSheet = forwardRef<
         onChangeText={setText}
         maxLength={500}
         autoFocus={false}
+        textContentType="none"
+        autoCorrect={true}
+        autoCapitalize="sentences"
+        blurOnSubmit={false}
       />
 
       {/* Character Counter */}
@@ -230,6 +235,8 @@ const AIPlanBottomSheet = forwardRef<
         enableDynamicSizing
         snapPoints={["50%", "75%", "90%"]}
         keyboardBehavior="extend"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
         backgroundStyle={{
           backgroundColor: "#F2F2F7",
         }}

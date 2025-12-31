@@ -226,7 +226,11 @@ export const planRouter = {
         `- Any ambiguous terms that could refer to events or activities`,
         `- Terms that combine multiple concepts (e.g., activity + location, activity + brand)`,
         ``,
-        `Search for the EXACT phrase or term the user mentioned to discover:`,
+        `IMPORTANT: When using web_search, search for the EXACT phrase or term the user mentioned.`,
+        `For example, if user says "greenfit coffee run", search for "greenfit coffee run".`,
+        `The web_search tool will automatically extract the search query from your tool call.`,
+        ``,
+        `Search results will help you discover:`,
         `- What the event/term actually refers to (activity type, location, time, details)`,
         `- Instagram posts or social media content about it`,
         `- Official event pages or announcements`,
@@ -234,6 +238,7 @@ export const planRouter = {
         `- Any additional context that clarifies the activity type`,
         ``,
         `ONLY after understanding what the event/term actually is from web search results, proceed to location search.`,
+        `If web_search doesn't return useful results, proceed with location search anyway using the information you have.`,
         ``,
         `## Location`,
         input.location
@@ -259,7 +264,9 @@ export const planRouter = {
         `## Workflow`,
         `1. FIRST: Use web_search if user mentions event names, brands, or ambiguous terms`,
         `2. THEN: Use search_location to find concrete places`,
-        `3. FINALLY: Create the plan with correct activity, location, and time`,
+        `3. FINALLY: ALWAYS create the plan with correct activity, location, and time`,
+        ``,
+        `CRITICAL: You MUST create a plan. Even if searches don't return perfect results, create the plan with the best information available.`,
       ].join("\n");
 
       const aiPlanSchema = planSchema.extend({
@@ -313,29 +320,30 @@ export const planRouter = {
             };
           }
 
-          // Step 1: If we haven't done web_search yet and it seems needed, do it
+          // Step 1: Try web_search if not done yet
           if (!hasWebSearch && stepNumber === 1) {
             return { toolChoice: "required", activeTools: ["web_search"] };
           }
 
-          // Step 2+: If we have web search results but no location search, do location search
-          if (hasWebSearchResults && !hasLocationSearch && stepNumber < 4) {
+          // Step 2: If we have web search but no location search yet, try location search
+          if (hasWebSearch && !hasLocationSearch && stepNumber === 2) {
             return { toolChoice: "required", activeTools: ["search_location"] };
           }
 
-          // If we have location results but need more, continue searching (but only up to step 3)
-          if (!hasLocationResults && stepNumber < 3) {
+          // Step 3: If we still don't have location results, try one more location search
+          if (!hasLocationResults && !hasLocationSearch && stepNumber === 3) {
             return { toolChoice: "required", activeTools: ["search_location"] };
           }
 
-          // After step 2, if we have web search OR location search, force create_plan
-          // This ensures we always create a plan even if location search didn't return results
+          // From step 2 onwards: If we've done at least one search, force create_plan
+          // This ensures we always create a plan even if searches didn't return perfect results
           if (stepNumber >= 2 && (hasWebSearch || hasLocationSearch)) {
             return { toolChoice: "required", activeTools: ["create_plan"] };
           }
 
-          // Step 4+: Force create_plan if we haven't created it yet
-          if (stepNumber >= 4) {
+          // Step 3+: ALWAYS force create_plan as fallback (even if no searches were done)
+          // This is critical to ensure a plan is always created
+          if (stepNumber >= 3) {
             return { toolChoice: "required", activeTools: ["create_plan"] };
           }
 
