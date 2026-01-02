@@ -13,9 +13,6 @@ import { Button, buttonTextVariants } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
 import orpc from "@/client/orpc";
-import AIPlanBottomSheet, {
-  type AIPlanBottomSheetRef,
-} from "@/components/AIPlanBottomSheet";
 import { PlanCard, shadows } from "@/components/PlanCard";
 import PlanFilterBottomSheet, {
   type PlanFilter,
@@ -74,9 +71,8 @@ export default function PlansScreen() {
   const navigation = useNavigation();
   const simpleAppBar = useFeatureFlagBoolean(
     "simple-appbar-for-starpage",
-    false
+    false,
   );
-  const aiPlanBottomSheetRef = useRef<AIPlanBottomSheetRef>(null);
   const filterRef = useRef<PlanFilterBottomSheetRef>(null);
   const [filter, setFilter] = useState<PlanFilter | undefined>(undefined);
   const queryClient = useQueryClient();
@@ -214,7 +210,7 @@ export default function PlansScreen() {
             // Find the profile to get the image
             const profile = Array.isArray(participantProfiles)
               ? (participantProfiles as any[]).find(
-                  (p: any) => p.id === creatorId
+                  (p: any) => p.id === creatorId,
                 )
               : null;
             participants.push({
@@ -292,12 +288,12 @@ export default function PlansScreen() {
         const date = new Date(y, (m as number) - 1, d as number);
         const today = new Date();
         const todayKey = `${today.getFullYear()}-${String(
-          today.getMonth() + 1
+          today.getMonth() + 1,
         ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
         const tmr = new Date(today);
         tmr.setDate(tmr.getDate() + 1);
         const tomorrowKey = `${tmr.getFullYear()}-${String(
-          tmr.getMonth() + 1
+          tmr.getMonth() + 1,
         ).padStart(2, "0")}-${String(tmr.getDate()).padStart(2, "0")}`;
 
         let dayLabel = date.toLocaleDateString("de-DE", {
@@ -316,7 +312,7 @@ export default function PlansScreen() {
           date: dateKey,
           dayLabel,
           plans: plans.sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
           ),
         };
       })
@@ -445,7 +441,7 @@ export default function PlansScreen() {
             <Button
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                aiPlanBottomSheetRef.current?.present();
+                router.push("/plan/new/ai");
               }}
               variant="default"
               size="lg"
@@ -464,26 +460,8 @@ export default function PlansScreen() {
       </Animated.ScrollView>
 
       {showFAB && groupedPlans.length > 0 && (
-        <NativeFAB onPress={() => aiPlanBottomSheetRef.current?.present()} />
+        <NativeFAB onPress={() => router.push("/plan/new/ai")} />
       )}
-
-      <AIPlanBottomSheet
-        ref={aiPlanBottomSheetRef}
-        onPlanCreated={(plan: any) => {
-          console.log("AI plan generated:", plan);
-          // Navigate to edit page with plan data as params
-          if (plan) {
-            setTimeout(() => {
-              router.push({
-                pathname: "/plan/new/edit",
-                params: {
-                  planData: JSON.stringify(plan),
-                },
-              } as any);
-            }, 0);
-          }
-        }}
-      />
 
       <PlanFilterBottomSheet
         ref={filterRef}

@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { Platform } from "react-native";
 
 export default function PlanLayout() {
   return (
@@ -19,6 +20,12 @@ export default function PlanLayout() {
         name="new/edit"
         options={{
           headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="new/ai"
+        options={{
+          presentation: Platform.OS === "ios" ? "formSheet" : "modal",
         }}
       />
     </Stack>
