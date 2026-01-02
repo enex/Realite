@@ -115,6 +115,13 @@ function RootNavigator() {
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="plan" options={{ headerShown: false }} />
         <Stack.Screen name="user/[id]/index" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="(modals)/whatsapp-status-share"
+          options={{
+            headerShown: false,
+            presentation: Platform.OS === "ios" ? "formSheet" : "modal",
+          }}
+        />
       </Stack.Protected>
       <Stack.Screen name="share/[code]" options={{ headerShown: false }} />
       <Stack.Screen name="delete-account" options={{ headerShown: false }} />

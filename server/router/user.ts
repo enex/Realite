@@ -347,6 +347,61 @@ export const userRouter = {
         linkType: eventData.linkType,
       };
     }),
+  getWhatsAppStatusShareReminderState: protectedRoute.handler(
+    async ({ context }) => {
+      const events = await context.db.query.events.findMany({
+        where: (t, { eq, and }) =>
+          and(
+            eq(
+              t.type,
+              "realite.user.whatsapp-status-share-reminder-interacted",
+            ),
+            eq(t.subject, context.session.id),
+          ),
+        orderBy: (t, { desc }) => [desc(t.time)],
+        limit: 50,
+      });
+
+      let lastShownAt: Date | null = null;
+      let lastSharedAt: Date | null = null;
+      let lastDismissedAt: Date | null = null;
+
+      for (const e of events) {
+        const action = (e.data as any)?.action as
+          | "shown"
+          | "dismissed"
+          | "shared"
+          | undefined;
+        if (!action) continue;
+        if (!lastShownAt && action === "shown") lastShownAt = e.time;
+        if (!lastSharedAt && action === "shared") lastSharedAt = e.time;
+        if (!lastDismissedAt && action === "dismissed")
+          lastDismissedAt = e.time;
+        if (lastShownAt && lastSharedAt && lastDismissedAt) break;
+      }
+
+      return {
+        lastShownAt: lastShownAt?.toISOString() ?? null,
+        lastSharedAt: lastSharedAt?.toISOString() ?? null,
+        lastDismissedAt: lastDismissedAt?.toISOString() ?? null,
+      };
+    },
+  ),
+  trackWhatsAppStatusShareReminderEvent: protectedRoute
+    .input(
+      z.object({
+        action: z.enum(["shown", "dismissed", "shared"]),
+        surface: z.enum(["plans", "profile", "unknown"]).default("unknown"),
+      }),
+    )
+    .handler(async ({ context, input }) => {
+      await context.es.add({
+        type: "realite.user.whatsapp-status-share-reminder-interacted",
+        subject: context.session.id,
+        data: { action: input.action, surface: input.surface, version: 1 },
+      });
+      return { success: true };
+    }),
   deleteAccount: protectedRoute
     .input(
       z.object({

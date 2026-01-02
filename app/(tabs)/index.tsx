@@ -76,6 +76,7 @@ export default function PlansScreen() {
   const filterRef = useRef<PlanFilterBottomSheetRef>(null);
   const [filter, setFilter] = useState<PlanFilter | undefined>(undefined);
   const queryClient = useQueryClient();
+  const didOpenWhatsAppStatusShareRef = useRef(false);
 
   // Set header buttons when simple app bar is enabled
   useEffect(() => {
@@ -155,6 +156,30 @@ export default function PlansScreen() {
       return true;
     });
   }, [plansData]);
+
+  const whatsAppStatusShareReminderState = useQuery({
+    ...orpc.user.getWhatsAppStatusShareReminderState.queryOptions(),
+    enabled: plans.length >= 2,
+  } as any);
+
+  useEffect(() => {
+    if (didOpenWhatsAppStatusShareRef.current) return;
+    if (plans.length < 2) return;
+    const state = whatsAppStatusShareReminderState.data as
+      | { lastShownAt: string | null }
+      | undefined;
+    if (!state) return;
+
+    const lastShownAt = state.lastShownAt ? new Date(state.lastShownAt) : null;
+    const fiveDaysMs = 5 * 24 * 60 * 60 * 1000;
+    const shouldShow =
+      !lastShownAt || Date.now() - lastShownAt.getTime() >= fiveDaysMs;
+
+    if (!shouldShow) return;
+
+    didOpenWhatsAppStatusShareRef.current = true;
+    router.push("/(modals)/whatsapp-status-share?surface=plans");
+  }, [plans.length, router, whatsAppStatusShareReminderState.data]);
 
   // Extract unique participant creator IDs from similarOverlappingPlans
   const participantCreatorIds = useMemo(() => {

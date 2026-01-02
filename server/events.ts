@@ -124,4 +124,10 @@ export interface RealiteEvents {
     targetId: string;
     code: string;
   };
+
+  "realite.user.whatsapp-status-share-reminder-interacted": {
+    action: "shown" | "dismissed" | "shared";
+    surface: "plans" | "profile" | "unknown";
+    version: 1;
+  };
 }
