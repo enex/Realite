@@ -2,6 +2,7 @@ import { client } from "@/client/orpc";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/Icon";
 import { Text } from "@/components/ui/text";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import { useLocation } from "@/hooks/useLocation";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
@@ -41,6 +42,8 @@ const AIPlanBottomSheet = forwardRef<
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const bottomSheetRef = React.useRef<BottomSheetModal>(null);
   const textInputRef = useRef<TextInput>(null);
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === "web";
   const isSmallScreen = width < 768;
@@ -73,7 +76,7 @@ const AIPlanBottomSheet = forwardRef<
       present: handlePresentModalPress,
       dismiss: handleDismissModalPress,
     }),
-    [handlePresentModalPress, handleDismissModalPress]
+    [handlePresentModalPress, handleDismissModalPress],
   );
 
   const { latitude, longitude, hasPermission } = useLocation();
@@ -106,14 +109,14 @@ const AIPlanBottomSheet = forwardRef<
       } else {
         Alert.alert(
           "Fehler",
-          "Konnte keinen Plan aus Ihrer Anfrage erstellen. Bitte versuchen Sie es erneut."
+          "Konnte keinen Plan aus Ihrer Anfrage erstellen. Bitte versuchen Sie es erneut.",
         );
       }
     } catch (error) {
       console.error("Error creating AI plan:", error);
       Alert.alert(
         "Fehler",
-        "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+        "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
       );
     } finally {
       setIsLoading(false);
@@ -158,10 +161,10 @@ const AIPlanBottomSheet = forwardRef<
     <React.Fragment>
       {/* Header */}
       <View className="mb-5">
-        <Text variant="h3" className="text-foreground mb-1.5">
+        <Text variant="h3" className="mb-1.5 text-zinc-900 dark:text-zinc-50">
           Was möchten Sie tun?
         </Text>
-        <Text variant="muted" className="text-base leading-6">
+        <Text className="text-base leading-6 text-zinc-600 dark:text-zinc-300">
           Sagen Sie mir, was Sie tun möchten, und ich helfe Ihnen dabei, einen
           Plan zu erstellen
         </Text>
@@ -170,10 +173,10 @@ const AIPlanBottomSheet = forwardRef<
       {/* Text Input */}
       <InputComponent
         ref={textInputRef}
-        className="bg-background rounded-xl p-4 text-base text-foreground min-h-[120px] border border-input mb-4"
+        className="mb-4 min-h-[120px] rounded-xl border border-zinc-200 bg-white p-4 text-base text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50"
         style={{ textAlignVertical: "top" }}
         placeholder="z.B. Ich möchte dieses Wochenende mit Freunden wandern gehen oder ein gemütliches Abendessen zu Hause haben..."
-        placeholderTextColor="#8E8E93"
+        placeholderTextColor={isDark ? "#71717a" : "#8E8E93"}
         multiline
         value={text}
         onChangeText={setText}
@@ -186,7 +189,7 @@ const AIPlanBottomSheet = forwardRef<
       />
 
       {/* Character Counter */}
-      <Text variant="small" className="text-muted-foreground text-right mb-5">
+      <Text className="mb-5 text-right text-sm text-zinc-500 dark:text-zinc-400">
         {text.length}/500
       </Text>
 
@@ -238,10 +241,10 @@ const AIPlanBottomSheet = forwardRef<
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
         backgroundStyle={{
-          backgroundColor: "#F2F2F7",
+          backgroundColor: isDark ? "#18181b" : "#ffffff",
         }}
         handleIndicatorStyle={{
-          backgroundColor: "#C6C6C8",
+          backgroundColor: isDark ? "#52525b" : "#c7c7cc",
         }}
       >
         <BottomSheetView className="px-6 pt-4">{content}</BottomSheetView>
@@ -258,7 +261,7 @@ const AIPlanBottomSheet = forwardRef<
         onRequestClose={handleDismissModalPress}
       >
         <View className="flex-1 items-center justify-center bg-black/50 p-4">
-          <View className="w-full max-w-xl rounded-2xl bg-secondary shadow-xl px-6 pt-4 pb-8">
+          <View className="w-full max-w-xl rounded-2xl bg-white px-6 pb-8 pt-4 shadow-xl dark:bg-zinc-900">
             {content}
           </View>
         </View>
@@ -276,9 +279,9 @@ const AIPlanBottomSheet = forwardRef<
       onRequestClose={handleDismissModalPress}
     >
       <View className="flex-1 justify-end bg-black/30">
-        <View className="w-full rounded-t-3xl bg-secondary shadow-xl max-h-[90%]">
+        <View className="max-h-[90%] w-full rounded-t-3xl bg-white shadow-xl dark:bg-zinc-900">
           <View className="items-center pt-2">
-            <View className="h-1.5 w-12 rounded-full bg-muted-foreground/30" />
+            <View className="h-1.5 w-12 rounded-full bg-zinc-300/60 dark:bg-zinc-700/60" />
           </View>
           <View className="px-6 pt-4 pb-8">{content}</View>
         </View>

@@ -590,7 +590,7 @@ export default function ProfileScreen() {
           zu konfigurieren.
         </ThemedText>
         <Button
-          onPress={() => router.push("/onboarding/welcome")}
+          onPress={() => router.push("/onboarding/welcome?repeat=1")}
           variant="default"
         >
           <Text>Onboarding wiederholen</Text>

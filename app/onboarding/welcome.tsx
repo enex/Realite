@@ -1,5 +1,5 @@
 import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,6 +14,8 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ repeat?: string }>();
+  const isRepeat = params.repeat === "1" || params.repeat === "true";
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const session = useSession();
@@ -23,14 +25,14 @@ export default function WelcomeScreen() {
     orpc.auth.me.queryOptions({
       enabled: !!session && !session.isLoading,
       retry: false, // Nicht wiederholen bei Fehlern
-    })
+    }),
   );
   const onboarded = meRes.data?.onboarded;
   useEffect(() => {
-    if (onboarded) {
+    if (onboarded && !isRepeat) {
       router.replace("/(tabs)");
     }
-  }, [onboarded]);
+  }, [onboarded, isRepeat, router]);
 
   const iconColor = isDark ? "#d4d4d8" : "#3C3C43";
 

@@ -79,6 +79,7 @@ const MAPPING = {
   "plus.circle.fill": "add-circle",
   "mappin.and.ellipse": "place",
   "person.circle": "account-circle",
+  sparkles: "auto-awesome",
 } as Partial<IconMapping>;
 
 /**
