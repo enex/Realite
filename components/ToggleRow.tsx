@@ -1,4 +1,4 @@
-import { Platform, Switch, View } from "react-native";
+import { Platform, Pressable, Switch, View } from "react-native";
 
 import { ThemedText } from "@/components/ThemedText";
 
@@ -12,7 +12,10 @@ export function ToggleRow({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <View className="flex-row items-center justify-between py-3">
+    <Pressable
+      onPress={() => onChange(!value)}
+      className="flex-row items-center justify-between py-1"
+    >
       <ThemedText className="text-gray-700 dark:text-gray-300">
         {label}
       </ThemedText>
@@ -29,6 +32,6 @@ export function ToggleRow({
         }
         ios_backgroundColor="#D1D5DB"
       />
-    </View>
+    </Pressable>
   );
 }

@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     const linkEvents = await db.query.events.findMany({
       where: and(
         eq(events.type, "realite.link.created"),
-        eq(events.subject, code)
+        eq(events.subject, code),
       ),
     });
 
@@ -67,7 +67,7 @@ export async function GET(request: Request) {
 
     const safeName = escapeHtml(userProfile.name || "Benutzer");
     const safeDescription = escapeHtml(
-      `Sieh dir an, was ${userProfile.name} vorhat und mach mit!`
+      `Sieh dir an, was ${userProfile.name} vorhat und mach mit!`,
     );
 
     // Generate HTML with proper meta tags for crawlers (SEO optimized)
@@ -81,7 +81,7 @@ export async function GET(request: Request) {
   <meta name="description" content="${safeDescription}" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="${shareUrl}" />
-  
+
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${shareUrl}" />
@@ -94,7 +94,14 @@ export async function GET(request: Request) {
   <meta property="og:image:alt" content="Profil von ${safeName} mit ${plansCount} ${plansCount === 1 ? "Plan" : "Plänen"}" />
   <meta property="og:site_name" content="Realite" />
   <meta property="og:locale" content="de_DE" />
-  
+
+  <!-- App Links -->
+  <meta property="al:android:url" content="realite://share/${code}" />
+  <meta property="al:android:package" content="app.realite" />
+  <meta property="al:android:app_name" content="Realite" />
+  <meta property="al:ios:url" content="realite://share/${code}" />
+  <meta property="al:ios:app_name" content="Realite" />
+
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="${shareUrl}" />
@@ -102,11 +109,11 @@ export async function GET(request: Request) {
   <meta name="twitter:description" content="${safeDescription}" />
   <meta name="twitter:image" content="${ogImageUrl}" />
   <meta name="twitter:image:alt" content="Profil von ${safeName} mit ${plansCount} ${plansCount === 1 ? "Plan" : "Plänen"}" />
-  
+
   <!-- Additional SEO Meta Tags -->
   <meta name="author" content="Realite" />
   <meta name="theme-color" content="#3b82f6" />
-  
+
   <style>
     * {
       margin: 0;
@@ -213,9 +220,9 @@ export async function GET(request: Request) {
       </div>
       <h1>${userProfile.name}</h1>
       <div class="plans-count">${plansCount} ${plansCount === 1 ? "Plan" : "Pläne"} geplant</div>
-      <a href="realite://user/${userId}" class="app-button">In App öffnen</a>
+      <a href="realite://share/${code}" class="app-button">In App öffnen</a>
     </div>
-    
+
     ${
       plansCount > 0
         ? `<div class="plans-section">
@@ -227,7 +234,7 @@ export async function GET(request: Request) {
             <div class="plan-item">
               <div class="plan-title">${plan.title || "Plan"}</div>
               <div class="plan-date">${new Date(
-                plan.startDate
+                plan.startDate,
               ).toLocaleDateString("de-DE", {
                 weekday: "long",
                 day: "numeric",
@@ -236,27 +243,36 @@ export async function GET(request: Request) {
                 minute: "2-digit",
               })}</div>
             </div>
-          `
+          `,
             )
             .join("")}
         </div>`
         : `<div class="no-plans">Noch keine zukünftigen Pläne</div>`
     }
   </div>
-  
+
   <script>
     // Redirect to app if on mobile (with fallback)
     if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-      // Try to open app
-      window.location.href = 'realite://user/${userId}';
-      // Fallback to web after short delay if app doesn't open
-      setTimeout(() => {
-        if (document.hasFocus && !document.hasFocus()) {
-          // App likely opened, don't redirect
-          return;
-        }
-        window.location.href = 'https://realite.app/user/${userId}';
-      }, 500);
+      const shareUrl = '${shareUrl}';
+      const appUrl = 'realite://share/${code}';
+      const isAndroid = /Android/i.test(navigator.userAgent);
+
+      if (isAndroid) {
+        const intentUrl =
+          'intent://share/${code}#Intent;scheme=realite;package=app.realite;S.browser_fallback_url=' +
+          encodeURIComponent(shareUrl) +
+          ';end';
+        window.location.href = intentUrl;
+      } else {
+        window.location.href = appUrl;
+        setTimeout(() => {
+          if (document.hasFocus && !document.hasFocus()) {
+            return;
+          }
+          window.location.href = shareUrl;
+        }, 700);
+      }
     }
   </script>
   <noscript>

@@ -20,6 +20,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { colorScheme as nativewindColorScheme } from "nativewind";
 
 import { useSession } from "@/client/auth";
+import { ShareLinkHandler } from "@/components/ShareLinkHandler";
 import { SplashScreenController } from "@/components/SplashScreenController";
 import "../global.css";
 
@@ -57,6 +58,7 @@ export default function RootLayout() {
   const content = (
     <QueryClientProvider client={queryClient}>
       <SplashScreenController />
+      <ShareLinkHandler />
       <BottomSheetModalProvider>
         <ThemeProvider
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
@@ -113,8 +115,8 @@ function RootNavigator() {
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="plan" options={{ headerShown: false }} />
         <Stack.Screen name="user/[id]/index" options={{ headerShown: false }} />
-        <Stack.Screen name="share/[code]" options={{ headerShown: false }} />
       </Stack.Protected>
+      <Stack.Screen name="share/[code]" options={{ headerShown: false }} />
       <Stack.Screen name="delete-account" options={{ headerShown: false }} />
       <Stack.Screen name="+not-found" />
     </Stack>

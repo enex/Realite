@@ -119,4 +119,9 @@ export interface RealiteEvents {
     linkType: "profile" | "plan";
     targetId: string;
   };
+  "realite.link.opened": {
+    linkType: "profile" | "plan";
+    targetId: string;
+    code: string;
+  };
 }

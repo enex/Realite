@@ -11,7 +11,7 @@ function createS3Signature(
   method: string,
   url: string,
   headers: Record<string, string>,
-  payload: Buffer
+  payload: Buffer,
 ) {
   const urlObj = new URL(url);
   const host = urlObj.host;
@@ -117,7 +117,7 @@ export const userRouter = {
         // works reliably across all platforms (web, iOS, Android).
         dataUrl: z.string(),
         contentType: z.string().optional(),
-      })
+      }),
     )
     .errors({
       MISCONFIGURED: { message: "S3 is not configured on the server." },
@@ -157,7 +157,7 @@ export const userRouter = {
       const endpointUrl = new URL(
         endpoint.startsWith("http://") || endpoint.startsWith("https://")
           ? endpoint
-          : `https://${endpoint}`
+          : `https://${endpoint}`,
       );
       const host = `${bucket}.${endpointUrl.host}`;
       const s3Url = `${endpointUrl.protocol}//${host}/${key}`;
@@ -173,7 +173,7 @@ export const userRouter = {
           "content-type": contentType,
           "x-amz-acl": "public-read",
         },
-        bytes
+        bytes,
       );
 
       // Upload directly to S3 using fetch with AWS signature
@@ -225,7 +225,7 @@ export const userRouter = {
     .input(
       z
         .object({ id: z.uuid() })
-        .or(z.object({ phoneNumberHash: z.string().uuid() }))
+        .or(z.object({ phoneNumberHash: z.string().uuid() })),
     )
     .errors({
       NOT_FOUND: { message: "User not found" },
@@ -234,7 +234,7 @@ export const userRouter = {
       let id = "id" in input ? input.id : null;
       if ("phoneNumberHash" in input) {
         id = await context.es.projections.auth.getUserIdByPhoneNumber(
-          input.phoneNumberHash
+          input.phoneNumberHash,
         );
       }
       if (!id) throw errors.NOT_FOUND();
@@ -264,7 +264,7 @@ export const userRouter = {
             "birthDate",
             "relationshipStatus",
           ]);
-        })
+        }),
       );
       return profiles.filter(Boolean);
     }),
@@ -312,11 +312,46 @@ export const userRouter = {
         linkType: eventData.linkType,
       };
     }),
+  trackShareLinkOpen: protectedRoute
+    .input(z.object({ code: z.string().uuid() }))
+    .errors({
+      NOT_FOUND: { message: "Share link not found" },
+    })
+    .handler(async ({ context, input, errors }) => {
+      const events = await context.db.query.events.findMany({
+        where: (t, { eq, and }) =>
+          and(eq(t.type, "realite.link.created"), eq(t.subject, input.code)),
+      });
+
+      if (events.length === 0) {
+        throw errors.NOT_FOUND();
+      }
+
+      const eventData = events[events.length - 1]?.data as any;
+      if (!eventData || eventData.linkType !== "profile") {
+        throw errors.NOT_FOUND();
+      }
+
+      await context.es.add({
+        type: "realite.link.opened",
+        subject: input.code,
+        data: {
+          linkType: eventData.linkType,
+          targetId: eventData.targetId,
+          code: input.code,
+        },
+      });
+
+      return {
+        targetId: eventData.targetId,
+        linkType: eventData.linkType,
+      };
+    }),
   deleteAccount: protectedRoute
     .input(
       z.object({
         reason: z.string().optional(),
-      })
+      }),
     )
     .handler(async ({ context }) => {
       await context.es.add({

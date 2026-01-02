@@ -29,7 +29,7 @@ export function getData(key: string) {
       if (value) {
         console.log("Data retrieved from SecureStore:", value);
       } else {
-        console.log("No data found in SecureStore.");
+        console.log('No data found in SecureStore for "' + key + '".');
       }
       return value;
     } catch (error) {

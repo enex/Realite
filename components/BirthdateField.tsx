@@ -1,4 +1,5 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
+import type { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useMemo, useState } from "react";
 import { Platform, Pressable, View } from "react-native";
 
@@ -39,7 +40,9 @@ export function BirthdateField({
             mode="date"
             display={Platform.OS === "ios" ? "spinner" : "calendar"}
             maximumDate={new Date()}
-            onChange={(_, selectedDate) => {
+            onChange={(event: DateTimePickerEvent, selectedDate) => {
+              if (Platform.OS !== "ios") setOpen(false);
+              if (event.type === "dismissed") return;
               if (!selectedDate) return;
               const iso = selectedDate.toISOString().slice(0, 10);
               onChange(iso);
