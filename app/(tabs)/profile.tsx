@@ -444,7 +444,7 @@ export default function ProfileScreen() {
         </View>
       </SettingsCard>
 
-      <SettingsCard className="px-4 py-4">
+      <SettingsCard className="px-4 pt-4">
         <ThemedText
           type="subtitle"
           className="text-gray-900 dark:text-white mb-3"
