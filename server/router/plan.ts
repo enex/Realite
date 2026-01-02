@@ -27,13 +27,13 @@ const planSchema = z.object({
         url: z.string().optional(),
         description: z.string().optional(),
         category: z.string().optional(),
-      })
+      }),
     )
     .optional(),
   repetition: coreRepetitionSchema
     .optional()
     .describe(
-      "Repetition rule if it is a series not a plan for a single event"
+      "Repetition rule if it is a series not a plan for a single event",
     ),
   maybe: z
     .boolean()
@@ -46,7 +46,7 @@ const locationArraySchema = (
 ).unwrap();
 
 const getGroupIdFromActivity = (
-  activityId?: ActivityId
+  activityId?: ActivityId,
 ): keyof typeof activities | undefined => {
   if (!activityId) return undefined;
   const [groupId] = (activityId as string).split("/");
@@ -58,7 +58,7 @@ export const planRouter = {
     .input(
       planSchema.partial().extend({
         inputText: z.string().optional(),
-      })
+      }),
     )
     .errors({
       INCOMPLETE: { message: "Incomplete plan" },
@@ -106,19 +106,19 @@ export const planRouter = {
             radius: z.number().optional(),
           })
           .optional(),
-      })
+      }),
     )
     .handler(async ({ context, input, signal }) => {
       const placesService = new PlacesService(
         process.env.GOOGLE_PLACES_API_KEY ??
           process.env.GOOGLE_MAPS_API_KEY ??
-          ""
+          "",
       );
 
       const resolved = input.location
         ? await placesService.reverseGeocode(
             input.location.latitude,
-            input.location.longitude
+            input.location.longitude,
           )
         : null;
 
@@ -126,7 +126,7 @@ export const planRouter = {
       const getTimezoneFromLocation = (
         countryCode?: string,
         lat?: number,
-        lng?: number
+        lng?: number,
       ): string => {
         // Map common country codes to timezones
         const countryTimezoneMap: Record<string, string> = {
@@ -178,7 +178,7 @@ export const planRouter = {
         ? getTimezoneFromLocation(
             resolved?.countryCode,
             input.location.latitude,
-            input.location.longitude
+            input.location.longitude,
           )
         : Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -201,6 +201,7 @@ export const planRouter = {
       const systemPrompt = [
         `You receive user input mentioning what they want to do. Create a plan from this input.`,
         `CRITICAL: All content (titles, descriptions, location names, etc.) must be in German.`,
+        `If the user input contains a URL (e.g., Instagram/event page), set plan.url to that source URL so the plan can reference the original.`,
         ``,
         `## Activity Selection`,
         `Choose the MOST APPROPRIATE activity from this list. Pay attention to context:`,
@@ -208,7 +209,7 @@ export const planRouter = {
           `- ${groupId}: ${group.nameDe} (${group.name})`,
           ...Object.entries(group.subActivities).map(
             ([subActivityId, description]) =>
-              `  - ${groupId}/${subActivityId}: ${description.nameDe} (${description.name})`
+              `  - ${groupId}/${subActivityId}: ${description.nameDe} (${description.name})`,
           ),
         ]),
         ``,
@@ -278,7 +279,7 @@ export const planRouter = {
         locations: locationArraySchema
           .min(1)
           .describe(
-            "At least one concrete location. Prefer 2-3 suggestions if uncertain."
+            "At least one concrete location. Prefer 2-3 suggestions if uncertain.",
           ),
       });
 
@@ -338,8 +339,8 @@ export const planRouter = {
         JSON.stringify(
           aiResult.steps.flatMap((s) => s.toolCalls),
           null,
-          2
-        )
+          2,
+        ),
       );
 
       // Extract the plan from tool calls
@@ -467,7 +468,7 @@ export const planRouter = {
         endDate: z.coerce.date().optional(),
         limit: z.number().min(1).max(100).default(20),
         cursor: z.coerce.date().optional(), // cursor is the startDate of the last item
-      })
+      }),
     )
     .handler(async ({ context, input, signal }) => {
       try {
@@ -482,7 +483,7 @@ export const planRouter = {
         const plans = await context.es.projections.plan.listMyPlans(
           context.session.id,
           [queryStartDate, endDate],
-          input.limit
+          input.limit,
         );
         return plans;
       } catch (err) {
@@ -524,7 +525,7 @@ export const planRouter = {
         id: z.string(),
         reason: z.enum(["schedule-conflict", "other"]).optional(),
         comment: z.string().optional(),
-      })
+      }),
     )
     .handler(async ({ context, input, errors }) => {
       const plan = await context.es.projections.plan.get(input.id);
@@ -558,7 +559,7 @@ export const planRouter = {
         creatorId: z.string().optional(),
         limit: z.number().min(1).max(100).default(20),
         cursor: z.coerce.date().optional(), // cursor is the startDate of the last item
-      })
+      }),
     )
     .handler(async ({ context, input, signal }) => {
       // If cursor is provided, use it for pagination (start after cursor)
@@ -584,7 +585,7 @@ export const planRouter = {
         startDate: z.coerce.date().optional(),
         endDate: z.coerce.date().optional(),
         includePast: z.boolean().optional().default(false),
-      })
+      }),
     )
     .handler(async ({ context, input, signal }) => {
       const now = new Date();

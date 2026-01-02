@@ -61,26 +61,27 @@ export default function NewPlanEdit() {
       onError: (error: any) => {
         Alert.alert(
           "Fehler",
-          "Konnte Plan nicht erstellen. Bitte versuche es erneut."
+          "Konnte Plan nicht erstellen. Bitte versuche es erneut.",
         );
       },
-    })
+    }),
   );
 
   // Form state - initialize from AI-generated plan data
   const [title, setTitle] = useState(initialPlanData?.title || "");
   const [description, setDescription] = useState(
-    initialPlanData?.description || ""
+    initialPlanData?.description || "",
   );
+  const [url, setUrl] = useState(initialPlanData?.url || "");
   const [startDate, setStartDate] = useState<Date>(
     initialPlanData?.startDate
       ? new Date(initialPlanData.startDate)
-      : new Date()
+      : new Date(),
   );
   const [endDate, setEndDate] = useState<Date>(
     initialPlanData?.endDate
       ? new Date(initialPlanData.endDate)
-      : new Date(Date.now() + 2 * 60 * 60 * 1000)
+      : new Date(Date.now() + 2 * 60 * 60 * 1000),
   );
   const [selectedActivity, setSelectedActivity] = useState<
     ActivityId | undefined
@@ -100,7 +101,7 @@ export default function NewPlanEdit() {
     category?: string;
   };
   const [locations, setLocations] = useState<Location[]>(
-    initialPlanData?.locations || []
+    initialPlanData?.locations || [],
   );
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [locationSearchQuery, setLocationSearchQuery] = useState("");
@@ -142,6 +143,7 @@ export default function NewPlanEdit() {
     createPlan.mutate({
       title: title.trim(),
       description: description.trim() || undefined,
+      url: url.trim() || undefined,
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
       activity: selectedActivity,
@@ -369,6 +371,27 @@ export default function NewPlanEdit() {
                       scrollViewRef.current?.scrollToEnd({ animated: true });
                     }, 300);
                   }}
+                />
+              </View>
+            </View>
+
+            {/* Source Link */}
+            <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
+              <View className="px-4 py-4 gap-2">
+                <Text className="text-[17px] font-semibold text-black dark:text-white">
+                  Link (optional)
+                </Text>
+                <TextInput
+                  value={url}
+                  onChangeText={setUrl}
+                  placeholder="Originalquelle (z.B. Instagram-Link)"
+                  placeholderTextColor={
+                    isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"
+                  }
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="url"
+                  className="text-[15px] leading-5 text-black dark:text-white px-0 py-2"
                 />
               </View>
             </View>

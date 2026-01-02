@@ -42,7 +42,7 @@ import tinycolor from "tinycolor2";
 const HEADER_HEIGHT = 280;
 
 const getGroupIdFromActivity = (
-  activityId?: ActivityId
+  activityId?: ActivityId,
 ): ActivityGroupId | undefined => {
   if (!activityId) return undefined;
   const [groupId] = (activityId as string).split("/");
@@ -122,7 +122,7 @@ export default function PlanDetails() {
     orpc.user.get.queryOptions({
       input: { id: (plan?.creatorId as any) || "" },
       enabled: Boolean(plan?.creatorId),
-    })
+    }),
   );
 
   // Get primary location for participant queries
@@ -166,7 +166,7 @@ export default function PlanDetails() {
     return (similarPlans as any[]).some(
       (similarPlan: any) =>
         (similarPlan?.creatorId || similarPlan?.creator_id) === session.id &&
-        similarPlan.id !== plan.id
+        similarPlan.id !== plan.id,
     );
   }, [similarPlans, plan, session?.id]);
 
@@ -212,7 +212,7 @@ export default function PlanDetails() {
       onSuccess: async () => {
         await queryClient.invalidateQueries();
       },
-    })
+    }),
   );
   const participateInPlan = useMutation(
     orpc.plan.participate.mutationOptions({
@@ -224,7 +224,7 @@ export default function PlanDetails() {
         } else {
           Alert.alert(
             "Erfolgreich!",
-            "Der Plan wurde zu deinen Plänen hinzugefügt."
+            "Der Plan wurde zu deinen Plänen hinzugefügt.",
           );
         }
       },
@@ -234,11 +234,11 @@ export default function PlanDetails() {
         } else {
           Alert.alert(
             "Fehler",
-            "Konnte den Plan nicht kopieren. Bitte versuche es erneut."
+            "Konnte den Plan nicht kopieren. Bitte versuche es erneut.",
           );
         }
       },
-    })
+    }),
   );
 
   const activity = (plan?.activity ?? undefined) as ActivityId | undefined;
@@ -259,15 +259,15 @@ export default function PlanDetails() {
       onError: (error: any) => {
         Alert.alert(
           "Fehler",
-          "Konnte Plan nicht löschen. Bitte versuche es erneut."
+          "Konnte Plan nicht löschen. Bitte versuche es erneut.",
         );
       },
-    })
+    }),
   );
 
   const safeLocations = useMemo(
     () => (Array.isArray(plan?.locations) ? plan.locations : []),
-    [plan?.locations]
+    [plan?.locations],
   );
 
   const primaryLocation = safeLocations[0];
@@ -350,7 +350,7 @@ export default function PlanDetails() {
         url = `maps://maps.apple.com/?q=${lat},${lng}`;
       } else {
         url = `geo:${lat},${lng}?q=${lat},${lng}(${encodeURIComponent(
-          address || ""
+          address || "",
         )})`;
       }
     } else if (address) {
@@ -371,7 +371,7 @@ export default function PlanDetails() {
         lat && lng
           ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
           : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-              address || ""
+              address || "",
             )}`;
       Linking.openURL(googleMapsUrl);
     });
@@ -623,6 +623,45 @@ export default function PlanDetails() {
                 </Text>
               </View>
             )}
+
+            {/* Source link if available */}
+            {plan.url && (
+              <View className="mt-4 pt-4 border-t border-gray-200 dark:border-white/10">
+                <Pressable
+                  onPress={() => {
+                    const link = String(plan.url);
+                    if (!link) return;
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    Linking.openURL(link).catch(() => {
+                      Alert.alert("Link", link);
+                    });
+                  }}
+                  className="flex-row items-center justify-between rounded-xl bg-gray-100 dark:bg-white/10 px-4 py-3"
+                >
+                  <View className="flex-row items-center flex-1">
+                    <View className="h-9 w-9 rounded-full bg-white dark:bg-white/10 items-center justify-center mr-3">
+                      <Icon name="link" size={18} color={c3} />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-[15px] font-semibold text-black dark:text-white">
+                        Originalquelle öffnen
+                      </Text>
+                      <Text
+                        className="text-[13px] text-gray-600 dark:text-white/60"
+                        numberOfLines={1}
+                      >
+                        {String(plan.url)}
+                      </Text>
+                    </View>
+                  </View>
+                  <Icon
+                    name="chevron.right"
+                    size={16}
+                    color={isDark ? "#9CA3AF" : "#6B7280"}
+                  />
+                </Pressable>
+              </View>
+            )}
           </View>
         </Animated.ScrollView>
 
@@ -672,7 +711,7 @@ export default function PlanDetails() {
                     cancelPlan.mutate({ id });
                   },
                 },
-              ]
+              ],
             );
           }}
           onDuplicate={() => {

@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "server": "bun run server.ts",
     "dev": "concurrently \"bun run server\" \"expo start\"",
@@ -29,7 +29,8 @@
     "screenshots:capture": "bun run scripts/capture-web-screenshots.ts",
     "screenshots:all": "bun run screenshots:capture",
     "icons": "node scripts/generate-app-icons.js",
-    "upgrade": "expo install --fix && bunx expo-doctor@latest && echo 'https://docs.expo.dev/workflow/upgrading-expo-sdk-walkthrough/'"
+    "upgrade": "expo install --fix && bunx expo-doctor@latest && echo 'https://docs.expo.dev/workflow/upgrading-expo-sdk-walkthrough/'",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.2",
@@ -78,6 +79,7 @@
     "expo-router": "~6.0.21",
     "expo-secure-store": "~15.0.8",
     "expo-server-sdk": "^4.0.0",
+    "expo-share-intent": "^5.1.1",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
     "expo-symbols": "~1.0.8",
@@ -121,6 +123,7 @@
     "drizzle-kit": "^0.31.6",
     "eslint": "^9.39.0",
     "eslint-config-expo": "~10.0.0",
+    "patch-package": "^8.0.1",
     "playwright": "^1.57.0",
     "prettier-plugin-tailwindcss": "^0.5.14",
     "sharp": "^0.34.5",

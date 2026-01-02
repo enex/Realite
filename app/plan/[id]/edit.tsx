@@ -35,7 +35,7 @@ export default function PlanEdit() {
 
   const queryClient = useQueryClient();
   const { data: plan } = useQuery(
-    orpc.plan.get.queryOptions({ input: { id } })
+    orpc.plan.get.queryOptions({ input: { id } }),
   );
 
   const changePlan = useMutation(
@@ -47,10 +47,10 @@ export default function PlanEdit() {
       onError: (error: any) => {
         Alert.alert(
           "Fehler",
-          "Konnte Plan nicht speichern. Bitte versuche es erneut."
+          "Konnte Plan nicht speichern. Bitte versuche es erneut.",
         );
       },
-    })
+    }),
   );
 
   const activity = (plan?.activity ?? undefined) as ActivityId | undefined;
@@ -59,13 +59,16 @@ export default function PlanEdit() {
   // Form state
   const [title, setTitle] = useState(plan?.title || "");
   const [description, setDescription] = useState(plan?.description || "");
+  const [url, setUrl] = useState(plan?.url || "");
   const [startDate, setStartDate] = useState<Date>(
-    plan?.startDate ? new Date(plan.startDate as unknown as string) : new Date()
+    plan?.startDate
+      ? new Date(plan.startDate as unknown as string)
+      : new Date(),
   );
   const [endDate, setEndDate] = useState<Date>(
     plan?.endDate
       ? new Date(plan.endDate as unknown as string)
-      : new Date(Date.now() + 2 * 60 * 60 * 1000)
+      : new Date(Date.now() + 2 * 60 * 60 * 1000),
   );
   const [selectedActivity, setSelectedActivity] = useState<
     ActivityId | undefined
@@ -103,10 +106,14 @@ export default function PlanEdit() {
           url: loc.url || undefined,
           description: loc.description || undefined,
           category: loc.category || undefined,
-        }))
+        })),
       );
     }
   }, [plan]);
+
+  useEffect(() => {
+    setUrl(plan?.url || "");
+  }, [plan?.url]);
 
   const handleSave = () => {
     if (!title.trim()) {
@@ -120,6 +127,7 @@ export default function PlanEdit() {
       plan: {
         title: title.trim(),
         description: description.trim() || undefined,
+        url: url.trim() || undefined,
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         activity: selectedActivity,
@@ -349,6 +357,27 @@ export default function PlanEdit() {
                 }
                 multiline
                 className="text-[17px] leading-[22px] text-black dark:text-white min-h-[100px]"
+              />
+            </View>
+          </View>
+
+          {/* Source Link */}
+          <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
+            <View className="px-4 py-4 gap-2">
+              <Text className="text-[17px] font-semibold text-black dark:text-white">
+                Link (optional)
+              </Text>
+              <TextInput
+                value={url}
+                onChangeText={setUrl}
+                placeholder="Originalquelle (z.B. Instagram-Link)"
+                placeholderTextColor={
+                  isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"
+                }
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                className="text-[15px] leading-5 text-black dark:text-white px-0 py-2"
               />
             </View>
           </View>

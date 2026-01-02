@@ -130,4 +130,15 @@ export interface RealiteEvents {
     surface: "plans" | "profile" | "unknown";
     version: 1;
   };
+
+  "realite.share.received": {
+    url?: string;
+    text?: string;
+    meta?: {
+      title?: string;
+      description?: string;
+    };
+    source: "instagram" | "browser" | "whatsapp" | "other" | "unknown";
+    version: 1;
+  };
 }

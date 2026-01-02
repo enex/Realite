@@ -4,6 +4,7 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
+import { ShareIntentProvider } from "expo-share-intent";
 import { useFonts } from "expo-font";
 import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router";
@@ -21,6 +22,7 @@ import { colorScheme as nativewindColorScheme } from "nativewind";
 
 import { useSession } from "@/client/auth";
 import { ShareLinkHandler } from "@/components/ShareLinkHandler";
+import { ShareIntentHandler } from "@/components/ShareIntentHandler";
 import { SplashScreenController } from "@/components/SplashScreenController";
 import "../global.css";
 
@@ -56,18 +58,21 @@ export default function RootLayout() {
   }
 
   const content = (
-    <QueryClientProvider client={queryClient}>
-      <SplashScreenController />
-      <ShareLinkHandler />
-      <BottomSheetModalProvider>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
-          <RootNavigator />
-          <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-        </ThemeProvider>
-      </BottomSheetModalProvider>
-    </QueryClientProvider>
+    <ShareIntentProvider>
+      <QueryClientProvider client={queryClient}>
+        <SplashScreenController />
+        <ShareLinkHandler />
+        <ShareIntentHandler />
+        <BottomSheetModalProvider>
+          <ThemeProvider
+            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+          >
+            <RootNavigator />
+            <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+          </ThemeProvider>
+        </BottomSheetModalProvider>
+      </QueryClientProvider>
+    </ShareIntentProvider>
   );
 
   // Expo Router does server-side rendering for web; PostHog RN depends on `window` via AsyncStorage.
@@ -117,6 +122,13 @@ function RootNavigator() {
         <Stack.Screen name="user/[id]/index" options={{ headerShown: false }} />
         <Stack.Screen
           name="(modals)/whatsapp-status-share"
+          options={{
+            headerShown: false,
+            presentation: Platform.OS === "ios" ? "formSheet" : "modal",
+          }}
+        />
+        <Stack.Screen
+          name="(modals)/import-share"
           options={{
             headerShown: false,
             presentation: Platform.OS === "ios" ? "formSheet" : "modal",

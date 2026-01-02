@@ -81,6 +81,7 @@ const MAPPING = {
   "person.circle": "account-circle",
   sparkles: "auto-awesome",
   "square.and.arrow.up": "share",
+  link: "link",
 } as Partial<IconMapping>;
 
 /**

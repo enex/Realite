@@ -100,6 +100,15 @@ export default function PlansScreen() {
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push("/(modals)/import-share?source=unknown");
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Icon name="link" size={22} color="#6366F1" />
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 aiPlanBottomSheetRef.current?.present();
               }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
