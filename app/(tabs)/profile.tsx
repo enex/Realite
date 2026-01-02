@@ -20,7 +20,10 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import { BirthdateField } from "@/components/BirthdateField";
 import { ThemedText } from "@/components/ThemedText";
@@ -67,6 +70,7 @@ export default function ProfileScreen() {
     "simple-appbar-for-starpage",
     false,
   );
+  const insets = useSafeAreaInsets();
   const me = useQuery(rpc.auth.me.queryOptions());
   const avatarUploadViaServer = useMutation(
     rpc.user.uploadAvatar.mutationOptions(),
@@ -290,7 +294,7 @@ export default function ProfileScreen() {
   );
 
   const content = (
-    <View className={cn(contentPaddingX, "flex-col", contentGapY)}>
+    <View className={cn(contentPaddingX, "flex-col pt-4", contentGapY)}>
       <SettingsCard className="p-4">
         <View className="flex-row items-center gap-4">
           <Pressable
@@ -663,7 +667,11 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView className={cn("flex-1", surfaceClass)}>
+    <SafeAreaView
+      className={cn("flex-1", surfaceClass)}
+      edges={["left", "right"]}
+      style={{ paddingTop: simpleAppBar ? 0 : insets.top }}
+    >
       {!simpleAppBar && (
         <View className={cn(contentPaddingX, "pt-3 pb-2")}>
           <RNText
