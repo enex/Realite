@@ -2,7 +2,7 @@ import { activities, activityIds, type ActivityId } from "@/shared/activities";
 import { coreRepetitionSchema } from "@/shared/validation/plan";
 import { openai } from "@ai-sdk/openai";
 import { ToolLoopAgent, stepCountIs, tool } from "ai";
-import { addWeeks, startOfDay } from "date-fns";
+import { addWeeks, startOfDay, subDays } from "date-fns";
 import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
 import type { RealiteEvents } from "../events";
@@ -467,23 +467,61 @@ export const planRouter = {
         startDate: z.coerce.date().optional(),
         endDate: z.coerce.date().optional(),
         limit: z.number().min(1).max(100).default(20),
-        cursor: z.coerce.date().optional(), // cursor is the startDate of the last item
+        cursor: z.coerce.date().optional(), // cursor is the startDate of the last/first item
+        orderDirection: z.enum(["asc", "desc"]).optional().default("asc"), // Sort direction
+        cursorDirection: z.enum(["forward", "backward"]).optional().default("forward"), // Pagination direction
       }),
     )
     .handler(async ({ context, input, signal }) => {
       try {
-        // If cursor is provided, use it for pagination (start after cursor)
-        // Otherwise, use startDate from filter or now
+        // If cursor is provided, use it for pagination
+        // For ascending + forward: start after cursor
+        // For ascending + backward: end before cursor
+        // For descending + forward: start after cursor (newer items)
+        // For descending + backward: end before cursor (older items)
         const now = new Date();
-        const queryStartDate = input.cursor
-          ? new Date(input.cursor.getTime() + 1) // Start after cursor to avoid duplicates
-          : input.startDate || now;
-        const endDate = input.endDate || addWeeks(now, 52); // 1 year ahead
+        let queryStartDate: Date;
+        let queryEndDate: Date;
+
+        if (input.cursor) {
+          if (input.orderDirection === "asc") {
+            if (input.cursorDirection === "forward") {
+              // Forward pagination: get items after cursor
+              queryStartDate = new Date(input.cursor.getTime() + 1);
+              queryEndDate = input.endDate || addWeeks(now, 52);
+            } else {
+              // Backward pagination: get items before cursor
+              queryStartDate = input.startDate || subDays(now, 365);
+              queryEndDate = new Date(input.cursor.getTime() - 1);
+            }
+          } else {
+            // descending order
+            if (input.cursorDirection === "forward") {
+              // Forward pagination: get newer items (after cursor, but descending means newer = larger dates)
+              queryStartDate = new Date(input.cursor.getTime() + 1);
+              queryEndDate = input.endDate || now;
+            } else {
+              // Backward pagination: get older items (before cursor)
+              queryStartDate = input.startDate || subDays(now, 365);
+              queryEndDate = new Date(input.cursor.getTime() - 1);
+            }
+          }
+        } else {
+          // No cursor - initial load
+          if (input.orderDirection === "desc") {
+            queryStartDate = input.startDate || subDays(now, 365);
+            queryEndDate = input.endDate || now;
+          } else {
+            queryStartDate = input.startDate || now;
+            queryEndDate = input.endDate || addWeeks(now, 52);
+          }
+        }
 
         const plans = await context.es.projections.plan.listMyPlans(
           context.session.id,
-          [queryStartDate, endDate],
+          [queryStartDate, queryEndDate],
           input.limit,
+          input.orderDirection,
         );
         return plans;
       } catch (err) {

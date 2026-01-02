@@ -38,6 +38,7 @@
     "@expo/server": "0.7.5",
     "@expo/vector-icons": "^15.0.3",
     "@gorhom/bottom-sheet": "^5.2.6",
+    "@legendapp/list": "^2.0.19",
     "@orpc/client": "^1.10.2",
     "@orpc/openapi": "^1.10.2",
     "@orpc/react-query": "^1.10.2",

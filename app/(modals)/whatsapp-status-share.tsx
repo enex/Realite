@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useRef } from "react";
 import {
   Alert,
@@ -9,10 +9,7 @@ import {
   Share,
   View,
 } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import rpc from "@/client/orpc";
 import { Icon } from "@/components/ui/Icon";
@@ -118,34 +115,31 @@ export default function WhatsAppStatusShareModal() {
   };
 
   return (
-    <View className="flex-1 bg-white dark:bg-zinc-950">
-      <SafeAreaView edges={["top"]} className="bg-white dark:bg-zinc-950">
-        <View className="px-5 py-3 flex-row items-center justify-between">
-          <View className="flex-row items-center gap-3">
-            <View className="h-9 w-9 rounded-full bg-emerald-500 items-center justify-center">
-              <Icon name="square.and.arrow.up" size={18} color="#ffffff" />
-            </View>
-            <Text className="text-zinc-900 dark:text-zinc-50 font-semibold text-base">
-              WhatsApp-Status
-            </Text>
-          </View>
-          <Pressable
-            onPress={handleLater}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            style={{ opacity: track.isPending ? 0.6 : 1 }}
-            disabled={track.isPending}
-          >
-            <Icon name="xmark" size={22} color="#9CA3AF" />
-          </Pressable>
-        </View>
-        <View className="h-px bg-zinc-200/70 dark:bg-zinc-800" />
-      </SafeAreaView>
+    <>
+      <Stack.Screen
+        options={{
+          headerShown: Platform.OS === "ios",
+          title: "WhatsApp-Status",
+          headerRight: () => (
+            <Pressable
+              onPress={handleLater}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              style={{ opacity: track.isPending ? 0.6 : 1 }}
+              disabled={track.isPending}
+            >
+              <Icon name="xmark" size={22} color="#6B7280" />
+            </Pressable>
+          ),
+        }}
+      />
 
       <ScrollView
+        style={{ flex: 1 }}
+        contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingTop: 16,
-          paddingBottom: 16,
+          paddingBottom: Math.max(insets.bottom, 12) + 24,
           gap: 14,
         }}
       >
@@ -220,46 +214,36 @@ export default function WhatsAppStatusShareModal() {
             erzeugt).
           </Text>
         </View>
-      </ScrollView>
 
-      <SafeAreaView edges={["bottom"]} className="bg-white dark:bg-zinc-950">
-        <View
-          style={{
-            paddingHorizontal: 20,
-            paddingTop: 12,
-            paddingBottom: Math.max(insets.bottom, 12),
-          }}
-        >
-          <View className="gap-3">
-            <Button
-              onPress={shareMyLink}
-              variant="default"
-              size="lg"
-              disabled={getShareLink.isPending}
+        <View className="mt-2 gap-3">
+          <Button
+            onPress={shareMyLink}
+            variant="default"
+            size="lg"
+            disabled={getShareLink.isPending}
+          >
+            <Text
+              className={buttonTextVariants({
+                variant: "default",
+                size: "lg",
+              })}
             >
-              <Text
-                className={buttonTextVariants({
-                  variant: "default",
-                  size: "lg",
-                })}
-              >
-                {getShareLink.isPending ? "Wird erstellt..." : "Jetzt teilen"}
-              </Text>
-            </Button>
+              {getShareLink.isPending ? "Wird erstellt..." : "Jetzt teilen"}
+            </Text>
+          </Button>
 
-            <Button onPress={handleLater} variant="secondary" size="lg">
-              <Text
-                className={buttonTextVariants({
-                  variant: "secondary",
-                  size: "lg",
-                })}
-              >
-                Später erinnern
-              </Text>
-            </Button>
-          </View>
+          <Button onPress={handleLater} variant="secondary" size="lg">
+            <Text
+              className={buttonTextVariants({
+                variant: "secondary",
+                size: "lg",
+              })}
+            >
+              Später erinnern
+            </Text>
+          </Button>
         </View>
-      </SafeAreaView>
-    </View>
+      </ScrollView>
+    </>
   );
 }

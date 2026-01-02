@@ -1,6 +1,6 @@
 import { ActivityId } from "@/shared/activities";
 import { addSeconds } from "date-fns";
-import { and, asc, eq, gte, ilike, lte, ne, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, ilike, lte, ne, or, sql } from "drizzle-orm";
 import * as schema from "../db/schema";
 import { builder } from "./builder";
 import {
@@ -196,7 +196,8 @@ export const es = builder.store({
             ctx,
             actor: string,
             range: [Date, Date],
-            limit?: number
+            limit?: number,
+            orderDirection: "asc" | "desc" = "asc"
           ) {
             const baseQuery = ctx.db
               .select({
@@ -339,7 +340,11 @@ export const es = builder.store({
                 sql`"ownPlansWithLocation"."plan_url"`,
                 ownPlansWithLocation.repetition
               )
-              .orderBy(asc(ownPlansWithLocation.startDate))
+              .orderBy(
+                orderDirection === "desc"
+                  ? desc(ownPlansWithLocation.startDate)
+                  : asc(ownPlansWithLocation.startDate)
+              )
               .limit(limit ?? 100);
 
             console.log(q.toSQL());

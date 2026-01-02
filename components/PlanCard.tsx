@@ -81,18 +81,7 @@ const getFirstName = (name: string): string => {
 
 export function PlanCard({ item, index }: PlanCardProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
   const router = useRouter();
-
-  // Staggered entrance animation
-  useMemo(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      delay: index * 100,
-      useNativeDriver: true,
-    }).start();
-  }, [index]);
 
   const handlePressIn = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -116,7 +105,6 @@ export function PlanCard({ item, index }: PlanCardProps) {
   return (
     <Animated.View
       style={{
-        opacity: fadeAnim,
         transform: [{ scale: scaleAnim }],
         marginBottom: spacing.md,
       }}

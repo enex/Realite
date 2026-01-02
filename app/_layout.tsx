@@ -125,6 +125,14 @@ function RootNavigator() {
           options={{
             headerShown: false,
             presentation: Platform.OS === "ios" ? "formSheet" : "modal",
+            ...(Platform.OS === "ios"
+              ? ({
+                  sheetGrabberVisible: true,
+                  sheetAllowedDetents: "all",
+                  sheetInitialDetentIndex: 0,
+                  sheetCornerRadius: 24,
+                } as any)
+              : null),
           }}
         />
         <Stack.Screen
@@ -132,6 +140,14 @@ function RootNavigator() {
           options={{
             headerShown: false,
             presentation: Platform.OS === "ios" ? "formSheet" : "modal",
+            ...(Platform.OS === "ios"
+              ? ({
+                  sheetGrabberVisible: true,
+                  sheetAllowedDetents: "all",
+                  sheetInitialDetentIndex: 0,
+                  sheetCornerRadius: 24,
+                } as any)
+              : null),
           }}
         />
       </Stack.Protected>

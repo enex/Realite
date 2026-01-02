@@ -347,35 +347,6 @@ export default function ProfileScreen() {
   const resolvedName = (name ?? me.data?.name ?? "").trim();
   const initialName = (me.data?.name ?? "").trim();
 
-  const Chip = ({
-    label,
-    selected,
-    onPress,
-  }: {
-    label: string;
-    selected: boolean;
-    onPress: () => void;
-  }) => (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      className={cn(
-        "rounded-full border px-3 py-2",
-        selected
-          ? "border-primary bg-primary/15"
-          : "border-zinc-300 bg-transparent dark:border-zinc-700",
-      )}
-    >
-      <RNText
-        className={cn(
-          selected ? "text-primary" : "text-zinc-900 dark:text-zinc-50",
-        )}
-      >
-        {label}
-      </RNText>
-    </Pressable>
-  );
-
   const content = (
     <View className={cn(contentPaddingX, "flex-col pt-4", contentGapY)}>
       <SettingsCard className="p-4">
@@ -733,3 +704,32 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 }
+
+const Chip = ({
+  label,
+  selected,
+  onPress,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+}) => (
+  <Pressable
+    onPress={onPress}
+    accessibilityRole="button"
+    className={cn(
+      "rounded-full border px-3 py-2",
+      selected
+        ? "border-primary bg-primary/15"
+        : "border-zinc-300 bg-transparent dark:border-zinc-700",
+    )}
+  >
+    <RNText
+      className={cn(
+        selected ? "text-primary" : "text-zinc-900 dark:text-zinc-50",
+      )}
+    >
+      {label}
+    </RNText>
+  </Pressable>
+);
