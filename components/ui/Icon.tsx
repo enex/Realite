@@ -80,6 +80,7 @@ const MAPPING = {
   "mappin.and.ellipse": "place",
   "person.circle": "account-circle",
   sparkles: "auto-awesome",
+  "square.and.arrow.up": "share",
 } as Partial<IconMapping>;
 
 /**

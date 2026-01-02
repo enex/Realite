@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 import { genders, relationshipStatuses } from "@/shared/validation";
 import { isDefinedError } from "@orpc/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useRouter } from "expo-router";
-import { useState } from "react";
+import { Link, useNavigation, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -65,6 +65,7 @@ function Divider() {
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const signOut = useSignOut();
   const simpleAppBar = useFeatureFlagBoolean(
     "simple-appbar-for-starpage",
@@ -149,6 +150,88 @@ export default function ProfileScreen() {
       );
     }
   };
+
+  const shareMyPlans = useCallback(async () => {
+    try {
+      const result = await getShareLink.mutateAsync(undefined);
+      const shareUrl = result.url;
+
+      if (Platform.OS === "web") {
+        try {
+          if (
+            typeof navigator !== "undefined" &&
+            navigator.clipboard &&
+            navigator.clipboard.writeText
+          ) {
+            await navigator.clipboard.writeText(shareUrl);
+            if (typeof window !== "undefined") {
+              window.alert("Link wurde in die Zwischenablage kopiert!");
+            }
+            return;
+          }
+
+          const textArea = document.createElement("textarea");
+          textArea.value = shareUrl;
+          textArea.style.position = "fixed";
+          textArea.style.left = "-999999px";
+          textArea.style.top = "-999999px";
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          try {
+            document.execCommand("copy");
+            textArea.remove();
+            if (typeof window !== "undefined") {
+              window.alert("Link wurde in die Zwischenablage kopiert!");
+            }
+          } catch {
+            textArea.remove();
+            if (typeof window !== "undefined") {
+              window.prompt("Kopiere diesen Link:", shareUrl);
+            }
+          }
+        } catch (clipboardError: any) {
+          console.error("Clipboard error:", clipboardError);
+          if (typeof window !== "undefined") {
+            window.prompt("Kopiere diesen Link:", shareUrl);
+          }
+        }
+        return;
+      }
+
+      try {
+        await Share.share({
+          message: shareUrl,
+          title: "Meine Pläne teilen",
+        });
+      } catch (error: any) {
+        if (error?.message !== "User did not share") {
+          Alert.alert("Teilen", shareUrl);
+        }
+      }
+    } catch (error: any) {
+      Alert.alert(
+        "Fehler",
+        error?.message || "Link konnte nicht erstellt werden.",
+      );
+    }
+  }, [getShareLink]);
+
+  useEffect(() => {
+    if (!simpleAppBar) return;
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable
+          onPress={shareMyPlans}
+          disabled={getShareLink.isPending}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={{ opacity: getShareLink.isPending ? 0.5 : 1, marginRight: 8 }}
+        >
+          <Icon name="square.and.arrow.up" size={22} color="#6366F1" />
+        </Pressable>
+      ),
+    } as any);
+  }, [navigation, simpleAppBar, getShareLink.isPending, shareMyPlans]);
 
   const pickAndUploadAvatar = async () => {
     try {
@@ -502,77 +585,7 @@ export default function ProfileScreen() {
           mitmachen.
         </ThemedText>
         <Button
-          onPress={async () => {
-            try {
-              const result = await getShareLink.mutateAsync(undefined);
-              const shareUrl = result.url;
-
-              if (Platform.OS === "web") {
-                // Web: Copy to clipboard
-                try {
-                  if (
-                    typeof navigator !== "undefined" &&
-                    navigator.clipboard &&
-                    navigator.clipboard.writeText
-                  ) {
-                    await navigator.clipboard.writeText(shareUrl);
-                    // Use window.alert for web as Alert.alert might not work properly
-                    if (typeof window !== "undefined") {
-                      window.alert("Link wurde in die Zwischenablage kopiert!");
-                    }
-                  } else {
-                    // Fallback: Use legacy clipboard API or show URL
-                    const textArea = document.createElement("textarea");
-                    textArea.value = shareUrl;
-                    textArea.style.position = "fixed";
-                    textArea.style.left = "-999999px";
-                    textArea.style.top = "-999999px";
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    try {
-                      document.execCommand("copy");
-                      textArea.remove();
-                      if (typeof window !== "undefined") {
-                        window.alert(
-                          "Link wurde in die Zwischenablage kopiert!",
-                        );
-                      }
-                    } catch {
-                      textArea.remove();
-                      // Last resort: show the URL
-                      if (typeof window !== "undefined") {
-                        window.prompt("Kopiere diesen Link:", shareUrl);
-                      }
-                    }
-                  }
-                } catch (clipboardError: any) {
-                  console.error("Clipboard error:", clipboardError);
-                  // Fallback: show the URL
-                  if (typeof window !== "undefined") {
-                    window.prompt("Kopiere diesen Link:", shareUrl);
-                  }
-                }
-              } else {
-                // Native: Use Share API
-                try {
-                  await Share.share({
-                    message: shareUrl,
-                    title: "Meine Pläne teilen",
-                  });
-                } catch (error: any) {
-                  if (error?.message !== "User did not share") {
-                    Alert.alert("Teilen", shareUrl);
-                  }
-                }
-              }
-            } catch (error: any) {
-              Alert.alert(
-                "Fehler",
-                error?.message || "Link konnte nicht erstellt werden.",
-              );
-            }
-          }}
+          onPress={shareMyPlans}
           disabled={getShareLink.isPending}
           variant="default"
         >
@@ -674,17 +687,34 @@ export default function ProfileScreen() {
     >
       {!simpleAppBar && (
         <View className={cn(contentPaddingX, "pt-3 pb-2")}>
-          <RNText
-            className="text-zinc-900 dark:text-zinc-50"
-            style={{
-              fontSize: isAndroid ? 22 : 34,
-              fontWeight: "700",
-              lineHeight: isAndroid ? 28 : 41,
-              marginBottom: 4,
-            }}
-          >
-            Profil
-          </RNText>
+          <View className="flex-row items-center justify-between">
+            <RNText
+              className="text-zinc-900 dark:text-zinc-50"
+              style={{
+                fontSize: isAndroid ? 22 : 34,
+                fontWeight: "700",
+                lineHeight: isAndroid ? 28 : 41,
+                marginBottom: 4,
+              }}
+            >
+              Profil
+            </RNText>
+            <Pressable
+              onPress={shareMyPlans}
+              disabled={getShareLink.isPending}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              style={{
+                opacity: getShareLink.isPending ? 0.5 : 1,
+                padding: 8,
+              }}
+            >
+              <Icon
+                name="square.and.arrow.up"
+                size={22}
+                color={isAndroid ? "#6366F1" : "#8E8E93"}
+              />
+            </Pressable>
+          </View>
           {!isAndroid && (
             <RNText style={{ fontSize: 15, lineHeight: 20, color: "#8E8E93" }}>
               Persönliche Daten und Einstellungen
