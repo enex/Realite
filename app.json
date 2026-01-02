@@ -19,7 +19,7 @@
       "package": "app.realite",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#4F46E5"
       },
       "edgeToEdgeEnabled": true
     },
