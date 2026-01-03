@@ -1,8 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect } from "react";
-import { View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ScrollView, View } from "react-native";
 
 import { useSession } from "@/client/auth";
 import orpc from "@/client/orpc";
@@ -11,6 +10,7 @@ import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useQuery } from "@tanstack/react-query";
+import { CalendarIcon, MapPinIcon, User2Icon } from "lucide-react-native";
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -38,29 +38,33 @@ export default function WelcomeScreen() {
 
   const features = [
     {
-      icon: "calendar" as const,
+      icon: CalendarIcon,
       title: "Pläne erstellen",
       text: "Erstelle Pläne für Aktivitäten mit Zeit, Ort und Beschreibung",
     },
     {
-      icon: "person.2" as const,
+      icon: User2Icon,
       title: "Kontakte sehen deine Pläne",
       text: "Deine Kontakte sehen deine offenen Pläne und können beitreten",
     },
     {
-      icon: "location" as const,
+      icon: MapPinIcon,
       title: "Pläne von anderen entdecken",
       text: "Sieh, was deine Kontakte planen, und tritt bei",
     },
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-zinc-100 dark:bg-zinc-950">
+    <ScrollView
+      className="flex-1 bg-zinc-100 dark:bg-zinc-950"
+      showsVerticalScrollIndicator={false}
+      contentInsetAdjustmentBehavior="automatic"
+    >
       <View className="flex-1 justify-center px-6">
         {/* Logo/Icon */}
         <View className="mb-8 items-center">
           <View className="mb-6 h-28 w-28 items-center justify-center rounded-full bg-primary shadow-md">
-            <Icon name="person.2" size={56} color="white" />
+            <Icon name={User2Icon} size={56} />
           </View>
           <Text className="mb-2 text-center text-3xl font-bold leading-tight text-zinc-900 dark:text-zinc-50">
             Willkommen bei Realite
@@ -109,6 +113,6 @@ export default function WelcomeScreen() {
           </Text>
         </Button>
       </View>
-    </SafeAreaView>
+    </ScrollView>
   );
 }

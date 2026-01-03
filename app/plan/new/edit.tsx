@@ -19,7 +19,7 @@ import { orpc } from "@/client/orpc";
 import { ActivityBottomSheet } from "@/components/ActivityBottomSheet";
 import { DateTimeBottomSheet } from "@/components/DateTimeBottomSheet";
 import { EditRow } from "@/components/EditRow";
-import { Icon } from "@/components/ui/icon";
+import { Button } from "@/components/ui/button";
 import { useLocation } from "@/hooks/useLocation";
 import {
   getActivityGradient,
@@ -27,6 +27,14 @@ import {
   type ActivityId,
 } from "@/shared/activities";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  CalendarIcon,
+  CheckIcon,
+  ClockIcon,
+  PlusCircleIcon,
+  TrashIcon,
+  XIcon,
+} from "lucide-react-native";
 
 export default function NewPlanEdit() {
   const router = useRouter();
@@ -212,26 +220,15 @@ export default function NewPlanEdit() {
               paddingBottom: 8,
             }}
           >
-            <Pressable
-              className="w-10 h-10 rounded-full items-center justify-center"
-              onPress={() => router.back()}
-            >
-              <Icon
-                name="xmark"
-                size={20}
-                color={isDark ? "#FFFFFF" : "#000000"}
-              />
-            </Pressable>
-            <Pressable
+            <Button size="icon" onPress={() => router.back()} icon={XIcon} />
+            <Button
               onPress={handleSave}
               disabled={createPlan.isPending}
-              className="px-4 py-2 rounded-full min-w-[100px] items-center"
-              style={{ backgroundColor: accentColor }}
+              loading={createPlan.isPending}
+              icon={CheckIcon}
             >
-              <Text className="text-[15px] leading-5 text-white font-semibold">
-                {createPlan.isPending ? "Erstelle..." : "Erstellen"}
-              </Text>
-            </Pressable>
+              Erstellen
+            </Button>
           </View>
 
           <ScrollView
@@ -259,7 +256,7 @@ export default function NewPlanEdit() {
             <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
               {/* Start Date/Time */}
               <EditRow
-                icon="clock"
+                icon={ClockIcon}
                 label={formatDate(startDate)}
                 value={formatTime(startDate)}
                 onPress={() => setShowStartPicker(true)}
@@ -268,7 +265,7 @@ export default function NewPlanEdit() {
 
               {/* End Date/Time */}
               <EditRow
-                icon="clock"
+                icon={ClockIcon}
                 label={formatDate(endDate)}
                 value={formatTime(endDate)}
                 onPress={() => setShowEndPicker(true)}
@@ -277,7 +274,7 @@ export default function NewPlanEdit() {
 
               {/* Activity */}
               <EditRow
-                icon="calendar"
+                icon={CalendarIcon}
                 label="Aktivität"
                 value={getActivityLabel(selectedActivity)}
                 onPress={() => setShowActivityPicker(true)}
@@ -292,25 +289,15 @@ export default function NewPlanEdit() {
                   <Text className="text-[17px] font-semibold text-black dark:text-white">
                     Orte
                   </Text>
-                  <Pressable
+                  <Button
                     onPress={() => {
                       setShowLocationSearch(true);
                       locationSearchSheetRef.current?.expand();
                     }}
-                    className="flex-row items-center"
+                    icon={PlusCircleIcon}
                   >
-                    <Icon
-                      name="plus.circle.fill"
-                      size={20}
-                      color={accentColor}
-                    />
-                    <Text
-                      className="text-[15px] ml-1"
-                      style={{ color: accentColor }}
-                    >
-                      Hinzufügen
-                    </Text>
-                  </Pressable>
+                    Hinzufügen
+                  </Button>
                 </View>
 
                 {locations.length === 0 ? (
@@ -334,17 +321,12 @@ export default function NewPlanEdit() {
                             </Text>
                           )}
                         </View>
-                        <Pressable
+                        <Button
                           onPress={() => handleRemoveLocation(index)}
-                          className="w-8 h-8 items-center justify-center"
-                          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                        >
-                          <Icon
-                            name="trash"
-                            size={20}
-                            color={isDark ? "#EF4444" : "#DC2626"}
-                          />
-                        </Pressable>
+                          icon={TrashIcon}
+                          variant="destructive"
+                          size="icon"
+                        />
                       </View>
                     ))}
                   </View>
@@ -457,17 +439,13 @@ export default function NewPlanEdit() {
             <Text className="text-[20px] font-bold text-black dark:text-white">
               Ort suchen
             </Text>
-            <Pressable
+            <Button
               onPress={() => {
                 locationSearchSheetRef.current?.close();
               }}
-            >
-              <Icon
-                name="xmark"
-                size={20}
-                color={isDark ? "#FFFFFF" : "#000000"}
-              />
-            </Pressable>
+              icon={XIcon}
+              size="icon"
+            />
           </View>
 
           <TextInput

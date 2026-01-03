@@ -5,23 +5,16 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
-  Keyboard,
-  KeyboardAvoidingView,
   Linking,
-  Platform,
   Pressable,
   ScrollView,
   TextInput,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { useThemeColor } from "@/hooks/useThemeColor";
@@ -127,147 +120,113 @@ export default function PhoneAuthScreen() {
   };
 
   return (
-    <View className="flex-1">
-      <GradientBackdrop variant="cool" />
+    <ScrollView
+      className="px-6"
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      contentInsetAdjustmentBehavior="automatic"
+    >
+      <View className="mb-10 items-center">
+        <View className="mb-6 h-24 w-24 items-center justify-center rounded-[32px] bg-primary/10">
+          <Icon name={PhoneIcon} size={48} color={primaryColor} />
+        </View>
+        <Text variant="title">Willkommen</Text>
+        <Text variant="subtitle">
+          Melde dich mit deiner Nummer an, um deine Pläne zu sehen.
+        </Text>
+      </View>
 
-      <SafeAreaView className="flex-1">
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          className="flex-1"
-        >
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <ScrollView
-              contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
-              className="px-6"
-              keyboardShouldPersistTaps="handled"
+      <Card>
+        <CardContent>
+          <View className="mb-8">
+            <Text variant="body">Telefonnummer</Text>
+            <View
+              className={cn(
+                "flex-row items-center rounded-2xl border p-3",
+                validationError
+                  ? "border-red-500/50"
+                  : isFocused
+                    ? "border-primary"
+                    : "border-zinc-200 dark:border-zinc-800"
+              )}
             >
-              <View className="mb-10 items-center">
-                <View className="mb-6 h-24 w-24 items-center justify-center rounded-[32px] bg-primary/10">
-                  <Icon name={PhoneIcon} size={48} color={primaryColor} />
-                </View>
-                <Text variant="title">Willkommen</Text>
-                <Text
-                  variant="subtitle"
-                  className="mt-2 px-4 text-center text-zinc-600 dark:text-zinc-400"
-                >
-                  Melde dich mit deiner Nummer an, um deine Pläne zu sehen.
-                </Text>
-              </View>
-
-              <Card>
-                <CardContent>
-                  <View className="mb-8">
-                    <Text variant="body">Telefonnummer</Text>
-                    <View
-                      className={cn(
-                        validationError
-                          ? "border-red-500/50"
-                          : isFocused
-                            ? "border-primary"
-                            : "border-zinc-200 dark:border-zinc-800"
-                      )}
-                    >
-                      <Icon
-                        name={PhoneIcon}
-                        size={22}
-                        color={isFocused ? primaryColor : placeholderColor}
-                      />
-                      <TextInput
-                        className="ml-3 flex-1 text-xl font-semibold"
-                        style={{ color: textColor }}
-                        placeholder="+49 123 456789"
-                        placeholderTextColor={placeholderColor}
-                        value={phoneNumber}
-                        onChangeText={handlePhoneNumberChange}
-                        onFocus={() => setIsFocused(true)}
-                        onBlur={() => setIsFocused(false)}
-                        keyboardType="phone-pad"
-                        autoFocus
-                      />
-                    </View>
-                    {validationError && (
-                      <Text
-                        variant="caption"
-                        className="mt-2 ml-1 text-red-500 font-medium"
-                      >
-                        {validationError}
-                      </Text>
-                    )}
-                  </View>
-
-                  <View className="mb-10 flex-row items-start px-1">
-                    <Pressable
-                      onPress={() => setPrivacyAccepted(!privacyAccepted)}
-                      className={`mt-0.5 h-6 w-6 items-center justify-center rounded-lg border ${
-                        privacyAccepted
-                          ? "bg-primary border-primary"
-                          : "border-zinc-300 dark:border-zinc-700 bg-white/40 dark:bg-black/20"
-                      }`}
-                    >
-                      {privacyAccepted && (
-                        <Icon name={CheckIcon} size={16} color="white" />
-                      )}
-                    </Pressable>
-                    <View className="ml-4 flex-1">
-                      <Text
-                        variant="caption"
-                        className="leading-5 text-zinc-600 dark:text-zinc-400"
-                      >
-                        Ich akzeptiere die{" "}
-                        <Text
-                          variant="caption"
-                          className="font-bold text-primary"
-                          onPress={openPrivacyPolicy}
-                        >
-                          Datenschutzbestimmungen
-                        </Text>{" "}
-                        und die{" "}
-                        <Text
-                          variant="caption"
-                          className="font-bold text-primary"
-                          onPress={openTerms}
-                        >
-                          AGB
-                        </Text>
-                        .
-                      </Text>
-                    </View>
-                  </View>
-
-                  <Button
-                    onPress={handleRequestCode}
-                    disabled={
-                      isLoading ||
-                      !privacyAccepted ||
-                      !!validationError ||
-                      !phoneNumber ||
-                      phoneNumber === "+49"
-                    }
-                    size="lg"
-                    className="h-14 w-full shadow-lg shadow-primary/30"
-                  >
-                    {isLoading ? (
-                      <ActivityIndicator color="white" />
-                    ) : (
-                      <Text className="text-lg font-bold text-white">
-                        Code senden
-                      </Text>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-
+              <Icon
+                name={PhoneIcon}
+                size={22}
+                color={isFocused ? primaryColor : placeholderColor}
+              />
+              <TextInput
+                className="ml-3 flex-1 text-xl font-semibold"
+                style={{ color: textColor }}
+                placeholder="+49 123 456789"
+                placeholderTextColor={placeholderColor}
+                value={phoneNumber}
+                onChangeText={handlePhoneNumberChange}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                keyboardType="phone-pad"
+                autoFocus
+              />
+            </View>
+            {validationError && (
               <Text
                 variant="caption"
-                className="mt-10 px-8 text-center leading-4 opacity-50"
+                className="mt-2 ml-1 text-red-500 font-medium"
               >
-                Wir senden dir einen 6-stelligen Code per SMS zur Verifizierung
-                deiner Identität.
+                {validationError}
               </Text>
-            </ScrollView>
-          </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </View>
+            )}
+          </View>
+
+          <View className="mb-10 flex-row items-start px-1">
+            <Pressable
+              onPress={() => setPrivacyAccepted(!privacyAccepted)}
+              className={`mt-0.5 h-6 w-6 items-center justify-center rounded-lg border ${
+                privacyAccepted
+                  ? "bg-primary border-primary"
+                  : "border-zinc-300 dark:border-zinc-700 bg-white/40 dark:bg-black/20"
+              }`}
+            >
+              {privacyAccepted && (
+                <Icon name={CheckIcon} size={16} color="white" />
+              )}
+            </Pressable>
+            <View className="ml-4 flex-1">
+              <Text variant="caption">
+                Ich akzeptiere die{" "}
+                <Text variant="link" onPress={openPrivacyPolicy}>
+                  Datenschutzbestimmungen
+                </Text>{" "}
+                und die{" "}
+                <Text variant="link" onPress={openTerms}>
+                  AGB
+                </Text>
+                .
+              </Text>
+            </View>
+          </View>
+
+          <Button
+            onPress={handleRequestCode}
+            disabled={
+              isLoading ||
+              !privacyAccepted ||
+              !!validationError ||
+              !phoneNumber ||
+              phoneNumber === "+49"
+            }
+            size="lg"
+            loading={isLoading}
+          >
+            Code senden
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Text variant="caption">
+        Wir senden dir einen 6-stelligen Code per SMS zur Verifizierung deiner
+        Identität.
+      </Text>
+    </ScrollView>
   );
 }

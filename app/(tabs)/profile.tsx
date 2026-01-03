@@ -295,8 +295,6 @@ export default function ProfileScreen() {
   };
 
   const isAndroid = Platform.OS === "android";
-  const contentPaddingX = isAndroid ? "px-4" : "px-6";
-  const contentGapY = isAndroid ? "gap-y-5" : "gap-y-8";
 
   const resolvedName = (name ?? me.data?.name ?? "").trim();
   const initialName = (me.data?.name ?? "").trim();
@@ -306,302 +304,301 @@ export default function ProfileScreen() {
       className="flex-1"
       showsVerticalScrollIndicator={false}
       contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{
+        paddingHorizontal: 16,
+        paddingTop: 16,
+        paddingBottom: 24,
+        flexDirection: "column",
+        gap: 16,
+      }}
     >
-      <View className={cn(contentPaddingX, "flex-col pt-4", contentGapY)}>
-        <Card>
-          <View className="flex-row items-center gap-4">
-            <Pressable
-              onPress={pickAndUploadAvatar}
-              className="relative"
-              accessibilityRole="button"
-              accessibilityLabel="Profilbild ändern"
-            >
-              <View className="h-24 w-24 rounded-full overflow-hidden border border-white/30 dark:border-white/15 bg-white/50 dark:bg-white/10 items-center justify-center">
-                {me.data?.image ? (
-                  <Image
-                    source={{ uri: me.data.image }}
-                    style={{ width: 96, height: 96 }}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <ThemedText className="text-3xl">👤</ThemedText>
-                )}
-              </View>
-              <View className="absolute -bottom-1 -right-1 h-9 w-9 rounded-full bg-primary items-center justify-center border border-white/60">
-                {isUploadingAvatar ? (
-                  <ActivityIndicator color="#ffffff" />
-                ) : (
-                  <RNText
-                    className="text-white"
-                    style={{ fontSize: 16, fontWeight: "700" }}
-                  >
-                    ✎
-                  </RNText>
-                )}
-              </View>
-            </Pressable>
-
-            <View className="flex-1">
-              <ThemedText
-                type="title"
-                className="text-zinc-900 dark:text-zinc-50"
-              >
-                {me.data?.name?.trim() ? me.data.name : "Dein Profil"}
-              </ThemedText>
-              <ThemedText className="mt-1 text-zinc-600 dark:text-zinc-300">
-                Tippe auf dein Foto, um es zu ändern
-              </ThemedText>
-            </View>
-            <Icon name={ChevronRightIcon} size={22} />
-          </View>
-        </Card>
-
-        <Card>
-          <View className="px-4 pt-4 pb-3">
-            <ThemedText
-              type="subtitle"
-              className="text-zinc-900 dark:text-zinc-50 mb-4"
-            >
-              Basisdaten
-            </ThemedText>
-          </View>
-
-          <View className="px-4 pb-4">
-            <ThemedText className="mb-2 text-zinc-600 dark:text-zinc-400">
-              Name
-            </ThemedText>
-            <TextInput
-              className={cn(
-                "rounded-xl border px-4 py-3 text-zinc-900 dark:text-zinc-50",
-                isAndroid
-                  ? "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950"
-                  : "border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
+      <Card>
+        <View className="flex-row items-center gap-4">
+          <Pressable
+            onPress={pickAndUploadAvatar}
+            className="relative"
+            accessibilityRole="button"
+            accessibilityLabel="Profilbild ändern"
+          >
+            <View className="h-24 w-24 rounded-full overflow-hidden border border-white/30 dark:border-white/15 bg-white/50 dark:bg-white/10 items-center justify-center">
+              {me.data?.image ? (
+                <Image
+                  source={{ uri: me.data.image }}
+                  style={{ width: 96, height: 96 }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <ThemedText className="text-3xl">👤</ThemedText>
               )}
-              placeholder="Dein Name"
-              placeholderTextColor={
-                Platform.OS === "ios" ? undefined : "#9CA3AF"
-              }
-              value={name ?? me.data?.name ?? ""}
-              onChangeText={(text) => setName(text)}
-              onBlur={() => {
-                const next = resolvedName;
-                if (next === initialName) return;
-                update.mutate({ name: next ? next : undefined });
-              }}
-            />
-          </View>
-
-          <Divider />
-          <Link href="/auth/change-phone" asChild>
-            <Pressable className="px-4 py-4" accessibilityRole="button">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-1 pr-3">
-                  <ThemedText className="text-zinc-900 dark:text-zinc-50">
-                    Telefonnummer
-                  </ThemedText>
-                  <ThemedText className="mt-1 text-zinc-600 dark:text-zinc-400">
-                    {me.data?.phoneNumber || "—"}
-                  </ThemedText>
-                </View>
-                <View className="flex-row items-center gap-2">
-                  <RNText className="text-primary font-medium">Ändern</RNText>
-                  <Icon name={ChevronRightIcon} size={22} />
-                </View>
-              </View>
-            </Pressable>
-          </Link>
-
-          <Divider />
-          <View className="px-4 py-4">
-            <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
-              Geschlecht
-            </ThemedText>
-            <View className="flex-row flex-wrap gap-2">
-              {genders.map((g) => (
-                <Chip
-                  key={g}
-                  label={GENDER_LABEL[g]}
-                  selected={me.data?.gender === g}
-                  onPress={() => update.mutate({ gender: g })}
-                />
-              ))}
             </View>
-          </View>
-
-          <Divider />
-          <View className="px-4 py-4">
-            <BirthdateField
-              value={me.data?.birthDate}
-              onChange={(v) => update.mutate({ birthDate: v })}
-            />
-          </View>
-
-          <Divider />
-          <View className="px-4 py-4">
-            <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
-              Beziehungsstatus
-            </ThemedText>
-            <View className="flex-row flex-wrap gap-2">
-              {relationshipStatuses.map((rs) => (
-                <Chip
-                  key={rs}
-                  label={REL_LABEL[rs]}
-                  selected={me.data?.relationshipStatus === rs}
-                  onPress={() => update.mutate({ relationshipStatus: rs })}
-                />
-              ))}
+            <View className="absolute -bottom-1 -right-1 h-9 w-9 rounded-full bg-primary items-center justify-center border border-white/60">
+              {isUploadingAvatar ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
+                <RNText
+                  className="text-white"
+                  style={{ fontSize: 16, fontWeight: "700" }}
+                >
+                  ✎
+                </RNText>
+              )}
             </View>
+          </Pressable>
+
+          <View className="flex-1">
+            <ThemedText
+              type="title"
+              className="text-zinc-900 dark:text-zinc-50"
+            >
+              {me.data?.name?.trim() ? me.data.name : "Dein Profil"}
+            </ThemedText>
+            <ThemedText className="mt-1 text-zinc-600 dark:text-zinc-300">
+              Tippe auf dein Foto, um es zu ändern
+            </ThemedText>
           </View>
-        </Card>
+          <Icon name={ChevronRightIcon} size={22} />
+        </View>
+      </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Sichtbarkeit</CardTitle>
-          </CardHeader>
-          <ToggleRow
-            label="Geschlecht anzeigen"
-            value={me.data?.privacySettings?.showGender ?? true}
-            onChange={(v) =>
-              update.mutate({ privacySettings: { showGender: v } })
-            }
-          />
-          <Divider />
-          <ToggleRow
-            label="Alter anzeigen"
-            value={me.data?.privacySettings?.showAge ?? true}
-            onChange={(v) => update.mutate({ privacySettings: { showAge: v } })}
-          />
-          <Divider />
-          <ToggleRow
-            label="Beziehungsstatus anzeigen"
-            value={me.data?.privacySettings?.showRelationshipStatus ?? true}
-            onChange={(v) =>
-              update.mutate({ privacySettings: { showRelationshipStatus: v } })
-            }
-          />
-        </Card>
-
-        <ModeToggle />
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Benachrichtigungen</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Text>
-              Push-Benachrichtigungen können in den System-Einstellungen
-              verwaltet werden.
-            </Text>
-          </CardContent>
-          <CardFooter>
-            <Button onPress={openNotificationSettings} variant="default">
-              Benachrichtigungen verwalten
-            </Button>
-          </CardFooter>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Teilen</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Text>
-              Teile deine Pläne mit anderen. Sie können sehen, was du vorhast
-              und mitmachen.
-            </Text>
-          </CardContent>
-          <CardFooter>
-            <Button
-              onPress={shareMyPlans}
-              disabled={getShareLink.isPending}
-              variant="default"
-            >
-              {getShareLink.isPending
-                ? "Wird erstellt..."
-                : "Meine Pläne teilen"}
-            </Button>
-          </CardFooter>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Onboarding</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Text>
-              Wiederhole das Onboarding, um deine Einstellungen und
-              Berechtigungen zu konfigurieren.
-            </Text>
-          </CardContent>
-          <CardFooter>
-            <Button
-              onPress={() => router.push("/onboarding/welcome?repeat=1")}
-              variant="default"
-            >
-              Onboarding wiederholen
-            </Button>
-          </CardFooter>
-        </Card>
-
-        <Card>
+      <Card>
+        <View className="px-4 pt-4 pb-3">
           <ThemedText
             type="subtitle"
-            className="text-zinc-900 dark:text-zinc-50 mb-2"
+            className="text-zinc-900 dark:text-zinc-50 mb-4"
           >
-            Abmelden
-          </ThemedText>
-          <ThemedText className="mb-3 text-zinc-600 dark:text-zinc-400">
-            Du bist angemeldet als {me.data?.phoneNumber}.
-          </ThemedText>
-          <Button
-            onPress={() => {
-              if (Platform.OS === "web") {
-                if (confirm("Möchtest du dich wirklich abmelden?")) {
-                  signOut();
-                }
-              } else {
-                Alert.alert("Abmelden", "Möchtest du dich wirklich abmelden?", [
-                  { text: "Abbrechen", style: "cancel" },
-                  {
-                    text: "Abmelden",
-                    style: "destructive",
-                    onPress: () => signOut(),
-                  },
-                ]);
-              }
-            }}
-            variant="outline"
-          >
-            Abmelden
-          </Button>
-        </Card>
-
-        <Card>
-          <ThemedText
-            type="subtitle"
-            className="text-red-600 dark:text-red-400 mb-2"
-          >
-            Gefährliche Zone
-          </ThemedText>
-          <ThemedText className="mb-3 text-gray-600 dark:text-gray-400">
-            Du kannst deinen Account unwiderruflich löschen. Alle deine Daten
-            werden dabei gelöscht.
-          </ThemedText>
-          <Button
-            onPress={() => router.push("/delete-account")}
-            variant="destructive"
-          >
-            Account löschen
-          </Button>
-        </Card>
-
-        <View className="opacity-80">
-          <ThemedText className="text-center text-gray-500 dark:text-gray-400">
-            Änderungen werden automatisch gespeichert
+            Basisdaten
           </ThemedText>
         </View>
 
-        <View className="pb-8" />
+        <View className="px-4 pb-4">
+          <ThemedText className="mb-2 text-zinc-600 dark:text-zinc-400">
+            Name
+          </ThemedText>
+          <TextInput
+            className={cn(
+              "rounded-xl border px-4 py-3 text-zinc-900 dark:text-zinc-50",
+              isAndroid
+                ? "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950"
+                : "border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
+            )}
+            placeholder="Dein Name"
+            placeholderTextColor={Platform.OS === "ios" ? undefined : "#9CA3AF"}
+            value={name ?? me.data?.name ?? ""}
+            onChangeText={(text) => setName(text)}
+            onBlur={() => {
+              const next = resolvedName;
+              if (next === initialName) return;
+              update.mutate({ name: next ? next : undefined });
+            }}
+          />
+        </View>
+
+        <Divider />
+        <Link href="/auth/change-phone" asChild>
+          <Pressable className="px-4 py-4" accessibilityRole="button">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1 pr-3">
+                <ThemedText className="text-zinc-900 dark:text-zinc-50">
+                  Telefonnummer
+                </ThemedText>
+                <ThemedText className="mt-1 text-zinc-600 dark:text-zinc-400">
+                  {me.data?.phoneNumber || "—"}
+                </ThemedText>
+              </View>
+              <View className="flex-row items-center gap-2">
+                <RNText className="text-primary font-medium">Ändern</RNText>
+                <Icon name={ChevronRightIcon} size={22} />
+              </View>
+            </View>
+          </Pressable>
+        </Link>
+
+        <Divider />
+        <View className="px-4 py-4">
+          <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
+            Geschlecht
+          </ThemedText>
+          <View className="flex-row flex-wrap gap-2">
+            {genders.map((g) => (
+              <Chip
+                key={g}
+                label={GENDER_LABEL[g]}
+                selected={me.data?.gender === g}
+                onPress={() => update.mutate({ gender: g })}
+              />
+            ))}
+          </View>
+        </View>
+
+        <Divider />
+        <View className="px-4 py-4">
+          <BirthdateField
+            value={me.data?.birthDate}
+            onChange={(v) => update.mutate({ birthDate: v })}
+          />
+        </View>
+
+        <Divider />
+        <View className="px-4 py-4">
+          <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
+            Beziehungsstatus
+          </ThemedText>
+          <View className="flex-row flex-wrap gap-2">
+            {relationshipStatuses.map((rs) => (
+              <Chip
+                key={rs}
+                label={REL_LABEL[rs]}
+                selected={me.data?.relationshipStatus === rs}
+                onPress={() => update.mutate({ relationshipStatus: rs })}
+              />
+            ))}
+          </View>
+        </View>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Sichtbarkeit</CardTitle>
+        </CardHeader>
+        <ToggleRow
+          label="Geschlecht anzeigen"
+          value={me.data?.privacySettings?.showGender ?? true}
+          onChange={(v) =>
+            update.mutate({ privacySettings: { showGender: v } })
+          }
+        />
+        <Divider />
+        <ToggleRow
+          label="Alter anzeigen"
+          value={me.data?.privacySettings?.showAge ?? true}
+          onChange={(v) => update.mutate({ privacySettings: { showAge: v } })}
+        />
+        <Divider />
+        <ToggleRow
+          label="Beziehungsstatus anzeigen"
+          value={me.data?.privacySettings?.showRelationshipStatus ?? true}
+          onChange={(v) =>
+            update.mutate({ privacySettings: { showRelationshipStatus: v } })
+          }
+        />
+      </Card>
+
+      <ModeToggle />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Benachrichtigungen</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Text>
+            Push-Benachrichtigungen können in den System-Einstellungen verwaltet
+            werden.
+          </Text>
+        </CardContent>
+        <CardFooter>
+          <Button onPress={openNotificationSettings} variant="default">
+            Benachrichtigungen verwalten
+          </Button>
+        </CardFooter>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Teilen</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Text>
+            Teile deine Pläne mit anderen. Sie können sehen, was du vorhast und
+            mitmachen.
+          </Text>
+        </CardContent>
+        <CardFooter>
+          <Button
+            onPress={shareMyPlans}
+            disabled={getShareLink.isPending}
+            variant="default"
+          >
+            {getShareLink.isPending ? "Wird erstellt..." : "Meine Pläne teilen"}
+          </Button>
+        </CardFooter>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Onboarding</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Text>
+            Wiederhole das Onboarding, um deine Einstellungen und Berechtigungen
+            zu konfigurieren.
+          </Text>
+        </CardContent>
+        <CardFooter>
+          <Button
+            onPress={() => router.push("/onboarding/welcome?repeat=1")}
+            variant="default"
+          >
+            Onboarding wiederholen
+          </Button>
+        </CardFooter>
+      </Card>
+
+      <Card>
+        <ThemedText
+          type="subtitle"
+          className="text-zinc-900 dark:text-zinc-50 mb-2"
+        >
+          Abmelden
+        </ThemedText>
+        <ThemedText className="mb-3 text-zinc-600 dark:text-zinc-400">
+          Du bist angemeldet als {me.data?.phoneNumber}.
+        </ThemedText>
+        <Button
+          onPress={() => {
+            if (Platform.OS === "web") {
+              if (confirm("Möchtest du dich wirklich abmelden?")) {
+                signOut();
+              }
+            } else {
+              Alert.alert("Abmelden", "Möchtest du dich wirklich abmelden?", [
+                { text: "Abbrechen", style: "cancel" },
+                {
+                  text: "Abmelden",
+                  style: "destructive",
+                  onPress: () => signOut(),
+                },
+              ]);
+            }
+          }}
+          variant="outline"
+        >
+          Abmelden
+        </Button>
+      </Card>
+
+      <Card>
+        <ThemedText
+          type="subtitle"
+          className="text-red-600 dark:text-red-400 mb-2"
+        >
+          Gefährliche Zone
+        </ThemedText>
+        <ThemedText className="mb-3 text-gray-600 dark:text-gray-400">
+          Du kannst deinen Account unwiderruflich löschen. Alle deine Daten
+          werden dabei gelöscht.
+        </ThemedText>
+        <Button
+          onPress={() => router.push("/delete-account")}
+          variant="destructive"
+        >
+          Account löschen
+        </Button>
+      </Card>
+
+      <View className="opacity-80">
+        <ThemedText className="text-center text-gray-500 dark:text-gray-400">
+          Änderungen werden automatisch gespeichert
+        </ThemedText>
       </View>
     </ScrollView>
   );

@@ -55,7 +55,9 @@ const getGroupIdFromActivity = (
 
 export const planRouter = {
   overview: protectedRoute.handler(async ({ context, signal }) => {
-    return [];
+    return {
+      user: context.session,
+    };
   }),
   create: protectedRoute
     .input(
