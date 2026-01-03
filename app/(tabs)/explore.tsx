@@ -25,9 +25,9 @@ import PlanFilterBottomSheet, {
   PlanFilterBottomSheetRef,
   type PlanFilter,
 } from "@/components/PlanFilterBottomSheet";
-import { Glass } from "@/components/ui/Glass";
+import { Card } from "@/components/ui/card";
 import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
-import { Icon } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/icon";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 import { useLocation } from "@/hooks/useLocation";
@@ -35,6 +35,7 @@ import type { ActivityId } from "@/shared/activities";
 import { isWithinRadius } from "@/shared/utils/distance";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { startOfDay } from "date-fns";
+import { ListFilterIcon, SearchIcon, XIcon } from "lucide-react-native";
 
 // iOS Design System (matching Plans screen)
 const typography = {
@@ -102,7 +103,7 @@ export default function ExploreScreen() {
             }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Icon name="magnifyingglass" size={22} color="#007AFF" />
+            <Icon name={SearchIcon} size={22} />
           </Pressable>
           <Pressable
             onPress={() => {
@@ -111,11 +112,7 @@ export default function ExploreScreen() {
             }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Icon
-              name="line.3.horizontal.decrease.circle"
-              size={22}
-              color="#007AFF"
-            />
+            <Icon name={ListFilterIcon} size={22} />
           </Pressable>
         </View>
       ),
@@ -518,7 +515,7 @@ export default function ExploreScreen() {
               }}
               className="dark:bg-zinc-800"
             >
-              <Icon name="magnifyingglass" size={17} color="#8E8E93" />
+              <Icon name={SearchIcon} size={17} color="#8E8E93" />
               <TextInput
                 placeholder="Suche"
                 placeholderTextColor="#8E8E93"
@@ -550,7 +547,7 @@ export default function ExploreScreen() {
                       justifyContent: "center",
                     }}
                   >
-                    <Icon name="xmark" size={10} color="#FFFFFF" />
+                    <Icon name={XIcon} size={10} color="#FFFFFF" />
                   </View>
                 </Pressable>
               )}
@@ -693,16 +690,13 @@ export default function ExploreScreen() {
             </View>
             <View style={{ flexDirection: "row", gap: 10 }}>
               <HeaderIconButton
-                icon="magnifyingglass"
+                icon={SearchIcon}
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setShowSearch((v) => !v);
                 }}
               />
-              <HeaderIconButton
-                icon="line.3.horizontal.decrease.circle"
-                onPress={onPressFilter}
-              />
+              <HeaderIconButton icon={ListFilterIcon} onPress={onPressFilter} />
             </View>
           </View>
 
@@ -719,7 +713,7 @@ export default function ExploreScreen() {
                 paddingHorizontal: 12,
               }}
             >
-              <Icon name="magnifyingglass" size={18} color="#8E8E93" />
+              <Icon name={SearchIcon} size={18} color="#8E8E93" />
               <TextInput
                 placeholder="Suche nach Titel oder Ort"
                 placeholderTextColor="#8E8E93"
@@ -735,7 +729,7 @@ export default function ExploreScreen() {
               />
               {!!searchText && (
                 <Pressable onPress={() => setSearchText("")}>
-                  <Icon name="xmark" size={18} color="#8E8E93" />
+                  <Icon name={XIcon} size={18} color="#8E8E93" />
                 </Pressable>
               )}
             </View>
@@ -798,10 +792,7 @@ export default function ExploreScreen() {
           pointerEvents="none"
         >
           <SafeAreaView style={{ backgroundColor: "transparent" }}>
-            <Glass
-              intensity={80}
-              tint={colorScheme === "dark" ? "dark" : "light"}
-              className="border-b border-white/30 dark:border-white/10 bg-white/60 dark:bg-black/40"
+            <Card
               style={{
                 height: 44,
                 justifyContent: "center",
@@ -817,7 +808,7 @@ export default function ExploreScreen() {
               >
                 Entdecken
               </Text>
-            </Glass>
+            </Card>
           </SafeAreaView>
         </Animated.View>
 

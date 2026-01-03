@@ -7,7 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useSession } from "@/client/auth";
 import orpc from "@/client/orpc";
 import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useQuery } from "@tanstack/react-query";
@@ -25,7 +25,7 @@ export default function WelcomeScreen() {
     orpc.auth.me.queryOptions({
       enabled: !!session && !session.isLoading,
       retry: false, // Nicht wiederholen bei Fehlern
-    }),
+    })
   );
   const onboarded = meRes.data?.onboarded;
   useEffect(() => {

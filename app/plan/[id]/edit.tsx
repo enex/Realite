@@ -17,7 +17,7 @@ import { orpc } from "@/client/orpc";
 import { ActivityBottomSheet } from "@/components/ActivityBottomSheet";
 import { DateTimeBottomSheet } from "@/components/DateTimeBottomSheet";
 import { EditRow } from "@/components/EditRow";
-import { Icon } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/icon";
 import { useLocation } from "@/hooks/useLocation";
 import {
   getActivityGradient,
@@ -35,7 +35,7 @@ export default function PlanEdit() {
 
   const queryClient = useQueryClient();
   const { data: plan } = useQuery(
-    orpc.plan.get.queryOptions({ input: { id } }),
+    orpc.plan.get.queryOptions({ input: { id } })
   );
 
   const changePlan = useMutation(
@@ -47,10 +47,10 @@ export default function PlanEdit() {
       onError: (error: any) => {
         Alert.alert(
           "Fehler",
-          "Konnte Plan nicht speichern. Bitte versuche es erneut.",
+          "Konnte Plan nicht speichern. Bitte versuche es erneut."
         );
       },
-    }),
+    })
   );
 
   const activity = (plan?.activity ?? undefined) as ActivityId | undefined;
@@ -61,14 +61,12 @@ export default function PlanEdit() {
   const [description, setDescription] = useState(plan?.description || "");
   const [url, setUrl] = useState(plan?.url || "");
   const [startDate, setStartDate] = useState<Date>(
-    plan?.startDate
-      ? new Date(plan.startDate as unknown as string)
-      : new Date(),
+    plan?.startDate ? new Date(plan.startDate as unknown as string) : new Date()
   );
   const [endDate, setEndDate] = useState<Date>(
     plan?.endDate
       ? new Date(plan.endDate as unknown as string)
-      : new Date(Date.now() + 2 * 60 * 60 * 1000),
+      : new Date(Date.now() + 2 * 60 * 60 * 1000)
   );
   const [selectedActivity, setSelectedActivity] = useState<
     ActivityId | undefined
@@ -106,7 +104,7 @@ export default function PlanEdit() {
           url: loc.url || undefined,
           description: loc.description || undefined,
           category: loc.category || undefined,
-        })),
+        }))
       );
     }
   }, [plan]);

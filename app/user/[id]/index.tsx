@@ -17,12 +17,20 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { orpc } from "@/client/orpc";
 import { Avatar } from "@/components/Avatar";
 import { PlanCard } from "@/components/PlanCard";
-import { Icon } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/icon";
 import useAllContacts from "@/hooks/useAllContacts";
 import { getActivityGradient, type ActivityId } from "@/shared/activities";
 import { standardizePhoneNumber } from "@/shared/validation/phone";
 import { useQuery } from "@tanstack/react-query";
 import { startOfDay, subDays } from "date-fns";
+import {
+  CalendarIcon,
+  HeartIcon,
+  MessageCircleIcon,
+  UserCircleIcon,
+  UserIcon,
+  XIcon,
+} from "lucide-react-native";
 
 const GENDER_LABEL: Record<string, string> = {
   MALE: "Männlich",
@@ -234,7 +242,7 @@ export default function UserProfileScreen() {
           className="w-10 h-10 rounded-full items-center justify-center"
           onPress={() => router.back()}
         >
-          <Icon name="xmark" size={20} color={isDark ? "#FFFFFF" : "#000000"} />
+          <Icon name={XIcon} size={20} color={isDark ? "#FFFFFF" : "#000000"} />
         </Pressable>
       </View>
 
@@ -260,7 +268,7 @@ export default function UserProfileScreen() {
             {userProfile.gender && (
               <View className="flex-row items-center justify-center">
                 <Icon
-                  name="person"
+                  name={UserIcon}
                   size={16}
                   color={isDark ? "#9CA3AF" : "#6B7280"}
                 />
@@ -273,7 +281,7 @@ export default function UserProfileScreen() {
             {age !== null && age > 0 && (
               <View className="flex-row items-center justify-center">
                 <Icon
-                  name="calendar"
+                  name={CalendarIcon}
                   size={16}
                   color={isDark ? "#9CA3AF" : "#6B7280"}
                 />
@@ -287,7 +295,7 @@ export default function UserProfileScreen() {
               userProfile.relationshipStatus !== "PREFER_NOT_TO_SAY" && (
                 <View className="flex-row items-center justify-center">
                   <Icon
-                    name="heart"
+                    name={HeartIcon}
                     size={16}
                     color={isDark ? "#9CA3AF" : "#6B7280"}
                   />
@@ -310,7 +318,7 @@ export default function UserProfileScreen() {
                   }}
                   className="flex-row items-center justify-center py-3 px-6 rounded-xl bg-green-500"
                 >
-                  <Icon name="message" size={20} color="#FFFFFF" />
+                  <Icon name={MessageCircleIcon} size={20} color="#FFFFFF" />
                   <Text className="text-[15px] font-semibold text-white ml-2">
                     WhatsApp
                   </Text>
@@ -325,7 +333,7 @@ export default function UserProfileScreen() {
                 className="flex-row items-center justify-center py-3 px-6 rounded-xl bg-gray-200 dark:bg-zinc-800"
               >
                 <Icon
-                  name="person.circle"
+                  name={UserCircleIcon}
                   size={20}
                   color={isDark ? "#FFFFFF" : "#000000"}
                 />

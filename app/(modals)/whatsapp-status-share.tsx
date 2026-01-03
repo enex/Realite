@@ -13,8 +13,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import rpc from "@/client/orpc";
-import { Icon } from "@/components/ui/Icon";
 import { Button, buttonTextVariants } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
 function useSurfaceParam() {
@@ -33,7 +33,7 @@ export default function WhatsAppStatusShareModal() {
   const isDark = colorScheme === "dark";
 
   const track = useMutation(
-    rpc.user.trackWhatsAppStatusShareReminderEvent.mutationOptions(),
+    rpc.user.trackWhatsAppStatusShareReminderEvent.mutationOptions()
   );
   const getShareLink = useMutation(rpc.user.getShareLink.mutationOptions());
 
@@ -49,7 +49,7 @@ export default function WhatsAppStatusShareModal() {
   const body = useMemo(
     () =>
       "Dauert 5 Sekunden. Mehr Sichtbarkeit → mehr Leute, die mitmachen können.",
-    [],
+    []
   );
 
   const shareTextPrefix = useMemo(() => "Meine Pläne auf Realite:", []);
@@ -87,7 +87,7 @@ export default function WhatsAppStatusShareModal() {
         if (typeof window !== "undefined") {
           window.prompt(
             "Kopiere diesen Text in deinen WhatsApp-Status:",
-            message,
+            message
           );
         }
         track.mutate({ action: "shared", surface });
@@ -112,7 +112,7 @@ export default function WhatsAppStatusShareModal() {
     } catch (error: any) {
       Alert.alert(
         "Fehler",
-        error?.message || "Link konnte nicht erstellt werden.",
+        error?.message || "Link konnte nicht erstellt werden."
       );
     }
   };

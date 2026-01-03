@@ -1,6 +1,6 @@
 import { client } from "@/client/orpc";
 import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useLocation } from "@/hooks/useLocation";
@@ -32,7 +32,7 @@ export default function AIPlanCreateScreen() {
 
   const canSubmit = useMemo(
     () => Boolean(text.trim()) && !isLoading,
-    [text, isLoading],
+    [text, isLoading]
   );
 
   const dismiss = useCallback(() => {
@@ -55,7 +55,7 @@ export default function AIPlanCreateScreen() {
 
       router.push(target);
     },
-    [router],
+    [router]
   );
 
   const handleSubmit = useCallback(async () => {
@@ -87,13 +87,13 @@ export default function AIPlanCreateScreen() {
 
       Alert.alert(
         "Fehler",
-        "Konnte keinen Plan aus deiner Anfrage erstellen. Bitte versuch es erneut.",
+        "Konnte keinen Plan aus deiner Anfrage erstellen. Bitte versuch es erneut."
       );
     } catch (error) {
       console.error("Error creating AI plan:", error);
       Alert.alert(
         "Fehler",
-        "Etwas ist schiefgelaufen. Bitte versuch es erneut.",
+        "Etwas ist schiefgelaufen. Bitte versuch es erneut."
       );
     } finally {
       setIsLoading(false);

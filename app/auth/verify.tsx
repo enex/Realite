@@ -1,5 +1,5 @@
 import { useSignInWithPhone } from "@/client/auth";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -16,11 +16,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/card";
 import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
-import { Icon } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { CheckIcon } from "lucide-react-native";
 
 export default function VerifyCodeScreen() {
   const { phoneNumber } = useLocalSearchParams<{ phoneNumber: string }>();
@@ -80,12 +81,18 @@ export default function VerifyCodeScreen() {
             >
               <View className="mb-10 items-center">
                 <View className="mb-6 h-24 w-24 items-center justify-center rounded-[32px] bg-primary/10">
-                  <Icon name="verified" size={48} color={primaryColor} />
+                  <Icon name={CheckIcon} size={48} color={primaryColor} />
                 </View>
-                <Text variant="titleLarge" className="text-center font-bold text-zinc-900 dark:text-zinc-50">
+                <Text
+                  variant="title"
+                  className="text-center font-bold text-zinc-900 dark:text-zinc-50"
+                >
                   Code bestätigen
                 </Text>
-                <Text variant="subtitle" className="mt-2 px-8 text-center text-zinc-600 dark:text-zinc-400">
+                <Text
+                  variant="subtitle"
+                  className="mt-2 px-8 text-center text-zinc-600 dark:text-zinc-400"
+                >
                   Wir haben dir einen Code an{" "}
                   <Text className="font-bold text-zinc-900 dark:text-zinc-50">
                     {phoneNumber}
@@ -94,60 +101,63 @@ export default function VerifyCodeScreen() {
                 </Text>
               </View>
 
-              <Card className="p-8 shadow-2xl">
-                <View className="mb-10">
-                  <Text
-                    variant="small"
-                    className="mb-3 ml-1 uppercase tracking-widest text-zinc-500 dark:text-zinc-400"
-                  >
-                    Verifizierungscode
-                  </Text>
-                  <View
-                    className={`flex-row items-center justify-center rounded-2xl border bg-white/60 dark:bg-black/30 px-4 py-5 ${
-                      isFocused
-                        ? "border-primary"
-                        : "border-zinc-200 dark:border-zinc-800"
-                    }`}
-                  >
-                    <TextInput
-                      className="flex-1 text-center text-3xl font-bold tracking-[12px]"
-                      style={{ color: textColor }}
-                      placeholder="000000"
-                      placeholderTextColor={placeholderColor}
-                      value={code}
-                      onChangeText={setCode}
-                      onFocus={() => setIsFocused(true)}
-                      onBlur={() => setIsFocused(false)}
-                      keyboardType="number-pad"
-                      maxLength={6}
-                      autoFocus
-                    />
-                  </View>
-                </View>
-
-                <Button
-                  onPress={handleVerifyCode}
-                  disabled={isLoading || code.length !== 6}
-                  size="pill"
-                  className="h-14 w-full shadow-lg shadow-primary/30"
-                >
-                  {isLoading ? (
-                    <ActivityIndicator color="white" />
-                  ) : (
-                    <Text className="text-lg font-bold text-white">
-                      Code bestätigen
+              <Card>
+                <CardContent>
+                  <View className="mb-10">
+                    <Text
+                      variant="body"
+                      className="mb-3 ml-1 uppercase tracking-widest text-zinc-500 dark:text-zinc-400"
+                    >
+                      Verifizierungscode
                     </Text>
-                  )}
-                </Button>
+                    <View
+                      className={`flex-row items-center justify-center rounded-2xl border bg-white/60 dark:bg-black/30 px-4 py-5 ${
+                        isFocused
+                          ? "border-primary"
+                          : "border-zinc-200 dark:border-zinc-800"
+                      }`}
+                    >
+                      <TextInput
+                        className="flex-1 text-center text-3xl font-bold tracking-[12px]"
+                        style={{ color: textColor }}
+                        placeholder="000000"
+                        placeholderTextColor={placeholderColor}
+                        value={code}
+                        onChangeText={setCode}
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        keyboardType="number-pad"
+                        maxLength={6}
+                        autoFocus
+                      />
+                    </View>
+                  </View>
 
-                <Pressable
-                  className="mt-6 self-center"
-                  onPress={() => router.back()}
-                >
-                  <Text variant="small" className="font-semibold text-zinc-500">
-                    Nummer ändern
-                  </Text>
-                </Pressable>
+                  <Button
+                    onPress={handleVerifyCode}
+                    disabled={isLoading || code.length !== 6}
+                    size="lg"
+                    className="h-14 w-full shadow-lg shadow-primary/30"
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator color="white" />
+                    ) : (
+                      <Text>Code bestätigen</Text>
+                    )}
+                  </Button>
+
+                  <Pressable
+                    className="mt-6 self-center"
+                    onPress={() => router.back()}
+                  >
+                    <Text
+                      variant="caption"
+                      className="text-zinc-500 dark:text-zinc-400"
+                    >
+                      Nummer ändern
+                    </Text>
+                  </Pressable>
+                </CardContent>
               </Card>
 
               <Text

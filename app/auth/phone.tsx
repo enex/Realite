@@ -20,11 +20,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/card";
 import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
-import { Icon } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { cn } from "@/lib/utils";
+import { CheckIcon, PhoneIcon } from "lucide-react-native";
 
 export default function PhoneAuthScreen() {
   const [phoneNumber, setPhoneNumber] = useState("+49");
@@ -141,14 +143,9 @@ export default function PhoneAuthScreen() {
             >
               <View className="mb-10 items-center">
                 <View className="mb-6 h-24 w-24 items-center justify-center rounded-[32px] bg-primary/10">
-                  <Icon name="phone.fill" size={48} color={primaryColor} />
+                  <Icon name={PhoneIcon} size={48} color={primaryColor} />
                 </View>
-                <Text
-                  variant="titleLarge"
-                  className="text-center font-bold text-zinc-900 dark:text-zinc-50"
-                >
-                  Willkommen
-                </Text>
+                <Text variant="title">Willkommen</Text>
                 <Text
                   variant="subtitle"
                   className="mt-2 px-4 text-center text-zinc-600 dark:text-zinc-400"
@@ -157,110 +154,107 @@ export default function PhoneAuthScreen() {
                 </Text>
               </View>
 
-              <Card className="p-8 shadow-2xl">
-                <View className="mb-8">
-                  <Text
-                    variant="small"
-                    className="mb-3 ml-1 uppercase tracking-widest text-zinc-500 dark:text-zinc-400"
-                  >
-                    Telefonnummer
-                  </Text>
-                  <View
-                    className={`flex-row items-center rounded-2xl border bg-white/60 dark:bg-black/30 px-4 py-4 ${
-                      validationError
-                        ? "border-red-500/50"
-                        : isFocused
-                          ? "border-primary"
-                          : "border-zinc-200 dark:border-zinc-800"
-                    }`}
-                  >
-                    <Icon
-                      name="phone"
-                      size={22}
-                      color={isFocused ? primaryColor : placeholderColor}
-                    />
-                    <TextInput
-                      className="ml-3 flex-1 text-xl font-semibold"
-                      style={{ color: textColor }}
-                      placeholder="+49 123 456789"
-                      placeholderTextColor={placeholderColor}
-                      value={phoneNumber}
-                      onChangeText={handlePhoneNumberChange}
-                      onFocus={() => setIsFocused(true)}
-                      onBlur={() => setIsFocused(false)}
-                      keyboardType="phone-pad"
-                      autoFocus
-                    />
-                  </View>
-                  {validationError && (
-                    <Text
-                      variant="caption"
-                      className="mt-2 ml-1 text-red-500 font-medium"
+              <Card>
+                <CardContent>
+                  <View className="mb-8">
+                    <Text variant="body">Telefonnummer</Text>
+                    <View
+                      className={cn(
+                        validationError
+                          ? "border-red-500/50"
+                          : isFocused
+                            ? "border-primary"
+                            : "border-zinc-200 dark:border-zinc-800"
+                      )}
                     >
-                      {validationError}
-                    </Text>
-                  )}
-                </View>
-
-                <View className="mb-10 flex-row items-start px-1">
-                  <Pressable
-                    onPress={() => setPrivacyAccepted(!privacyAccepted)}
-                    className={`mt-0.5 h-6 w-6 items-center justify-center rounded-lg border ${
-                      privacyAccepted
-                        ? "bg-primary border-primary"
-                        : "border-zinc-300 dark:border-zinc-700 bg-white/40 dark:bg-black/20"
-                    }`}
-                  >
-                    {privacyAccepted && (
-                      <Icon name="checkmark" size={16} color="white" />
-                    )}
-                  </Pressable>
-                  <View className="ml-4 flex-1">
-                    <Text
-                      variant="small"
-                      className="leading-5 text-zinc-600 dark:text-zinc-400"
-                    >
-                      Ich akzeptiere die{" "}
+                      <Icon
+                        name={PhoneIcon}
+                        size={22}
+                        color={isFocused ? primaryColor : placeholderColor}
+                      />
+                      <TextInput
+                        className="ml-3 flex-1 text-xl font-semibold"
+                        style={{ color: textColor }}
+                        placeholder="+49 123 456789"
+                        placeholderTextColor={placeholderColor}
+                        value={phoneNumber}
+                        onChangeText={handlePhoneNumberChange}
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        keyboardType="phone-pad"
+                        autoFocus
+                      />
+                    </View>
+                    {validationError && (
                       <Text
-                        variant="small"
-                        className="font-bold text-primary"
-                        onPress={openPrivacyPolicy}
+                        variant="caption"
+                        className="mt-2 ml-1 text-red-500 font-medium"
                       >
-                        Datenschutzbestimmungen
-                      </Text>{" "}
-                      und die{" "}
-                      <Text
-                        variant="small"
-                        className="font-bold text-primary"
-                        onPress={openTerms}
-                      >
-                        AGB
+                        {validationError}
                       </Text>
-                      .
-                    </Text>
+                    )}
                   </View>
-                </View>
 
-                <Button
-                  onPress={handleRequestCode}
-                  disabled={
-                    isLoading ||
-                    !privacyAccepted ||
-                    !!validationError ||
-                    !phoneNumber ||
-                    phoneNumber === "+49"
-                  }
-                  size="pill"
-                  className="h-14 w-full shadow-lg shadow-primary/30"
-                >
-                  {isLoading ? (
-                    <ActivityIndicator color="white" />
-                  ) : (
-                    <Text className="text-lg font-bold text-white">
-                      Code senden
-                    </Text>
-                  )}
-                </Button>
+                  <View className="mb-10 flex-row items-start px-1">
+                    <Pressable
+                      onPress={() => setPrivacyAccepted(!privacyAccepted)}
+                      className={`mt-0.5 h-6 w-6 items-center justify-center rounded-lg border ${
+                        privacyAccepted
+                          ? "bg-primary border-primary"
+                          : "border-zinc-300 dark:border-zinc-700 bg-white/40 dark:bg-black/20"
+                      }`}
+                    >
+                      {privacyAccepted && (
+                        <Icon name={CheckIcon} size={16} color="white" />
+                      )}
+                    </Pressable>
+                    <View className="ml-4 flex-1">
+                      <Text
+                        variant="caption"
+                        className="leading-5 text-zinc-600 dark:text-zinc-400"
+                      >
+                        Ich akzeptiere die{" "}
+                        <Text
+                          variant="caption"
+                          className="font-bold text-primary"
+                          onPress={openPrivacyPolicy}
+                        >
+                          Datenschutzbestimmungen
+                        </Text>{" "}
+                        und die{" "}
+                        <Text
+                          variant="caption"
+                          className="font-bold text-primary"
+                          onPress={openTerms}
+                        >
+                          AGB
+                        </Text>
+                        .
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Button
+                    onPress={handleRequestCode}
+                    disabled={
+                      isLoading ||
+                      !privacyAccepted ||
+                      !!validationError ||
+                      !phoneNumber ||
+                      phoneNumber === "+49"
+                    }
+                    size="lg"
+                    className="h-14 w-full shadow-lg shadow-primary/30"
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator color="white" />
+                    ) : (
+                      <Text className="text-lg font-bold text-white">
+                        Code senden
+                      </Text>
+                    )}
+                  </Button>
+                </CardContent>
               </Card>
 
               <Text

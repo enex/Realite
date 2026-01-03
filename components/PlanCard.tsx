@@ -1,11 +1,10 @@
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 
 import { Avatar } from "@/components/Avatar";
-import { Glass } from "@/components/ui/Glass";
-import { Icon } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/icon";
 import {
   getActivityGradient,
   getActivityIcon,
@@ -13,7 +12,9 @@ import {
   type ActivityId,
 } from "@/shared/activities";
 import { formatLocalTime } from "@/shared/utils/datetime";
+import { GlassView } from "expo-glass-effect";
 import { useRouter } from "expo-router";
+import { MapPinIcon } from "lucide-react-native";
 
 // iOS Design System
 const typography = {
@@ -143,8 +144,7 @@ export function PlanCard({ item, index }: PlanCardProps) {
 
             {/* Time chip - absolute top-right for consistent placement */}
             <View className="absolute top-3 right-3" pointerEvents="none">
-              <Glass
-                intensity={80}
+              <GlassView
                 className="rounded-xl px-3 py-1.5 overflow-hidden border border-white/60 dark:border-white/20"
                 style={shadows.small}
               >
@@ -157,7 +157,7 @@ export function PlanCard({ item, index }: PlanCardProps) {
                 >
                   {formatLocalTime(item.date)}
                 </Text>
-              </Glass>
+              </GlassView>
             </View>
 
             {/* Content */}
@@ -182,11 +182,7 @@ export function PlanCard({ item, index }: PlanCardProps) {
                         marginBottom: spacing.sm,
                       }}
                     >
-                      <Icon
-                        name="mappin.and.ellipse"
-                        size={14}
-                        color="#1C1C1E"
-                      />
+                      <Icon name={MapPinIcon} size={14} color="#1C1C1E" />
                       <Text
                         style={{
                           ...typography.subheadline,

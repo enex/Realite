@@ -19,7 +19,7 @@ import { orpc } from "@/client/orpc";
 import { ActivityBottomSheet } from "@/components/ActivityBottomSheet";
 import { DateTimeBottomSheet } from "@/components/DateTimeBottomSheet";
 import { EditRow } from "@/components/EditRow";
-import { Icon } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/icon";
 import { useLocation } from "@/hooks/useLocation";
 import {
   getActivityGradient,
@@ -61,27 +61,27 @@ export default function NewPlanEdit() {
       onError: (error: any) => {
         Alert.alert(
           "Fehler",
-          "Konnte Plan nicht erstellen. Bitte versuche es erneut.",
+          "Konnte Plan nicht erstellen. Bitte versuche es erneut."
         );
       },
-    }),
+    })
   );
 
   // Form state - initialize from AI-generated plan data
   const [title, setTitle] = useState(initialPlanData?.title || "");
   const [description, setDescription] = useState(
-    initialPlanData?.description || "",
+    initialPlanData?.description || ""
   );
   const [url, setUrl] = useState(initialPlanData?.url || "");
   const [startDate, setStartDate] = useState<Date>(
     initialPlanData?.startDate
       ? new Date(initialPlanData.startDate)
-      : new Date(),
+      : new Date()
   );
   const [endDate, setEndDate] = useState<Date>(
     initialPlanData?.endDate
       ? new Date(initialPlanData.endDate)
-      : new Date(Date.now() + 2 * 60 * 60 * 1000),
+      : new Date(Date.now() + 2 * 60 * 60 * 1000)
   );
   const [selectedActivity, setSelectedActivity] = useState<
     ActivityId | undefined
@@ -101,7 +101,7 @@ export default function NewPlanEdit() {
     category?: string;
   };
   const [locations, setLocations] = useState<Location[]>(
-    initialPlanData?.locations || [],
+    initialPlanData?.locations || []
   );
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [locationSearchQuery, setLocationSearchQuery] = useState("");

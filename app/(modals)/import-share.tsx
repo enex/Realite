@@ -1,8 +1,9 @@
 import rpc, { client } from "@/client/orpc";
-import { Icon } from "@/components/ui/Icon";
 import { Button, buttonTextVariants } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { useLocation } from "@/hooks/useLocation";
+import { useMutation } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -17,7 +18,6 @@ import {
   useColorScheme,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useMutation } from "@tanstack/react-query";
 
 function normalizeParam(value: unknown): string | undefined {
   if (Array.isArray(value)) return normalizeParam(value[0]);
@@ -133,7 +133,7 @@ export default function ImportShareModal() {
       if (!ai?.plan) {
         Alert.alert(
           "Fehler",
-          "Konnte keinen Plan aus dem Inhalt erstellen. Versuch es mit mehr Kontext oder einem anderen Link.",
+          "Konnte keinen Plan aus dem Inhalt erstellen. Versuch es mit mehr Kontext oder einem anderen Link."
         );
         return;
       }

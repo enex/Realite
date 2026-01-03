@@ -1,13 +1,8 @@
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
-import { ShareIntentProvider } from "expo-share-intent";
 import { useFonts } from "expo-font";
 import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router";
+import { ShareIntentProvider } from "expo-share-intent";
 import { StatusBar } from "expo-status-bar";
 import { PostHogProvider } from "posthog-react-native";
 import React, { useEffect } from "react";
@@ -21,9 +16,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { colorScheme as nativewindColorScheme } from "nativewind";
 
 import { useSession } from "@/client/auth";
-import { ShareLinkHandler } from "@/components/ShareLinkHandler";
 import { ShareIntentHandler } from "@/components/ShareIntentHandler";
+import { ShareLinkHandler } from "@/components/ShareLinkHandler";
 import { SplashScreenController } from "@/components/SplashScreenController";
+import { ThemeProvider } from "@/theme/theme-provider";
 import "../global.css";
 
 const POSTHOG_API_KEY = "phc_3omBpOn5mo0ATpJZOmu7gU4RGpmLoXcef1YAGZY3e4O";
@@ -64,12 +60,7 @@ export default function RootLayout() {
         <ShareLinkHandler />
         <ShareIntentHandler />
         <BottomSheetModalProvider>
-          <ThemeProvider
-            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-          >
-            <RootNavigator />
-            <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-          </ThemeProvider>
+          <RootNavigator />
         </BottomSheetModalProvider>
       </QueryClientProvider>
     </ShareIntentProvider>
@@ -81,23 +72,26 @@ export default function RootLayout() {
     (typeof window !== "undefined" && typeof document !== "undefined");
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        {shouldInitPostHog ? (
-          <PostHogProvider
-            apiKey={POSTHOG_API_KEY}
-            options={{
-              host: POSTHOG_HOST,
-              enableSessionReplay: true,
-            }}
-          >
-            {content}
-          </PostHogProvider>
-        ) : (
-          content
-        )}
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ThemeProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          {shouldInitPostHog ? (
+            <PostHogProvider
+              apiKey={POSTHOG_API_KEY}
+              options={{
+                host: POSTHOG_HOST,
+                enableSessionReplay: true,
+              }}
+            >
+              {content}
+            </PostHogProvider>
+          ) : (
+            content
+          )}
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+      <StatusBar style="auto" />
+    </ThemeProvider>
   );
 }
 

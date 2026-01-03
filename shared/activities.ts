@@ -1,3 +1,15 @@
+import {
+  BookIcon,
+  CalendarIcon,
+  ForkKnifeIcon,
+  HeartIcon,
+  HomeIcon,
+  MountainIcon,
+  PersonStandingIcon,
+  PlaneIcon,
+  TheaterIcon,
+  UsersIcon,
+} from "lucide-react-native";
 import tinycolor from "tinycolor2";
 
 export const activities = {
@@ -238,24 +250,24 @@ export const getActivityIcon = (activityId: ActivityId) => {
   const groupId = getGroupIdFromActivity(activityId);
   switch (groupId) {
     case "food_drink":
-      return "fork.knife";
+      return ForkKnifeIcon;
     case "outdoors":
-      return "mountain.2";
+      return MountainIcon;
     case "social":
-      return "person.2";
+      return UsersIcon;
     case "sport":
-      return "figure.run";
+      return PersonStandingIcon;
     case "arts_culture":
-      return "theatermasks";
+      return TheaterIcon;
     case "learning":
-      return "book";
+      return BookIcon;
     case "travel":
-      return "airplane";
+      return PlaneIcon;
     case "wellness":
-      return "heart";
+      return HeartIcon;
     case "home":
-      return "house";
+      return HomeIcon;
     default:
-      return "calendar";
+      return CalendarIcon;
   }
 };

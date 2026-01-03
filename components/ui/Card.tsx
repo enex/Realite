@@ -1,24 +1,110 @@
-import { cn } from "@/lib/utils";
-import * as React from "react";
-import { Glass, type GlassSurfaceProps } from "./Glass";
+import { Text } from '@/components/ui/text';
+import { View } from '@/components/ui/view';
+import { useColor } from '@/hooks/useColor';
+import { BORDER_RADIUS } from '@/theme/globals';
+import { TextStyle, ViewStyle } from 'react-native';
 
-export type GlassCardProps = GlassSurfaceProps & {
-  padded?: boolean;
-};
+interface CardProps {
+  children: React.ReactNode;
+  style?: ViewStyle;
+}
 
-export function Card({ className, children, ...props }: GlassCardProps) {
+export function Card({ children, style }: CardProps) {
+  const cardColor = useColor('card');
+  const foregroundColor = useColor('foreground');
+
   return (
-    <Glass
-      intensity={props.intensity ?? 55}
-      tint={props.tint ?? "default"}
-      borderColor={props.borderColor}
-      className={cn(
-        "rounded-3xl overflow-hidden bg-white/70 dark:bg-white/10 border border-white/70 dark:border-white/20",
-        className
-      )}
-      {...props}
+    <View
+      style={[
+        {
+          width: '100%',
+          backgroundColor: cardColor,
+          borderRadius: BORDER_RADIUS,
+          padding: 18,
+          shadowColor: foregroundColor,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 3,
+          elevation: 2,
+        },
+        style,
+      ]}
     >
       {children}
-    </Glass>
+    </View>
+  );
+}
+
+interface CardHeaderProps {
+  children: React.ReactNode;
+  style?: ViewStyle;
+}
+
+export function CardHeader({ children, style }: CardHeaderProps) {
+  return <View style={[{ marginBottom: 8 }, style]}>{children}</View>;
+}
+
+interface CardTitleProps {
+  children: React.ReactNode;
+  style?: TextStyle;
+}
+
+export function CardTitle({ children, style }: CardTitleProps) {
+  return (
+    <Text
+      variant='title'
+      style={[
+        {
+          marginBottom: 4,
+        },
+        style,
+      ]}
+    >
+      {children}
+    </Text>
+  );
+}
+
+interface CardDescriptionProps {
+  children: React.ReactNode;
+  style?: TextStyle;
+}
+
+export function CardDescription({ children, style }: CardDescriptionProps) {
+  return (
+    <Text variant='caption' style={[style]}>
+      {children}
+    </Text>
+  );
+}
+
+interface CardContentProps {
+  children: React.ReactNode;
+  style?: ViewStyle;
+}
+
+export function CardContent({ children, style }: CardContentProps) {
+  return <View style={[style]}>{children}</View>;
+}
+
+interface CardFooterProps {
+  children: React.ReactNode;
+  style?: ViewStyle;
+}
+
+export function CardFooter({ children, style }: CardFooterProps) {
+  return (
+    <View
+      style={[
+        {
+          marginTop: 16,
+          flexDirection: 'row',
+          gap: 8,
+        },
+        style,
+      ]}
+    >
+      {children}
+    </View>
   );
 }

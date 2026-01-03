@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, Text, useColorScheme, View } from "react-native";
 
-import { Icon } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/icon";
 import tinycolor from "tinycolor2";
 
 export function EditRow({

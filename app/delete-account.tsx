@@ -17,7 +17,7 @@ import {
 
 import { useSession, useSignOut } from "@/client/auth";
 import { orpc } from "@/client/orpc";
-import { Icon } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/icon";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function DeleteAccountScreen() {

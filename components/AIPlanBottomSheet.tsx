@@ -1,6 +1,6 @@
 import { client } from "@/client/orpc";
 import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useLocation } from "@/hooks/useLocation";
@@ -76,7 +76,7 @@ const AIPlanBottomSheet = forwardRef<
       present: handlePresentModalPress,
       dismiss: handleDismissModalPress,
     }),
-    [handlePresentModalPress, handleDismissModalPress],
+    [handlePresentModalPress, handleDismissModalPress]
   );
 
   const { latitude, longitude, hasPermission } = useLocation();
@@ -109,14 +109,14 @@ const AIPlanBottomSheet = forwardRef<
       } else {
         Alert.alert(
           "Fehler",
-          "Konnte keinen Plan aus Ihrer Anfrage erstellen. Bitte versuchen Sie es erneut.",
+          "Konnte keinen Plan aus Ihrer Anfrage erstellen. Bitte versuchen Sie es erneut."
         );
       }
     } catch (error) {
       console.error("Error creating AI plan:", error);
       Alert.alert(
         "Fehler",
-        "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+        "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
       );
     } finally {
       setIsLoading(false);
