@@ -27,7 +27,7 @@ export default function Index() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1 }} className="bg-white dark:bg-zinc-950">
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         refreshControl={
