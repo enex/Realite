@@ -8,6 +8,7 @@ import {
   ScrollView,
   Share,
   View,
+  useColorScheme,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -28,6 +29,8 @@ export default function WhatsAppStatusShareModal() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const surface = useSurfaceParam();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
 
   const track = useMutation(
     rpc.user.trackWhatsAppStatusShareReminderEvent.mutationOptions(),
@@ -120,130 +123,279 @@ export default function WhatsAppStatusShareModal() {
         options={{
           headerShown: Platform.OS === "ios",
           title: "WhatsApp-Status",
-          headerRight: () => (
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: isDark ? "#09090B" : "#FFFFFF" },
+          headerTintColor: isDark ? "#FFFFFF" : "#000000",
+          headerBackVisible: false,
+          headerTitleAlign: "center",
+          headerLeft: () => (
             <Pressable
               onPress={handleLater}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
               style={{ opacity: track.isPending ? 0.6 : 1 }}
               disabled={track.isPending}
             >
-              <Icon name="xmark" size={22} color="#6B7280" />
+              <Icon
+                name="xmark"
+                size={22}
+                color={isDark ? "#FFFFFF" : "#6B7280"}
+              />
             </Pressable>
           ),
         }}
       />
-
-      <ScrollView
-        style={{ flex: 1 }}
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingTop: 16,
-          paddingBottom: Math.max(insets.bottom, 12) + 24,
-          gap: 14,
-        }}
-      >
-        <View className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-900/40 p-5">
-          <Text className="text-zinc-900 dark:text-zinc-50 font-extrabold text-2xl leading-8">
-            {title}
-          </Text>
-          <Text className="text-zinc-700 dark:text-zinc-200 text-base mt-2">
-            {body}
-          </Text>
-          <View className="flex-row flex-wrap gap-2 mt-4">
-            <View className="px-3 py-1 rounded-full bg-white/80 dark:bg-zinc-900/60 border border-emerald-200/60 dark:border-emerald-900/40">
-              <Text className="text-emerald-700 dark:text-emerald-300 text-sm font-semibold">
-                5 Sekunden
-              </Text>
-            </View>
-            <View className="px-3 py-1 rounded-full bg-white/80 dark:bg-zinc-900/60 border border-emerald-200/60 dark:border-emerald-900/40">
-              <Text className="text-emerald-700 dark:text-emerald-300 text-sm font-semibold">
-                mehr Leute sehen dich
-              </Text>
-            </View>
-            <View className="px-3 py-1 rounded-full bg-white/80 dark:bg-zinc-900/60 border border-emerald-200/60 dark:border-emerald-900/40">
-              <Text className="text-emerald-700 dark:text-emerald-300 text-sm font-semibold">
-                leichter Mitmacher finden
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800 p-5 gap-3">
-          <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-base">
-            So geht’s
-          </Text>
-          <View className="flex-row gap-3 items-start">
-            <View className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-800 items-center justify-center">
-              <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-sm">
-                1
-              </Text>
-            </View>
-            <Text className="text-zinc-700 dark:text-zinc-200 text-base flex-1">
-              Tippe auf „Jetzt teilen“ und wähle WhatsApp.
-            </Text>
-          </View>
-          <View className="flex-row gap-3 items-start">
-            <View className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-800 items-center justify-center">
-              <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-sm">
-                2
-              </Text>
-            </View>
-            <Text className="text-zinc-700 dark:text-zinc-200 text-base flex-1">
-              In WhatsApp → Status → Text → einfügen.
-            </Text>
-          </View>
-          <View className="flex-row gap-3 items-start">
-            <View className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-800 items-center justify-center">
-              <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-sm">
-                3
-              </Text>
-            </View>
-            <Text className="text-zinc-700 dark:text-zinc-200 text-base flex-1">
-              Teilen – fertig.
-            </Text>
-          </View>
-        </View>
-
-        <View className="rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800 p-5">
-          <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-base">
-            Was du teilst
-          </Text>
-          <Text className="text-zinc-600 dark:text-zinc-300 text-sm mt-2">
-            Realite-Link zu deinem Profil/Plänen (Text wird automatisch
-            erzeugt).
-          </Text>
-        </View>
-
-        <View className="mt-2 gap-3">
-          <Button
-            onPress={shareMyLink}
-            variant="default"
-            size="lg"
-            disabled={getShareLink.isPending}
+      {Platform.OS === "android" ? (
+        <View className="flex-1 bg-white dark:bg-zinc-950">
+          <View
+            className="bg-white dark:bg-zinc-950 border-b border-zinc-200/70 dark:border-zinc-800 px-5"
+            style={{
+              paddingTop: Math.max(insets.top, 12),
+              paddingBottom: 12,
+            }}
           >
-            <Text
-              className={buttonTextVariants({
-                variant: "default",
-                size: "lg",
-              })}
-            >
-              {getShareLink.isPending ? "Wird erstellt..." : "Jetzt teilen"}
-            </Text>
-          </Button>
+            <View className="flex-row items-center justify-between">
+              <Pressable
+                onPress={handleLater}
+                hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+                style={{ opacity: track.isPending ? 0.6 : 1 }}
+                disabled={track.isPending}
+              >
+                <Icon
+                  name="xmark"
+                  size={22}
+                  color={isDark ? "#FFFFFF" : "#6B7280"}
+                />
+              </Pressable>
+              <Text className="text-zinc-900 dark:text-zinc-50 font-semibold text-base">
+                WhatsApp-Status
+              </Text>
+              <View style={{ width: 22 }} />
+            </View>
+          </View>
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{
+              paddingHorizontal: 20,
+              paddingTop: 16,
+              paddingBottom: Math.max(insets.bottom, 12) + 24,
+              gap: 14,
+            }}
+          >
+            <View className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-900/40 p-5">
+              <Text className="text-zinc-900 dark:text-zinc-50 font-extrabold text-2xl leading-8">
+                {title}
+              </Text>
+              <Text className="text-zinc-700 dark:text-zinc-200 text-base mt-2">
+                {body}
+              </Text>
+              <View className="flex-row flex-wrap gap-2 mt-4">
+                <View className="px-3 py-1 rounded-full bg-white/80 dark:bg-zinc-900/60 border border-emerald-200/60 dark:border-emerald-900/40">
+                  <Text className="text-emerald-700 dark:text-emerald-300 text-sm font-semibold">
+                    5 Sekunden
+                  </Text>
+                </View>
+                <View className="px-3 py-1 rounded-full bg-white/80 dark:bg-zinc-900/60 border border-emerald-200/60 dark:border-emerald-900/40">
+                  <Text className="text-emerald-700 dark:text-emerald-300 text-sm font-semibold">
+                    mehr Leute sehen dich
+                  </Text>
+                </View>
+                <View className="px-3 py-1 rounded-full bg-white/80 dark:bg-zinc-900/60 border border-emerald-200/60 dark:border-emerald-900/40">
+                  <Text className="text-emerald-700 dark:text-emerald-300 text-sm font-semibold">
+                    leichter Mitmacher finden
+                  </Text>
+                </View>
+              </View>
+            </View>
 
-          <Button onPress={handleLater} variant="secondary" size="lg">
-            <Text
-              className={buttonTextVariants({
-                variant: "secondary",
-                size: "lg",
-              })}
-            >
-              Später erinnern
-            </Text>
-          </Button>
+            <View className="rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800 p-5 gap-3">
+              <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-base">
+                So geht’s
+              </Text>
+              <View className="flex-row gap-3 items-start">
+                <View className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-800 items-center justify-center">
+                  <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-sm">
+                    1
+                  </Text>
+                </View>
+                <Text className="text-zinc-700 dark:text-zinc-200 text-base flex-1">
+                  Tippe auf „Jetzt teilen“ und wähle WhatsApp.
+                </Text>
+              </View>
+              <View className="flex-row gap-3 items-start">
+                <View className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-800 items-center justify-center">
+                  <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-sm">
+                    2
+                  </Text>
+                </View>
+                <Text className="text-zinc-700 dark:text-zinc-200 text-base flex-1">
+                  In WhatsApp → Status → Text → einfügen.
+                </Text>
+              </View>
+              <View className="flex-row gap-3 items-start">
+                <View className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-800 items-center justify-center">
+                  <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-sm">
+                    3
+                  </Text>
+                </View>
+                <Text className="text-zinc-700 dark:text-zinc-200 text-base flex-1">
+                  Teilen – fertig.
+                </Text>
+              </View>
+            </View>
+
+            <View className="rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800 p-5">
+              <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-base">
+                Was du teilst
+              </Text>
+              <Text className="text-zinc-600 dark:text-zinc-300 text-sm mt-2">
+                Realite-Link zu deinem Profil/Plänen (Text wird automatisch
+                erzeugt).
+              </Text>
+            </View>
+
+            <View className="mt-2 gap-3">
+              <Button
+                onPress={shareMyLink}
+                variant="default"
+                size="lg"
+                disabled={getShareLink.isPending}
+              >
+                <Text
+                  className={buttonTextVariants({
+                    variant: "default",
+                    size: "lg",
+                  })}
+                >
+                  {getShareLink.isPending ? "Wird erstellt..." : "Jetzt teilen"}
+                </Text>
+              </Button>
+
+              <Button onPress={handleLater} variant="secondary" size="lg">
+                <Text
+                  className={buttonTextVariants({
+                    variant: "secondary",
+                    size: "lg",
+                  })}
+                >
+                  Später erinnern
+                </Text>
+              </Button>
+            </View>
+          </ScrollView>
         </View>
-      </ScrollView>
+      ) : (
+        <ScrollView
+          style={{ flex: 1 }}
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingTop: 12,
+            paddingBottom: Math.max(insets.bottom, 12) + 24,
+            gap: 14,
+          }}
+        >
+          <View className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-900/40 p-5">
+            <Text className="text-zinc-900 dark:text-zinc-50 font-extrabold text-2xl leading-8">
+              {title}
+            </Text>
+            <Text className="text-zinc-700 dark:text-zinc-200 text-base mt-2">
+              {body}
+            </Text>
+            <View className="flex-row flex-wrap gap-2 mt-4">
+              <View className="px-3 py-1 rounded-full bg-white/80 dark:bg-zinc-900/60 border border-emerald-200/60 dark:border-emerald-900/40">
+                <Text className="text-emerald-700 dark:text-emerald-300 text-sm font-semibold">
+                  5 Sekunden
+                </Text>
+              </View>
+              <View className="px-3 py-1 rounded-full bg-white/80 dark:bg-zinc-900/60 border border-emerald-200/60 dark:border-emerald-900/40">
+                <Text className="text-emerald-700 dark:text-emerald-300 text-sm font-semibold">
+                  mehr Leute sehen dich
+                </Text>
+              </View>
+              <View className="px-3 py-1 rounded-full bg-white/80 dark:bg-zinc-900/60 border border-emerald-200/60 dark:border-emerald-900/40">
+                <Text className="text-emerald-700 dark:text-emerald-300 text-sm font-semibold">
+                  leichter Mitmacher finden
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View className="rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800 p-5 gap-3">
+            <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-base">
+              So geht’s
+            </Text>
+            <View className="flex-row gap-3 items-start">
+              <View className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-800 items-center justify-center">
+                <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-sm">
+                  1
+                </Text>
+              </View>
+              <Text className="text-zinc-700 dark:text-zinc-200 text-base flex-1">
+                Tippe auf „Jetzt teilen“ und wähle WhatsApp.
+              </Text>
+            </View>
+            <View className="flex-row gap-3 items-start">
+              <View className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-800 items-center justify-center">
+                <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-sm">
+                  2
+                </Text>
+              </View>
+              <Text className="text-zinc-700 dark:text-zinc-200 text-base flex-1">
+                In WhatsApp → Status → Text → einfügen.
+              </Text>
+            </View>
+            <View className="flex-row gap-3 items-start">
+              <View className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-800 items-center justify-center">
+                <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-sm">
+                  3
+                </Text>
+              </View>
+              <Text className="text-zinc-700 dark:text-zinc-200 text-base flex-1">
+                Teilen – fertig.
+              </Text>
+            </View>
+          </View>
+
+          <View className="rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800 p-5">
+            <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-base">
+              Was du teilst
+            </Text>
+            <Text className="text-zinc-600 dark:text-zinc-300 text-sm mt-2">
+              Realite-Link zu deinem Profil/Plänen (Text wird automatisch
+              erzeugt).
+            </Text>
+          </View>
+
+          <View className="mt-2 gap-3">
+            <Button
+              onPress={shareMyLink}
+              variant="default"
+              size="lg"
+              disabled={getShareLink.isPending}
+            >
+              <Text
+                className={buttonTextVariants({
+                  variant: "default",
+                  size: "lg",
+                })}
+              >
+                {getShareLink.isPending ? "Wird erstellt..." : "Jetzt teilen"}
+              </Text>
+            </Button>
+
+            <Button onPress={handleLater} variant="secondary" size="lg">
+              <Text
+                className={buttonTextVariants({
+                  variant: "secondary",
+                  size: "lg",
+                })}
+              >
+                Später erinnern
+              </Text>
+            </Button>
+          </View>
+        </ScrollView>
+      )}
     </>
   );
 }

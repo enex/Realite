@@ -14,6 +14,7 @@ import {
   ScrollView,
   TextInput,
   View,
+  useColorScheme,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useMutation } from "@tanstack/react-query";
@@ -38,6 +39,8 @@ export default function ImportShareModal() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
 
   const initialUrl = normalizeParam(params?.url);
   const initialText = normalizeParam(params?.text);
@@ -177,125 +180,269 @@ export default function ImportShareModal() {
         options={{
           headerShown: Platform.OS === "ios",
           title: "Teilen → Plan",
-          headerRight: () => (
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: isDark ? "#09090B" : "#FFFFFF" },
+          headerTintColor: isDark ? "#FFFFFF" : "#000000",
+          headerBackVisible: false,
+          headerTitleAlign: "center",
+          headerLeft: () => (
             <Pressable
               onPress={close}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
               style={{ opacity: isLoading ? 0.6 : 1 }}
               disabled={isLoading}
             >
-              <Icon name="xmark" size={22} color="#6B7280" />
+              <Icon
+                name="xmark"
+                size={22}
+                color={isDark ? "#FFFFFF" : "#6B7280"}
+              />
             </Pressable>
           ),
         }}
       />
-
-      <ScrollView
-        style={{ flex: 1 }}
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingTop: 16,
-          paddingBottom: Math.max(insets.bottom, 12) + 24,
-          gap: 14,
-        }}
-        keyboardShouldPersistTaps="handled"
-      >
-        {isLoading && didAutoRunThisOpenRef.current && (
-          <View className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-900/40 p-4 flex-row items-center gap-3">
-            <ActivityIndicator color="#10B981" />
-            <View className="flex-1">
+      {Platform.OS === "android" ? (
+        <View className="flex-1 bg-white dark:bg-zinc-950">
+          <View
+            className="bg-white dark:bg-zinc-950 border-b border-zinc-200/70 dark:border-zinc-800 px-5"
+            style={{
+              paddingTop: Math.max(insets.top, 12),
+              paddingBottom: 12,
+            }}
+          >
+            <View className="flex-row items-center justify-between">
+              <Pressable
+                onPress={close}
+                hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+                style={{ opacity: isLoading ? 0.6 : 1 }}
+                disabled={isLoading}
+              >
+                <Icon
+                  name="xmark"
+                  size={22}
+                  color={isDark ? "#FFFFFF" : "#6B7280"}
+                />
+              </Pressable>
               <Text className="text-zinc-900 dark:text-zinc-50 font-semibold text-base">
-                {sourceLabel} – analysiere…
+                Teilen → Plan
               </Text>
-              <Text className="text-zinc-600 dark:text-zinc-300 text-sm">
-                Wir erstellen gerade einen Plan-Vorschlag.
-              </Text>
+              <View style={{ width: 22 }} />
             </View>
           </View>
-        )}
-        <View className="rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-900/40 p-5">
-          <Text className="text-zinc-900 dark:text-zinc-50 font-extrabold text-2xl leading-8">
-            Aus Link/Beitrag automatisch einen Plan erstellen
-          </Text>
-          <Text className="text-zinc-700 dark:text-zinc-200 text-base mt-2">
-            Füge einen Link (z.B. Instagram) oder Text ein – wir lesen ihn aus
-            und machen daraus einen Plan.
-          </Text>
-        </View>
-
-        {(initialMetaTitle || initialMetaDescription) && (
-          <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800 p-5 gap-2">
-            <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-base">
-              Vorschau
-            </Text>
-            {initialMetaTitle && (
-              <Text className="text-zinc-900 dark:text-zinc-50 text-base">
-                {initialMetaTitle}
-              </Text>
-            )}
-            {initialMetaDescription && (
-              <Text className="text-zinc-600 dark:text-zinc-300 text-sm">
-                {initialMetaDescription}
-              </Text>
-            )}
-          </View>
-        )}
-
-        <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800 p-4 gap-3">
-          <Text className="text-zinc-900 dark:text-zinc-50 font-semibold text-base">
-            Link (optional)
-          </Text>
-          <TextInput
-            value={url}
-            onChangeText={setUrl}
-            placeholder="https://instagram.com/…"
-            placeholderTextColor="#9CA3AF"
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="url"
-            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-base text-zinc-900 dark:text-zinc-50"
-          />
-
-          <Text className="text-zinc-900 dark:text-zinc-50 font-semibold text-base mt-1">
-            Text (optional)
-          </Text>
-          <TextInput
-            value={text}
-            onChangeText={setText}
-            placeholder="Beschreibung, Caption, Ort/Datum…"
-            placeholderTextColor="#9CA3AF"
-            multiline
-            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-base text-zinc-900 dark:text-zinc-50 min-h-[120px]"
-            style={{ textAlignVertical: "top" }}
-          />
-          <Text className="text-zinc-500 dark:text-zinc-400 text-sm">
-            Tipp: Link reicht meistens – wir holen Details per Websuche.
-          </Text>
-        </View>
-
-        <View className="mt-2">
-          <Button
-            onPress={handleImport}
-            variant="default"
-            size="lg"
-            disabled={!canSubmit}
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{
+              paddingHorizontal: 20,
+              paddingTop: 16,
+              paddingBottom: Math.max(insets.bottom, 12) + 24,
+              gap: 14,
+            }}
+            keyboardShouldPersistTaps="handled"
           >
-            {isLoading ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text
-                className={buttonTextVariants({
-                  variant: "default",
-                  size: "lg",
-                })}
-              >
-                Plan erstellen
-              </Text>
+            {isLoading && didAutoRunThisOpenRef.current && (
+              <View className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-900/40 p-4 flex-row items-center gap-3">
+                <ActivityIndicator color="#10B981" />
+                <View className="flex-1">
+                  <Text className="text-zinc-900 dark:text-zinc-50 font-semibold text-base">
+                    {sourceLabel} – analysiere…
+                  </Text>
+                  <Text className="text-zinc-600 dark:text-zinc-300 text-sm">
+                    Wir erstellen gerade einen Plan-Vorschlag.
+                  </Text>
+                </View>
+              </View>
             )}
-          </Button>
+            <View className="rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-900/40 p-5">
+              <Text className="text-zinc-900 dark:text-zinc-50 font-extrabold text-2xl leading-8">
+                Aus Link/Beitrag automatisch einen Plan erstellen
+              </Text>
+              <Text className="text-zinc-700 dark:text-zinc-200 text-base mt-2">
+                Füge einen Link (z.B. Instagram) oder Text ein – wir lesen ihn
+                aus und machen daraus einen Plan.
+              </Text>
+            </View>
+
+            {(initialMetaTitle || initialMetaDescription) && (
+              <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800 p-5 gap-2">
+                <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-base">
+                  Vorschau
+                </Text>
+                {initialMetaTitle && (
+                  <Text className="text-zinc-900 dark:text-zinc-50 text-base">
+                    {initialMetaTitle}
+                  </Text>
+                )}
+                {initialMetaDescription && (
+                  <Text className="text-zinc-600 dark:text-zinc-300 text-sm">
+                    {initialMetaDescription}
+                  </Text>
+                )}
+              </View>
+            )}
+
+            <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800 p-4 gap-3">
+              <Text className="text-zinc-900 dark:text-zinc-50 font-semibold text-base">
+                Link (optional)
+              </Text>
+              <TextInput
+                value={url}
+                onChangeText={setUrl}
+                placeholder="https://instagram.com/…"
+                placeholderTextColor="#9CA3AF"
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-base text-zinc-900 dark:text-zinc-50"
+              />
+
+              <Text className="text-zinc-900 dark:text-zinc-50 font-semibold text-base mt-1">
+                Text (optional)
+              </Text>
+              <TextInput
+                value={text}
+                onChangeText={setText}
+                placeholder="Beschreibung, Caption, Ort/Datum…"
+                placeholderTextColor="#9CA3AF"
+                multiline
+                className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-base text-zinc-900 dark:text-zinc-50 min-h-[120px]"
+                style={{ textAlignVertical: "top" }}
+              />
+              <Text className="text-zinc-500 dark:text-zinc-400 text-sm">
+                Tipp: Link reicht meistens – wir holen Details per Websuche.
+              </Text>
+            </View>
+
+            <View className="mt-2">
+              <Button
+                onPress={handleImport}
+                variant="default"
+                size="lg"
+                disabled={!canSubmit}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text
+                    className={buttonTextVariants({
+                      variant: "default",
+                      size: "lg",
+                    })}
+                  >
+                    Plan erstellen
+                  </Text>
+                )}
+              </Button>
+            </View>
+          </ScrollView>
         </View>
-      </ScrollView>
+      ) : (
+        <ScrollView
+          style={{ flex: 1 }}
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingTop: 12,
+            paddingBottom: Math.max(insets.bottom, 12) + 24,
+            gap: 14,
+          }}
+          keyboardShouldPersistTaps="handled"
+        >
+          {isLoading && didAutoRunThisOpenRef.current && (
+            <View className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-900/40 p-4 flex-row items-center gap-3">
+              <ActivityIndicator color="#10B981" />
+              <View className="flex-1">
+                <Text className="text-zinc-900 dark:text-zinc-50 font-semibold text-base">
+                  {sourceLabel} – analysiere…
+                </Text>
+                <Text className="text-zinc-600 dark:text-zinc-300 text-sm">
+                  Wir erstellen gerade einen Plan-Vorschlag.
+                </Text>
+              </View>
+            </View>
+          )}
+          <View className="rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-900/40 p-5">
+            <Text className="text-zinc-900 dark:text-zinc-50 font-extrabold text-2xl leading-8">
+              Aus Link/Beitrag automatisch einen Plan erstellen
+            </Text>
+            <Text className="text-zinc-700 dark:text-zinc-200 text-base mt-2">
+              Füge einen Link (z.B. Instagram) oder Text ein – wir lesen ihn aus
+              und machen daraus einen Plan.
+            </Text>
+          </View>
+
+          {(initialMetaTitle || initialMetaDescription) && (
+            <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800 p-5 gap-2">
+              <Text className="text-zinc-900 dark:text-zinc-50 font-bold text-base">
+                Vorschau
+              </Text>
+              {initialMetaTitle && (
+                <Text className="text-zinc-900 dark:text-zinc-50 text-base">
+                  {initialMetaTitle}
+                </Text>
+              )}
+              {initialMetaDescription && (
+                <Text className="text-zinc-600 dark:text-zinc-300 text-sm">
+                  {initialMetaDescription}
+                </Text>
+              )}
+            </View>
+          )}
+
+          <View className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800 p-4 gap-3">
+            <Text className="text-zinc-900 dark:text-zinc-50 font-semibold text-base">
+              Link (optional)
+            </Text>
+            <TextInput
+              value={url}
+              onChangeText={setUrl}
+              placeholder="https://instagram.com/…"
+              placeholderTextColor="#9CA3AF"
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="url"
+              className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-base text-zinc-900 dark:text-zinc-50"
+            />
+
+            <Text className="text-zinc-900 dark:text-zinc-50 font-semibold text-base mt-1">
+              Text (optional)
+            </Text>
+            <TextInput
+              value={text}
+              onChangeText={setText}
+              placeholder="Beschreibung, Caption, Ort/Datum…"
+              placeholderTextColor="#9CA3AF"
+              multiline
+              className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-base text-zinc-900 dark:text-zinc-50 min-h-[120px]"
+              style={{ textAlignVertical: "top" }}
+            />
+            <Text className="text-zinc-500 dark:text-zinc-400 text-sm">
+              Tipp: Link reicht meistens – wir holen Details per Websuche.
+            </Text>
+          </View>
+
+          <View className="mt-2">
+            <Button
+              onPress={handleImport}
+              variant="default"
+              size="lg"
+              disabled={!canSubmit}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text
+                  className={buttonTextVariants({
+                    variant: "default",
+                    size: "lg",
+                  })}
+                >
+                  Plan erstellen
+                </Text>
+              )}
+            </Button>
+          </View>
+        </ScrollView>
+      )}
     </>
   );
 }

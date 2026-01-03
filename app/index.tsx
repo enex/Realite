@@ -82,7 +82,7 @@ export default function NativeLanding() {
               onPress={handleSignIn}
             >
               <Text className="text-white font-bold text-xl text-center">
-                Log Legen
+                Los Legen
               </Text>
             </Pressable>
           </View>
