@@ -1,64 +1,209 @@
 import { ActivityId } from "@/shared/activities";
 import { Gender, RelationshipStatus } from "@/shared/validation";
-import { CoreRepetition } from "@/shared/validation/plan";
+// CoreRepetition wird beim API-Call verwendet, nicht im Event gespeichert
+// (Serien werden materialisiert, jede Instanz ist ein eigenes Event)
 
 export interface RealiteEvents {
-  "realite.plan.created": {
+  // ============================================
+  // PLAN EVENTS - Domain Language
+  // Ein Plan ist ein konkretes Vorhaben: "Ich werde X machen"
+  // subject = planId, actor = userId
+  // ============================================
+
+  // Ein neuer Plan wird gemacht (einzeln oder als Teil einer Serie)
+  // Bei Serien: Jede Instanz wird als eigenes Event erzeugt mit gemeinsamer seriesId
+  "realite.plan.scheduled": {
     activity: ActivityId;
-    startDate: string; // ISO date string
-    endDate?: string; // ISO date string
-    title?: string; // name of the realite
-    inputText?: string; // text the user typed in to create the plan (if rest was LLM Generated)
-    description?: string; // description of the realite
-    url?: string; // url to information about the realite
-    gathering?: string; // id of the gathering this plan is to participate in
-    locations?: {
+    startDate: string; // ISO datetime
+    endDate?: string; // ISO datetime
+    title?: string;
+    description?: string;
+    url?: string; // Link zu mehr Infos (Event-Seite, etc.)
+    inputText?: string; // Original-Text falls LLM-generiert
+
+    // Eine Location (mandatory für echte Pläne)
+    location: {
       title: string;
-      address?: string;
+      address: string;
       latitude: number;
       longitude: number;
       url?: string;
       description?: string;
-      category?: string;
-    }[]; // selected locations
-    repetition?: CoreRepetition;
-    maybe?: boolean; // if true, the user has not fully confirmed the plan yet
+    };
+
+    // Mit wem? (optional - Plan kann solo sein)
+    withUsers?: {
+      userId: string;
+      message?: string;
+    }[];
+
+    // Offen für weitere Teilnehmer?
+    openTo?: "specific" | "contacts" | "public";
+    maxParticipants?: number;
+
+    // Basiert auf Plan einer anderen Person
+    basedOn?: {
+      planId: string;
+      userId: string;
+    };
+
+    // Bezug zu einem Gathering (Festival, Lauftreff, etc.)
+    gatheringId?: string;
+
+    // ===== SERIEN (wie Google Calendar) =====
+    // Wenn dieser Plan Teil einer Serie ist:
+    seriesId?: string; // ID der Serie (alle Instanzen teilen diese ID)
+    seriesIndex?: number; // 0, 1, 2, ... (welche Instanz in der Serie)
+    // Die Repetition-Regel wird nur beim Erstellen verwendet um Instanzen zu generieren
+    // Sie wird nicht gespeichert, da alle Instanzen materialisiert werden
   };
-  "realite.plan.changed": {
-    name?: string; // name of the realite
-    startDate?: string; // ISO date string
-    endDate?: string; // ISO date string
-    description?: string; // description of the realite
-    url?: string; // url of the realite
+
+  // Zeit wurde geändert
+  "realite.plan.rescheduled": {
+    startDate: string;
+    endDate?: string;
+    reason?: string;
+    // Bei Serien: Welche Instanzen betrifft die Änderung?
+    applyTo?: "this" | "this-and-future" | "all-in-series";
+  };
+
+  // Ort wurde geändert
+  "realite.plan.relocated": {
+    location: {
+      title: string;
+      address: string;
+      latitude: number;
+      longitude: number;
+      url?: string;
+      description?: string;
+    };
+    reason?: string;
+    applyTo?: "this" | "this-and-future" | "all-in-series";
+  };
+
+  // Sonstige Details geändert (Titel, Beschreibung, etc.)
+  "realite.plan.details-updated": {
+    title?: string;
+    description?: string;
+    url?: string;
     activity?: ActivityId;
-    gathering?: string | null; // id of the gathering this plan is to participate in
-    locations?: {
+    openTo?: "specific" | "contacts" | "public";
+    maxParticipants?: number;
+    applyTo?: "this" | "this-and-future" | "all-in-series";
+  };
+
+  // Plan abgesagt
+  "realite.plan.cancelled": {
+    reason: "schedule-conflict" | "no-participants" | "other";
+    message?: string;
+    applyTo?: "this" | "this-and-future" | "all-in-series";
+  };
+
+  // Plan wurde durchgeführt
+  "realite.plan.realized": {
+    comment?: string;
+    rating?: number; // 1-5
+    wouldRepeat?: boolean;
+  };
+
+  // Jemand tritt einem Plan bei (Zusage)
+  "realite.plan.joined": {
+    planId: string;
+    creatorId: string;
+    message?: string;
+  };
+
+  // Jemand lehnt Teilnahme ab
+  "realite.plan.declined": {
+    planId: string;
+    creatorId: string;
+    reason:
+      | "no-time"
+      | "not-interested"
+      | "too-far"
+      | "not-with-person"
+      | "other";
+    message?: string;
+    hideReason?: boolean; // Wenn true: Grund nicht an Ersteller zeigen
+  };
+
+  // ============================================
+  // INTENT EVENTS - Domain Language
+  // "Ich hätte Lust auf..." - Einzelne Events pro Intent
+  // subject = intentId, actor = userId
+  // ============================================
+
+  // Ein neuer Wunsch wird ausgedrückt
+  "realite.intent.expressed": {
+    title: string;
+    description?: string;
+    activity: ActivityId;
+    visibility: "public" | "contacts";
+
+    // Optionale Ort-Präferenzen (wo würde ich das gerne machen?)
+    locationPreferences?: {
       title: string;
       address?: string;
       latitude: number;
       longitude: number;
       url?: string;
-      description?: string;
-      category?: string;
-    }[]; // selected locations
-    repetition?: CoreRepetition;
-    maybe?: boolean; // if true, the user has not fully confirmed the plan yet
+    }[];
+
+    // Optionale Zeit-Präferenzen (wann hätte ich Zeit?)
+    timePreferences?: {
+      label?: string; // z.B. "Wochenenden", "Abends"
+      dayOfWeek?: number[]; // 0-6 (So-Sa)
+      timeRange?: [number, number]; // Minuten seit Mitternacht
+    }[];
   };
-  // this plan is no longer my plan
-  "realite.plan.cancelled": {
-    reason: "schedule-conflict" | "other";
-    comment?: string; // comment about the cancellation, e.g. "I'm sorry, I can't make it this time."
+
+  // Der Wunsch wurde erfüllt (durch einen Plan)
+  "realite.intent.fulfilled": {
+    fulfilledByPlanId?: string; // Welcher Plan hat den Wunsch erfüllt?
+    comment?: string;
   };
-  // if the plan is realized, the user has executed the plan and did what they planned to do
-  "realite.plan.realized": {
-    comment?: string; // comment about the realization, e.g. "It was very nice to meet you!"
-    rating?: number; // rating of the realization, e.g. 5 stars
-    repeat?: boolean; // if true, the user wants to repeat the plan
+
+  // Der Wunsch wurde zurückgezogen (kein Interesse mehr)
+  "realite.intent.withdrawn": {
+    reason?: "not-interested-anymore" | "found-alternative" | "other";
   };
-  // when a user participates in a plan by copying it
-  "realite.plan.participated": {
-    originalPlanId: string; // id of the original plan that was copied
-    originalCreatorId: string; // id of the user who created the original plan
+
+  // Details des Wunsches geändert
+  "realite.intent.refined": {
+    title?: string;
+    description?: string;
+    activity?: ActivityId;
+    visibility?: "public" | "contacts";
+    locationPreferences?: {
+      title: string;
+      address?: string;
+      latitude: number;
+      longitude: number;
+      url?: string;
+    }[];
+    timePreferences?: {
+      label?: string;
+      dayOfWeek?: number[];
+      timeRange?: [number, number];
+    }[];
+  };
+
+  // ============================================
+  // AVAILABILITY EVENT
+  // Verfügbarkeitszeiten eines Users - überschreibt komplett
+  // subject = userId (nicht availabilityId, da es nur einen State gibt)
+  // ============================================
+
+  "realite.availability.set": {
+    // Komplette Availability-Regeln des Users (ersetzt alle vorherigen)
+    // Leeres Array = keine Verfügbarkeit definiert
+    rules: {
+      id: string; // Client-generierte ID für UI-Referenz
+      start: string; // ISO date - ab wann gilt die Regel
+      end: string; // ISO date - bis wann gilt die Regel
+      daily: [number, number][][]; // 7 Arrays (Mo-So), jeweils Array von [start, end] in Minuten
+      exceptions?: Record<string, [number, number][]>; // Ausnahmen für bestimmte Tage
+    }[];
   };
 
   "realite.user.registered": {
