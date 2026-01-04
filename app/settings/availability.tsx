@@ -5,17 +5,14 @@ import { Icon } from "@/components/ui/icon";
 import Page from "@/components/ui/page";
 import { Separator } from "@/components/ui/separator";
 import { Text } from "@/components/ui/text";
+import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
-import {
-  ChevronLeftIcon,
-  ClockIcon,
-  PlusIcon,
-  TrashIcon,
-} from "lucide-react-native";
+import type { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Stack, useRouter } from "expo-router";
+import { ClockIcon, PlusIcon, TrashIcon } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, Platform, Pressable, Switch, View } from "react-native";
+import { Platform, Pressable, Switch, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Day labels (Monday first, German week)
@@ -66,7 +63,6 @@ interface DayAvailability {
 export default function AvailabilityScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const queryClient = useQueryClient();
 
   // Initialize with default availability
   const [days, setDays] = useState<DayAvailability[]>(
@@ -124,10 +120,12 @@ export default function AvailabilityScreen() {
     );
   };
 
+  const toaster = useToast();
+
   const save = () => {
     // TODO: Save via realite.availability.set event
     // For now, just show success and go back
-    Alert.alert("Gespeichert", "Deine Verfügbarkeit wurde aktualisiert.");
+    toaster.success("Verfügbarkeit gespeichert");
     router.back();
   };
 
@@ -139,23 +137,23 @@ export default function AvailabilityScreen() {
       contentContainerStyle={{
         flexDirection: "column",
         gap: 16,
+        paddingTop: 16,
         paddingBottom: 32 + insets.bottom,
       }}
     >
-      {/* Header */}
-      <View className="flex-row items-center gap-3 mb-2">
-        <Pressable onPress={() => router.back()} className="p-2 -ml-2">
-          <Icon name={ChevronLeftIcon} size={24} />
-        </Pressable>
-        <Text variant="title" className="flex-1">
-          Verfügbarkeit
-        </Text>
-      </View>
-
       <Text className="text-muted-foreground mb-2">
         Definiere, wann du typischerweise Zeit für Aktivitäten hast. Andere
         können diese Information sehen, um passende Zeiten vorzuschlagen.
       </Text>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Button size="sm" onPress={save}>
+              Speichern
+            </Button>
+          ),
+        }}
+      />
 
       {/* Week Overview */}
       <Card>
@@ -229,35 +227,25 @@ export default function AvailabilityScreen() {
                   <View className="flex-row items-end gap-3 mb-4">
                     {/* Start Time */}
                     <View className="flex-1">
-                      <DatePicker
-                        mode="time"
+                      <TimeSelector
+                        label="Von"
                         value={minutesToDate(slot[0])}
                         onChange={(date) => {
                           if (date)
                             updateSlot(dayIndex, slotIndex, "start", date);
                         }}
-                        placeholder="Von"
-                        variant="filled"
-                        label="Von"
                       />
-                    </View>
-
-                    <View className="pb-2">
-                      <Text className="text-muted-foreground text-lg">–</Text>
                     </View>
 
                     {/* End Time */}
                     <View className="flex-1">
-                      <DatePicker
-                        mode="time"
+                      <TimeSelector
+                        label="Bis"
                         value={minutesToDate(slot[1])}
                         onChange={(date) => {
                           if (date)
                             updateSlot(dayIndex, slotIndex, "end", date);
                         }}
-                        placeholder="Bis"
-                        variant="filled"
-                        label="Bis"
                       />
                     </View>
 
@@ -287,11 +275,10 @@ export default function AvailabilityScreen() {
                 variant="outline"
                 onPress={() => addSlot(dayIndex)}
                 className="mt-2"
+                icon={PlusIcon}
+                size="sm"
               >
-                <View className="flex-row items-center gap-2">
-                  <Icon name={PlusIcon} size={16} />
-                  <Text>Weiteres Zeitfenster</Text>
-                </View>
+                Weiteres Zeitfenster
               </Button>
             </CardContent>
           )}
@@ -303,5 +290,72 @@ export default function AvailabilityScreen() {
         Speichern
       </Button>
     </Page>
+  );
+}
+
+// Platform-specific Time Selector
+// Uses native Android TimePickerDialog on Android, BNA UI DatePicker on iOS
+function TimeSelector({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: Date;
+  onChange: (date: Date) => void;
+}) {
+  const [showAndroidPicker, setShowAndroidPicker] = useState(false);
+
+  if (Platform.OS === "android") {
+    const handleAndroidChange = (
+      event: DateTimePickerEvent,
+      selectedDate?: Date
+    ) => {
+      setShowAndroidPicker(false);
+      if (event.type === "set" && selectedDate) {
+        onChange(selectedDate);
+      }
+    };
+
+    return (
+      <View>
+        <Pressable
+          onPress={() => setShowAndroidPicker(true)}
+          className="bg-muted px-4 py-3 rounded-xl flex flex-row gap-2"
+        >
+          <Text variant="caption" className="text-muted-foreground mb-1">
+            {label}
+          </Text>
+          <Text className="text-center font-medium">
+            {value.toLocaleTimeString("de-DE", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Text>
+        </Pressable>
+        {showAndroidPicker && (
+          <DateTimePicker
+            value={value}
+            mode="time"
+            is24Hour={true}
+            onChange={handleAndroidChange}
+          />
+        )}
+      </View>
+    );
+  }
+
+  // iOS: Use BNA UI DatePicker
+  return (
+    <DatePicker
+      mode="time"
+      value={value}
+      onChange={(date) => {
+        if (date) onChange(date);
+      }}
+      placeholder={label}
+      variant="filled"
+      label={label}
+    />
   );
 }

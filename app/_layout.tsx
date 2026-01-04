@@ -151,6 +151,10 @@ function RootNavigator() {
       <Stack.Screen name="share/[code]" options={{ headerShown: false }} />
       <Stack.Screen name="delete-account" options={{ headerShown: false }} />
       <Stack.Screen name="+not-found" />
+      <Stack.Screen
+        name="settings/availability"
+        options={{ title: "Verfügbarkeit" }}
+      />
     </Stack>
   );
 }
