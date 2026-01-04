@@ -56,8 +56,13 @@ const getGroupIdFromActivity = (
 
 export const planRouter = {
   overview: protectedRoute.handler(async ({ context, signal }) => {
+    const plans = await context.es.projections.plan.listMyPlans(
+      context.session.id,
+      [startOfDay(new Date()), addWeeks(new Date(), 52)]
+    );
     return {
       user: context.session,
+      plans,
     };
   }),
   create: protectedRoute

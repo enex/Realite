@@ -7,9 +7,12 @@ const config = getDefaultConfig(__dirname);
 config.resolver.resolverMainFields = ["react-native", "browser", "main"];
 config.resolver.platforms = ["ios", "android", "native", "web"];
 
-// Add specific module resolution for @orpc
+// Add specific module resolution for @orpc and @ path aliases
+const path = require("path");
 config.resolver.alias = {
   ...config.resolver.alias,
+  // Path alias for @/ (maps to project root)
+  "@": path.resolve(__dirname),
   "@orpc/server/fetch": require.resolve("@orpc/server/fetch"),
   "@orpc/server/plugins": require.resolve("@orpc/server/plugins"),
   "@orpc/zod": require.resolve("@orpc/zod"),
