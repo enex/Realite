@@ -16,11 +16,11 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { orpc } from "@/client/orpc";
-import { ActivityBottomSheet } from "@/components/ActivityBottomSheet";
-import { DateTimeBottomSheet } from "@/components/DateTimeBottomSheet";
-import { EditRow } from "@/components/EditRow";
+import { ActivityBottomSheet } from "@/components/activity-bottom-sheet";
+import { DateTimeBottomSheet } from "@/components/date-time-bottom-sheet";
+import { EditRow } from "@/components/edit-row";
 import { Button } from "@/components/ui/button";
-import { useLocation } from "@/hooks/useLocation";
+import { useLocation } from "@/hooks/use-location";
 import {
   getActivityGradient,
   getActivityLabel,

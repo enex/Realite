@@ -2,8 +2,8 @@ import { client } from "@/client/orpc";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { useLocation } from "@/hooks/useLocation";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useLocation } from "@/hooks/use-location";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import React, {

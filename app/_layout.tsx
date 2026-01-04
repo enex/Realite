@@ -11,14 +11,14 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { colorScheme as nativewindColorScheme } from "nativewind";
 
 import { useSession } from "@/client/auth";
-import { ShareIntentHandler } from "@/components/ShareIntentHandler";
-import { ShareLinkHandler } from "@/components/ShareLinkHandler";
-import { SplashScreenController } from "@/components/SplashScreenController";
+import { ShareIntentHandler } from "@/components/share-intent-handler";
+import { ShareLinkHandler } from "@/components/share-link-handler";
+import { SplashScreenController } from "@/components/splash-screen-controller";
 import { ToastProvider } from "@/components/ui/toast";
 import { ThemeProvider } from "@/theme/theme-provider";
 import "../global.css";

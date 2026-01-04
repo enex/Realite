@@ -24,9 +24,9 @@ import {
   View,
 } from "react-native";
 
-import { BirthdateField } from "@/components/BirthdateField";
-import { ThemedText } from "@/components/ThemedText";
-import { ToggleRow } from "@/components/ToggleRow";
+import { BirthdateField } from "@/components/birthdate-field";
+import { ThemedText } from "@/components/themed-text";
+import { ToggleRow } from "@/components/toggle-row";
 import { Button } from "@/components/ui/button";
 import {
   Card,

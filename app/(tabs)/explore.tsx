@@ -20,17 +20,17 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useSession } from "@/client/auth";
 import orpc from "@/client/orpc";
-import { PlanCard } from "@/components/PlanCard";
+import { PlanCard } from "@/components/plan-card";
 import PlanFilterBottomSheet, {
   PlanFilterBottomSheetRef,
   type PlanFilter,
-} from "@/components/PlanFilterBottomSheet";
+} from "@/components/plan-filter-bottom-sheet";
 import { Card } from "@/components/ui/card";
 import { GradientBackdrop } from "@/components/ui/gradient-backdrop";
 import { Icon } from "@/components/ui/icon";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
-import { useLocation } from "@/hooks/useLocation";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useFeatureFlagBoolean } from "@/hooks/use-feature-flag";
+import { useLocation } from "@/hooks/use-location";
 import type { ActivityId } from "@/shared/activities";
 import { isWithinRadius } from "@/shared/utils/distance";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";

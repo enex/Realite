@@ -3,7 +3,7 @@ import type { DateTimePickerEvent } from "@react-native-community/datetimepicker
 import { useMemo, useState } from "react";
 import { Platform, Pressable, View } from "react-native";
 
-import { ThemedText } from "@/components/ThemedText";
+import { ThemedText } from "@/components/themed-text";
 
 export function BirthdateField({
   value,

@@ -1,4 +1,4 @@
-import { useColor } from "@/hooks/useColor";
+import { useColor } from "@/hooks/use-color";
 import { Stack } from "expo-router";
 import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";

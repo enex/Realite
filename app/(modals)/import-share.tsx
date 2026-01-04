@@ -2,7 +2,7 @@ import rpc, { client } from "@/client/orpc";
 import { Button, buttonTextVariants } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
-import { useLocation } from "@/hooks/useLocation";
+import { useLocation } from "@/hooks/use-location";
 import { useMutation } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";

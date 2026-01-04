@@ -1,4 +1,4 @@
-import { useColor } from "@/hooks/useColor";
+import { useColor } from "@/hooks/use-color";
 import { FONT_SIZE } from "@/theme/globals";
 import React, { forwardRef } from "react";
 import {

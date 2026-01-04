@@ -1,4 +1,4 @@
-import useAllContacts from "@/hooks/useAllContacts";
+import useAllContacts from "@/hooks/use-all-contacts";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Contacts from "expo-contacts";
 import React from "react";

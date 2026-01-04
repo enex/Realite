@@ -16,16 +16,16 @@ import { Text } from "@/components/ui/text";
 import orpc from "@/client/orpc";
 import AIPlanBottomSheet, {
   type AIPlanBottomSheetRef,
-} from "@/components/AIPlanBottomSheet";
-import { NativeFAB } from "@/components/NativeFAB";
-import { PlanCard, shadows } from "@/components/PlanCard";
+} from "@/components/ai-plan-bottom-sheet";
+import { NativeFAB } from "@/components/native-fab";
+import { PlanCard, shadows } from "@/components/plan-card";
 import PlanFilterBottomSheet, {
   type PlanFilter,
   type PlanFilterBottomSheetRef,
-} from "@/components/PlanFilterBottomSheet";
+} from "@/components/plan-filter-bottom-sheet";
 import { Icon } from "@/components/ui/icon";
-import { useColor } from "@/hooks/useColor";
-import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
+import { useColor } from "@/hooks/use-color";
+import { useFeatureFlagBoolean } from "@/hooks/use-feature-flag";
 import type { ActivityId } from "@/shared/activities";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { startOfDay, subDays } from "date-fns";

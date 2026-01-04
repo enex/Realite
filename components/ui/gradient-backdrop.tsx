@@ -1,7 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import * as React from "react";
 import { StyleSheet, View, type ViewProps } from "react-native";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export type GradientBackdropProps = ViewProps & {
   variant?: "default" | "warm" | "cool";

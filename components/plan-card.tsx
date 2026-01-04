@@ -3,7 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useCallback, useRef } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 
-import { Avatar } from "@/components/Avatar";
+import { Avatar } from "@/components/avatar";
 import { Icon } from "@/components/ui/icon";
 import {
   getActivityGradient,

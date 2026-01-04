@@ -1,7 +1,7 @@
 import { Carousel, CarouselItem } from "@/components/ui/carousel";
 import { Text } from "@/components/ui/text";
 import { View } from "@/components/ui/view";
-import { useColor } from "@/hooks/useColor";
+import { useColor } from "@/hooks/use-color";
 import { PlanListItem } from "@/shared/validation/plan";
 import React from "react";
 import { Dimensions } from "react-native";

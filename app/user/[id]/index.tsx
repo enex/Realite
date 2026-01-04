@@ -15,10 +15,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { orpc } from "@/client/orpc";
-import { Avatar } from "@/components/Avatar";
-import { PlanCard } from "@/components/PlanCard";
+import { Avatar } from "@/components/avatar";
+import { PlanCard } from "@/components/plan-card";
 import { Icon } from "@/components/ui/icon";
-import useAllContacts from "@/hooks/useAllContacts";
+import useAllContacts from "@/hooks/use-all-contacts";
 import { getActivityGradient, type ActivityId } from "@/shared/activities";
 import { standardizePhoneNumber } from "@/shared/validation/phone";
 import { useQuery } from "@tanstack/react-query";

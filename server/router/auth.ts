@@ -8,7 +8,7 @@ import { jwtVerify } from "jose";
 import * as uuid from "uuid";
 import { z } from "zod";
 import { protectedRoute, publicRoute } from "../orpc";
-import { budgetSMS } from "../services/budgetSMS";
+import { budgetSMS } from "../services/budget-sms";
 import { signJWT } from "../utils/jwt";
 
 // Demo-Nutzer Konstanten für Store Reviews und lokales Testen

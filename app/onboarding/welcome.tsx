@@ -8,7 +8,7 @@ import orpc from "@/client/orpc";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarIcon, MapPinIcon, User2Icon } from "lucide-react-native";
 

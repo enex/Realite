@@ -2,9 +2,9 @@ import * as Haptics from "expo-haptics";
 import { useCallback, useRef } from "react";
 import { Animated, Pressable, View } from "react-native";
 
-import { shadows } from "@/components/PlanCard";
+import { shadows } from "@/components/plan-card";
 import { Icon } from "@/components/ui/icon";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { PlusIcon } from "lucide-react-native";
 
 // Native iOS FAB Component

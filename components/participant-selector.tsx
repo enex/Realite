@@ -1,5 +1,5 @@
 import { orpc } from "@/client/orpc";
-import useAllContacts from "@/hooks/useAllContacts";
+import useAllContacts from "@/hooks/use-all-contacts";
 import {
   Gender,
   genders,
@@ -22,7 +22,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import ContactDebugInfo from "./ContactDebugInfo";
+import ContactDebugInfo from "./contact-debug-info";
 
 // Type for user profile that includes demographic data from events
 interface ExtendedUser {

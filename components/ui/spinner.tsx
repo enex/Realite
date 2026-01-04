@@ -1,5 +1,5 @@
 import { Text } from '@/components/ui/text';
-import { useColor } from '@/hooks/useColor';
+import { useColor } from '@/hooks/use-color';
 import { BORDER_RADIUS, CORNERS, FONT_SIZE } from '@/theme/globals';
 import { Loader2 } from 'lucide-react-native';
 import React, { useEffect, useMemo } from 'react';

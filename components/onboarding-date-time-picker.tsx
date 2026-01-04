@@ -5,7 +5,7 @@ import React, { useCallback, useState } from "react";
 import { Modal, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import SmartDateTimePicker from "./SmartDateTimePicker";
+import SmartDateTimePicker from "./smart-date-time-picker";
 
 interface OnboardingDateTimePickerProps {
   selectedDates: Date[];
@@ -71,7 +71,8 @@ export default function OnboardingDateTimePicker({
                     {range.day}
                   </Text>
                   <Text className="text-sm text-muted-foreground">
-                    {formatLocalTime(range.start)} - {formatLocalTime(range.end)}
+                    {formatLocalTime(range.start)} -{" "}
+                    {formatLocalTime(range.end)}
                   </Text>
                 </View>
                 <Pressable onPress={() => onDateRemove(index)}>

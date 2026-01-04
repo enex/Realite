@@ -1,4 +1,4 @@
-import { runMigrate } from "@/db/migrateInternal";
+import { runMigrate } from "@/db/migrate-internal";
 import { es } from "@/server/es";
 
 let migrated = false;

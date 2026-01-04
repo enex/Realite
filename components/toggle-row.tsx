@@ -1,6 +1,6 @@
 import { Platform, Pressable, Switch, View } from "react-native";
 
-import { ThemedText } from "@/components/ThemedText";
+import { ThemedText } from "@/components/themed-text";
 
 export function ToggleRow({
   label,

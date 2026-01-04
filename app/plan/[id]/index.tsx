@@ -27,7 +27,7 @@ import {
 
 import { useSession } from "@/client/auth";
 import { orpc } from "@/client/orpc";
-import { Avatar } from "@/components/Avatar";
+import { Avatar } from "@/components/avatar";
 import { Icon } from "@/components/ui/icon";
 import {
   activities,
