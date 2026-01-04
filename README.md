@@ -29,6 +29,54 @@ You can start developing by editing the files inside the **app** directory. This
 
 This project uses UI components from [BNA UI](https://ui.ahmedbna.com/), a beautiful and accessible Expo React Native components library that works seamlessly across iOS and Android. The components are inspired by shadcn and provide a consistent design system for the app.
 
+## Project Structure
+
+```text
+/
+├── app/                    # Expo Router file-based routing
+│   ├── (tabs)/            # Tab navigation screens
+│   ├── (modals)/          # Modal screens
+│   ├── auth/              # Authentication flows
+│   ├── onboarding/        # Onboarding screens
+│   ├── plan/              # Plan-related screens
+│   ├── api/               # API route handlers
+│   └── rpc/               # ORPC endpoint handlers
+│
+├── components/            # React components
+│   ├── ui/                # Pure presentation components from BNA UI
+│   │                      # These components don't know about the data model
+│   │                      # and are purely presentational
+│   └── [feature].tsx      # Feature-specific components with business logic
+│
+├── client/                # Client-side utilities and ORPC client
+│   └── orpc.ts            # ORPC client configuration
+│
+├── server/                # Bun/Node TypeScript server
+│   ├── router/            # ORPC route handlers (commands)
+│   ├── services/         # Business logic services
+│   ├── utils/            # Server utilities
+│   ├── events.ts         # Event definitions
+│   ├── es.ts             # Event sourcing utilities
+│   └── projections.ts    # Event projections (read model updates)
+│
+├── shared/                # Shared code between client and server
+│   ├── validation/       # Validation schemas
+│   └── activities.ts     # Activity definitions
+│
+├── db/                    # Database schema and migrations
+│   ├── schema.ts         # Drizzle ORM schema
+│   └── migrations/       # Database migration files
+│
+├── hooks/                 # React hooks
+├── theme/                 # Theme configuration
+└── server.ts             # Server entry point
+```
+
+### Component Architecture
+
+- **`components/ui/`**: Contains components primarily from [BNA UI](https://ui.ahmedbna.com/). These are pure presentation components that don't know about the data model and are reusable across the app.
+- **`components/[feature].tsx`**: Feature-specific components that contain business logic and connect to the data model.
+
 ## Demo-Nutzer
 
 Für Testzwecke und Store-Reviews stehen mehrere Demo-Nutzer zur Verfügung:
