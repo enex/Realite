@@ -22,8 +22,9 @@ export const es = builder.store({
     inline: {
       plan: builder.projection({
         handlers: {
-          async "realite.plan.created"(ev, ctx) {
-            console.log(ev, "will be added");
+          // Plan wird erstellt (neues Event-Format mit einzelner Location)
+          async "realite.plan.scheduled"(ev, ctx) {
+            console.log(ev, "will be scheduled");
             const startDate = new Date(ev.data.startDate);
             let endDate: Date | null = null;
 
@@ -50,10 +51,13 @@ export const es = builder.store({
                 title: ev.data.title ?? "",
                 description: ev.data.description,
                 url: ev.data.url,
-                repetition: ev.data.repetition,
+                seriesId: ev.data.seriesId,
               } satisfies schema.InsertPlan)
               .onConflictDoNothing();
-            for (const location of ev.data.locations ?? []) {
+
+            // Einzelne Location (mandatory)
+            if (ev.data.location) {
+              const location = ev.data.location;
               console.log("location", location);
               await ctx.db
                 .insert(schema.planLocations)
@@ -64,30 +68,42 @@ export const es = builder.store({
                   title: location.title,
                   url: location.url,
                   description: location.description,
-                  category: location.category,
                 } as schema.PlanLocation)
                 .onConflictDoNothing();
             }
           },
-          async "realite.plan.participated"(ev, ctx) {
-            // Send push notification to the original plan creator
+
+          // Jemand tritt einem Plan bei
+          async "realite.plan.joined"(ev, ctx) {
+            // Send push notification to the plan creator
             const eventData = ev.data as {
-              originalPlanId: string;
-              originalCreatorId: string;
+              planId: string;
+              creatorId: string;
+              message?: string;
             };
-            if (eventData?.originalCreatorId && ev.actor) {
+            if (eventData?.creatorId && ev.actor) {
               // Use fire-and-forget to avoid blocking the event processing
               sendPlanParticipationNotification(
-                eventData.originalCreatorId,
+                eventData.creatorId,
                 ev.actor,
-                ev.subject
+                eventData.planId
               ).catch((err) => {
-                console.error(
-                  "Failed to send plan participation notification:",
-                  err
-                );
+                console.error("Failed to send plan join notification:", err);
               });
             }
+          },
+
+          // Jemand lehnt Teilnahme ab
+          async "realite.plan.declined"(ev, ctx) {
+            // Optional: Notification an Creator (nur wenn hideReason false)
+            const eventData = ev.data as {
+              planId: string;
+              creatorId: string;
+              reason: string;
+              hideReason?: boolean;
+            };
+            // Für jetzt: Nur loggen, keine DB-Änderung nötig
+            console.log(`User ${ev.actor} declined plan ${eventData.planId}`);
           },
           async "realite.plan.cancelled"(ev, ctx) {
             // Check if this is a derived plan (created via participation)
@@ -117,13 +133,8 @@ export const es = builder.store({
               });
             }
           },
-          async "realite.plan.changed"(ev, ctx) {
-            let {
-              locations,
-              startDate: updStartDate,
-              endDate,
-              ...rest
-            } = ev.data;
+          // Zeit wurde geändert
+          async "realite.plan.rescheduled"(ev, ctx) {
             const plan = await ctx.db.query.plans.findFirst({
               where: eq(schema.plans.id, ev.subject),
             });
@@ -131,64 +142,171 @@ export const es = builder.store({
               throw new Error("Plan not found");
             }
 
-            const startDate = updStartDate
-              ? new Date(updStartDate)
-              : plan.startDate;
-
-            // Determine the new end date while ensuring endDate >= startDate
+            const startDate = new Date(ev.data.startDate);
             let newEndDate: Date;
-            if (typeof endDate !== "undefined") {
-              const requestedEnd = new Date(endDate);
+
+            if (ev.data.endDate) {
+              const requestedEnd = new Date(ev.data.endDate);
               const minimumEnd = addSeconds(startDate, 1);
               newEndDate =
                 requestedEnd >= minimumEnd ? requestedEnd : minimumEnd;
+            } else if (plan.endDate) {
+              // Preserve original duration
+              const durationMs =
+                plan.endDate.getTime() - plan.startDate.getTime();
+              newEndDate = new Date(
+                startDate.getTime() + Math.max(durationMs, 1000)
+              );
             } else {
-              // Preserve original duration if present, otherwise ensure at least +1s
-              if (plan.endDate) {
-                const durationMs =
-                  plan.endDate.getTime() - plan.startDate.getTime();
-                if (durationMs >= 1000) {
-                  newEndDate = new Date(startDate.getTime() + durationMs);
-                } else {
-                  newEndDate = addSeconds(startDate, 1);
-                }
-              } else {
-                newEndDate = addSeconds(startDate, 1);
-              }
+              newEndDate = addSeconds(startDate, 1);
             }
 
-            const upd = {
-              updatedAt: ev.time,
-              startDate,
-              endDate: newEndDate,
-              ...rest,
-            } as const;
-
-            console.log("update plan", upd);
             await ctx.db
               .update(schema.plans)
-              .set(upd)
+              .set({
+                updatedAt: ev.time,
+                startDate,
+                endDate: newEndDate,
+              })
               .where(eq(schema.plans.id, ev.subject));
+          },
 
-            if (ev.data?.locations) {
-              // naive replace strategy for now: delete existing and insert first location
-              // TODO: support multiple and proper upsert
+          // Ort wurde geändert
+          async "realite.plan.relocated"(ev, ctx) {
+            const location = ev.data.location;
+
+            // Delete existing locations and insert new one
+            await ctx.db
+              .delete(schema.planLocations)
+              .where(eq(schema.planLocations.planId, ev.subject));
+
+            await ctx.db.insert(schema.planLocations).values({
+              planId: ev.subject,
+              location: [location.longitude, location.latitude],
+              address: location.address,
+              title: location.title,
+              url: location.url,
+              description: location.description,
+            } as schema.PlanLocation);
+
+            await ctx.db
+              .update(schema.plans)
+              .set({ updatedAt: ev.time })
+              .where(eq(schema.plans.id, ev.subject));
+          },
+
+          // Sonstige Details geändert
+          async "realite.plan.details-updated"(ev, ctx) {
+            const { applyTo, ...updates } = ev.data;
+
+            // Filter out undefined values
+            const cleanUpdates = Object.fromEntries(
+              Object.entries(updates).filter(([_, v]) => v !== undefined)
+            );
+
+            if (Object.keys(cleanUpdates).length > 0) {
               await ctx.db
-                .delete(schema.planLocations)
-                .where(eq(schema.planLocations.planId, ev.subject));
-
-              for (const location of ev.data.locations) {
-                await ctx.db.insert(schema.planLocations).values({
-                  planId: ev.subject,
-                  location: [location.longitude, location.latitude],
-                  address: location.address,
-                  title: location.title,
-                  url: location.url,
-                  description: location.description,
-                  category: location.category,
-                } as schema.PlanLocation);
-              }
+                .update(schema.plans)
+                .set({
+                  ...cleanUpdates,
+                  updatedAt: ev.time,
+                })
+                .where(eq(schema.plans.id, ev.subject));
             }
+          },
+
+          // ============================================
+          // INTENT EVENTS
+          // ============================================
+
+          // Neuer Wunsch/Interesse geäußert
+          async "realite.intent.expressed"(ev, ctx) {
+            // TODO: Tabelle für intents erstellen und hier einfügen
+            console.log(
+              `Intent expressed by ${ev.actor}: ${ev.data.title} (${ev.data.activity})`
+            );
+          },
+
+          // Wunsch verfeinert
+          async "realite.intent.refined"(ev, ctx) {
+            // TODO: Intent in DB aktualisieren
+            console.log(`Intent ${ev.subject} refined by ${ev.actor}`);
+          },
+
+          // Wunsch durch Plan erfüllt
+          async "realite.intent.fulfilled"(ev, ctx) {
+            // TODO: Intent als erfüllt markieren
+            console.log(
+              `Intent ${ev.subject} fulfilled by plan ${ev.data.fulfilledByPlanId}`
+            );
+          },
+
+          // Wunsch zurückgezogen
+          async "realite.intent.withdrawn"(ev, ctx) {
+            // TODO: Intent löschen oder als zurückgezogen markieren
+            console.log(
+              `Intent ${ev.subject} withdrawn by ${ev.actor}: ${ev.data.reason}`
+            );
+          },
+
+          // ============================================
+          // AVAILABILITY EVENT
+          // ============================================
+
+          // Verfügbarkeit komplett überschreiben
+          async "realite.availability.set"(ev, ctx) {
+            // TODO: Tabelle für availabilities erstellen und hier aktualisieren
+            // subject = userId
+            console.log(
+              `Availability set for user ${ev.subject}: ${ev.data.rules.length} rules`
+            );
+          },
+
+          // ============================================
+          // GATHERING EVENTS
+          // Externe Events (Facebook, Meetup, Kalender, etc.)
+          // ============================================
+
+          // Gathering wurde manuell vom Nutzer erstellt
+          async "realite.gathering.created"(ev, ctx) {
+            // TODO: gatherings Tabelle erstellen und hier einfügen
+            console.log(`Gathering created by ${ev.actor}: ${ev.data.title}`);
+          },
+
+          // Gathering wurde automatisch entdeckt/importiert
+          async "realite.gathering.discovered"(ev, ctx) {
+            // TODO: gatherings Tabelle erstellen und hier einfügen
+            console.log(
+              `Gathering discovered: ${ev.data.title} (${ev.data.source})`
+            );
+          },
+
+          // Gathering wurde mit Quelle synchronisiert
+          async "realite.gathering.synced"(ev, ctx) {
+            // TODO: Gathering in DB aktualisieren
+            console.log(
+              `Gathering ${ev.subject} synced at ${ev.data.syncedAt}`
+            );
+          },
+
+          // Gathering manuell bearbeitet
+          async "realite.gathering.edited"(ev, ctx) {
+            // TODO: Gathering in DB aktualisieren
+            console.log(`Gathering ${ev.subject} edited by ${ev.actor}`);
+          },
+
+          // Gathering entfernt
+          async "realite.gathering.removed"(ev, ctx) {
+            // TODO: Gathering als entfernt markieren oder löschen
+            console.log(`Gathering ${ev.subject} removed: ${ev.data.reason}`);
+          },
+
+          // Gathering gemeldet
+          async "realite.gathering.reported"(ev, ctx) {
+            // TODO: Report speichern für Moderation
+            console.log(
+              `Gathering ${ev.subject} reported by ${ev.actor}: ${ev.data.reason}`
+            );
           },
         },
         queries: {

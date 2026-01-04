@@ -174,13 +174,13 @@ export default function PlanDetails() {
       },
     })
   );
-  const participateInPlan = useMutation(
-    orpc.plan.participate.mutationOptions({
+  const joinPlan = useMutation(
+    orpc.plan.join.mutationOptions({
       onSuccess: async (result) => {
         await queryClient.invalidateQueries();
-        // Navigate to the duplicated plan
-        if (result?.id) {
-          router.replace(`/plan/${result.id}` as any);
+        // Navigate to the new plan if created
+        if (result?.newPlanId) {
+          router.replace(`/plan/${result.newPlanId}` as any);
         } else {
           Alert.alert(
             "Erfolgreich!",
@@ -194,7 +194,7 @@ export default function PlanDetails() {
         } else {
           Alert.alert(
             "Fehler",
-            "Konnte den Plan nicht kopieren. Bitte versuche es erneut."
+            "Konnte dem Plan nicht beitreten. Bitte versuche es erneut."
           );
         }
       },
@@ -638,15 +638,15 @@ export default function PlanDetails() {
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                participateInPlan.mutate({ id });
+                joinPlan.mutate({ id });
               }}
-              disabled={participateInPlan.isPending}
+              disabled={joinPlan.isPending}
               className="w-full rounded-xl py-4 items-center justify-center flex-row gap-2"
               style={{ backgroundColor: c3 }}
             >
               <Icon name={PlusCircleIcon} size={20} color="#FFFFFF" />
               <Text className="text-[17px] leading-5 text-white font-semibold">
-                {participateInPlan.isPending
+                {joinPlan.isPending
                   ? "Wird hinzugefügt..."
                   : "Ich auch"}
               </Text>

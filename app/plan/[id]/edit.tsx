@@ -136,7 +136,7 @@ export default function PlanEdit() {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         activity: selectedActivity,
-        locations: locations.length > 0 ? locations : undefined,
+        location: locations.length > 0 ? locations[0] : undefined,
       },
     });
   };

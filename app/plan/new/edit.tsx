@@ -148,6 +148,13 @@ export default function NewPlanEdit() {
     }
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    // Nehme die erste Location (mandatory im neuen Schema)
+    const firstLocation = locations[0];
+    if (!firstLocation) {
+      // TODO: Zeige Fehler wenn keine Location
+      return;
+    }
+    
     createPlan.mutate({
       title: title.trim(),
       description: description.trim() || undefined,
@@ -155,7 +162,7 @@ export default function NewPlanEdit() {
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
       activity: selectedActivity,
-      locations: locations.length > 0 ? locations : undefined,
+      location: firstLocation,
       inputText: initialPlanData?.inputText,
     });
   };

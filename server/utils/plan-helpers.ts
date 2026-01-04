@@ -20,34 +20,32 @@ export async function getLastUserActivityTimestamp(
 }
 
 /**
- * Check if a plan is a derived plan (created via participation)
- * Returns the originalCreatorId if it's a derived plan, null otherwise
+ * Check if a plan is a derived plan (created via joining another plan)
+ * Returns the original plan info if it's a derived plan, null otherwise
  */
 export async function isDerivedPlan(
   planId: string
 ): Promise<{ originalPlanId: string; originalCreatorId: string } | null> {
-  const participationEvent = await db.query.events.findFirst({
+  // Check for the new plan.scheduled event with basedOn field
+  const scheduledEvent = await db.query.events.findFirst({
     where: and(
-      eq(events.type, "realite.plan.participated"),
+      eq(events.type, "realite.plan.scheduled"),
       eq(events.subject, planId)
     ),
     orderBy: [desc(events.time)],
   });
 
-  if (!participationEvent) {
-    return null;
+  if (scheduledEvent) {
+    const eventData = scheduledEvent.data as RealiteEvents["realite.plan.scheduled"];
+    if (eventData?.basedOn) {
+      return {
+        originalPlanId: eventData.basedOn.planId,
+        originalCreatorId: eventData.basedOn.userId,
+      };
+    }
   }
 
-  const eventData =
-    participationEvent.data as RealiteEvents["realite.plan.participated"];
-  if (!eventData?.originalCreatorId || !eventData?.originalPlanId) {
-    return null;
-  }
-
-  return {
-    originalPlanId: eventData.originalPlanId,
-    originalCreatorId: eventData.originalCreatorId,
-  };
+  return null;
 }
 
 /**

@@ -3,6 +3,17 @@ import { Gender, RelationshipStatus } from "@/shared/validation";
 // CoreRepetition wird beim API-Call verwendet, nicht im Event gespeichert
 // (Serien werden materialisiert, jede Instanz ist ein eigenes Event)
 
+// Quellen für Gatherings
+export type GatheringSource =
+  | "manual" // Vom Nutzer erstellt
+  | "facebook" // Facebook Event
+  | "eventbrite" // Eventbrite
+  | "meetup" // Meetup
+  | "instagram" // Instagram Event
+  | "ical" // iCal/ICS Import
+  | "scrape" // Von Website gescraped
+  | "other"; // Sonstige Quelle
+
 export interface RealiteEvents {
   // ============================================
   // PLAN EVENTS - Domain Language
@@ -204,6 +215,156 @@ export interface RealiteEvents {
       daily: [number, number][][]; // 7 Arrays (Mo-So), jeweils Array von [start, end] in Minuten
       exceptions?: Record<string, [number, number][]>; // Ausnahmen für bestimmte Tage
     }[];
+  };
+
+  // ============================================
+  // GATHERING EVENTS
+  // Ein Gathering ist ein externes Event (Festival, Meetup, FB-Event, etc.)
+  // Es impliziert keine Teilnahme - es ist einfach "dieses Event existiert"
+  // Pläne können auf Gatherings referenzieren via gatheringId
+  // subject = gatheringId
+  // ============================================
+
+  // Gathering wurde vom Nutzer manuell erstellt
+  "realite.gathering.created": {
+    title: string;
+    description?: string;
+    url?: string; // Link zu mehr Infos
+
+    startDate: string; // ISO datetime
+    endDate?: string; // ISO datetime
+
+    location?: {
+      title: string;
+      address?: string;
+      latitude: number;
+      longitude: number;
+      url?: string;
+    };
+
+    // Kategorisierung
+    activity?: ActivityId;
+    tags?: string[];
+
+    // Medien
+    imageUrl?: string;
+    images?: string[];
+
+    // Organisator (optional, wenn bekannt)
+    organizer?: {
+      name: string;
+      url?: string;
+      imageUrl?: string;
+    };
+
+    // actor = userId (wer hat es erstellt)
+  };
+
+  // Gathering wurde automatisch entdeckt/importiert
+  "realite.gathering.discovered": {
+    title: string;
+    description?: string;
+    url?: string; // Link zum Original-Event
+
+    startDate: string; // ISO datetime
+    endDate?: string; // ISO datetime
+
+    location?: {
+      title: string;
+      address?: string;
+      latitude: number;
+      longitude: number;
+      url?: string;
+    };
+
+    // Woher kommt das Event?
+    source: GatheringSource;
+    sourceId?: string; // ID beim Ursprung (z.B. Facebook Event ID)
+    sourceUrl?: string; // URL zum Original
+
+    // Kategorisierung
+    activity?: ActivityId;
+    tags?: string[];
+
+    // Medien
+    imageUrl?: string;
+    images?: string[];
+
+    // Organisator
+    organizer?: {
+      name: string;
+      url?: string;
+      imageUrl?: string;
+    };
+
+    // Wer hat es importiert/erstellt?
+    // actor = userId (wer hat es hinzugefügt)
+    // Bei automatischem Import: actor = system oder service-account
+  };
+
+  // Gathering wurde mit Quelle synchronisiert (automatisches Update)
+  "realite.gathering.synced": {
+    // Nur geänderte Felder werden übermittelt
+    title?: string;
+    description?: string;
+    url?: string;
+    startDate?: string;
+    endDate?: string;
+    location?: {
+      title: string;
+      address?: string;
+      latitude: number;
+      longitude: number;
+      url?: string;
+    };
+    imageUrl?: string;
+    images?: string[];
+    organizer?: {
+      name: string;
+      url?: string;
+      imageUrl?: string;
+    };
+    // Sync-Metadaten
+    syncedAt: string; // ISO datetime
+    sourceChanged: boolean; // Hat sich die Quelle geändert?
+  };
+
+  // Gathering manuell bearbeitet (vom Nutzer oder Admin)
+  "realite.gathering.edited": {
+    title?: string;
+    description?: string;
+    url?: string;
+    startDate?: string;
+    endDate?: string;
+    location?: {
+      title: string;
+      address?: string;
+      latitude: number;
+      longitude: number;
+      url?: string;
+    };
+    activity?: ActivityId;
+    tags?: string[];
+    imageUrl?: string;
+    images?: string[];
+  };
+
+  // Gathering ist nicht mehr verfügbar (Event vorbei, gelöscht, etc.)
+  "realite.gathering.removed": {
+    reason:
+      | "ended"
+      | "cancelled"
+      | "source-deleted"
+      | "duplicate"
+      | "spam"
+      | "other";
+    message?: string;
+  };
+
+  // Gathering wurde von Nutzer gemeldet (Spam, falsche Infos, etc.)
+  "realite.gathering.reported": {
+    reason: "spam" | "inappropriate" | "wrong-info" | "duplicate" | "other";
+    message?: string;
   };
 
   "realite.user.registered": {

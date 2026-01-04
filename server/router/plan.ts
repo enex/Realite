@@ -11,40 +11,43 @@ import { PlacesService } from "../services/places";
 import { getTimezoneFromLocation } from "../utils/get-time-zone-from-location";
 import { locationRouter } from "./location";
 
-const planSchema = z.object({
-  url: z.string().optional(),
+// Location Schema (mandatory für Plans)
+const locationSchema = z.object({
   title: z.string(),
+  address: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
+  url: z.string().optional(),
   description: z.string().optional(),
+});
+
+const planSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  url: z.string().optional(),
   activity: z.enum(activityIds),
   startDate: z.string(),
   endDate: z.string().optional(),
-  locations: z
-    .array(
-      z.object({
-        title: z.string(),
-        address: z.string().optional(),
-        latitude: z.number(),
-        longitude: z.number(),
-        url: z.string().optional(),
-        description: z.string().optional(),
-        category: z.string().optional(),
-      })
-    )
-    .optional(),
-  repetition: coreRepetitionSchema
-    .optional()
-    .describe(
-      "Repetition rule if it is a series not a plan for a single event"
-    ),
-  maybe: z
-    .boolean()
-    .optional()
-    .describe("If true, the user has not fully confirmed the plan yet"),
+  
+  // Eine Location (mandatory)
+  location: locationSchema,
+  
+  // Mit wem?
+  withUsers: z.array(z.object({
+    userId: z.string(),
+    message: z.string().optional(),
+  })).optional(),
+  
+  // Offen für weitere Teilnehmer?
+  openTo: z.enum(["specific", "contacts", "public"]).optional(),
+  maxParticipants: z.number().optional(),
+  
+  // Serien (Repetition wird beim Erstellen verwendet um Instanzen zu generieren)
+  repetition: coreRepetitionSchema.optional(),
+  
+  // Bezug zu Gathering
+  gatheringId: z.string().optional(),
 });
-
-const locationArraySchema = (
-  planSchema.shape.locations as z.ZodOptional<z.ZodArray<any>>
-).unwrap();
 
 const getGroupIdFromActivity = (
   activityId?: ActivityId
@@ -77,9 +80,11 @@ export const planRouter = {
     .handler(async ({ context, input, errors, signal }) => {
       const id = uuidv7();
 
-      if (!input.activity || !input.startDate) throw errors.INCOMPLETE();
+      if (!input.activity || !input.startDate || !input.location) {
+        throw errors.INCOMPLETE();
+      }
 
-      const data: RealiteEvents["realite.plan.created"] = {
+      const data: RealiteEvents["realite.plan.scheduled"] = {
         activity: input.activity,
         startDate: input.startDate,
         endDate: input.endDate,
@@ -87,15 +92,22 @@ export const planRouter = {
         inputText: input.inputText,
         description: input.description,
         url: input.url,
-        gathering: undefined,
-        locations: input.locations,
-        repetition: input.repetition,
-        maybe: input.maybe,
+        location: input.location,
+        withUsers: input.withUsers,
+        openTo: input.openTo,
+        maxParticipants: input.maxParticipants,
+        gatheringId: input.gatheringId,
+        // Serien-Felder werden vom Server gesetzt wenn repetition vorhanden
+        seriesId: undefined,
+        seriesIndex: undefined,
       };
+
+      // TODO: Wenn repetition vorhanden, Serien-Instanzen generieren
+      // Für jetzt: Einzelner Plan ohne Serie
 
       try {
         await context.es.add({
-          type: "realite.plan.created",
+          type: "realite.plan.scheduled",
           subject: id,
           data,
         });
@@ -233,12 +245,12 @@ export const planRouter = {
         `- The plan MUST be created - never return without creating a plan.`,
       ].join("\n");
 
-      const aiPlanSchema = planSchema.extend({
-        locations: locationArraySchema
-          .min(1)
-          .describe(
-            "At least one concrete location. Prefer 2-3 suggestions if uncertain."
-          ),
+      // Für AI: Kann mehrere Location-Vorschläge machen, wir nehmen die erste
+      const aiLocationsSchema = z.array(locationSchema).min(1).describe(
+        "At least one concrete location. Prefer 2-3 suggestions if uncertain. First one will be used."
+      );
+      const aiPlanSchema = planSchema.omit({ location: true }).extend({
+        locations: aiLocationsSchema,
       });
 
       // Create the plan agent with ToolLoopAgent
@@ -363,13 +375,14 @@ export const planRouter = {
           }
         }
 
-        const ensureLocations = async () => {
+        const ensureLocation = async () => {
           if (!res.plan) return;
-          if (
-            Array.isArray(res.plan.locations) &&
-            res.plan.locations.length > 0
-          )
+          // AI liefert locations als Array, prüfen ob vorhanden
+          const aiPlan = res.plan as typeof res.plan & { locations?: { title: string; address?: string; latitude: number; longitude: number }[] };
+          if (Array.isArray(aiPlan.locations) && aiPlan.locations.length > 0) {
             return;
+          }
+          
           const cityHint = resolved?.city || resolved?.region || undefined;
           const activityHint =
             res.plan.activity &&
@@ -399,31 +412,38 @@ export const planRouter = {
           const fallbackLocations =
             fallbackSearch?.slice(0, 3).map((place) => ({
               title: place.name,
-              address: place.formatted_address ?? undefined,
+              address: place.formatted_address ?? "",
               latitude: place.geometry.location.lat,
               longitude: place.geometry.location.lng,
             })) ?? [];
 
           if (fallbackLocations.length > 0) {
-            res.plan.locations = fallbackLocations as any;
-            res.plan.maybe = true;
+            aiPlan.locations = fallbackLocations;
             return;
           }
 
           if (input.location) {
-            res.plan.locations = [
+            aiPlan.locations = [
               {
                 title: cityHint || "Treffpunkt",
                 latitude: input.location.latitude,
                 longitude: input.location.longitude,
-                address: cityHint,
+                address: cityHint || "",
               },
-            ] as any;
-            res.plan.maybe = true;
+            ];
           }
         };
 
-        await ensureLocations();
+        await ensureLocation();
+        
+        // Konvertiere AI-Format (locations Array) zu neuem Format (location singular)
+        if (res.plan) {
+          const aiPlan = res.plan as typeof res.plan & { locations?: { title: string; address?: string; latitude: number; longitude: number }[] };
+          if (aiPlan.locations && aiPlan.locations.length > 0) {
+            (res.plan as any).location = aiPlan.locations[0];
+          }
+        }
+        
         console.log(res);
         return res;
       } catch (err) {
@@ -513,17 +533,62 @@ export const planRouter = {
       NOT_FOUND: { message: "Plan not found" },
       NOT_OWNER: { message: "You are not the owner of this plan" },
     })
-    .input(z.object({ id: z.string(), plan: planSchema.partial() }))
+    .input(z.object({ 
+      id: z.string(), 
+      plan: planSchema.partial(),
+      applyTo: z.enum(["this", "this-and-future", "all-in-series"]).optional(),
+    }))
     .handler(async ({ context, input, errors }) => {
       const plan = await context.es.projections.plan.get(input.id);
       if (!plan) throw errors.NOT_FOUND();
       // check that this plan is owned by the user
       if (plan.creatorId !== context.session.id) throw errors.NOT_OWNER();
-      await context.es.add({
-        type: "realite.plan.changed",
-        subject: input.id,
-        data: input.plan,
-      });
+      
+      // Entscheide welches Event basierend auf den Änderungen
+      if (input.plan.startDate || input.plan.endDate) {
+        await context.es.add({
+          type: "realite.plan.rescheduled",
+          subject: input.id,
+          data: {
+            startDate: input.plan.startDate || plan.startDate.toISOString(),
+            endDate: input.plan.endDate,
+            applyTo: input.applyTo,
+          },
+        });
+      }
+      
+      if (input.plan.location) {
+        await context.es.add({
+          type: "realite.plan.relocated",
+          subject: input.id,
+          data: {
+            location: input.plan.location,
+            applyTo: input.applyTo,
+          },
+        });
+      }
+      
+      // Sonstige Änderungen
+      const detailChanges = {
+        title: input.plan.title,
+        description: input.plan.description,
+        url: input.plan.url,
+        activity: input.plan.activity,
+        openTo: input.plan.openTo,
+        maxParticipants: input.plan.maxParticipants,
+      };
+      
+      if (Object.values(detailChanges).some(v => v !== undefined)) {
+        await context.es.add({
+          type: "realite.plan.details-updated",
+          subject: input.id,
+          data: {
+            ...detailChanges,
+            applyTo: input.applyTo,
+          },
+        });
+      }
+      
       return plan;
     }),
   cancel: protectedRoute
@@ -534,8 +599,9 @@ export const planRouter = {
     .input(
       z.object({
         id: z.string(),
-        reason: z.enum(["schedule-conflict", "other"]).optional(),
-        comment: z.string().optional(),
+        reason: z.enum(["schedule-conflict", "no-participants", "other"]).optional(),
+        message: z.string().optional(),
+        applyTo: z.enum(["this", "this-and-future", "all-in-series"]).optional(),
       })
     )
     .handler(async ({ context, input, errors }) => {
@@ -548,7 +614,8 @@ export const planRouter = {
         subject: input.id,
         data: {
           reason: input.reason || "other",
-          comment: input.comment,
+          message: input.message,
+          applyTo: input.applyTo,
         },
       });
       return { success: true };
@@ -615,12 +682,17 @@ export const planRouter = {
       });
       return plans;
     }),
-  participate: protectedRoute
+  // Join: Einem Plan beitreten (Zusage)
+  join: protectedRoute
     .errors({
       NOT_FOUND: { message: "Plan not found" },
       ALREADY_OWNER: { message: "You are already the owner of this plan" },
     })
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ 
+      id: z.string(),
+      message: z.string().optional(),
+      createOwnPlan: z.boolean().optional().default(true),
+    }))
     .handler(async ({ context, input, errors }) => {
       const originalPlan = await context.es.projections.plan.get(input.id);
       if (!originalPlan) throw errors.NOT_FOUND();
@@ -630,47 +702,90 @@ export const planRouter = {
         throw errors.ALREADY_OWNER();
       }
 
-      const newPlanId = uuidv7();
-
-      // Create the new plan with the same data but new creator
-      const planData: RealiteEvents["realite.plan.created"] = {
-        activity: originalPlan.activity as ActivityId,
-        startDate: originalPlan.startDate.toISOString(),
-        endDate: originalPlan.endDate?.toISOString(),
-        title: originalPlan.title,
-        description: originalPlan.description || undefined,
-        url: originalPlan.url || undefined,
-        gathering: undefined,
-        locations: originalPlan.locations?.map((loc) => ({
-          title: loc.title || "",
-          address: loc.address || undefined,
-          latitude: loc.latitude,
-          longitude: loc.longitude,
-          url: loc.url || undefined,
-          description: loc.description || undefined,
-          category: loc.category || undefined,
-        })),
-        repetition: originalPlan.repetition as any,
-        maybe: originalPlan.maybe,
-      };
-
-      // Emit the plan created event
+      // Emit the join event on the original plan
       await context.es.add({
-        type: "realite.plan.created",
-        subject: newPlanId,
-        data: planData,
-      });
-
-      // Emit the participation event
-      await context.es.add({
-        type: "realite.plan.participated",
-        subject: newPlanId,
+        type: "realite.plan.joined",
+        subject: input.id,
         data: {
-          originalPlanId: input.id,
-          originalCreatorId: originalPlan.creatorId,
+          planId: input.id,
+          creatorId: originalPlan.creatorId,
+          message: input.message,
         },
       });
 
-      return { id: newPlanId, ...planData };
+      // Optionally create own plan based on the original
+      let newPlanId: string | undefined;
+      if (input.createOwnPlan) {
+        newPlanId = uuidv7();
+        
+        // Get first location from original plan
+        const location = originalPlan.locations?.[0];
+        if (!location) {
+          throw new Error("Original plan has no location");
+        }
+
+        const planData: RealiteEvents["realite.plan.scheduled"] = {
+          activity: originalPlan.activity as ActivityId,
+          startDate: originalPlan.startDate.toISOString(),
+          endDate: originalPlan.endDate?.toISOString(),
+          title: originalPlan.title,
+          description: originalPlan.description || undefined,
+          url: originalPlan.url || undefined,
+          location: {
+            title: location.title || "",
+            address: location.address || "",
+            latitude: location.latitude,
+            longitude: location.longitude,
+            url: location.url || undefined,
+            description: location.description || undefined,
+          },
+          basedOn: {
+            planId: input.id,
+            userId: originalPlan.creatorId,
+          },
+        };
+
+        await context.es.add({
+          type: "realite.plan.scheduled",
+          subject: newPlanId,
+          data: planData,
+        });
+      }
+
+      return { 
+        joined: true, 
+        originalPlanId: input.id,
+        newPlanId,
+      };
+    }),
+
+  // Decline: Teilnahme ablehnen
+  decline: protectedRoute
+    .errors({
+      NOT_FOUND: { message: "Plan not found" },
+    })
+    .input(z.object({ 
+      id: z.string(),
+      reason: z.enum(["no-time", "not-interested", "too-far", "not-with-person", "other"]),
+      message: z.string().optional(),
+      hideReason: z.boolean().optional(),
+    }))
+    .handler(async ({ context, input, errors }) => {
+      const plan = await context.es.projections.plan.get(input.id);
+      if (!plan) throw errors.NOT_FOUND();
+
+      await context.es.add({
+        type: "realite.plan.declined",
+        subject: input.id,
+        data: {
+          planId: input.id,
+          creatorId: plan.creatorId,
+          reason: input.reason,
+          message: input.message,
+          hideReason: input.hideReason,
+        },
+      });
+
+      return { declined: true };
     }),
 };

@@ -27,8 +27,11 @@ export const availabilitySchema = z.object({
 
 export type Availability = z.infer<typeof availabilitySchema>;
 
-export const placeSchema = z.object({
-  id: z.uuid(),
+// ============================================
+// LOCATION SCHEMA
+// ============================================
+
+export const locationSchema = z.object({
   title: z.string(),
   address: z.string(),
   latitude: z.number(),
@@ -37,7 +40,11 @@ export const placeSchema = z.object({
   description: z.string().optional(),
 });
 
-export type Place = z.infer<typeof placeSchema>;
+export type Location = z.infer<typeof locationSchema>;
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
 
 export const toHHMM = (mins: number) =>
   `${Math.floor(mins / 60)
@@ -49,114 +56,225 @@ export const fromHHMM = (hhmm: string) => {
   return hours * 60 + minutes;
 };
 
-export const visibilitySchema = z.enum(["public", "contacts"]);
+// ============================================
+// VISIBILITY & COMMON SCHEMAS
+// ============================================
+
+export const visibilitySchema = z.enum(["public", "contacts", "private"]);
+export type Visibility = z.infer<typeof visibilitySchema>;
+
+export const openToSchema = z.enum(["specific", "contacts", "public"]);
+export type OpenTo = z.infer<typeof openToSchema>;
+
+// ============================================
+// PLAN SCHEMA (Projection)
+// Ein Plan ist ein konkretes Vorhaben mit Zeit, Ort und Aktivität
+// ============================================
+
+export const planParticipantSchema = z.object({
+  userId: z.string(),
+  status: z.enum(["invited", "joined", "declined"]),
+  message: z.string().optional(),
+  respondedAt: z.iso.datetime().optional(),
+});
 
 export const planSchema = z.object({
-  id: z.uuid(),
-  title: z.string(),
-  start: z.iso.date(),
-  end: z.iso.date(),
+  id: z.string(),
   activity: z.enum(activityIds),
-  place: placeSchema,
-  visibility: visibilitySchema,
+  title: z.string().optional(),
+  description: z.string().optional(),
+  startDate: z.iso.datetime(),
+  endDate: z.iso.datetime().optional(),
+
+  // Location ist mandatory für Pläne
+  location: locationSchema,
+
+  // Mit wem?
+  withUsers: z.array(planParticipantSchema).optional(),
+
+  // Offen für weitere Teilnehmer?
+  openTo: openToSchema.optional(),
+  maxParticipants: z.number().optional(),
+
+  // Basiert auf Plan einer anderen Person?
+  basedOn: z
+    .object({
+      planId: z.string(),
+      userId: z.string(),
+    })
+    .optional(),
+
+  // Serien-Info (wie Google Calendar)
+  seriesId: z.string().optional(),
+  seriesIndex: z.number().optional(),
+
+  // Bezug zu Gathering
+  gatheringId: z.string().optional(),
+
+  // Status
+  status: z.enum(["scheduled", "cancelled", "realized"]).default("scheduled"),
+
+  // Timestamps
+  createdAt: z.iso.datetime(),
+});
+
+export type Plan = z.infer<typeof planSchema>;
+export type PlanParticipant = z.infer<typeof planParticipantSchema>;
+
+// ============================================
+// INTENT SCHEMA (Projection)
+// "Ich hätte Lust auf..." - Wünsche ohne feste Zeit/Ort
+// ============================================
+
+export const timePreferenceSchema = z.object({
+  label: z.string().optional(), // z.B. "Wochenenden", "Abends"
+  dayOfWeek: z.array(z.number().min(0).max(6)).optional(), // 0-6 (So-Sa)
+  timeRange: timeWindowSchema.optional(), // Minuten seit Mitternacht
 });
 
 export const intentSchema = z.object({
-  id: z.uuid(),
+  id: z.string(),
   title: z.string(),
-  description: z.string(),
+  description: z.string().optional(),
   activity: z.enum(activityIds),
   visibility: visibilitySchema,
+
+  // Wo würde ich das gerne machen?
+  locationPreferences: z.array(locationSchema).optional(),
+
+  // Wann hätte ich Zeit?
+  timePreferences: z.array(timePreferenceSchema).optional(),
+
+  // Status
+  status: z.enum(["active", "fulfilled", "withdrawn"]).default("active"),
+  fulfilledByPlanId: z.string().optional(),
+
+  createdAt: z.iso.datetime(),
 });
 
 export type Intent = z.infer<typeof intentSchema>;
+export type TimePreference = z.infer<typeof timePreferenceSchema>;
 
-// Proposal: Ein Vorschlag von User A an User B für eine gemeinsame Aktivität
-export const proposalStatusSchema = z.enum([
-  "pending", // Noch keine Antwort
-  "accepted", // Angenommen → wird zum Plan
-  "declined", // Abgelehnt
-  "counter_proposed", // Gegenvorschlag gemacht
-  "expired", // Abgelaufen (keine Antwort)
-  "cancelled", // Vom Ersteller zurückgezogen
+// ============================================
+// GATHERING SCHEMA (Projection)
+// Ein Gathering ist ein externes Event (Festival, Meetup, FB-Event, etc.)
+// Es impliziert keine Teilnahme - es ist einfach "dieses Event existiert"
+// ============================================
+
+export const gatheringSourceSchema = z.enum([
+  "manual", // Vom Nutzer erstellt
+  "facebook", // Facebook Event
+  "eventbrite", // Eventbrite
+  "meetup", // Meetup
+  "instagram", // Instagram Event
+  "ical", // iCal/ICS Import
+  "scrape", // Von Website gescraped
+  "other", // Sonstige Quelle
 ]);
 
-export const proposalSchema = z.object({
-  id: z.uuid(),
-  fromUserId: z.uuid(),
-  toUserId: z.uuid(),
-  activity: z.enum(activityIds),
-  title: z.string(),
-  message: z
-    .string()
-    .optional()
-    .describe("Persönliche Nachricht zum Vorschlag"),
-  proposedTime: z.iso.datetime(),
-  proposedEndTime: z.iso.datetime().optional(),
-  proposedPlace: placeSchema.optional(),
-  matchedIntentId: z
-    .uuid()
-    .optional()
-    .describe("Falls der Vorschlag zu einem Intent des Empfängers passt"),
-  status: proposalStatusSchema,
-  respondedAt: z.iso.datetime().optional(),
-  responseMessage: z.string().optional(),
-  counterProposalId: z
-    .uuid()
-    .optional()
-    .describe("Falls status='counter_proposed', ID des Gegenvorschlags"),
-  createdAt: z.iso.datetime(),
-  expiresAt: z.iso
-    .datetime()
-    .optional()
-    .describe("Wann der Vorschlag automatisch abläuft"),
+export type GatheringSource = z.infer<typeof gatheringSourceSchema>;
+
+export const gatheringOrganizerSchema = z.object({
+  name: z.string(),
+  url: z.string().optional(),
+  imageUrl: z.string().optional(),
 });
 
-export type Proposal = z.infer<typeof proposalSchema>;
-export type ProposalStatus = z.infer<typeof proposalStatusSchema>;
+export const gatheringSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  url: z.string().optional(), // Link zum Original-Event
+
+  startDate: z.iso.datetime(),
+  endDate: z.iso.datetime().optional(),
+
+  // Location (optional bei Online-Events)
+  location: locationSchema
+    .extend({ address: z.string().optional() })
+    .optional(),
+
+  // Quelle
+  source: gatheringSourceSchema,
+  sourceId: z.string().optional(), // ID beim Ursprung (z.B. Facebook Event ID)
+  sourceUrl: z.string().optional(), // URL zum Original
+  lastSyncedAt: z.iso.datetime().optional(),
+
+  // Kategorisierung
+  activity: z.enum(activityIds).optional(),
+  tags: z.array(z.string()).optional(),
+
+  // Medien
+  imageUrl: z.string().optional(),
+  images: z.array(z.string()).optional(),
+
+  // Organisator
+  organizer: gatheringOrganizerSchema.optional(),
+
+  // Wer hat es hinzugefügt?
+  addedBy: z.string().optional(), // userId
+
+  // Status
+  status: z.enum(["active", "cancelled", "ended", "removed"]).default("active"),
+
+  // Timestamps
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime().optional(),
+});
+
+export type Gathering = z.infer<typeof gatheringSchema>;
+export type GatheringOrganizer = z.infer<typeof gatheringOrganizerSchema>;
+
+// ============================================
+// USER SCHEMA (Projection)
+// ============================================
 
 export const fullUserSchema = z.object({
-  id: z.uuid(),
+  id: z.string(),
   name: z.string(),
-  gender: z.enum(["male", "female", "other"]),
-  birthDate: z.iso.date(),
-  relationshipStatus: z.enum(["single", "in_relationship", "married", "other"]),
-  email: z.email().optional(),
+  gender: z.enum(["male", "female", "other"]).optional(),
+  birthDate: z.iso.date().optional(),
+  relationshipStatus: z
+    .enum(["single", "in_relationship", "married", "other"])
+    .optional(),
+  email: z.string().email().optional(),
   phoneNumber: z.string(),
-  image: z.string(),
-  onboardedAt: z.iso.date().optional(),
+  image: z.string().optional(),
+  onboardedAt: z.iso.datetime().optional(),
+
   privacySettings: z.object({
     showGender: z.boolean(),
     showAge: z.boolean(),
     showRelationshipStatus: z.boolean(),
   }),
+
+  // Pläne des Users
   plans: z.array(planSchema),
+
+  // Verfügbarkeitsregeln
   availability: z.array(availabilitySchema),
+
+  // Wünsche/Intents ("Ich hätte Lust auf...")
   intents: z.array(intentSchema),
-  // Proposals die dieser User erhalten hat (incoming)
-  incomingProposals: z.array(proposalSchema),
-  // Proposals die dieser User gesendet hat (outgoing)
-  outgoingProposals: z.array(proposalSchema),
-  contacts: z.array(z.uuid()),
-  blockedUsers: z.array(z.uuid()),
+
+  // Kontakte (User-IDs oder Phone-Hashes)
+  contacts: z.array(z.string()),
+
+  // Blockierte User
+  blockedUsers: z.array(z.string()),
 });
+
 export type FullUser = z.infer<typeof fullUserSchema>;
 
 export const defaultFullUser: FullUser = {
   id: "00000000-0000-0000-0000-000000000000",
   name: "",
-  gender: "other",
-  birthDate: "1996-11-11",
-  relationshipStatus: "single",
-  phoneNumber: "+491234567890",
-  image: "",
+  phoneNumber: "",
   availability: [],
   blockedUsers: [],
   contacts: [],
   intents: [],
   plans: [],
-  incomingProposals: [],
-  outgoingProposals: [],
   privacySettings: {
     showAge: true,
     showGender: true,
@@ -164,31 +282,9 @@ export const defaultFullUser: FullUser = {
   },
 };
 
-// Beispiel-Proposal: Jens schlägt Simon vor, essen zu gehen
-export const jensProposalToSimon: Proposal = {
-  id: "prop-1",
-  fromUserId: "user-jens",
-  toUserId: "user-simon",
-  activity: "food_drink/restaurant" as ActivityId,
-  title: "Essen gehen bei Da Luigi",
-  message:
-    "Hey Simon! Habe gesehen, dass du auch Lust hast, mal wieder essen zu gehen. Wie wäre es Freitag Abend?",
-  proposedTime: "2026-01-10T19:30:00+01:00",
-  proposedEndTime: "2026-01-10T22:00:00+01:00",
-  proposedPlace: {
-    id: "place-1",
-    title: "Da Luigi",
-    address: "Hauptstraße 42, 63739 Aschaffenburg",
-    latitude: 49.9769,
-    longitude: 9.158,
-    url: "https://daluigi.de",
-    description: "Italienisches Restaurant",
-  },
-  matchedIntentId: "i1", // Passt zu Simons Intent "Mit alten bekannten was essen gehen"
-  status: "pending",
-  createdAt: "2026-01-04T14:30:00+01:00",
-  expiresAt: "2026-01-09T23:59:00+01:00", // Läuft einen Tag vor dem Termin ab
-};
+// ============================================
+// BEISPIEL-DATEN
+// ============================================
 
 export const simon: FullUser = {
   id: "user-simon",
@@ -199,7 +295,7 @@ export const simon: FullUser = {
   email: "simon@example.com",
   phoneNumber: "+491234567890",
   image: "https://example.com/image.jpg",
-  onboardedAt: "2026-01-01",
+  onboardedAt: "2026-01-01T00:00:00+01:00",
   privacySettings: {
     showGender: true,
     showAge: true,
@@ -209,32 +305,62 @@ export const simon: FullUser = {
     {
       id: "p1",
       title: "Takama Karate Training",
-      start: "2026-01-10T09:00:00+01:00",
-      end: "2026-01-10T12:00:00+01:00",
-      activity: "sport/martial_arts" satisfies ActivityId,
-      place: {
-        id: "place-simon-1",
-        title: "SV 1945 Känigshofen",
+      activity: "sport/martial_arts" as ActivityId,
+      startDate: "2026-01-10T09:00:00+01:00",
+      endDate: "2026-01-10T12:00:00+01:00",
+      location: {
+        title: "SV 1945 Königshofen",
         address: "Unnamed Road, 63776 Mömbris, Deutschland",
         latitude: 50.0636076,
         longitude: 9.2005,
       },
-      visibility: "public",
+      status: "scheduled",
+      createdAt: "2026-01-01T10:00:00+01:00",
     },
     {
       id: "p2",
       title: "Laufen mit Laufacher Läufer",
-      start: "2026-01-06T15:15:00+01:00",
-      end: "2026-01-06T16:15:00+01:00",
-      activity: "sport/running" satisfies ActivityId,
-      place: {
-        id: "place-simon-2",
-        title: "Haus von XY",
-        address: "Irgendwo in Laufach",
+      activity: "sport/running" as ActivityId,
+      startDate: "2026-01-06T15:15:00+01:00",
+      endDate: "2026-01-06T16:15:00+01:00",
+      location: {
+        title: "Treffpunkt Laufach",
+        address: "Hauptstraße 1, Laufach",
         latitude: 50.0636076,
         longitude: 9.2005,
       },
-      visibility: "public",
+      status: "scheduled",
+      createdAt: "2026-01-01T10:00:00+01:00",
+    },
+    {
+      // Jens hat Simon zum Essen eingeladen - Simon sieht das als Plan mit withUsers
+      id: "p3",
+      title: "Essen gehen bei Da Luigi",
+      activity: "food_drink/restaurant" as ActivityId,
+      startDate: "2026-01-10T19:30:00+01:00",
+      endDate: "2026-01-10T22:00:00+01:00",
+      location: {
+        title: "Da Luigi",
+        address: "Hauptstraße 42, 63739 Aschaffenburg",
+        latitude: 49.9769,
+        longitude: 9.158,
+        url: "https://daluigi.de",
+        description: "Italienisches Restaurant",
+      },
+      withUsers: [
+        {
+          userId: "user-jens",
+          status: "joined", // Jens ist dabei (er hat eingeladen)
+          message: "Hey Simon! Habe gesehen, dass du auch Lust hast.",
+        },
+      ],
+      // Dieser Plan basiert auf Jens' Plan
+      basedOn: {
+        planId: "p-jens-1",
+        userId: "user-jens",
+      },
+      status: "scheduled",
+      createdAt: "2026-01-04T14:30:00+01:00",
     },
   ],
   availability: [
@@ -263,27 +389,37 @@ export const simon: FullUser = {
       title: "Mit alten bekannten was essen gehen",
       description:
         "Ich möchte mit alten bekannten was essen gehen. Wir können uns austauschen und uns wieder kennenlernen.",
-      activity: "food_drink/restaurant" satisfies ActivityId,
+      activity: "food_drink/restaurant" as ActivityId,
       visibility: "contacts",
+      status: "active",
+      locationPreferences: [
+        {
+          title: "Aschaffenburg Innenstadt",
+          address: "Aschaffenburg",
+          latitude: 49.9769,
+          longitude: 9.158,
+        },
+      ],
+      timePreferences: [
+        {
+          label: "Abends unter der Woche",
+          dayOfWeek: [1, 2, 3, 4, 5], // Mo-Fr
+          timeRange: [1080, 1320], // 18:00-22:00
+        },
+      ],
+      createdAt: "2026-01-01T10:00:00+01:00",
     },
     {
       id: "i2",
       title: "Boldern gehen",
       description:
         "War schon lange nicht mehr im Klettern und habe mal wieder lust drauf.",
-      activity: "sport/climbing" satisfies ActivityId,
+      activity: "sport/climbing" as ActivityId,
       visibility: "public",
-    },
-    {
-      id: "i3",
-      title: "Spazieren gehen",
-      description: "Bils Frische Luft schnappen",
-      activity: "outdoors" satisfies ActivityId,
-      visibility: "public",
+      status: "active",
+      createdAt: "2026-01-01T10:00:00+01:00",
     },
   ],
-  incomingProposals: [jensProposalToSimon], // Simon hat einen Vorschlag von Jens
-  outgoingProposals: [],
   contacts: ["user-jens", "c1", "c2", "c3", "c4"],
   blockedUsers: ["c5", "c6"],
 };
@@ -298,13 +434,40 @@ export const jens: FullUser = {
   email: "jens@example.com",
   phoneNumber: "+4915123456789",
   image: "https://example.com/jens.jpg",
-  onboardedAt: "2026-01-01",
+  onboardedAt: "2026-01-01T00:00:00+01:00",
   privacySettings: {
     showGender: true,
     showAge: true,
     showRelationshipStatus: true,
   },
-  plans: [],
+  plans: [
+    {
+      // Jens' Plan mit Simon essen zu gehen
+      id: "p-jens-1",
+      title: "Essen gehen bei Da Luigi",
+      activity: "food_drink/restaurant" as ActivityId,
+      startDate: "2026-01-10T19:30:00+01:00",
+      endDate: "2026-01-10T22:00:00+01:00",
+      location: {
+        title: "Da Luigi",
+        address: "Hauptstraße 42, 63739 Aschaffenburg",
+        latitude: 49.9769,
+        longitude: 9.158,
+        url: "https://daluigi.de",
+      },
+      withUsers: [
+        {
+          userId: "user-simon",
+          status: "joined", // Simon hat zugesagt
+          message: "Bin dabei!",
+          respondedAt: "2026-01-04T18:00:00+01:00",
+        },
+      ],
+      openTo: "specific", // Nur die eingeladenen
+      status: "scheduled",
+      createdAt: "2026-01-04T14:30:00+01:00",
+    },
+  ],
   availability: [
     {
       id: "av-jens-1",
@@ -316,7 +479,7 @@ export const jens: FullUser = {
         [[1080, 1320]], // Mittwoch
         [[1080, 1320]], // Donnerstag
         [[1080, 1380]], // Freitag: 18:00-23:00
-        [[600, 1380]], // Samstag: 10:00-23:00 (ganzer Tag)
+        [[600, 1380]], // Samstag: 10:00-23:00
         [[600, 1260]], // Sonntag: 10:00-21:00
       ],
       exceptions: {},
@@ -329,10 +492,10 @@ export const jens: FullUser = {
       description: "Möchte mal wieder mit alten Bekannten was unternehmen",
       activity: "food_drink/restaurant" as ActivityId,
       visibility: "contacts",
+      status: "active",
+      createdAt: "2026-01-01T10:00:00+01:00",
     },
   ],
-  incomingProposals: [],
-  outgoingProposals: [jensProposalToSimon], // Jens hat den Vorschlag gesendet
   contacts: ["user-simon", "c7", "c8"],
   blockedUsers: [],
 };
