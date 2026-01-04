@@ -31,71 +31,31 @@ import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/ui/icon";
 import {
   activities,
-  type ActivityGroupId,
+  getActivityGradient,
+  getActivityIcon,
+  getActivityLabel,
   type ActivityId,
 } from "@/shared/activities";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isSameYear } from "date-fns";
+import {
+  ChevronRightIcon,
+  ClockIcon,
+  CopyPlusIcon,
+  EllipsisIcon,
+  LinkIcon,
+  MapPinIcon,
+  PencilIcon,
+  PlusCircleIcon,
+  TrashIcon,
+  UserCircleIcon,
+  UsersIcon,
+  XIcon,
+} from "lucide-react-native";
 import { useMemo, useState } from "react";
 import tinycolor from "tinycolor2";
 
 const HEADER_HEIGHT = 280;
-
-const getGroupIdFromActivity = (
-  activityId?: ActivityId
-): ActivityGroupId | undefined => {
-  if (!activityId) return undefined;
-  const [groupId] = (activityId as string).split("/");
-  return groupId as ActivityGroupId;
-};
-
-const getActivityGradient = (activityId?: ActivityId) => {
-  const groupId = getGroupIdFromActivity(activityId);
-  const base = (groupId && activities[groupId]?.color) || "#94a3b8";
-  const c1 = tinycolor(base).lighten(35).toHexString();
-  const c2 = tinycolor(base).lighten(15).toHexString();
-  const c3 = tinycolor(base).toHexString();
-  return [c1, c2, c3] as const;
-};
-
-const getActivityIcon = (activityId?: ActivityId) => {
-  const groupId = getGroupIdFromActivity(activityId);
-  switch (groupId) {
-    case "food_drink":
-      return "fork.knife";
-    case "outdoors":
-      return "mountain.2";
-    case "social":
-      return "person.2";
-    case "sport":
-      return "figure.run";
-    case "arts_culture":
-      return "theatermasks";
-    case "learning":
-      return "book";
-    case "travel":
-      return "airplane";
-    case "wellness":
-      return "heart";
-    case "home":
-      return "house";
-    default:
-      return "calendar";
-  }
-};
-
-const getActivityLabel = (id?: ActivityId) => {
-  if (!id) return "";
-  const [groupId, subId] = (id as string).split("/");
-  const group = activities[groupId as keyof typeof activities];
-  if (!group) return id as string;
-  if (!subId) return group.nameDe || group.name;
-  const sub: any =
-    group.subActivities[subId as keyof typeof group.subActivities];
-  return sub
-    ? `${group.nameDe || group.name}/${sub.nameDe || sub.name}`
-    : (id as string);
-};
 
 export default function PlanDetails() {
   const router = useRouter();
@@ -243,7 +203,7 @@ export default function PlanDetails() {
 
   const activity = (plan?.activity ?? undefined) as ActivityId | undefined;
   const [c1, c2, c3] = getActivityGradient(activity);
-  const icon = getActivityIcon(activity);
+  const icon = activity ? getActivityIcon(activity) : undefined;
   const isOwner = plan?.creatorId === session?.id;
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
@@ -426,7 +386,7 @@ export default function PlanDetails() {
               onPress={() => router.back()}
               className="w-10 h-10 rounded-full bg-black/30 items-center justify-center"
             >
-              <Icon name="xmark" size={18} color="#FFFFFF" />
+              <Icon name={XIcon} size={18} color="#FFFFFF" />
             </Pressable>
             <View className="flex-row gap-2">
               {isOwner && (
@@ -434,14 +394,14 @@ export default function PlanDetails() {
                   onPress={() => router.push(`/plan/${id}/edit` as any)}
                   className="w-10 h-10 rounded-full bg-black/30 items-center justify-center"
                 >
-                  <Icon name="pencil" size={18} color="#FFFFFF" />
+                  <Icon name={PencilIcon} size={18} color="#FFFFFF" />
                 </Pressable>
               )}
               <Pressable
                 className="w-10 h-10 rounded-full bg-black/30 items-center justify-center"
                 onPress={() => setShowDeleteSheet(true)}
               >
-                <Icon name="ellipsis" size={18} color="#FFFFFF" />
+                <Icon name={EllipsisIcon} size={18} color="#FFFFFF" />
               </Pressable>
             </View>
           </View>
@@ -496,7 +456,9 @@ export default function PlanDetails() {
                   justifyContent: "center",
                 }}
               >
-                <Icon name={icon} size={120} color="rgba(255,255,255,0.3)" />
+                {icon && (
+                  <Icon name={icon} size={120} color="rgba(255,255,255,0.3)" />
+                )}
               </LinearGradient>
             )}
           </View>
@@ -534,7 +496,7 @@ export default function PlanDetails() {
             {/* Location Info Row */}
             {locationLabel && (
               <InfoRow
-                icon="mappin.and.ellipse"
+                icon={MapPinIcon}
                 label={locationLabel}
                 value={locationAddress || undefined}
                 onPress={openLocationInMaps}
@@ -545,7 +507,7 @@ export default function PlanDetails() {
             {/* Time Info Row */}
             {timeRangeLabel && (
               <InfoRow
-                icon="clock"
+                icon={ClockIcon}
                 label="Zeit"
                 value={timeRangeLabel}
                 onPress={isOwner ? () => setShowStartPicker(true) : undefined}
@@ -555,7 +517,7 @@ export default function PlanDetails() {
 
             {/* Host Info Row */}
             <InfoRow
-              icon="person.circle"
+              icon={UserCircleIcon}
               label="Ersteller"
               value={hostName}
               onPress={() => {
@@ -579,7 +541,7 @@ export default function PlanDetails() {
                         : tinycolor(c3).setAlpha(0.1).toRgbString(),
                     }}
                   >
-                    <Icon name="person.2" size={18} color={c3} />
+                    <Icon name={UsersIcon} size={18} color={c3} />
                   </View>
                   <Text className="text-[17px] font-semibold text-black dark:text-white">
                     Teilnehmer ({participants.length})
@@ -605,7 +567,7 @@ export default function PlanDetails() {
                         {participant.name}
                       </Text>
                       <Icon
-                        name="chevron.right"
+                        name={ChevronRightIcon}
                         size={16}
                         color={isDark ? "#9CA3AF" : "#6B7280"}
                       />
@@ -640,7 +602,7 @@ export default function PlanDetails() {
                 >
                   <View className="flex-row items-center flex-1">
                     <View className="h-9 w-9 rounded-full bg-white dark:bg-white/10 items-center justify-center mr-3">
-                      <Icon name="link" size={18} color={c3} />
+                      <Icon name={LinkIcon} size={18} color={c3} />
                     </View>
                     <View className="flex-1">
                       <Text className="text-[15px] font-semibold text-black dark:text-white">
@@ -655,7 +617,7 @@ export default function PlanDetails() {
                     </View>
                   </View>
                   <Icon
-                    name="chevron.right"
+                    name={ChevronRightIcon}
                     size={16}
                     color={isDark ? "#9CA3AF" : "#6B7280"}
                   />
@@ -682,7 +644,7 @@ export default function PlanDetails() {
               className="w-full rounded-xl py-4 items-center justify-center flex-row gap-2"
               style={{ backgroundColor: c3 }}
             >
-              <Icon name="plus.circle.fill" size={20} color="#FFFFFF" />
+              <Icon name={PlusCircleIcon} size={20} color="#FFFFFF" />
               <Text className="text-[17px] leading-5 text-white font-semibold">
                 {participateInPlan.isPending
                   ? "Wird hinzugefügt..."
@@ -845,7 +807,7 @@ function InfoRow({
       </View>
       {interactive && (
         <Icon
-          name="chevron.right"
+          name={ChevronRightIcon}
           size={16}
           color={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"}
         />
@@ -955,7 +917,7 @@ function PlanActionSheet({
           className="px-4 py-4 items-center border-b border-gray-200 dark:border-white/10"
         >
           <View className="flex-row items-center gap-3">
-            <Icon name="doc.on.doc" size={20} color="#007AFF" />
+            <Icon name={CopyPlusIcon} size={20} color="#007AFF" />
             <Text className="text-[17px] leading-[22px] text-black dark:text-white font-medium">
               Plan duplizieren
             </Text>
@@ -966,7 +928,7 @@ function PlanActionSheet({
           className="px-4 py-4 items-center border-b border-gray-200 dark:border-white/10"
         >
           <View className="flex-row items-center gap-3">
-            <Icon name="trash" size={20} color="#FF3B30" />
+            <Icon name={TrashIcon} size={20} color="#FF3B30" />
             <Text className="text-[17px] leading-[22px] text-red-500 font-medium">
               Plan löschen
             </Text>

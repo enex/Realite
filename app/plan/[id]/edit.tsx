@@ -25,6 +25,13 @@ import {
   type ActivityId,
 } from "@/shared/activities";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  CalendarIcon,
+  ClockIcon,
+  PlusCircleIcon,
+  TrashIcon,
+  XIcon,
+} from "lucide-react-native";
 
 export default function PlanEdit() {
   const router = useRouter();
@@ -216,7 +223,7 @@ export default function PlanEdit() {
             onPress={() => router.back()}
           >
             <Icon
-              name="xmark"
+              name={XIcon}
               size={20}
               color={isDark ? "#FFFFFF" : "#000000"}
             />
@@ -254,7 +261,7 @@ export default function PlanEdit() {
           <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
             {/* Start Date/Time */}
             <EditRow
-              icon="clock"
+              icon={ClockIcon}
               label={formatDate(startDate)}
               value={formatTime(startDate)}
               onPress={() => setShowStartPicker(true)}
@@ -263,7 +270,7 @@ export default function PlanEdit() {
 
             {/* End Date/Time */}
             <EditRow
-              icon="clock"
+              icon={ClockIcon}
               label={formatDate(endDate)}
               value={formatTime(endDate)}
               onPress={() => setShowEndPicker(true)}
@@ -272,7 +279,7 @@ export default function PlanEdit() {
 
             {/* Activity */}
             <EditRow
-              icon="calendar"
+              icon={CalendarIcon}
               label="Aktivität"
               value={getActivityLabel(selectedActivity)}
               onPress={() => setShowActivityPicker(true)}
@@ -294,7 +301,7 @@ export default function PlanEdit() {
                   }}
                   className="flex-row items-center"
                 >
-                  <Icon name="plus.circle.fill" size={20} color={accentColor} />
+                  <Icon name={PlusCircleIcon} size={20} color={accentColor} />
                   <Text
                     className="text-[15px] ml-1"
                     style={{ color: accentColor }}
@@ -331,7 +338,7 @@ export default function PlanEdit() {
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                       >
                         <Icon
-                          name="trash"
+                          name={TrashIcon}
                           size={20}
                           color={isDark ? "#EF4444" : "#DC2626"}
                         />
@@ -446,7 +453,7 @@ export default function PlanEdit() {
               }}
             >
               <Icon
-                name="xmark"
+                name={XIcon}
                 size={20}
                 color={isDark ? "#FFFFFF" : "#000000"}
               />
