@@ -25,6 +25,7 @@ import {
   View,
 } from "react-native";
 
+import { syncContacts } from "@/client/contacts";
 import { ThemedText } from "@/components/themed-text";
 import { ToggleRow } from "@/components/toggle-row";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,7 @@ import {
   MarsIcon,
   Phone,
   User,
+  UsersIcon,
   VenusIcon,
 } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -71,8 +73,10 @@ export default function ProfileScreen() {
     rpc.user.uploadAvatar.mutationOptions()
   );
   const getShareLink = useMutation(rpc.user.getShareLink.mutationOptions());
+  const contacts = useQuery(rpc.contact.list.queryOptions());
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [showBirthdatePicker, setShowBirthdatePicker] = useState(false);
+  const [isImportingContacts, setIsImportingContacts] = useState(false);
 
   const [name, setName] = useState<string | null>(null);
 
@@ -502,6 +506,103 @@ export default function ProfileScreen() {
           </View>
         </Card>
       )}
+
+      {/* Contacts Settings */}
+      <Card>
+        <CardHeader>
+          <View className="flex-row items-center gap-2">
+            <Icon name={UsersIcon} size={20} />
+            <CardTitle>Kontakte</CardTitle>
+          </View>
+          <CardDescription>
+            Verwalte deine Kontakte in Realite. Importiere deine
+            Telefon-Kontakte, um zu sehen, wer bereits auf Realite ist.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {(() => {
+            const contactList = Array.isArray(contacts.data?.contacts)
+              ? contacts.data.contacts
+              : [];
+            return contactList.length > 0 ? (
+              <View className="gap-2 mb-4">
+                <Text className="text-sm text-muted-foreground mb-2">
+                  {contactList.length} Kontakt
+                  {contactList.length > 1 ? "e" : ""} auf Realite
+                </Text>
+                {contactList.slice(0, 5).map((contact: any) => (
+                  <View
+                    key={contact.id || contact.userId || Math.random()}
+                    className="flex-row items-center gap-3 py-2 px-3 rounded-lg bg-muted/50"
+                  >
+                    <View className="h-10 w-10 rounded-full bg-primary/20 items-center justify-center">
+                      <Text className="text-primary font-semibold">
+                        {contact.name?.[0]?.toUpperCase() || "?"}
+                      </Text>
+                    </View>
+                    <View className="flex-1">
+                      <Text className="font-medium">
+                        {contact.name || "Unbekannt"}
+                      </Text>
+                      {contact.phoneNumber && (
+                        <Text
+                          variant="caption"
+                          className="text-muted-foreground"
+                        >
+                          {contact.phoneNumber}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                ))}
+                {contactList.length > 5 && (
+                  <Text
+                    variant="caption"
+                    className="text-muted-foreground text-center"
+                  >
+                    + {contactList.length - 5} weitere
+                  </Text>
+                )}
+              </View>
+            ) : (
+              <Text className="text-sm text-muted-foreground mb-4">
+                Noch keine Kontakte importiert. Importiere deine
+                Telefon-Kontakte, um zu sehen, wer bereits auf Realite ist.
+              </Text>
+            );
+          })()}
+        </CardContent>
+        <CardFooter>
+          <Button
+            variant="outline"
+            onPress={async () => {
+              try {
+                setIsImportingContacts(true);
+                const result = await syncContacts();
+                await queryClient.invalidateQueries({
+                  queryKey: rpc.contact.list.key(),
+                });
+                Alert.alert(
+                  "Erfolg",
+                  `${result.contactCount} Kontakte importiert. ${result.hashCount} Telefonnummern gefunden.`
+                );
+              } catch (error: any) {
+                Alert.alert(
+                  "Fehler",
+                  error?.message || "Kontakte konnten nicht importiert werden."
+                );
+              } finally {
+                setIsImportingContacts(false);
+              }
+            }}
+            disabled={isImportingContacts}
+          >
+            {isImportingContacts
+              ? "Importiere..."
+              : "Telefon-Kontakte importieren"}
+          </Button>
+        </CardFooter>
+      </Card>
 
       {/* Availability Settings */}
       <Card>

@@ -1,5 +1,6 @@
 import { appConfigRouter } from "./app-config";
 import { authRouter } from "./auth";
+import { contactRouter } from "./contact";
 import { locationRouter } from "./location";
 import { planRouter } from "./plan";
 import { shareRouter } from "./share";
@@ -12,6 +13,7 @@ export const router = {
   user: userRouter,
   share: shareRouter,
   appConfig: appConfigRouter,
+  contact: contactRouter,
 };
 
 export type Router = typeof router;

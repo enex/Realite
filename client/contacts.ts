@@ -1,3 +1,4 @@
+import orpc from "@/client/orpc";
 import { standardizePhoneNumber } from "@/shared/validation/phone";
 import * as Contacts from "expo-contacts";
 import { v5 as uuidv5 } from "uuid";
@@ -39,11 +40,9 @@ export const syncContacts = async () => {
 
     // Unique Hashes an Backend senden
     if (hashes.length > 0) {
-      /*
-      await api.contact.importContacts.mutate({
+      await orpc.contact.importContacts.mutate({
         hashes: [...new Set(hashes)],
       });
-      */
     }
 
     return {
