@@ -8,9 +8,11 @@ import {
   relationshipStatuses,
 } from "@/shared/validation";
 import { isDefinedError } from "@orpc/client";
+import type { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useRouter } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -20,11 +22,9 @@ import {
   Pressable,
   Text as RNText,
   Share,
-  TextInput,
   View,
 } from "react-native";
 
-import { BirthdateField } from "@/components/birthdate-field";
 import { ThemedText } from "@/components/themed-text";
 import { ToggleRow } from "@/components/toggle-row";
 import { Button } from "@/components/ui/button";
@@ -42,8 +42,10 @@ import Page from "@/components/ui/page";
 import { Picker } from "@/components/ui/picker";
 import { Text } from "@/components/ui/text";
 import {
+  CalendarIcon,
   ChevronRightIcon,
   CircleIcon,
+  ClockIcon,
   HeartIcon,
   Mail,
   MarsIcon,
@@ -57,6 +59,9 @@ function Divider() {
   return <View className="h-px bg-zinc-200/70 dark:bg-zinc-800" />;
 }
 
+// Availability day labels
+const DAY_LABELS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+
 export default function ProfileScreen() {
   const router = useRouter();
   const signOut = useSignOut();
@@ -66,6 +71,7 @@ export default function ProfileScreen() {
   );
   const getShareLink = useMutation(rpc.user.getShareLink.mutationOptions());
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [showBirthdatePicker, setShowBirthdatePicker] = useState(false);
 
   const [name, setName] = useState<string | null>(null);
 
@@ -92,7 +98,6 @@ export default function ProfileScreen() {
       onMutate: (data) => {
         const old = queryClient.getQueryData(rpc.auth.me.key());
         queryClient.setQueryData(rpc.auth.me.key(), (old: any) => {
-          console.log("old", old, data);
           const res = {
             ...old,
             ...data,
@@ -101,7 +106,6 @@ export default function ProfileScreen() {
               ...(data.privacySettings ?? {}),
             },
           };
-          console.log("res", res);
           return res;
         });
         return { old };
@@ -110,7 +114,6 @@ export default function ProfileScreen() {
         queryClient.refetchQueries({ queryKey: rpc.auth.me.key() });
       },
       onError: (e, _, ctx) => {
-        // Suppress noisy alerts for validation failures during autosave
         const msg = e.message || "";
         if (msg.toLowerCase().includes("validation")) {
           console.warn("Profile autosave validation:", msg);
@@ -123,6 +126,12 @@ export default function ProfileScreen() {
       },
     })
   );
+
+  const birthDate = useMemo(() => {
+    if (!me.data?.birthDate) return undefined;
+    const d = new Date(me.data.birthDate);
+    return isNaN(d.getTime()) ? undefined : d;
+  }, [me.data?.birthDate]);
 
   const openNotificationSettings = async () => {
     try {
@@ -270,19 +279,12 @@ export default function ProfileScreen() {
       const asset = result.assets[0];
       const contentType = asset.mimeType || "image/jpeg";
 
-      // Read file as base64 using native expo-file-system (legacy API)
-      // We cannot use z.file() here due to an incompatibility between Expo/React Native
-      // and oRPC's file handling. oRPC's FormData serialization tries to set the 'name'
-      // property on File/Blob objects, but Expo's polyfill only provides a getter,
-      // causing "Cannot assign to property 'name' which has only a getter" errors.
-      // Using base64 data URLs works reliably across all platforms.
       const FileSystemLegacy = await import("expo-file-system/legacy");
       const base64 = await FileSystemLegacy.readAsStringAsync(asset.uri, {
         encoding: FileSystemLegacy.EncodingType.Base64,
       });
       const dataUrl = `data:${contentType};base64,${base64}`;
 
-      // Upload via server (ORPC) - server handles S3 upload
       const res = await avatarUploadViaServer.mutateAsync({
         dataUrl,
         contentType,
@@ -298,7 +300,7 @@ export default function ProfileScreen() {
       if (isDefinedError(e) && e.code === "MISCONFIGURED") {
         Alert.alert(
           "Upload nicht verfügbar",
-          "Der Server ist noch nicht für S3 konfiguriert (S3_BUCKET/S3_ENDPOINT/S3_ACCESS_KEY/S3_SECRET_KEY). Optional: S3_OBJECT_ACL, S3_CACHE_CONTROL, S3_PATH_STYLE."
+          "Der Server ist noch nicht für S3 konfiguriert."
         );
         return;
       }
@@ -310,8 +312,6 @@ export default function ProfileScreen() {
       setIsUploadingAvatar(false);
     }
   };
-
-  const isAndroid = Platform.OS === "android";
 
   const resolvedName = (name ?? me.data?.name ?? "").trim();
   const initialName = (me.data?.name ?? "").trim();
@@ -325,6 +325,7 @@ export default function ProfileScreen() {
         paddingBottom: 128 + insets.bottom,
       }}
     >
+      {/* Profile Header */}
       <Card>
         <View className="flex-row items-center gap-4">
           <Pressable
@@ -373,23 +374,51 @@ export default function ProfileScreen() {
         </View>
       </Card>
 
-      <GroupedInput title="Personal Information">
-        <GroupedInputItem label="Name" placeholder="John Doe" icon={User} />
+      {/* Personal Information - Using GroupedInput */}
+      <GroupedInput title="Persönliche Daten">
+        <GroupedInputItem
+          label="Name"
+          placeholder="Dein Name"
+          icon={User}
+          value={name ?? me.data?.name ?? ""}
+          onChangeText={(text) => setName(text)}
+          onBlur={() => {
+            const next = resolvedName;
+            if (next === initialName) return;
+            update.mutate({ name: next ? next : undefined });
+          }}
+        />
         <GroupedInputItem
           label="Email"
-          placeholder="john@example.com"
+          placeholder="deine@email.de"
           icon={Mail}
           keyboardType="email-address"
-          value={me.data?.email}
+          autoCapitalize="none"
+          value={me.data?.email ?? ""}
           onChangeText={(text) => update.mutate({ email: text })}
         />
-        <GroupedInputItem
-          label="Telefon"
-          placeholder="+49 (555) 123-4567"
-          icon={Phone}
-          value={me.data?.phoneNumber}
-          keyboardType="phone-pad"
-        />
+        <Pressable
+          onPress={() => router.push("/auth/change-phone")}
+          className="flex-row items-center gap-2"
+        >
+          <View className="w-[120px] flex-row items-center gap-2">
+            <Icon name={Phone} size={16} className="text-muted-foreground" />
+            <Text variant="caption" className="text-muted-foreground">
+              Telefon
+            </Text>
+          </View>
+          <View className="flex-1 flex-row items-center justify-between">
+            <Text>{me.data?.phoneNumber || "—"}</Text>
+            <View className="flex-row items-center gap-1">
+              <Text className="text-primary text-sm">Ändern</Text>
+              <Icon
+                name={ChevronRightIcon}
+                size={16}
+                className="text-primary"
+              />
+            </View>
+          </View>
+        </Pressable>
         <Picker
           value={me.data?.gender}
           onValueChange={(value) => update.mutate({ gender: value as Gender })}
@@ -417,104 +446,113 @@ export default function ProfileScreen() {
           label="Beziehung"
           variant="group"
         />
+        {/* Birthdate */}
+        <Pressable
+          onPress={() => setShowBirthdatePicker(true)}
+          className="flex-row items-center gap-2"
+        >
+          <View className="w-[120px] flex-row items-center gap-2">
+            <Icon
+              name={CalendarIcon}
+              size={16}
+              className="text-muted-foreground"
+            />
+            <Text variant="caption" className="text-muted-foreground">
+              Geburtstag
+            </Text>
+          </View>
+          <View className="flex-1">
+            <Text>
+              {birthDate ? birthDate.toLocaleDateString("de-DE") : "Auswählen"}
+            </Text>
+          </View>
+        </Pressable>
       </GroupedInput>
 
-      <Card>
-        <View className="px-4 pt-4 pb-3">
-          <ThemedText
-            type="subtitle"
-            className="text-zinc-900 dark:text-zinc-50 mb-4"
-          >
-            Basisdaten
-          </ThemedText>
-        </View>
-
-        <View className="px-4 pb-4">
-          <ThemedText className="mb-2 text-zinc-600 dark:text-zinc-400">
-            Name
-          </ThemedText>
-          <TextInput
-            className={cn(
-              "rounded-xl border px-4 py-3 text-zinc-900 dark:text-zinc-50",
-              isAndroid
-                ? "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950"
-                : "border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
-            )}
-            placeholder="Dein Name"
-            placeholderTextColor={Platform.OS === "ios" ? undefined : "#9CA3AF"}
-            value={name ?? me.data?.name ?? ""}
-            onChangeText={(text) => setName(text)}
-            onBlur={() => {
-              const next = resolvedName;
-              if (next === initialName) return;
-              update.mutate({ name: next ? next : undefined });
+      {/* Birthdate Picker Modal */}
+      {showBirthdatePicker && (
+        <Card>
+          <DateTimePicker
+            value={birthDate ?? new Date(2000, 0, 1)}
+            mode="date"
+            display={Platform.OS === "ios" ? "spinner" : "calendar"}
+            maximumDate={new Date()}
+            onChange={(event: DateTimePickerEvent, selectedDate) => {
+              if (Platform.OS !== "ios") setShowBirthdatePicker(false);
+              if (event.type === "dismissed") return;
+              if (!selectedDate) return;
+              const iso = selectedDate.toISOString().slice(0, 10);
+              update.mutate({ birthDate: iso });
             }}
           />
-        </View>
+          <View className="flex-row justify-between mt-3">
+            <Button
+              variant="outline"
+              onPress={() => {
+                update.mutate({ birthDate: undefined });
+                setShowBirthdatePicker(false);
+              }}
+            >
+              Entfernen
+            </Button>
+            <Button onPress={() => setShowBirthdatePicker(false)}>
+              Fertig
+            </Button>
+          </View>
+        </Card>
+      )}
 
-        <Divider />
-        <Link href="/auth/change-phone" asChild>
-          <Pressable className="px-4 py-4" accessibilityRole="button">
-            <View className="flex-row items-center justify-between">
-              <View className="flex-1 pr-3">
-                <ThemedText className="text-zinc-900 dark:text-zinc-50">
-                  Telefonnummer
-                </ThemedText>
-                <ThemedText className="mt-1 text-zinc-600 dark:text-zinc-400">
-                  {me.data?.phoneNumber || "—"}
-                </ThemedText>
-              </View>
-              <View className="flex-row items-center gap-2">
-                <RNText className="text-primary font-medium">Ändern</RNText>
-                <Icon name={ChevronRightIcon} size={22} />
-              </View>
-            </View>
-          </Pressable>
-        </Link>
+      {/* Availability Settings */}
+      <Card>
+        <CardHeader>
+          <View className="flex-row items-center gap-2">
+            <Icon name={ClockIcon} size={20} />
+            <CardTitle>Verfügbarkeit</CardTitle>
+          </View>
+        </CardHeader>
+        <CardContent>
+          <Text className="text-muted-foreground mb-4">
+            Definiere deine typische Verfügbarkeit für Aktivitäten. Andere
+            können sehen, wann du Zeit hast.
+          </Text>
 
-        <Divider />
-        <View className="px-4 py-4">
-          <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
-            Geschlecht
-          </ThemedText>
-          <View className="flex-row flex-wrap gap-2">
-            {genders.map((g) => (
-              <Chip
-                key={g}
-                label={GENDER_LABEL[g]}
-                selected={me.data?.gender === g}
-                onPress={() => update.mutate({ gender: g })}
-              />
+          {/* Weekly availability overview */}
+          <View className="flex-row gap-1 mb-4">
+            {DAY_LABELS.map((day, index) => (
+              <View
+                key={day}
+                className={cn(
+                  "flex-1 items-center py-2 rounded-lg",
+                  index < 5 ? "bg-primary/20" : "bg-muted"
+                )}
+              >
+                <Text
+                  className={cn(
+                    "text-xs font-medium",
+                    index < 5 ? "text-primary" : "text-muted-foreground"
+                  )}
+                >
+                  {day}
+                </Text>
+              </View>
             ))}
           </View>
-        </View>
 
-        <Divider />
-        <View className="px-4 py-4">
-          <BirthdateField
-            value={me.data?.birthDate}
-            onChange={(v) => update.mutate({ birthDate: v })}
-          />
-        </View>
-
-        <Divider />
-        <View className="px-4 py-4">
-          <ThemedText className="mb-2 text-gray-600 dark:text-gray-400">
-            Beziehungsstatus
-          </ThemedText>
-          <View className="flex-row flex-wrap gap-2">
-            {relationshipStatuses.map((rs) => (
-              <Chip
-                key={rs}
-                label={REL_LABEL[rs]}
-                selected={me.data?.relationshipStatus === rs}
-                onPress={() => update.mutate({ relationshipStatus: rs })}
-              />
-            ))}
-          </View>
-        </View>
+          <Text className="text-sm text-muted-foreground">
+            Standard: Mo–Fr, 18:00–22:00
+          </Text>
+        </CardContent>
+        <CardFooter>
+          <Button
+            variant="outline"
+            onPress={() => router.push("/settings/availability" as any)}
+          >
+            Verfügbarkeit bearbeiten
+          </Button>
+        </CardFooter>
       </Card>
 
+      {/* Privacy Settings */}
       <Card>
         <CardHeader>
           <CardTitle>Sichtbarkeit</CardTitle>
@@ -544,6 +582,7 @@ export default function ProfileScreen() {
 
       <ModeToggle />
 
+      {/* Notifications */}
       <Card>
         <CardHeader>
           <CardTitle>Benachrichtigungen</CardTitle>
@@ -561,6 +600,7 @@ export default function ProfileScreen() {
         </CardFooter>
       </Card>
 
+      {/* Share */}
       <Card>
         <CardHeader>
           <CardTitle>Teilen</CardTitle>
@@ -582,6 +622,7 @@ export default function ProfileScreen() {
         </CardFooter>
       </Card>
 
+      {/* Onboarding */}
       <Card>
         <CardHeader>
           <CardTitle>Onboarding</CardTitle>
@@ -602,6 +643,7 @@ export default function ProfileScreen() {
         </CardFooter>
       </Card>
 
+      {/* Sign Out */}
       <Card>
         <ThemedText
           type="subtitle"
@@ -635,6 +677,7 @@ export default function ProfileScreen() {
         </Button>
       </Card>
 
+      {/* Danger Zone */}
       <Card>
         <ThemedText
           type="subtitle"
@@ -662,32 +705,3 @@ export default function ProfileScreen() {
     </Page>
   );
 }
-
-const Chip = ({
-  label,
-  selected,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-}) => (
-  <Pressable
-    onPress={onPress}
-    accessibilityRole="button"
-    className={cn(
-      "rounded-full border px-3 py-2",
-      selected
-        ? "border-primary bg-primary/15"
-        : "border-zinc-300 bg-transparent dark:border-zinc-700"
-    )}
-  >
-    <RNText
-      className={cn(
-        selected ? "text-primary" : "text-zinc-900 dark:text-zinc-50"
-      )}
-    >
-      {label}
-    </RNText>
-  </Pressable>
-);
