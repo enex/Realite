@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -509,13 +510,12 @@ export default function ProfileScreen() {
             <Icon name={ClockIcon} size={20} />
             <CardTitle>Verfügbarkeit</CardTitle>
           </View>
-        </CardHeader>
-        <CardContent>
-          <Text className="text-muted-foreground mb-4">
+          <CardDescription>
             Definiere deine typische Verfügbarkeit für Aktivitäten. Andere
             können sehen, wann du Zeit hast.
-          </Text>
-
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           {/* Weekly availability overview */}
           <View className="flex-row gap-1 mb-4">
             {DAY_LABELS.map((day, index) => (
@@ -523,17 +523,10 @@ export default function ProfileScreen() {
                 key={day}
                 className={cn(
                   "flex-1 items-center py-2 rounded-lg",
-                  index < 5 ? "bg-primary/20" : "bg-muted"
+                  "bg-primary/20"
                 )}
               >
-                <Text
-                  className={cn(
-                    "text-xs font-medium",
-                    index < 5 ? "text-primary" : "text-muted-foreground"
-                  )}
-                >
-                  {day}
-                </Text>
+                <Text className="text-xs font-medium text-primary">{day}</Text>
               </View>
             ))}
           </View>

@@ -40,6 +40,13 @@ export const es = builder.store({
               }
             }
 
+            // Einzelne Location (mandatory)
+            if (!ev.data.location) {
+              throw new Error("Location is required for plan.scheduled");
+            }
+
+            const location = ev.data.location;
+
             await ctx.db
               .insert(schema.plans)
               .values({
@@ -51,26 +58,27 @@ export const es = builder.store({
                 title: ev.data.title ?? "",
                 description: ev.data.description,
                 url: ev.data.url,
+                // Location direkt in plans table
+                location: [location.longitude, location.latitude],
+                locationAddress: location.address,
+                locationTitle: location.title,
+                locationUrl: location.url,
+                locationDescription: location.description,
+                // Series support
                 seriesId: ev.data.seriesId,
+                seriesIndex: ev.data.seriesIndex,
+                // Gathering reference
+                gatheringId: ev.data.gatheringId,
+                // Participation settings
+                openTo: ev.data.openTo,
+                maxParticipants: ev.data.maxParticipants,
+                // Based on another plan
+                basedOnPlanId: ev.data.basedOn?.planId,
+                basedOnUserId: ev.data.basedOn?.userId,
+                // Status
+                status: "scheduled",
               } satisfies schema.InsertPlan)
               .onConflictDoNothing();
-
-            // Einzelne Location (mandatory)
-            if (ev.data.location) {
-              const location = ev.data.location;
-              console.log("location", location);
-              await ctx.db
-                .insert(schema.planLocations)
-                .values({
-                  planId: ev.subject,
-                  location: [location.longitude, location.latitude],
-                  address: location.address,
-                  title: location.title,
-                  url: location.url,
-                  description: location.description,
-                } as schema.PlanLocation)
-                .onConflictDoNothing();
-            }
           },
 
           // Jemand tritt einem Plan bei
@@ -109,14 +117,14 @@ export const es = builder.store({
             // Check if this is a derived plan (created via participation)
             const derivedPlanInfo = await isDerivedPlan(ev.subject);
 
-            // Delete plan locations first (due to foreign key constraint)
+            // Update status to cancelled instead of deleting
+            // This preserves history and allows for analytics
             await ctx.db
-              .delete(schema.planLocations)
-              .where(eq(schema.planLocations.planId, ev.subject));
-
-            // Delete the plan itself
-            await ctx.db
-              .delete(schema.plans)
+              .update(schema.plans)
+              .set({
+                status: "cancelled",
+                updatedAt: ev.time,
+              })
               .where(eq(schema.plans.id, ev.subject));
 
             // If this was a derived plan, notify the original creator
@@ -175,23 +183,17 @@ export const es = builder.store({
           async "realite.plan.relocated"(ev, ctx) {
             const location = ev.data.location;
 
-            // Delete existing locations and insert new one
-            await ctx.db
-              .delete(schema.planLocations)
-              .where(eq(schema.planLocations.planId, ev.subject));
-
-            await ctx.db.insert(schema.planLocations).values({
-              planId: ev.subject,
-              location: [location.longitude, location.latitude],
-              address: location.address,
-              title: location.title,
-              url: location.url,
-              description: location.description,
-            } as schema.PlanLocation);
-
+            // Update location directly in plans table
             await ctx.db
               .update(schema.plans)
-              .set({ updatedAt: ev.time })
+              .set({
+                location: [location.longitude, location.latitude],
+                locationAddress: location.address,
+                locationTitle: location.title,
+                locationUrl: location.url,
+                locationDescription: location.description,
+                updatedAt: ev.time,
+              })
               .where(eq(schema.plans.id, ev.subject));
           },
 
@@ -329,29 +331,14 @@ export const es = builder.store({
                   string | null
                 >`${schema.plans.description}`.as("plan_description"),
                 planUrl: sql<string | null>`${schema.plans.url}`.as("plan_url"),
-                repetition: schema.plans.repetition,
-                // location
-                location: schema.planLocations.location,
-                address: schema.planLocations.address,
-                category: schema.planLocations.category,
-                imageUrl: schema.planLocations.imageUrl,
-                locationTitle: sql<
-                  string | null
-                >`${schema.planLocations.title}`.as("location_title"),
-                locationUrl: sql<string | null>`${schema.planLocations.url}`.as(
-                  "location_url"
-                ),
-                locationDescription: sql<
-                  string | null
-                >`${schema.planLocations.description}`.as(
-                  "location_description"
-                ),
+                // location direkt aus plans table
+                location: schema.plans.location,
+                address: schema.plans.locationAddress,
+                locationTitle: schema.plans.locationTitle,
+                locationUrl: schema.plans.locationUrl,
+                locationDescription: schema.plans.locationDescription,
               })
-              .from(schema.plans)
-              .leftJoin(
-                schema.planLocations,
-                eq(schema.plans.id, schema.planLocations.planId)
-              );
+              .from(schema.plans);
             const ownPlansWithLocation = baseQuery
               .where(eq(schema.plans.creatorId, actor))
               .as("ownPlansWithLocation");
@@ -374,19 +361,15 @@ export const es = builder.store({
                 url: sql<string | null>`"ownPlansWithLocation"."plan_url"`.as(
                   "url"
                 ),
-                repetition: ownPlansWithLocation.repetition,
-                locations: jsonArrayAgg(
-                  jsonBuildObject({
-                    title: sql`"ownPlansWithLocation"."location_title"`,
-                    address: ownPlansWithLocation.address,
-                    category: ownPlansWithLocation.category,
-                    imageUrl: ownPlansWithLocation.imageUrl,
-                    url: sql`"ownPlansWithLocation"."location_url"`,
-                    description: sql`"ownPlansWithLocation"."location_description"`,
-                    latitude: sql<number>`ST_Y(${ownPlansWithLocation.location})`,
-                    longitude: sql<number>`ST_X(${ownPlansWithLocation.location})`,
-                  })
-                ),
+                // Single location (not array anymore)
+                location: jsonBuildObject({
+                  title: ownPlansWithLocation.locationTitle,
+                  address: ownPlansWithLocation.address,
+                  url: ownPlansWithLocation.locationUrl,
+                  description: ownPlansWithLocation.locationDescription,
+                  latitude: sql<number>`ST_Y(${ownPlansWithLocation.location})`,
+                  longitude: sql<number>`ST_X(${ownPlansWithLocation.location})`,
+                }),
                 // When there is no matching plan in the LEFT JOIN, Postgres would
                 // emit a single object with all-null fields. Filter those out so
                 // the result is an empty array instead of [{ id: null, ... }].
@@ -400,12 +383,10 @@ export const es = builder.store({
                     endDate: otherPlansWithLocation.endDate,
                     activity: otherPlansWithLocation.activity,
                     creatorId: otherPlansWithLocation.creatorId,
-                    locationTitle: sql`"otherPlansWithLocation"."location_title"`,
+                    locationTitle: otherPlansWithLocation.locationTitle,
                     address: otherPlansWithLocation.address,
-                    category: otherPlansWithLocation.category,
-                    imageUrl: otherPlansWithLocation.imageUrl,
-                    locationUrl: sql`"otherPlansWithLocation"."location_url"`,
-                    locationDescription: sql`"otherPlansWithLocation"."location_description"`,
+                    locationUrl: otherPlansWithLocation.locationUrl,
+                    locationDescription: otherPlansWithLocation.locationDescription,
                     latitude: sql<number>`ST_Y(${otherPlansWithLocation.location})`,
                     longitude: sql<number>`ST_X(${otherPlansWithLocation.location})`,
                   }),
@@ -455,8 +436,7 @@ export const es = builder.store({
                 ownPlansWithLocation.activity,
                 sql`"ownPlansWithLocation"."plan_title"`,
                 sql`"ownPlansWithLocation"."plan_description"`,
-                sql`"ownPlansWithLocation"."plan_url"`,
-                ownPlansWithLocation.repetition
+                sql`"ownPlansWithLocation"."plan_url"`
               )
               .orderBy(
                 orderDirection === "desc"
@@ -469,31 +449,24 @@ export const es = builder.store({
             return await q;
           },
           async get(ctx, id: string) {
-            return ctx.db.query.plans.findFirst({
+            const plan = await ctx.db.query.plans.findFirst({
               where: (t, { eq }) => eq(t.id, id),
-              with: {
-                locations: {
-                  columns: {
-                    title: true,
-                    address: true,
-                    category: true,
-                    description: true,
-                    imageUrl: true,
-                    url: true,
-                  },
-                  extras: {
-                    latitude:
-                      sql<number>`ST_Y(${schema.planLocations.location})`.as(
-                        "latitude"
-                      ),
-                    longitude:
-                      sql<number>`ST_X(${schema.planLocations.location})`.as(
-                        "longitude"
-                      ),
-                  },
-                },
-              },
             });
+            
+            if (!plan) return null;
+            
+            // Add location as object (not relation anymore)
+            return {
+              ...plan,
+              location: {
+                title: plan.locationTitle,
+                address: plan.locationAddress,
+                url: plan.locationUrl,
+                description: plan.locationDescription,
+                latitude: plan.location ? (plan.location as [number, number])[1] : null,
+                longitude: plan.location ? (plan.location as [number, number])[0] : null,
+              },
+            };
           },
           async findPlans(
             ctx,
@@ -530,12 +503,12 @@ export const es = builder.store({
               input?.query
                 ? or(
                     ilike(schema.plans.title, `%${input.query}%`),
-                    ilike(schema.planLocations.title, `%${input.query}%`),
-                    ilike(schema.planLocations.address, `%${input.query}%`)
+                    ilike(schema.plans.locationTitle, `%${input.query}%`),
+                    ilike(schema.plans.locationAddress, `%${input.query}%`)
                   )
                 : undefined,
               input.location
-                ? sql`ST_DWithin(${schema.planLocations.location}::geography, ST_SetSRID(ST_MakePoint(${input.location.longitude}, ${input.location.latitude}), 4326)::geography, ${
+                ? sql`ST_DWithin(${schema.plans.location}::geography, ST_SetSRID(ST_MakePoint(${input.location.longitude}, ${input.location.latitude}), 4326)::geography, ${
                     input.location.radius ?? 5000
                   })`
                 : undefined
@@ -549,25 +522,20 @@ export const es = builder.store({
                 endDate: schema.plans.endDate,
                 activity: schema.plans.activity,
                 latitude:
-                  sql<number>`ST_Y(${schema.planLocations.location})`.as(
+                  sql<number>`ST_Y(${schema.plans.location})`.as(
                     "latitude"
                   ),
                 longitude:
-                  sql<number>`ST_X(${schema.planLocations.location})`.as(
+                  sql<number>`ST_X(${schema.plans.location})`.as(
                     "longitude"
                   ),
-                address: schema.planLocations.address,
-                locationTitle: schema.planLocations.title,
-                locationUrl: schema.planLocations.url,
-                locationDescription: schema.planLocations.description,
-                locationCategory: schema.planLocations.category,
+                address: schema.plans.locationAddress,
+                locationTitle: schema.plans.locationTitle,
+                locationUrl: schema.plans.locationUrl,
+                locationDescription: schema.plans.locationDescription,
                 creatorId: schema.plans.creatorId,
               })
               .from(schema.plans)
-              .leftJoin(
-                schema.planLocations,
-                eq(schema.plans.id, schema.planLocations.planId)
-              )
               .where(where)
               .orderBy(asc(schema.plans.startDate))
               .limit(input.limit ?? 100);

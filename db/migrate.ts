@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { runMigrate } from "./migrateInternal";
+import { runMigrate } from "./migrate-internal";
 
 runMigrate()
   .catch((err) => {

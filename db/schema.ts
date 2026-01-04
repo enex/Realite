@@ -24,27 +24,54 @@ export const plans = pgTable(
     description: t.text(),
     url: t.text(),
     activity: t.text().notNull(),
-    seriesId: t.uuid(), // if this is a series, this is the id of the series, every instance is materialized but the app allows editing multiple events in one series together (like google calendar for example)
-    //gatheringId: t.uuid().references(() => gatherings.id),
-    createdAt: t.timestamp().notNull().defaultNow(),
-    updatedAt: t.timestamp().notNull().defaultNow(),
     creatorId: t.uuid().notNull(),
     startDate: t.timestamp().notNull(),
-    endDate: t.timestamp(), // if something repeats for ever this mey be set to infinity
-    repetition: t.jsonb(), // repetition rule if it is a series
-    maybe: t.boolean().notNull().default(false),
+    endDate: t.timestamp(), // if something repeats forever this may be set to infinity
+
+    // Single mandatory location (directly in plans table)
+    location: t.geometry({ type: "point", mode: "tuple", srid: 4326 }),
+    locationAddress: t.text(),
+    locationTitle: t.text(),
+    locationUrl: t.text(),
+    locationDescription: t.text(),
+
+    // Series support (like Google Calendar)
+    seriesId: t.uuid(), // ID der Serie (alle Instanzen teilen diese ID)
+    seriesIndex: t.integer(), // 0, 1, 2, ... (welche Instanz in der Serie)
+
+    // Gathering reference (external events like Facebook events, festivals, etc.)
+    gatheringId: t.uuid(), // references gatherings table (when implemented)
+
+    // Participation settings
+    openTo: t.text(), // "specific" | "contacts" | "public"
+    maxParticipants: t.integer(),
+
+    // Based on another plan (when user joins someone else's plan)
+    basedOnPlanId: t.uuid(),
+    basedOnUserId: t.uuid(),
+
+    // Status
+    status: t.text().default("scheduled"), // "scheduled" | "cancelled" | "realized"
+
+    createdAt: t.timestamp().notNull().defaultNow(),
+    updatedAt: t.timestamp().notNull().defaultNow(),
   }),
   (t) => [
     index().on(t.creatorId),
     index("plans_time_range").using(
       "gist",
-      sql`tsrange(${t.startDate}, ${t.endDate})`,
+      sql`tsrange(${t.startDate}, ${t.endDate})`
     ),
-  ],
+    index("plans_location_idx").using("gist", t.location),
+    index().on(t.seriesId),
+    index().on(t.gatheringId),
+  ]
 );
 
 export type InsertPlan = typeof plans.$inferInsert;
 
+// Legacy table - kept for migration purposes, but new plans should use location fields directly in plans table
+// TODO: Remove after migration
 export const planLocations = pgTable(
   "plan_locations",
   (t) => ({
@@ -63,7 +90,7 @@ export const planLocations = pgTable(
     imageUrl: t.text(),
     category: t.text(),
   }),
-  (t) => [index("spatial_index").using("gist", t.location)],
+  (t) => [index("spatial_index").using("gist", t.location)]
 );
 export type PlanLocation = typeof planLocations.$inferInsert;
 
@@ -153,6 +180,7 @@ export const planRelations = relations(plans, ({ one }) => ({
 }));
 */
 
+// Legacy relations - kept for migration purposes
 export const planLocationRelations = relations(planLocations, ({ one }) => ({
   plan: one(plans, {
     relationName: "planLocations",
@@ -162,6 +190,8 @@ export const planLocationRelations = relations(planLocations, ({ one }) => ({
 }));
 
 export const planRelations = relations(plans, ({ many }) => ({
+  // Legacy: locations relation for old planLocations table
+  // New plans have location directly in the plans table
   locations: many(planLocations, {
     relationName: "planLocations",
   }),
