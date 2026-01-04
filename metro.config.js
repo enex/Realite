@@ -9,15 +9,21 @@ config.resolver.platforms = ["ios", "android", "native", "web"];
 
 // Add specific module resolution for @orpc and @ path aliases
 const path = require("path");
+const projectRoot = __dirname;
+
 config.resolver.alias = {
   ...config.resolver.alias,
-  // Path alias for @/ (maps to project root)
-  "@": path.resolve(__dirname),
   "@orpc/server/fetch": require.resolve("@orpc/server/fetch"),
   "@orpc/server/plugins": require.resolve("@orpc/server/plugins"),
   "@orpc/zod": require.resolve("@orpc/zod"),
   "@orpc/openapi": require.resolve("@orpc/openapi"),
   "@orpc/openapi/fetch": require.resolve("@orpc/openapi/fetch"),
+};
+
+// Configure extraNodeModules for @ path alias resolution
+config.resolver.extraNodeModules = {
+  ...config.resolver.extraNodeModules,
+  "@": projectRoot,
 };
 
 // Ensure proper node_modules resolution
