@@ -8,6 +8,7 @@ import { z } from "zod";
 import type { RealiteEvents } from "../events";
 import { protectedRoute } from "../orpc";
 import { PlacesService } from "../services/places";
+import { getTimezoneFromLocation } from "../utils/get-time-zone-from-location";
 import { locationRouter } from "./location";
 
 const planSchema = z.object({
@@ -87,7 +88,6 @@ export const planRouter = {
         maybe: input.maybe,
       };
 
-      console.log(data, "will be added");
       try {
         await context.es.add({
           type: "realite.plan.created",
@@ -126,58 +126,6 @@ export const planRouter = {
             input.location.longitude
           )
         : null;
-
-      // Determine timezone from location
-      const getTimezoneFromLocation = (
-        countryCode?: string,
-        lat?: number,
-        lng?: number
-      ): string => {
-        // Map common country codes to timezones
-        const countryTimezoneMap: Record<string, string> = {
-          DE: "Europe/Berlin",
-          AT: "Europe/Vienna",
-          CH: "Europe/Zurich",
-          FR: "Europe/Paris",
-          IT: "Europe/Rome",
-          ES: "Europe/Madrid",
-          NL: "Europe/Amsterdam",
-          BE: "Europe/Brussels",
-          PL: "Europe/Warsaw",
-          CZ: "Europe/Prague",
-          DK: "Europe/Copenhagen",
-          SE: "Europe/Stockholm",
-          NO: "Europe/Oslo",
-          FI: "Europe/Helsinki",
-          GB: "Europe/London",
-          IE: "Europe/Dublin",
-          PT: "Europe/Lisbon",
-          GR: "Europe/Athens",
-        };
-
-        if (countryCode && countryTimezoneMap[countryCode]) {
-          return countryTimezoneMap[countryCode];
-        }
-
-        // Fallback: try to infer from coordinates (rough approximation)
-        if (lat !== undefined && lng !== undefined) {
-          // Germany and Central Europe: roughly 47-55°N, 5-15°E
-          if (lat >= 47 && lat <= 55 && lng >= 5 && lng <= 15) {
-            return "Europe/Berlin";
-          }
-          // Western Europe
-          if (lat >= 40 && lat <= 51 && lng >= -5 && lng <= 10) {
-            return "Europe/Paris";
-          }
-          // Eastern Europe
-          if (lat >= 45 && lat <= 55 && lng >= 10 && lng <= 25) {
-            return "Europe/Warsaw";
-          }
-        }
-
-        // Default fallback
-        return "Europe/Berlin";
-      };
 
       const timeZone = input.location
         ? getTimezoneFromLocation(
@@ -290,7 +238,7 @@ export const planRouter = {
 
       // Create the plan agent with ToolLoopAgent
       const planAgent = new ToolLoopAgent({
-        model: openai("gpt-4o-mini"),
+        model: openai("gpt-5-mini"),
         instructions: systemPrompt,
         tools: {
           create_plan: tool({
@@ -334,137 +282,149 @@ export const planRouter = {
         stopWhen: stepCountIs(10), // Allow up to 10 steps for tool execution
       });
 
-      // Generate plan using the agent
-      const aiResult = await planAgent.generate({
-        prompt: input.text,
-        abortSignal: signal,
-      });
+      try {
+        // Generate plan using the agent
+        const aiResult = await planAgent.generate({
+          prompt: input.text,
+          abortSignal: signal,
+        });
 
-      console.log(
-        JSON.stringify(
-          aiResult.steps.flatMap((s) => s.toolCalls),
-          null,
-          2
-        )
-      );
+        console.log(
+          JSON.stringify(
+            aiResult.steps.flatMap((s) => s.toolCalls),
+            null,
+            2
+          )
+        );
 
-      // Extract the plan from tool calls
-      const createPlanCall = aiResult.steps
-        .flatMap((s) => s.toolCalls)
-        .find((t) => t.toolName === "create_plan");
+        // Extract the plan from tool calls
+        const createPlanCall = aiResult.steps
+          .flatMap((s) => s.toolCalls)
+          .find((t) => t.toolName === "create_plan");
 
-      const res = {
-        answer: aiResult.text,
-        plan: createPlanCall?.input as z.infer<typeof planSchema> | undefined,
-      };
-      // Normalize AI result: enforce ISO-8601 and ensure startDate is in the future
-      // Handle timezone-aware dates properly
-      if (res.plan?.startDate) {
-        let parsed = new Date(res.plan.startDate);
-        if (isNaN(parsed.getTime())) {
-          // If parsing failed, try to interpret as local time in the user's timezone
-          // This handles cases where AI might return dates without timezone info
-          const localDateStr = res.plan.startDate;
-          // Try to parse as if it's in the user's timezone
-          const tempDate = new Date(localDateStr);
-          if (!isNaN(tempDate.getTime())) {
-            parsed = tempDate;
+        const res = {
+          answer: aiResult.text,
+          plan: createPlanCall?.input as z.infer<typeof planSchema> | undefined,
+        };
+        // Normalize AI result: enforce ISO-8601 and ensure startDate is in the future
+        // Handle timezone-aware dates properly
+        if (res.plan?.startDate) {
+          let parsed = new Date(res.plan.startDate);
+          if (isNaN(parsed.getTime())) {
+            // If parsing failed, try to interpret as local time in the user's timezone
+            // This handles cases where AI might return dates without timezone info
+            const localDateStr = res.plan.startDate;
+            // Try to parse as if it's in the user's timezone
+            const tempDate = new Date(localDateStr);
+            if (!isNaN(tempDate.getTime())) {
+              parsed = tempDate;
+            }
           }
-        }
 
-        if (!isNaN(parsed.getTime())) {
-          let adjusted = new Date(parsed);
-          const now = new Date();
-          if (adjusted.getTime() <= now.getTime()) {
-            // Try with current year, then next year if still in the past
-            adjusted.setFullYear(now.getFullYear());
+          if (!isNaN(parsed.getTime())) {
+            let adjusted = new Date(parsed);
+            const now = new Date();
             if (adjusted.getTime() <= now.getTime()) {
-              adjusted.setFullYear(now.getFullYear() + 1);
+              // Try with current year, then next year if still in the past
+              adjusted.setFullYear(now.getFullYear());
+              if (adjusted.getTime() <= now.getTime()) {
+                adjusted.setFullYear(now.getFullYear() + 1);
+              }
+            }
+            // Always return in ISO format (UTC)
+            res.plan.startDate = adjusted.toISOString();
+          }
+        }
+
+        if (res.plan?.endDate) {
+          let parsedEnd = new Date(res.plan.endDate);
+          if (isNaN(parsedEnd.getTime())) {
+            const tempDate = new Date(res.plan.endDate);
+            if (!isNaN(tempDate.getTime())) {
+              parsedEnd = tempDate;
             }
           }
-          // Always return in ISO format (UTC)
-          res.plan.startDate = adjusted.toISOString();
-        }
-      }
 
-      if (res.plan?.endDate) {
-        let parsedEnd = new Date(res.plan.endDate);
-        if (isNaN(parsedEnd.getTime())) {
-          const tempDate = new Date(res.plan.endDate);
-          if (!isNaN(tempDate.getTime())) {
-            parsedEnd = tempDate;
-          }
-        }
-
-        if (!isNaN(parsedEnd.getTime())) {
-          const adjustedEnd = new Date(parsedEnd);
-          if (res.plan.startDate) {
-            const start = new Date(res.plan.startDate);
-            if (adjustedEnd.getTime() <= start.getTime()) {
-              adjustedEnd.setTime(start.getTime() + 60 * 60 * 1000);
+          if (!isNaN(parsedEnd.getTime())) {
+            const adjustedEnd = new Date(parsedEnd);
+            if (res.plan.startDate) {
+              const start = new Date(res.plan.startDate);
+              if (adjustedEnd.getTime() <= start.getTime()) {
+                adjustedEnd.setTime(start.getTime() + 60 * 60 * 1000);
+              }
             }
+            // Always return in ISO format (UTC)
+            res.plan.endDate = adjustedEnd.toISOString();
           }
-          // Always return in ISO format (UTC)
-          res.plan.endDate = adjustedEnd.toISOString();
         }
+
+        const ensureLocations = async () => {
+          if (!res.plan) return;
+          if (
+            Array.isArray(res.plan.locations) &&
+            res.plan.locations.length > 0
+          )
+            return;
+          const cityHint = resolved?.city || resolved?.region || undefined;
+          const activityHint =
+            res.plan.activity &&
+            getGroupIdFromActivity(res.plan.activity) &&
+            activities[
+              getGroupIdFromActivity(
+                res.plan.activity
+              ) as keyof typeof activities
+            ]?.nameDe;
+          const queryParts = [input.text, activityHint, cityHint].filter(
+            Boolean
+          );
+          const query = queryParts.join(" ");
+          const fallbackSearch = query
+            ? await placesService.search({
+                query,
+                userLocation: input.location
+                  ? {
+                      lat: input.location.latitude,
+                      lng: input.location.longitude,
+                    }
+                  : undefined,
+                radius: input.location?.radius,
+                limit: 5,
+              })
+            : [];
+          const fallbackLocations =
+            fallbackSearch?.slice(0, 3).map((place) => ({
+              title: place.name,
+              address: place.formatted_address ?? undefined,
+              latitude: place.geometry.location.lat,
+              longitude: place.geometry.location.lng,
+            })) ?? [];
+
+          if (fallbackLocations.length > 0) {
+            res.plan.locations = fallbackLocations as any;
+            res.plan.maybe = true;
+            return;
+          }
+
+          if (input.location) {
+            res.plan.locations = [
+              {
+                title: cityHint || "Treffpunkt",
+                latitude: input.location.latitude,
+                longitude: input.location.longitude,
+                address: cityHint,
+              },
+            ] as any;
+            res.plan.maybe = true;
+          }
+        };
+
+        await ensureLocations();
+        console.log(res);
+        return res;
+      } catch (err) {
+        console.error(err);
+        throw err;
       }
-
-      const ensureLocations = async () => {
-        if (!res.plan) return;
-        if (Array.isArray(res.plan.locations) && res.plan.locations.length > 0)
-          return;
-        const cityHint = resolved?.city || resolved?.region || undefined;
-        const activityHint =
-          res.plan.activity &&
-          getGroupIdFromActivity(res.plan.activity) &&
-          activities[
-            getGroupIdFromActivity(res.plan.activity) as keyof typeof activities
-          ]?.nameDe;
-        const queryParts = [input.text, activityHint, cityHint].filter(Boolean);
-        const query = queryParts.join(" ");
-        const fallbackSearch = query
-          ? await placesService.search({
-              query,
-              userLocation: input.location
-                ? {
-                    lat: input.location.latitude,
-                    lng: input.location.longitude,
-                  }
-                : undefined,
-              radius: input.location?.radius,
-              limit: 5,
-            })
-          : [];
-        const fallbackLocations =
-          fallbackSearch?.slice(0, 3).map((place) => ({
-            title: place.name,
-            address: place.formatted_address ?? undefined,
-            latitude: place.geometry.location.lat,
-            longitude: place.geometry.location.lng,
-          })) ?? [];
-
-        if (fallbackLocations.length > 0) {
-          res.plan.locations = fallbackLocations as any;
-          res.plan.maybe = true;
-          return;
-        }
-
-        if (input.location) {
-          res.plan.locations = [
-            {
-              title: cityHint || "Treffpunkt",
-              latitude: input.location.latitude,
-              longitude: input.location.longitude,
-              address: cityHint,
-            },
-          ] as any;
-          res.plan.maybe = true;
-        }
-      };
-
-      await ensureLocations();
-      console.log(res);
-      return res;
     }),
   myPlans: protectedRoute
     .input(
