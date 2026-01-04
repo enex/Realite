@@ -1,7 +1,12 @@
 import { useSignOut } from "@/client/auth";
 import rpc from "@/client/orpc";
 import { cn } from "@/lib/utils";
-import { genders, relationshipStatuses } from "@/shared/validation";
+import {
+  Gender,
+  genders,
+  RelationshipStatus,
+  relationshipStatuses,
+} from "@/shared/validation";
 import { isDefinedError } from "@orpc/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "expo-router";
@@ -14,7 +19,6 @@ import {
   Platform,
   Pressable,
   Text as RNText,
-  ScrollView,
   Share,
   TextInput,
   View,
@@ -32,9 +36,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
+import { GroupedInput, GroupedInputItem } from "@/components/ui/input";
 import { ModeToggle } from "@/components/ui/mode-toggle";
+import Page from "@/components/ui/page";
+import { Picker } from "@/components/ui/picker";
 import { Text } from "@/components/ui/text";
-import { ChevronRightIcon } from "lucide-react-native";
+import {
+  ChevronRightIcon,
+  CircleIcon,
+  HeartIcon,
+  Mail,
+  MarsIcon,
+  Phone,
+  User,
+  VenusIcon,
+} from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function Divider() {
   return <View className="h-px bg-zinc-200/70 dark:bg-zinc-800" />;
@@ -298,18 +315,14 @@ export default function ProfileScreen() {
 
   const resolvedName = (name ?? me.data?.name ?? "").trim();
   const initialName = (me.data?.name ?? "").trim();
+  const insets = useSafeAreaInsets();
 
   return (
-    <ScrollView
-      className="flex-1 bg-white dark:bg-zinc-950"
-      showsVerticalScrollIndicator={false}
-      contentInsetAdjustmentBehavior="automatic"
+    <Page
       contentContainerStyle={{
-        paddingHorizontal: 16,
-        paddingTop: 16,
-        paddingBottom: 24,
         flexDirection: "column",
         gap: 16,
+        paddingBottom: 128 + insets.bottom,
       }}
     >
       <Card>
@@ -359,6 +372,52 @@ export default function ProfileScreen() {
           <Icon name={ChevronRightIcon} size={22} />
         </View>
       </Card>
+
+      <GroupedInput title="Personal Information">
+        <GroupedInputItem label="Name" placeholder="John Doe" icon={User} />
+        <GroupedInputItem
+          label="Email"
+          placeholder="john@example.com"
+          icon={Mail}
+          keyboardType="email-address"
+          value={me.data?.email}
+          onChangeText={(text) => update.mutate({ email: text })}
+        />
+        <GroupedInputItem
+          label="Telefon"
+          placeholder="+49 (555) 123-4567"
+          icon={Phone}
+          value={me.data?.phoneNumber}
+          keyboardType="phone-pad"
+        />
+        <Picker
+          value={me.data?.gender}
+          onValueChange={(value) => update.mutate({ gender: value as Gender })}
+          options={genders.map((g) => ({ label: GENDER_LABEL[g], value: g }))}
+          placeholder="Geschlecht"
+          icon={
+            { default: CircleIcon, male: MarsIcon, female: VenusIcon }[
+              me.data?.gender || "default"
+            ] || CircleIcon
+          }
+          label="Geschlecht"
+          variant="group"
+        />
+        <Picker
+          value={me.data?.relationshipStatus}
+          onValueChange={(value) =>
+            update.mutate({ relationshipStatus: value as RelationshipStatus })
+          }
+          options={relationshipStatuses.map((rs) => ({
+            label: REL_LABEL[rs],
+            value: rs,
+          }))}
+          placeholder="Beziehung"
+          icon={HeartIcon}
+          label="Beziehung"
+          variant="group"
+        />
+      </GroupedInput>
 
       <Card>
         <View className="px-4 pt-4 pb-3">
@@ -600,7 +659,7 @@ export default function ProfileScreen() {
           Änderungen werden automatisch gespeichert
         </ThemedText>
       </View>
-    </ScrollView>
+    </Page>
   );
 }
 

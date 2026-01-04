@@ -25,6 +25,10 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
+## UI Components
+
+This project uses UI components from [BNA UI](https://ui.ahmedbna.com/), a beautiful and accessible Expo React Native components library that works seamlessly across iOS and Android. The components are inspired by shadcn and provide a consistent design system for the app.
+
 ## Demo-Nutzer
 
 Für Testzwecke und Store-Reviews stehen mehrere Demo-Nutzer zur Verfügung:

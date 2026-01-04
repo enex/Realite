@@ -507,6 +507,7 @@ export const es = builder.store({
               onboarded: false,
               deleted: false,
               deletedAt: null as null | Date,
+              email: "",
               privacySettings: {
                 showGender: true,
                 showAge: true,

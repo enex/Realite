@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ActivityId } from "../activities";
 
 /**
  * Repetition/Availability schema for recurring time slots, mappable to iCal RRULE/EXDATE/DTSTART.
@@ -218,3 +219,18 @@ export function listOccurrences(
 ): Occurrence[] {
   return Array.from(generateOccurrences(repetition, options));
 }
+
+export type PlanListItem = {
+  id: string;
+  title: string;
+  date: string;
+  status: "committed" | "pending";
+  activity: ActivityId;
+  locations?: {
+    title: string;
+    address?: string;
+    latitude: number;
+    longitude: number;
+  }[];
+  participants?: { name: string; image?: string }[];
+};

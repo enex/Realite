@@ -7,19 +7,19 @@ export default function TabLayout() {
     <NativeTabs minimizeBehavior="onScrollDown">
       <NativeTabs.Trigger name="index">
         <Label>Start</Label>
-        <Icon sf="calendar.and.person" drawable="calendar.and.person" />
+        <Icon sf="calendar.and.person" drawable="home_24" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="my-plans">
         <Label>Meine Pläne</Label>
-        <Icon sf="calendar.and.person" drawable="calendar.and.person" />
+        <Icon sf="calendar.and.person" drawable="calendar_today" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="explore">
         <Label>Entdecken</Label>
-        <Icon sf="location" drawable="location.and.person" />
+        <Icon sf="location" drawable="map_24" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Label>Profil</Label>
-        <Icon sf="person.fill" drawable="person.fill" />
+        <Icon sf="person.fill" drawable="person_24" />
       </NativeTabs.Trigger>
     </NativeTabs>
   );

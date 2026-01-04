@@ -19,6 +19,7 @@ import { useSession } from "@/client/auth";
 import { ShareIntentHandler } from "@/components/ShareIntentHandler";
 import { ShareLinkHandler } from "@/components/ShareLinkHandler";
 import { SplashScreenController } from "@/components/SplashScreenController";
+import { ToastProvider } from "@/components/ui/toast";
 import { ThemeProvider } from "@/theme/theme-provider";
 import "../global.css";
 
@@ -56,12 +57,14 @@ export default function RootLayout() {
   const content = (
     <ShareIntentProvider>
       <QueryClientProvider client={queryClient}>
-        <SplashScreenController />
-        <ShareLinkHandler />
-        <ShareIntentHandler />
-        <BottomSheetModalProvider>
-          <RootNavigator />
-        </BottomSheetModalProvider>
+        <ToastProvider>
+          <SplashScreenController />
+          <ShareLinkHandler />
+          <ShareIntentHandler />
+          <BottomSheetModalProvider>
+            <RootNavigator />
+          </BottomSheetModalProvider>
+        </ToastProvider>
       </QueryClientProvider>
     </ShareIntentProvider>
   );

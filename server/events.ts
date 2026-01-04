@@ -91,6 +91,7 @@ export interface RealiteEvents {
   };
 
   "realite.profile.updated": {
+    email?: string;
     gender?: Gender;
     name?: string;
     image?: string;

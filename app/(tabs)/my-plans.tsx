@@ -24,11 +24,13 @@ import PlanFilterBottomSheet, {
   type PlanFilterBottomSheetRef,
 } from "@/components/PlanFilterBottomSheet";
 import { Icon } from "@/components/ui/icon";
+import { useColor } from "@/hooks/useColor";
 import { useFeatureFlagBoolean } from "@/hooks/useFeatureFlag";
 import type { ActivityId } from "@/shared/activities";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { startOfDay, subDays } from "date-fns";
 import { Calendar, PlusCircleIcon } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // iOS Design System (reduced to what's needed for this screen)
 const typography = {
@@ -592,8 +594,11 @@ export default function PlansScreen() {
     return filteredFutureData.length > 0;
   }, [filteredFutureData]);
 
+  const insets = useSafeAreaInsets();
+  const backgroundColor = useColor("background");
+
   return (
-    <View className={`flex-1 ${surfaceClass}`}>
+    <View className={`flex-1 ${surfaceClass}`} style={{ backgroundColor }}>
       {error && (
         <View style={{ padding: spacing.lg }}>
           <Text className="text-red-500" style={typography.subheadline}>
@@ -685,7 +690,7 @@ export default function PlansScreen() {
           ) : null
         }
         contentContainerStyle={{
-          paddingTop: spacing.xl,
+          paddingTop: spacing.xl + insets.top,
           paddingBottom: bottomPadding,
         }}
         style={{ flex: 1 }}

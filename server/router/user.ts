@@ -11,7 +11,7 @@ function createS3Signature(
   method: string,
   url: string,
   headers: Record<string, string>,
-  payload: Buffer,
+  payload: Buffer
 ) {
   const urlObj = new URL(url);
   const host = urlObj.host;
@@ -80,6 +80,7 @@ function createS3Signature(
 }
 
 const updateUserInputSchema = z.object({
+  email: z.email().optional(),
   gender: genderSchema.optional(),
   name: z.string().optional(),
   image: z.string().optional(),
@@ -117,7 +118,7 @@ export const userRouter = {
         // works reliably across all platforms (web, iOS, Android).
         dataUrl: z.string(),
         contentType: z.string().optional(),
-      }),
+      })
     )
     .errors({
       MISCONFIGURED: { message: "S3 is not configured on the server." },
@@ -157,7 +158,7 @@ export const userRouter = {
       const endpointUrl = new URL(
         endpoint.startsWith("http://") || endpoint.startsWith("https://")
           ? endpoint
-          : `https://${endpoint}`,
+          : `https://${endpoint}`
       );
       const host = `${bucket}.${endpointUrl.host}`;
       const s3Url = `${endpointUrl.protocol}//${host}/${key}`;
@@ -173,7 +174,7 @@ export const userRouter = {
           "content-type": contentType,
           "x-amz-acl": "public-read",
         },
-        bytes,
+        bytes
       );
 
       // Upload directly to S3 using fetch with AWS signature
@@ -225,7 +226,7 @@ export const userRouter = {
     .input(
       z
         .object({ id: z.uuid() })
-        .or(z.object({ phoneNumberHash: z.string().uuid() })),
+        .or(z.object({ phoneNumberHash: z.string().uuid() }))
     )
     .errors({
       NOT_FOUND: { message: "User not found" },
@@ -234,7 +235,7 @@ export const userRouter = {
       let id = "id" in input ? input.id : null;
       if ("phoneNumberHash" in input) {
         id = await context.es.projections.auth.getUserIdByPhoneNumber(
-          input.phoneNumberHash,
+          input.phoneNumberHash
         );
       }
       if (!id) throw errors.NOT_FOUND();
@@ -264,7 +265,7 @@ export const userRouter = {
             "birthDate",
             "relationshipStatus",
           ]);
-        }),
+        })
       );
       return profiles.filter(Boolean);
     }),
@@ -354,9 +355,9 @@ export const userRouter = {
           and(
             eq(
               t.type,
-              "realite.user.whatsapp-status-share-reminder-interacted",
+              "realite.user.whatsapp-status-share-reminder-interacted"
             ),
-            eq(t.subject, context.session.id),
+            eq(t.subject, context.session.id)
           ),
         orderBy: (t, { desc }) => [desc(t.time)],
         limit: 50,
@@ -385,14 +386,14 @@ export const userRouter = {
         lastSharedAt: lastSharedAt?.toISOString() ?? null,
         lastDismissedAt: lastDismissedAt?.toISOString() ?? null,
       };
-    },
+    }
   ),
   trackWhatsAppStatusShareReminderEvent: protectedRoute
     .input(
       z.object({
         action: z.enum(["shown", "dismissed", "shared"]),
         surface: z.enum(["plans", "profile", "unknown"]).default("unknown"),
-      }),
+      })
     )
     .handler(async ({ context, input }) => {
       await context.es.add({
@@ -406,14 +407,14 @@ export const userRouter = {
     .input(
       z.object({
         reason: z.string().optional(),
-      }),
+      })
     )
-    .handler(async ({ context }) => {
+    .handler(async ({ context, input }) => {
       await context.es.add({
         type: "realite.user.deleted",
         subject: context.session.id,
         data: {
-          reason: context.input.reason,
+          reason: input.reason,
         },
       });
       return { success: true };

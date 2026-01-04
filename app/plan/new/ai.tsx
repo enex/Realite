@@ -1,12 +1,16 @@
 import { client } from "@/client/orpc";
+import { Button } from "@/components/ui/button";
+import Page from "@/components/ui/page";
 import { Text } from "@/components/ui/text";
+import { useToast } from "@/components/ui/toast";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useLocation } from "@/hooks/useLocation";
 import { HeaderButton } from "@react-navigation/elements";
 import * as Haptics from "expo-haptics";
 import { Stack, useRouter } from "expo-router";
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { Alert, Platform, ScrollView, TextInput, View } from "react-native";
+import { Platform, TextInput, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AIPlanCreateScreen() {
   const router = useRouter();
@@ -17,6 +21,7 @@ export default function AIPlanCreateScreen() {
   const [text, setText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const textInputRef = useRef<TextInput>(null);
+  const toaster = useToast();
 
   const { latitude, longitude, hasPermission } = useLocation();
 
@@ -50,7 +55,7 @@ export default function AIPlanCreateScreen() {
 
   const handleSubmit = useCallback(async () => {
     if (!text.trim()) {
-      Alert.alert("Bitte gib ein, was du tun möchtest");
+      toaster.warning("Bitte gib ein, was du tun möchtest");
       return;
     }
 
@@ -75,34 +80,43 @@ export default function AIPlanCreateScreen() {
         return;
       }
 
-      Alert.alert(
-        "Fehler",
-        "Konnte keinen Plan aus deiner Anfrage erstellen. Bitte versuch es erneut."
+      toaster.error(
+        "Konnte keinen Plan aus deiner Anfrage erstellen",
+        "Bitte versuch es erneut"
       );
     } catch (error) {
       console.error("Error creating AI plan:", error);
-      Alert.alert(
-        "Fehler",
-        "Etwas ist schiefgelaufen. Bitte versuch es erneut."
-      );
+      toaster.error("Etwas ist schiefgelaufen. Bitte versuch es erneut.");
     } finally {
       setIsLoading(false);
     }
-  }, [text, hasPermission, latitude, longitude, goToEdit]);
+  }, [text, hasPermission, latitude, longitude, goToEdit, toaster]);
 
   const headerTitle = "Plan erstellen";
+  const insets = useSafeAreaInsets();
 
   return (
-    <ScrollView
-      className="flex-1"
+    <Page
       keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{
-        paddingHorizontal: 16,
-        paddingTop: isIOS ? 16 : 20,
-        paddingBottom: 24,
-      }}
-      showsVerticalScrollIndicator={false}
-      contentInsetAdjustmentBehavior="automatic"
+      bottom={
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: 8,
+            paddingHorizontal: 16,
+            paddingBottom: 16 + insets.bottom,
+          }}
+        >
+          <Button onPress={dismiss} variant="secondary">
+            Abbrechen
+          </Button>
+          <View style={{ flex: 1 }} />
+          <Button onPress={handleSubmit} loading={isLoading}>
+            Erstellen
+          </Button>
+        </View>
+      }
     >
       <Stack.Screen
         options={{
@@ -151,6 +165,6 @@ export default function AIPlanCreateScreen() {
       <Text className="text-right text-sm text-zinc-500 dark:text-zinc-400">
         {text.length}/500
       </Text>
-    </ScrollView>
+    </Page>
   );
 }

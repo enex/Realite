@@ -2,12 +2,10 @@ import { useSignInWithPhone } from "@/client/auth";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   TextInput,
   TouchableWithoutFeedback,
@@ -135,35 +133,24 @@ export default function VerifyCodeScreen() {
 
                   <Button
                     onPress={handleVerifyCode}
-                    disabled={isLoading || code.length !== 6}
+                    disabled={code.length !== 6}
                     size="lg"
-                    className="h-14 w-full shadow-lg shadow-primary/30"
+                    loading={isLoading}
                   >
-                    {isLoading ? (
-                      <ActivityIndicator color="white" />
-                    ) : (
-                      <Text>Code bestätigen</Text>
-                    )}
+                    Code bestätigen
                   </Button>
 
-                  <Pressable
-                    className="mt-6 self-center"
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onPress={() => router.back()}
                   >
-                    <Text
-                      variant="caption"
-                      className="text-zinc-500 dark:text-zinc-400"
-                    >
-                      Nummer ändern
-                    </Text>
-                  </Pressable>
+                    Nummer ändern
+                  </Button>
                 </CardContent>
               </Card>
 
-              <Text
-                variant="caption"
-                className="mt-10 px-8 text-center leading-4 opacity-50"
-              >
+              <Text variant="caption" style={{ marginTop: 16 }}>
                 Du hast keinen Code erhalten? Bitte warte einen Moment oder
                 kontaktiere unseren Support.
               </Text>

@@ -1,19 +1,13 @@
 import orpc from "@/client/orpc";
-import { Icon } from "@/components/ui/icon";
+import { Button } from "@/components/ui/button";
+import Page from "@/components/ui/page";
 import { Text } from "@/components/ui/text";
 import { useQuery } from "@tanstack/react-query";
 import { GlassContainer, GlassView } from "expo-glass-effect";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { Plus } from "lucide-react-native";
-import {
-  Image,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Image, RefreshControl, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Index() {
@@ -27,44 +21,30 @@ export default function Index() {
   };
 
   return (
-    <View style={{ flex: 1 }} className="bg-white dark:bg-zinc-950">
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        refreshControl={
-          <RefreshControl
-            refreshing={result.isFetching}
-            onRefresh={result.refetch}
-          />
-        }
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 16 }}
-      >
-        <Text variant="heading">Hi {result.data?.user?.name ?? "there"}</Text>
-        <Text variant="subtitle">Was hast du vor?</Text>
+    <Page
+      refreshControl={
+        <RefreshControl
+          refreshing={result.isFetching}
+          onRefresh={result.refetch}
+        />
+      }
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ padding: 16, paddingTop: insets.top + 16 }}
+      rightButton={
+        <Button
+          onPress={handleAddPlan}
+          icon={Plus}
+          variant="default"
+          size="icon"
+        />
+      }
+    >
+      <Text variant="heading">Hi {result.data?.user?.name ?? "there"}</Text>
+      <Text variant="subtitle">Was hast du vor?</Text>
 
-        <Text>Next or current plan of the signed in user</Text>
-
-        <GlassContainerDemo />
-      </ScrollView>
-
-      <Pressable
-        onPress={handleAddPlan}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        style={{
-          position: "absolute",
-          top: insets.top + 8,
-          right: 16,
-          width: 36,
-          height: 36,
-          borderRadius: 18,
-          backgroundColor: "rgba(0, 0, 0, 0.05)",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Icon name={Plus} size={22} />
-      </Pressable>
-    </View>
+      <Text>Next or current plan of the signed in user</Text>
+      <GlassContainerDemo />
+    </Page>
   );
 }
 

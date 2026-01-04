@@ -9,9 +9,9 @@ import {
   getActivityGradient,
   getActivityIcon,
   getActivityIconColor,
-  type ActivityId,
 } from "@/shared/activities";
 import { formatLocalTime } from "@/shared/utils/datetime";
+import { PlanListItem } from "@/shared/validation/plan";
 import { GlassView } from "expo-glass-effect";
 import { useRouter } from "expo-router";
 import { MapPinIcon } from "lucide-react-native";
@@ -47,32 +47,10 @@ export const shadows = {
   },
 };
 
-type PlanListItem = {
-  id: string;
-  title: string;
-  date: string;
-  status: "committed" | "pending";
-  activity: ActivityId;
-  locations?: {
-    title: string;
-    address?: string;
-    latitude: number;
-    longitude: number;
-  }[];
-  participants?: { name: string; image?: string }[];
-};
-
 interface PlanCardProps {
   item: PlanListItem;
   index: number;
 }
-
-const getInitials = (name: string): string => {
-  const parts = String(name).trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
-};
 
 const getFirstName = (name: string): string => {
   const trimmed = String(name).trim();
