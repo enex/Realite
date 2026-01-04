@@ -1,4 +1,4 @@
-import { appConfigRouter } from "./appConfig";
+import { appConfigRouter } from "./app-config";
 import { authRouter } from "./auth";
 import { locationRouter } from "./location";
 import { planRouter } from "./plan";
