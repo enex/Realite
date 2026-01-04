@@ -32,10 +32,10 @@ import { Icon } from "@/components/ui/icon";
 import {
   activities,
   getActivityGradient,
-  getActivityIcon,
   getActivityLabel,
   type ActivityId,
 } from "@/shared/activities";
+import { getActivityIcon } from "@/shared/activity-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isSameYear } from "date-fns";
 import {

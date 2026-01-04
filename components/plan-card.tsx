@@ -7,9 +7,9 @@ import { Avatar } from "@/components/avatar";
 import { Icon } from "@/components/ui/icon";
 import {
   getActivityGradient,
-  getActivityIcon,
   getActivityIconColor,
 } from "@/shared/activities";
+import { getActivityIcon } from "@/shared/activity-icons";
 import { formatLocalTime } from "@/shared/utils/datetime";
 import { PlanListItem } from "@/shared/validation/plan";
 import { GlassView } from "expo-glass-effect";
