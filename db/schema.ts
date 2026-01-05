@@ -16,6 +16,55 @@ export const consumers = pgTable("consumers", (t) => ({
   version: t.integer("version").notNull(),
 }));
 
+export const intents = pgTable(
+  "intents",
+  (t) => ({
+    id: t.uuid().primaryKey(),
+    userId: t.uuid().notNull(),
+    title: t.text().notNull(),
+    description: t.text(),
+    activity: t.text().notNull(),
+    visibility: t.text().notNull().default("public"), // "public" | "contacts"
+    status: t.text().notNull().default("active"), // "active" | "fulfilled" | "withdrawn"
+    locationPreferences: t.jsonb(),
+    timePreferences: t.jsonb(),
+    fulfilledByPlanId: t.uuid(),
+    withdrawnReason: t.text(),
+    createdAt: t.timestamp().notNull().defaultNow(),
+    updatedAt: t.timestamp().notNull().defaultNow(),
+  }),
+  (t) => [
+    index().on(t.userId),
+    index().on(t.activity),
+    index().on(t.status),
+    index().on(t.visibility),
+  ]
+);
+
+export const intentRequests = pgTable(
+  "intent_requests",
+  (t) => ({
+    id: t.uuid().primaryKey(),
+    fromUserId: t.uuid().notNull(),
+    toUserId: t.uuid().notNull(),
+    activity: t.text().notNull(),
+    title: t.text().notNull(),
+    message: t.text(),
+    status: t.text().notNull().default("pending"), // "pending" | "accepted" | "declined" | "counter"
+    responseMessage: t.text(),
+    planId: t.uuid(),
+    createdAt: t.timestamp().notNull().defaultNow(),
+    updatedAt: t.timestamp().notNull().defaultNow(),
+    respondedAt: t.timestamp(),
+  }),
+  (t) => [
+    index().on(t.toUserId),
+    index().on(t.fromUserId),
+    index().on(t.status),
+    index().on(t.activity),
+  ]
+);
+
 export const plans = pgTable(
   "plans",
   (t) => ({

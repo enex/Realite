@@ -1,6 +1,18 @@
 import { ActivityId } from "@/shared/activities";
 import { addSeconds } from "date-fns";
-import { and, asc, desc, eq, gte, ilike, lte, ne, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gte,
+  ilike,
+  inArray,
+  lte,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm";
 import * as schema from "../db/schema";
 import { builder } from "./builder";
 import {
@@ -8,6 +20,7 @@ import {
   sendPlanParticipationNotification,
 } from "./services/plan-notifications";
 import {
+  arrayAgg,
   jsonArrayAgg,
   jsonArrayAggWhere,
   jsonBuildObject,
@@ -223,32 +236,117 @@ export const es = builder.store({
 
           // Neuer Wunsch/Interesse geäußert
           async "realite.intent.expressed"(ev, ctx) {
-            // TODO: Tabelle für intents erstellen und hier einfügen
-            console.log(
-              `Intent expressed by ${ev.actor}: ${ev.data.title} (${ev.data.activity})`
-            );
+            await ctx.db
+              .insert(schema.intents)
+              .values({
+                id: ev.subject,
+                userId: ev.actor!,
+                title: ev.data.title,
+                description: ev.data.description,
+                activity: ev.data.activity,
+                visibility: ev.data.visibility,
+                locationPreferences: ev.data.locationPreferences,
+                timePreferences: ev.data.timePreferences,
+                status: "active",
+                createdAt: ev.time,
+                updatedAt: ev.time,
+              })
+              .onConflictDoNothing();
           },
 
           // Wunsch verfeinert
           async "realite.intent.refined"(ev, ctx) {
-            // TODO: Intent in DB aktualisieren
-            console.log(`Intent ${ev.subject} refined by ${ev.actor}`);
+            const cleanUpdates = Object.fromEntries(
+              Object.entries(ev.data).filter(([_, v]) => v !== undefined)
+            );
+
+            if (Object.keys(cleanUpdates).length === 0) return;
+
+            await ctx.db
+              .update(schema.intents)
+              .set({
+                ...(cleanUpdates as any),
+                updatedAt: ev.time,
+              })
+              .where(
+                and(
+                  eq(schema.intents.id, ev.subject),
+                  eq(schema.intents.userId, ev.actor!)
+                )
+              );
           },
 
           // Wunsch durch Plan erfüllt
           async "realite.intent.fulfilled"(ev, ctx) {
-            // TODO: Intent als erfüllt markieren
-            console.log(
-              `Intent ${ev.subject} fulfilled by plan ${ev.data.fulfilledByPlanId}`
-            );
+            await ctx.db
+              .update(schema.intents)
+              .set({
+                status: "fulfilled",
+                fulfilledByPlanId: ev.data.fulfilledByPlanId,
+                updatedAt: ev.time,
+              })
+              .where(
+                and(
+                  eq(schema.intents.id, ev.subject),
+                  eq(schema.intents.userId, ev.actor!)
+                )
+              );
           },
 
           // Wunsch zurückgezogen
           async "realite.intent.withdrawn"(ev, ctx) {
-            // TODO: Intent löschen oder als zurückgezogen markieren
-            console.log(
-              `Intent ${ev.subject} withdrawn by ${ev.actor}: ${ev.data.reason}`
-            );
+            await ctx.db
+              .update(schema.intents)
+              .set({
+                status: "withdrawn",
+                withdrawnReason: ev.data.reason,
+                updatedAt: ev.time,
+              })
+              .where(
+                and(
+                  eq(schema.intents.id, ev.subject),
+                  eq(schema.intents.userId, ev.actor!)
+                )
+              );
+          },
+
+          // ============================================
+          // INTENT REQUEST EVENTS
+          // ============================================
+
+          async "realite.intent-request.sent"(ev, ctx) {
+            await ctx.db
+              .insert(schema.intentRequests)
+              .values({
+                id: ev.subject,
+                fromUserId: ev.actor!,
+                toUserId: ev.data.toUserId,
+                activity: ev.data.activity,
+                title: ev.data.title,
+                message: ev.data.message,
+                status: "pending",
+                createdAt: ev.time,
+                updatedAt: ev.time,
+              })
+              .onConflictDoNothing();
+          },
+
+          async "realite.intent-request.responded"(ev, ctx) {
+            await ctx.db
+              .update(schema.intentRequests)
+              .set({
+                status: ev.data.status,
+                responseMessage: ev.data.message,
+                planId: ev.data.planId,
+                updatedAt: ev.time,
+                respondedAt: ev.time,
+              })
+              .where(
+                and(
+                  eq(schema.intentRequests.id, ev.subject),
+                  eq(schema.intentRequests.toUserId, ev.actor!)
+                )
+              );
           },
 
           // ============================================
@@ -436,7 +534,12 @@ export const es = builder.store({
                 ownPlansWithLocation.activity,
                 sql`"ownPlansWithLocation"."plan_title"`,
                 sql`"ownPlansWithLocation"."plan_description"`,
-                sql`"ownPlansWithLocation"."plan_url"`
+                sql`"ownPlansWithLocation"."plan_url"`,
+                ownPlansWithLocation.locationTitle,
+                ownPlansWithLocation.address,
+                ownPlansWithLocation.locationUrl,
+                ownPlansWithLocation.locationDescription,
+                ownPlansWithLocation.location
               )
               .orderBy(
                 orderDirection === "desc"
@@ -541,6 +644,102 @@ export const es = builder.store({
               .limit(input.limit ?? 100);
 
             return plans;
+          },
+        },
+      }),
+      intent: builder.projection({
+        handlers: {},
+        queries: {
+          async listMine(ctx, userId: string) {
+            return await ctx.db
+              .select({
+                id: schema.intents.id,
+                userId: schema.intents.userId,
+                title: schema.intents.title,
+                description: schema.intents.description,
+                activity: schema.intents.activity,
+                visibility: schema.intents.visibility,
+                status: schema.intents.status,
+                locationPreferences: schema.intents.locationPreferences,
+                timePreferences: schema.intents.timePreferences,
+                createdAt: schema.intents.createdAt,
+                updatedAt: schema.intents.updatedAt,
+              })
+              .from(schema.intents)
+              .where(
+                and(
+                  eq(schema.intents.userId, userId),
+                  eq(schema.intents.status, "active")
+                )
+              )
+              .orderBy(desc(schema.intents.updatedAt));
+          },
+
+          async getActivityMatchSummary(
+            ctx,
+            input: {
+              userId: string;
+              activities: ActivityId[];
+              limit?: number;
+            }
+          ) {
+            if (!input.activities.length) return [];
+
+            const rows = await ctx.db
+              .select({
+                activity: schema.intents.activity,
+                matchCount: sql<number>`count(*)`.as("match_count"),
+                userIds: arrayAgg(schema.intents.userId).as("user_ids"),
+              })
+              .from(schema.intents)
+              .where(
+                and(
+                  eq(schema.intents.status, "active"),
+                  eq(schema.intents.visibility, "public"),
+                  ne(schema.intents.userId, input.userId),
+                  inArray(schema.intents.activity, input.activities as any)
+                )
+              )
+              .groupBy(schema.intents.activity)
+              .orderBy(desc(sql`count(*)`))
+              .limit(input.limit ?? 8);
+
+            return rows.map((r) => ({
+              activity: r.activity as ActivityId,
+              matchCount: Number(r.matchCount ?? 0),
+              userIds: (r.userIds ?? []) as string[],
+            }));
+          },
+        },
+      }),
+      intentRequest: builder.projection({
+        handlers: {},
+        queries: {
+          async listInbox(ctx, toUserId: string) {
+            return await ctx.db
+              .select({
+                id: schema.intentRequests.id,
+                fromUserId: schema.intentRequests.fromUserId,
+                toUserId: schema.intentRequests.toUserId,
+                activity: schema.intentRequests.activity,
+                title: schema.intentRequests.title,
+                message: schema.intentRequests.message,
+                status: schema.intentRequests.status,
+                responseMessage: schema.intentRequests.responseMessage,
+                planId: schema.intentRequests.planId,
+                createdAt: schema.intentRequests.createdAt,
+                updatedAt: schema.intentRequests.updatedAt,
+                respondedAt: schema.intentRequests.respondedAt,
+              })
+              .from(schema.intentRequests)
+              .where(
+                and(
+                  eq(schema.intentRequests.toUserId, toUserId),
+                  eq(schema.intentRequests.status, "pending")
+                )
+              )
+              .orderBy(desc(schema.intentRequests.createdAt))
+              .limit(50);
           },
         },
       }),

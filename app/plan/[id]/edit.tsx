@@ -1,8 +1,9 @@
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Pressable,
   ScrollView,
@@ -41,7 +42,7 @@ export default function PlanEdit() {
   const isDark = colorScheme === "dark";
 
   const queryClient = useQueryClient();
-  const { data: plan } = useQuery(
+  const { data: plan, isLoading } = useQuery(
     orpc.plan.get.queryOptions({ input: { id } })
   );
 
@@ -60,24 +61,59 @@ export default function PlanEdit() {
     })
   );
 
-  const activity = (plan?.activity ?? undefined) as ActivityId | undefined;
-  const [, , c3] = getActivityGradient(activity);
+  if (isLoading || !plan) {
+    return (
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <PlanEditForm
+      key={id}
+      id={id}
+      plan={plan}
+      changePlan={changePlan}
+      isDark={isDark}
+    />
+  );
+}
+
+function PlanEditForm({
+  id,
+  plan,
+  changePlan,
+  isDark,
+}: {
+  id: string;
+  plan: any;
+  changePlan: any;
+  isDark: boolean;
+}) {
+  const router = useRouter();
 
   // Form state
-  const [title, setTitle] = useState(plan?.title || "");
-  const [description, setDescription] = useState(plan?.description || "");
-  const [url, setUrl] = useState(plan?.url || "");
+  const [title, setTitle] = useState(plan.title || "");
+  const [description, setDescription] = useState(plan.description || "");
+  const [url, setUrl] = useState(plan.url || "");
   const [startDate, setStartDate] = useState<Date>(
-    plan?.startDate ? new Date(plan.startDate as unknown as string) : new Date()
+    plan.startDate ? new Date(plan.startDate as unknown as string) : new Date()
   );
   const [endDate, setEndDate] = useState<Date>(
-    plan?.endDate
+    plan.endDate
       ? new Date(plan.endDate as unknown as string)
       : new Date(Date.now() + 2 * 60 * 60 * 1000)
   );
+  const initialActivity = useMemo(
+    () => (plan.activity ?? undefined) as ActivityId | undefined,
+    [plan.activity]
+  );
   const [selectedActivity, setSelectedActivity] = useState<
     ActivityId | undefined
-  >(activity);
+  >(initialActivity);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [showActivityPicker, setShowActivityPicker] = useState(false);
@@ -92,33 +128,25 @@ export default function PlanEdit() {
     description?: string;
     category?: string;
   };
-  const [locations, setLocations] = useState<Location[]>([]);
+  const [locations, setLocations] = useState<Location[]>(() => {
+    const loc = plan.location;
+    if (!loc || !loc.latitude || !loc.longitude) return [];
+    return [
+      {
+        title: loc.title || "",
+        address: loc.address || undefined,
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+        url: loc.url || undefined,
+        description: loc.description || undefined,
+      },
+    ];
+  });
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [locationSearchQuery, setLocationSearchQuery] = useState("");
   const { latitude, longitude, hasPermission } = useLocation();
 
   const locationSearchSheetRef = React.useRef<BottomSheet>(null);
-
-  // Initialize locations from plan data
-  useEffect(() => {
-    if (plan?.locations && Array.isArray(plan.locations)) {
-      setLocations(
-        plan.locations.map((loc: any) => ({
-          title: loc.title || "",
-          address: loc.address || undefined,
-          latitude: loc.latitude,
-          longitude: loc.longitude,
-          url: loc.url || undefined,
-          description: loc.description || undefined,
-          category: loc.category || undefined,
-        }))
-      );
-    }
-  }, [plan]);
-
-  useEffect(() => {
-    setUrl(plan?.url || "");
-  }, [plan?.url]);
 
   const handleSave = () => {
     if (!title.trim()) {
@@ -199,17 +227,7 @@ export default function PlanEdit() {
     locationSearchSheetRef.current?.close();
   };
 
-  if (!plan) {
-    return (
-      <SafeAreaView className="flex-1 bg-black dark:bg-black">
-        <View className="p-6">
-          <Text className="text-[15px] leading-5 text-gray-500 dark:text-gray-400">
-            Plan nicht gefunden
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const [, , c3] = getActivityGradient(selectedActivity);
 
   const accentColor = c3;
 

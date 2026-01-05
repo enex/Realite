@@ -155,6 +155,10 @@ function RootNavigator() {
         name="settings/availability"
         options={{ title: "Verfügbarkeit" }}
       />
+      <Stack.Screen
+        name="settings/intents"
+        options={{ title: "Intentionen" }}
+      />
     </Stack>
   );
 }

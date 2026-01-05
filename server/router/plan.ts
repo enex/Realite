@@ -1,4 +1,9 @@
-import { activities, activityIds, type ActivityId } from "@/shared/activities";
+import {
+  activities,
+  activityIds,
+  getActivityLabel,
+  type ActivityId,
+} from "@/shared/activities";
 import { coreRepetitionSchema } from "@/shared/validation/plan";
 import { openai } from "@ai-sdk/openai";
 import { ToolLoopAgent, stepCountIs, tool } from "ai";
@@ -63,9 +68,82 @@ export const planRouter = {
       context.session.id,
       [startOfDay(new Date()), addWeeks(new Date(), 52)]
     );
+
+    const nextPlan =
+      plans
+        .filter((p: any) => p?.startDate && new Date(p.startDate) >= new Date())
+        .sort(
+          (a: any, b: any) =>
+            new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+        )[0] ?? null;
+
+    const myIntents = await context.es.projections.intent.listMine(
+      context.session.id
+    );
+    const activities = Array.from(
+      new Set(myIntents.map((i) => i.activity as ActivityId))
+    );
+    const matches = await context.es.projections.intent.getActivityMatchSummary(
+      {
+        userId: context.session.id,
+        activities,
+        limit: 6,
+      }
+    );
+
+    const intentSuggestions = await Promise.all(
+      matches.map(async (m) => {
+        const mine =
+          myIntents.find((i) => (i.activity as string) === (m.activity as string)) ??
+          null;
+        const exampleUsers = await Promise.all(
+          (m.userIds ?? []).slice(0, 3).map(async (id) => {
+            const u = await context.es.projections.user.getProfile(id);
+            return u ? { id: u.id, name: u.name, image: u.image } : null;
+          })
+        );
+        const users = exampleUsers.filter(Boolean) as Array<{
+          id: string;
+          name: string;
+          image: string;
+        }>;
+
+        const title = mine?.title?.trim()
+          ? mine.title
+          : getActivityLabel(m.activity);
+        const initialText = mine?.title?.trim()
+          ? `Ich hätte Lust auf: ${mine.title}. Wer ist dabei?`
+          : `Ich hätte Lust auf: ${getActivityLabel(m.activity)}. Wer ist dabei?`;
+
+        return {
+          activity: m.activity,
+          title,
+          initialText,
+          matchCount: m.matchCount,
+          users,
+        };
+      })
+    );
+
+    const intentRequests = await context.es.projections.intentRequest.listInbox(
+      context.session.id
+    );
+    const intentRequestsWithUsers = await Promise.all(
+      intentRequests.map(async (r) => {
+        const u = await context.es.projections.user.getProfile(r.fromUserId);
+        return {
+          ...r,
+          fromUser: u ? { id: u.id, name: u.name, image: u.image } : null,
+        };
+      })
+    );
+
     return {
       user: context.session,
       plans,
+      nextPlan,
+      intentSuggestions,
+      intentRequests: intentRequestsWithUsers,
     };
   }),
   create: protectedRoute

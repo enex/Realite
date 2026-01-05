@@ -646,6 +646,28 @@ export default function ProfileScreen() {
         </CardFooter>
       </Card>
 
+      {/* Intent Settings */}
+      <Card>
+        <CardHeader>
+          <View className="flex-row items-center gap-2">
+            <Icon name={HeartIcon} size={20} />
+            <CardTitle>Intentionen</CardTitle>
+          </View>
+          <CardDescription>
+            Sag, worauf du Lust hast – du bekommst passende Vorschläge auf der
+            Startseite.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter>
+          <Button
+            variant="outline"
+            onPress={() => router.push("/settings/intents" as any)}
+          >
+            Intentionen bearbeiten
+          </Button>
+        </CardFooter>
+      </Card>
+
       {/* Privacy Settings */}
       <Card>
         <CardHeader>

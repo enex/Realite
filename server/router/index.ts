@@ -1,6 +1,7 @@
 import { appConfigRouter } from "./app-config";
 import { authRouter } from "./auth";
 import { contactRouter } from "./contact";
+import { intentRouter } from "./intent";
 import { locationRouter } from "./location";
 import { planRouter } from "./plan";
 import { shareRouter } from "./share";
@@ -10,6 +11,7 @@ export const router = {
   auth: authRouter,
   location: locationRouter,
   plan: planRouter,
+  intent: intentRouter,
   user: userRouter,
   share: shareRouter,
   appConfig: appConfigRouter,

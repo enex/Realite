@@ -7,13 +7,14 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useLocation } from "@/hooks/use-location";
 import { HeaderButton } from "@react-navigation/elements";
 import * as Haptics from "expo-haptics";
-import { Stack, useRouter } from "expo-router";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Platform, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AIPlanCreateScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ initialText?: string }>();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const isIOS = Platform.OS === "ios";
@@ -29,6 +30,13 @@ export default function AIPlanCreateScreen() {
     () => Boolean(text.trim()) && !isLoading,
     [text, isLoading]
   );
+
+  useEffect(() => {
+    const initial =
+      typeof params.initialText === "string" ? params.initialText : "";
+    if (!initial.trim()) return;
+    setText(initial);
+  }, [params.initialText]);
 
   const dismiss = useCallback(() => {
     router.back();

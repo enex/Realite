@@ -42,6 +42,13 @@ export default function OnboardingLayout() {
         }}
       />
       <Stack.Screen
+        name="intents"
+        options={{
+          title: "Intentionen",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
         name="profile-setup"
         options={{
           title: "Profil einrichten",

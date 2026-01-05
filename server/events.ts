@@ -200,6 +200,28 @@ export interface RealiteEvents {
   };
 
   // ============================================
+  // INTENT REQUEST EVENTS - "Hey, hättest du Lust auf..."
+  // subject = intentRequestId
+  // actor = sender/receiver depending on event
+  // ============================================
+
+  // Eine Intention-Anfrage wird an eine Person geschickt
+  "realite.intent-request.sent": {
+    toUserId: string;
+    activity: ActivityId;
+    title: string; // human readable (e.g. "Bouldern gehen")
+    message?: string;
+  };
+
+  // Empfänger antwortet auf eine Intention-Anfrage
+  "realite.intent-request.responded": {
+    status: "accepted" | "declined" | "counter";
+    message?: string;
+    // Optional: falls direkt ein Plan daraus gemacht wurde
+    planId?: string;
+  };
+
+  // ============================================
   // AVAILABILITY EVENT
   // Verfügbarkeitszeiten eines Users - überschreibt komplett
   // subject = userId (nicht availabilityId, da es nur einen State gibt)
@@ -408,6 +430,21 @@ export interface RealiteEvents {
       showAge?: boolean;
       showRelationshipStatus?: boolean;
     };
+  };
+
+  // ============================================
+  // USER LOCATION EVENT
+  // Aktuelle Position der aktiv angemeldeten Person
+  // Wird automatisch gesetzt, wenn Location aktiviert ist
+  // Wird für Intentionen genutzt, um nahegelegene Personen zu finden
+  // subject = userId, actor = userId
+  // ============================================
+
+  "realite.user.location-updated": {
+    latitude: number;
+    longitude: number;
+    accuracy?: number; // Genauigkeit in Metern (optional)
+    // Timestamp wird automatisch aus Event-Metadaten übernommen
   };
 
   "realite.contacts.imported": {
