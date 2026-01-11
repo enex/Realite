@@ -1,5 +1,6 @@
 import React from "react";
 import { Pressable, Text, useColorScheme, View } from "react-native";
+import { ChevronRightIcon } from "lucide-react-native";
 
 import { Icon } from "@/components/ui/icon";
 import tinycolor from "tinycolor2";
@@ -53,7 +54,7 @@ export function EditRow({
       {rightComponent ||
         (interactive && (
           <Icon
-            name="chevron.right"
+            name={ChevronRightIcon}
             size={16}
             color={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"}
           />

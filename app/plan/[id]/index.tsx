@@ -85,11 +85,8 @@ export default function PlanDetails() {
     })
   );
 
-  // Get primary location for participant queries
-  const planPrimaryLocationForQuery = useMemo(() => {
-    const safeLocations = Array.isArray(plan?.locations) ? plan.locations : [];
-    return safeLocations[0];
-  }, [plan?.locations]);
+  // Get location for participant queries
+  const planPrimaryLocationForQuery = plan?.location ?? null;
 
   // Find similar/overlapping plans to get participants
   const { data: similarPlans } = useQuery({
@@ -225,13 +222,8 @@ export default function PlanDetails() {
     })
   );
 
-  const safeLocations = useMemo(
-    () => (Array.isArray(plan?.locations) ? plan.locations : []),
-    [plan?.locations]
-  );
-
-  const primaryLocation = safeLocations[0];
-  const locationImageUrl = (primaryLocation as any)?.imageUrl;
+  const primaryLocation = plan?.location ?? null;
+  const locationImageUrl = undefined;
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -437,13 +429,13 @@ export default function PlanDetails() {
               height: HEADER_HEIGHT + insets.top,
             }}
           >
-            {locationImageUrl ? (
-              <Image
-                source={{ uri: locationImageUrl }}
-                className="w-full h-full"
-                resizeMode="cover"
-              />
-            ) : (
+          {locationImageUrl ? (
+            <Image
+              source={{ uri: locationImageUrl }}
+              className="w-full h-full"
+              resizeMode="cover"
+            />
+          ) : (
               <LinearGradient
                 colors={placeholderGradient}
                 start={{ x: 0, y: 0 }}
@@ -689,15 +681,7 @@ export default function PlanDetails() {
               endDate: plan.endDate
                 ? new Date(plan.endDate as unknown as string).toISOString()
                 : undefined,
-              locations: plan.locations?.map((loc: any) => ({
-                title: loc.title || "",
-                address: loc.address || undefined,
-                latitude: loc.latitude,
-                longitude: loc.longitude,
-                url: loc.url || undefined,
-                description: loc.description || undefined,
-                category: loc.category || undefined,
-              })),
+              location: plan.location || undefined,
               url: plan.url || undefined,
               repetition: plan.repetition || undefined,
               maybe: plan.maybe || undefined,

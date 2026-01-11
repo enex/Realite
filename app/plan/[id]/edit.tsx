@@ -128,19 +128,17 @@ function PlanEditForm({
     description?: string;
     category?: string;
   };
-  const [locations, setLocations] = useState<Location[]>(() => {
+  const [location, setLocation] = useState<Location | null>(() => {
     const loc = plan.location;
-    if (!loc || !loc.latitude || !loc.longitude) return [];
-    return [
-      {
-        title: loc.title || "",
-        address: loc.address || undefined,
-        latitude: loc.latitude,
-        longitude: loc.longitude,
-        url: loc.url || undefined,
-        description: loc.description || undefined,
-      },
-    ];
+    if (!loc || !loc.latitude || !loc.longitude) return null;
+    return {
+      title: loc.title || "",
+      address: loc.address || undefined,
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+      url: loc.url || undefined,
+      description: loc.description || undefined,
+    };
   });
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [locationSearchQuery, setLocationSearchQuery] = useState("");
@@ -164,7 +162,7 @@ function PlanEditForm({
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         activity: selectedActivity,
-        location: locations.length > 0 ? locations[0] : undefined,
+        location: location || undefined,
       },
     });
   };
@@ -203,9 +201,9 @@ function PlanEditForm({
       enabled: locationSearchQuery.length > 2 && showLocationSearch,
     });
 
-  const handleRemoveLocation = (index: number) => {
+  const handleRemoveLocation = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setLocations((prev) => prev.filter((_, i) => i !== index));
+    setLocation(null);
   };
 
   const handleAddLocation = (location: {
@@ -221,7 +219,7 @@ function PlanEditForm({
       latitude: location.latitude,
       longitude: location.longitude,
     };
-    setLocations((prev) => [...prev, newLocation]);
+    setLocation(newLocation);
     setLocationSearchQuery("");
     setShowLocationSearch(false);
     locationSearchSheetRef.current?.close();
@@ -305,12 +303,12 @@ function PlanEditForm({
             />
           </View>
 
-          {/* Locations Section */}
+          {/* Location Section */}
           <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
             <View className="px-4 py-2">
               <View className="flex-row items-center justify-between mb-2">
                 <Text className="text-[17px] font-semibold text-black dark:text-white">
-                  Orte
+                  Ort
                 </Text>
                 <Pressable
                   onPress={() => {
@@ -324,45 +322,38 @@ function PlanEditForm({
                     className="text-[15px] ml-1"
                     style={{ color: accentColor }}
                   >
-                    Hinzufügen
+                    Auswählen
                   </Text>
                 </Pressable>
               </View>
 
-              {locations.length === 0 ? (
+              {!location ? (
                 <Text className="text-[15px] text-gray-500 dark:text-gray-400">
-                  Keine Orte hinzugefügt
+                  Kein Ort ausgewählt
                 </Text>
               ) : (
-                <View className="gap-2">
-                  {locations.map((location, index) => (
-                    <View
-                      key={index}
-                      className="flex-row items-center justify-between p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg"
-                    >
-                      <View className="flex-1 mr-3">
-                        <Text className="text-[15px] font-medium text-black dark:text-white">
-                          {location.title}
-                        </Text>
-                        {location.address && (
-                          <Text className="text-[13px] text-gray-500 dark:text-gray-400 mt-1">
-                            {location.address}
-                          </Text>
-                        )}
-                      </View>
-                      <Pressable
-                        onPress={() => handleRemoveLocation(index)}
-                        className="w-8 h-8 items-center justify-center"
-                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                      >
-                        <Icon
-                          name={TrashIcon}
-                          size={20}
-                          color={isDark ? "#EF4444" : "#DC2626"}
-                        />
-                      </Pressable>
-                    </View>
-                  ))}
+                <View className="flex-row items-center justify-between p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
+                  <View className="flex-1 mr-3">
+                    <Text className="text-[15px] font-medium text-black dark:text-white">
+                      {location.title}
+                    </Text>
+                    {location.address && (
+                      <Text className="text-[13px] text-gray-500 dark:text-gray-400 mt-1">
+                        {location.address}
+                      </Text>
+                    )}
+                  </View>
+                  <Pressable
+                    onPress={handleRemoveLocation}
+                    className="w-8 h-8 items-center justify-center"
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Icon
+                      name={TrashIcon}
+                      size={20}
+                      color={isDark ? "#EF4444" : "#DC2626"}
+                    />
+                  </Pressable>
                 </View>
               )}
             </View>

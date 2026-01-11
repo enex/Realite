@@ -1,4 +1,4 @@
-import React from "react";
+import { useColor } from "@/hooks/use-color";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import {
   Icon,
@@ -6,15 +6,37 @@ import {
   NativeTabs,
   VectorIcon,
 } from "expo-router/unstable-native-tabs";
+import React from "react";
 
 export default function TabLayout() {
+  const labelDefault = useColor("textMuted");
+  const labelSelected = useColor("text");
+  const backgroundColor = useColor("muted");
+  const labelStyle = {
+    default: {
+      fontSize: 11,
+      color: labelDefault,
+    },
+    selected: {
+      fontSize: 11,
+      color: labelSelected,
+    },
+  };
+
   return (
-    <NativeTabs minimizeBehavior="onScrollDown">
+    <NativeTabs
+      minimizeBehavior="onScrollDown"
+      labelVisibilityMode="labeled"
+      labelStyle={labelStyle}
+      backgroundColor={backgroundColor}
+    >
       <NativeTabs.Trigger name="index">
         <Label>Start</Label>
         <Icon
           sf="calendar.and.person"
-          androidSrc={<VectorIcon family={MaterialCommunityIcons} name="home" />}
+          androidSrc={
+            <VectorIcon family={MaterialCommunityIcons} name="home" />
+          }
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="my-plans">
@@ -37,7 +59,9 @@ export default function TabLayout() {
         <Label>Profil</Label>
         <Icon
           sf="person.fill"
-          androidSrc={<VectorIcon family={MaterialCommunityIcons} name="account" />}
+          androidSrc={
+            <VectorIcon family={MaterialCommunityIcons} name="account" />
+          }
         />
       </NativeTabs.Trigger>
     </NativeTabs>

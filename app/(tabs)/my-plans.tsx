@@ -320,19 +320,21 @@ export default function PlansScreen() {
           (plan.startDate?.toISOString?.() ?? (plan.startDate as any)) || "",
         status: "committed",
         activity: plan.activity as ActivityId,
-        locations: Array.isArray(plan.locations)
-          ? plan.locations
-              .filter((l: any) => !!l)
-              .map((l: any) => {
-                const title = ((l.title ?? l.address ?? "") as string) || "";
-                return {
-                  title,
-                  address: (l.address ?? undefined) as string | undefined,
-                  latitude: Number(l.latitude ?? 0),
-                  longitude: Number(l.longitude ?? 0),
-                };
-              })
-              .filter((l: any) => l.title !== "" || (l.latitude && l.longitude))
+        locations: plan.location
+          ? [
+              {
+                title:
+                  ((plan.location.title ??
+                    plan.location.address ??
+                    "") as string) || "",
+                address: (plan.location.address ??
+                  undefined) as string | undefined,
+                latitude: Number(plan.location.latitude ?? 0),
+                longitude: Number(plan.location.longitude ?? 0),
+              },
+            ].filter(
+              (l) => l.title !== "" || (l.latitude && l.longitude)
+            )
           : undefined,
         participants: participants.length > 0 ? participants : undefined,
       };

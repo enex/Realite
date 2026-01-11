@@ -108,9 +108,10 @@ export default function NewPlanEdit() {
     description?: string;
     category?: string;
   };
-  const [locations, setLocations] = useState<Location[]>(
-    initialPlanData?.locations || []
-  );
+  const initialLocation = (initialPlanData?.location ||
+    initialPlanData?.locations?.[0] ||
+    null) as Location | null;
+  const [location, setLocation] = useState<Location | null>(initialLocation);
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [locationSearchQuery, setLocationSearchQuery] = useState("");
   const { latitude, longitude, hasPermission } = useLocation();
@@ -148,10 +149,8 @@ export default function NewPlanEdit() {
     }
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // Nehme die erste Location (mandatory im neuen Schema)
-    const firstLocation = locations[0];
-    if (!firstLocation) {
-      // TODO: Zeige Fehler wenn keine Location
+    if (!location) {
+      Alert.alert("Fehler", "Bitte wähle einen Ort aus.");
       return;
     }
     
@@ -162,14 +161,14 @@ export default function NewPlanEdit() {
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
       activity: selectedActivity,
-      location: firstLocation,
+      location,
       inputText: initialPlanData?.inputText,
     });
   };
 
-  const handleRemoveLocation = (index: number) => {
+  const handleRemoveLocation = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setLocations((prev) => prev.filter((_, i) => i !== index));
+    setLocation(null);
   };
 
   const handleAddLocation = (location: {
@@ -185,7 +184,7 @@ export default function NewPlanEdit() {
       latitude: location.latitude,
       longitude: location.longitude,
     };
-    setLocations((prev) => [...prev, newLocation]);
+    setLocation(newLocation);
     setLocationSearchQuery("");
     setShowLocationSearch(false);
     locationSearchSheetRef.current?.close();
@@ -289,12 +288,12 @@ export default function NewPlanEdit() {
               />
             </View>
 
-            {/* Locations Section */}
+            {/* Location Section */}
             <View className="bg-white dark:bg-zinc-900 mt-2 py-2">
               <View className="px-4 py-2">
                 <View className="flex-row items-center justify-between mb-2">
                   <Text className="text-[17px] font-semibold text-black dark:text-white">
-                    Orte
+                    Ort
                   </Text>
                   <Button
                     onPress={() => {
@@ -303,39 +302,32 @@ export default function NewPlanEdit() {
                     }}
                     icon={PlusCircleIcon}
                   >
-                    Hinzufügen
+                    Auswählen
                   </Button>
                 </View>
 
-                {locations.length === 0 ? (
+                {!location ? (
                   <Text className="text-[15px] text-gray-500 dark:text-gray-400">
-                    Keine Orte hinzugefügt
+                    Kein Ort ausgewählt
                   </Text>
                 ) : (
-                  <View className="gap-2">
-                    {locations.map((location, index) => (
-                      <View
-                        key={index}
-                        className="flex-row items-center justify-between p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg"
-                      >
-                        <View className="flex-1 mr-3">
-                          <Text className="text-[15px] font-medium text-black dark:text-white">
-                            {location.title}
-                          </Text>
-                          {location.address && (
-                            <Text className="text-[13px] text-gray-500 dark:text-gray-400 mt-1">
-                              {location.address}
-                            </Text>
-                          )}
-                        </View>
-                        <Button
-                          onPress={() => handleRemoveLocation(index)}
-                          icon={TrashIcon}
-                          variant="destructive"
-                          size="icon"
-                        />
-                      </View>
-                    ))}
+                  <View className="flex-row items-center justify-between p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
+                    <View className="flex-1 mr-3">
+                      <Text className="text-[15px] font-medium text-black dark:text-white">
+                        {location.title}
+                      </Text>
+                      {location.address && (
+                        <Text className="text-[13px] text-gray-500 dark:text-gray-400 mt-1">
+                          {location.address}
+                        </Text>
+                      )}
+                    </View>
+                    <Button
+                      onPress={handleRemoveLocation}
+                      icon={TrashIcon}
+                      variant="destructive"
+                      size="icon"
+                    />
                   </View>
                 )}
               </View>

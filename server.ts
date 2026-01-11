@@ -6,6 +6,7 @@ import { router } from "./server/router";
 
 const CLIENT_BUILD_DIR = `${process.cwd()}/dist/client`;
 const SERVER_BUILD_DIR = `${process.cwd()}/dist/server`;
+const PUBLIC_DIR = `${process.cwd()}/public`;
 const handleRequest = createRequestHandler({ build: SERVER_BUILD_DIR });
 
 const port = process.env.PORT || 3000;
@@ -66,8 +67,33 @@ Bun.serve({
                   ? "image/x-icon"
                   : ext === "png"
                     ? "image/png"
-                    : undefined;
+                    : ext === "svg"
+                      ? "image/svg+xml"
+                      : undefined;
       return new Response(await clientFile.arrayBuffer(), {
+        headers: type
+          ? { "content-type": `${type}; charset=utf-8` }
+          : undefined,
+      });
+    }
+
+    // Fallback: serve from public directory (for development or files not in build)
+    const publicFile = Bun.file(PUBLIC_DIR + staticPath);
+    if (await publicFile.exists()) {
+      const ext = staticPath.split(".").pop() || "";
+      const type =
+        ext === "svg"
+          ? "image/svg+xml"
+          : ext === "png"
+            ? "image/png"
+            : ext === "ico"
+              ? "image/x-icon"
+              : ext === "css"
+                ? "text/css"
+                : ext === "js"
+                  ? "application/javascript"
+                  : undefined;
+      return new Response(await publicFile.arrayBuffer(), {
         headers: type
           ? { "content-type": `${type}; charset=utf-8` }
           : undefined,
