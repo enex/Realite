@@ -1,7 +1,9 @@
-<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg baseProfile="tiny-ps" version="1.2" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Realite</title>
+  <desc>Realite application logo</desc>
+  
   <rect width="1024" height="1024" rx="166" fill="url(#bg)" />
-  <circle cx="296" cy="260" r="560" fill="url(#glow)" />
-
+  
   <rect
     x="81"
     y="206"
@@ -9,18 +11,16 @@
     height="744"
     rx="124"
     fill="white"
-    fill-opacity="0.18"
+    fillOpacity="0.18"
     stroke="white"
-    stroke-opacity="0.18"
-    stroke-width="8"
+    strokeOpacity="0.18"
+    strokeWidth="8"
   />
 
-  <g filter="url(#pinShadow)">
-    <rect x="208.318" y="60.818" width="87" height="86" rx="17" fill="white" fill-opacity="0.92" />
-    <rect x="727.318" y="60.818" width="86" height="86" rx="17" fill="white" fill-opacity="0.92" />
-  </g>
+  <rect x="208.318" y="60.818" width="87" height="86" rx="17" fill="white" fillOpacity="0.92" />
+  <rect x="727.318" y="60.818" width="86" height="86" rx="17" fill="white" fillOpacity="0.92" />
 
-  <g filter="url(#peopleShadow)" fill="white" fill-opacity="0.98">
+  <g fill="white" fillOpacity="0.98">
     <circle cx="273.772" cy="423.321" r="74.6475" />
     <circle cx="510.409" cy="498.476" r="81.7568" />
     <circle cx="748.062" cy="423.321" r="74.6475" />
@@ -30,29 +30,9 @@
 
   <defs>
     <linearGradient id="bg" x1="512" y1="0" x2="512" y2="1024" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#6366F1" />
-      <stop offset="0.55" stop-color="#4F46E5" />
-      <stop offset="1" stop-color="#312E81" />
+      <stop offset="0" stopColor="#6366F1" />
+      <stop offset="0.55" stopColor="#4F46E5" />
+      <stop offset="1" stopColor="#312E81" />
     </linearGradient>
-
-    <radialGradient
-      id="glow"
-      cx="0"
-      cy="0"
-      r="1"
-      gradientUnits="userSpaceOnUse"
-      gradientTransform="translate(296 260) rotate(90) scale(560)"
-    >
-      <stop offset="0" stop-color="white" stop-opacity="0.16" />
-      <stop offset="1" stop-color="white" stop-opacity="0" />
-    </radialGradient>
-
-    <filter id="pinShadow" x="0" y="0" width="1024" height="1024" filterUnits="userSpaceOnUse">
-      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#0a0a0a" flood-opacity="0.25" />
-    </filter>
-
-    <filter id="peopleShadow" x="0" y="0" width="1024" height="1024" filterUnits="userSpaceOnUse">
-      <feDropShadow dx="0" dy="16" stdDeviation="14" flood-color="#0a0a0a" flood-opacity="0.32" />
-    </filter>
   </defs>
 </svg>
