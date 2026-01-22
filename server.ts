@@ -1,6 +1,15 @@
 import { createRequestHandler } from "@expo/server/adapter/bun";
+import { RPCHandler as FetchRPCHandler } from "@orpc/server/fetch";
+import { CORSPlugin } from "@orpc/server/plugins";
 import { RPCHandler } from "@orpc/server/websocket";
+import { jwtVerify } from "jose";
 import * as React from "react";
+import { db } from "./server/db";
+import {
+  closeMCPSessions,
+  handleAdminMCPRequest,
+  handleConsumerMCPRequest,
+} from "./server/mcp";
 import Test from "./server/og/test";
 import { router } from "./server/router";
 
@@ -11,6 +20,51 @@ const handleRequest = createRequestHandler({ build: SERVER_BUILD_DIR });
 
 const port = process.env.PORT || 3000;
 const handler = new RPCHandler(router);
+const fetchHandler = new FetchRPCHandler(router, {
+  plugins: [new CORSPlugin()],
+});
+
+/**
+ * Handle ORPC requests via HTTP fetch
+ */
+async function handleORPCRequest(request: Request): Promise<Response> {
+  let session: any | undefined = undefined;
+  try {
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice("Bearer ".length)
+      : undefined;
+    if (token && process.env.JWT_SECRET) {
+      const decoded = await jwtVerify(
+        token,
+        new TextEncoder().encode(process.env.JWT_SECRET),
+      );
+      const payload: any = decoded.payload;
+      session = {
+        id: payload.id,
+        name: payload.name,
+        image: payload.image,
+        phoneNumber: payload.phoneNumber,
+      };
+    }
+  } catch {
+    // ignore and keep session undefined
+  }
+
+  const { matched, response } = await fetchHandler.handle(request, {
+    prefix: "/rpc",
+    context: {
+      headers: request.headers as any,
+      db,
+      session,
+    },
+  });
+  if (matched) {
+    return response;
+  }
+
+  return new Response("Not found", { status: 404 });
+}
 
 Bun.serve({
   port: process.env.PORT || 3000,
@@ -31,6 +85,34 @@ Bun.serve({
       } catch (error) {
         console.error("Error handling API route:", error);
       }
+    }
+
+    // Handle MCP (Model Context Protocol) endpoints
+    // Consumer MCP server - for regular users to manage plans and intents
+    if (url.pathname === "/mcp") {
+      return handleConsumerMCPRequest(req);
+    }
+    // Admin MCP server - for analytics and admin tasks
+    if (url.pathname === "/mcp/admin") {
+      return handleAdminMCPRequest(req);
+    }
+
+    // Handle ORPC requests via HTTP
+    if (url.pathname.startsWith("/rpc")) {
+      return handleORPCRequest(req);
+    }
+
+    // Handle OAuth discovery endpoints that MCP clients may probe
+    // We use JWT auth, not OAuth, so return 404 for these
+    if (
+      url.pathname.startsWith("/.well-known/oauth") ||
+      url.pathname.startsWith("/.well-known/openid") ||
+      url.pathname === "/register"
+    ) {
+      return new Response(JSON.stringify({ error: "Not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     if (url.pathname === "/api/image") {
@@ -119,3 +201,18 @@ Bun.serve({
 });
 
 console.log(`Bun server running at http://localhost:${port}`);
+console.log(`MCP Consumer endpoint: http://localhost:${port}/mcp`);
+console.log(`MCP Admin endpoint: http://localhost:${port}/mcp/admin`);
+
+// Graceful shutdown handling
+process.on("SIGINT", async () => {
+  console.log("\nShutting down server...");
+  await closeMCPSessions();
+  process.exit(0);
+});
+
+process.on("SIGTERM", async () => {
+  console.log("\nShutting down server...");
+  await closeMCPSessions();
+  process.exit(0);
+});

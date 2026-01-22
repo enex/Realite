@@ -13,14 +13,8 @@ export default function TabLayout() {
   const labelSelected = useColor("text");
   const backgroundColor = useColor("muted");
   const labelStyle = {
-    default: {
-      fontSize: 11,
-      color: labelDefault,
-    },
-    selected: {
-      fontSize: 11,
-      color: labelSelected,
-    },
+    default: { fontSize: 11, color: labelDefault },
+    selected: { fontSize: 11, color: labelSelected },
   };
 
   return (

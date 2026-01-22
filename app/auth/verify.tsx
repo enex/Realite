@@ -36,7 +36,7 @@ export default function VerifyCodeScreen() {
     if (!code || code.length !== 6) {
       Alert.alert(
         "Code ungültig",
-        "Bitte gib den 6-stelligen Verifizierungscode ein."
+        "Bitte gib den 6-stelligen Verifizierungscode ein.",
       );
       return;
     }
@@ -49,12 +49,12 @@ export default function VerifyCodeScreen() {
       if (error?.message?.includes("Network request failed")) {
         Alert.alert(
           "Verbindungsfehler",
-          "Der Server konnte nicht erreicht werden. Bitte stelle sicher, dass du das Backend mit 'bun run dev' gestartet hast."
+          "Der Server konnte nicht erreicht werden. Bitte stelle sicher, dass du das Backend mit 'bun run dev' gestartet hast.",
         );
       } else {
         Alert.alert(
           "Fehler",
-          "Code konnte nicht verifiziert werden. Bitte versuchen Sie es erneut."
+          "Code konnte nicht verifiziert werden. Bitte versuchen Sie es erneut.",
         );
       }
     } finally {

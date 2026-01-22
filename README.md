@@ -1,6 +1,6 @@
 # Welcome to your Expo app 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This is an [Expo](https://expo.dev) project created with `create-expo-app`.
 
 ## Get started
 
@@ -74,8 +74,8 @@ This project uses UI components from [BNA UI](https://ui.ahmedbna.com/), a beaut
 
 ### Component Architecture
 
-- **`components/ui/`**: Contains components primarily from [BNA UI](https://ui.ahmedbna.com/). These are pure presentation components that don't know about the data model and are reusable across the app.
-- **`components/[feature].tsx`**: Feature-specific components that contain business logic and connect to the data model.
+- `components/ui/`: Contains components primarily from [BNA UI](https://ui.ahmedbna.com/). These are pure presentation components that don't know about the data model and are reusable across the app.
+- `components/[feature].tsx`: Feature-specific components that contain business logic and connect to the data model.
 
 ## Demo-Nutzer
 
