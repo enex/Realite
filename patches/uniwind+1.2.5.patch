@@ -1,0 +1,692 @@
+diff --git a/node_modules/uniwind/dist/common/core/config/config.common.js b/node_modules/uniwind/dist/common/core/config/config.common.js
+index 900d546..43a4ba8 100644
+--- a/node_modules/uniwind/dist/common/core/config/config.common.js
++++ b/node_modules/uniwind/dist/common/core/config/config.common.js
+@@ -4,16 +4,31 @@ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+ exports.UniwindConfigBuilder = exports.Uniwind = void 0;
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _types = require("../../types");
+ var _listener = require("../listener");
++const Appearance = _reactNative.Appearance ?? {
++  getColorScheme: () => _types.ColorScheme.Light,
++  addChangeListener: () => ({
++    remove() {}
++  }),
++  setColorScheme: () => {}
++};
++const Platform = _reactNative.Platform ?? {
++  OS: "web"
++};
+ const SYSTEM_THEME = "system";
+ class UniwindConfigBuilder {
+   themes = ["light", "dark"];
+   #hasAdaptiveThemes = true;
+   #currentTheme = this.colorScheme;
+   constructor() {
+-    _reactNative.Appearance.addChangeListener(event => {
++    Appearance.addChangeListener(event => {
+       const colorScheme = event.colorScheme ?? _types.ColorScheme.Light;
+       const prevTheme = this.#currentTheme;
+       if (this.#hasAdaptiveThemes && prevTheme !== colorScheme) {
+@@ -30,7 +45,7 @@ class UniwindConfigBuilder {
+     return this.#currentTheme;
+   }
+   get colorScheme() {
+-    return _reactNative.Appearance.getColorScheme() ?? _types.ColorScheme.Light;
++    return Appearance.getColorScheme() ?? _types.ColorScheme.Light;
+   }
+   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+   setTheme(theme) {
+@@ -41,8 +56,8 @@ class UniwindConfigBuilder {
+       if (theme === SYSTEM_THEME) {
+         this.#hasAdaptiveThemes = true;
+         this.#currentTheme = this.colorScheme;
+-        if (_reactNative.Platform.OS !== "web") {
+-          _reactNative.Appearance.setColorScheme(void 0);
++        if (Platform.OS !== "web") {
++          Appearance.setColorScheme(void 0);
+         }
+         return;
+       }
+@@ -51,8 +66,8 @@ class UniwindConfigBuilder {
+       }
+       this.#hasAdaptiveThemes = false;
+       this.#currentTheme = theme;
+-      if (_reactNative.Platform.OS !== "web") {
+-        _reactNative.Appearance.setColorScheme(isAdaptiveTheme ? this.#currentTheme : void 0);
++      if (Platform.OS !== "web") {
++        Appearance.setColorScheme(isAdaptiveTheme ? this.#currentTheme : void 0);
+       }
+     } finally {
+       if (prevTheme !== this.#currentTheme) {
+diff --git a/node_modules/uniwind/package.json b/node_modules/uniwind/package.json
+index bc831ca..7bd35dd 100644
+--- a/node_modules/uniwind/package.json
++++ b/node_modules/uniwind/package.json
+@@ -49,7 +49,7 @@
+     "./components/*": {
+         "types": "./no-types.d.ts",
+         "react-native": "./src/components/native/*.tsx",
+-        "import": "./dist/module/components/web/*.js",
++        "import": "./dist/common/components/web/*.js",
+         "default": "./dist/common/components/web/*.js"
+     },
+         "./metro": {
+diff --git a/node_modules/uniwind/dist/common/components/web/ImageBackground.js b/node_modules/uniwind/dist/common/components/web/ImageBackground.js
+index 68de7ac..6f80739 100644
+--- a/node_modules/uniwind/dist/common/components/web/ImageBackground.js
++++ b/node_modules/uniwind/dist/common/components/web/ImageBackground.js
+@@ -5,16 +5,22 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.ImageBackground = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _hooks = require("../../hooks");
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const ImageBackground = exports.ImageBackground = (0, _utils.copyComponentProperties)(_reactNative.ImageBackground, props => {
++const RNImageBackground = _reactNative.ImageBackground ?? (() => null);
++const ImageBackground = exports.ImageBackground = (0, _utils.copyComponentProperties)(RNImageBackground, props => {
+   const tintColor = (0, _hooks.useUniwindAccent)(props.tintColorClassName);
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.ImageBackground, {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNImageBackground, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style],
+-    imageStyle: [(0, _rnw.to_reactNative.WClassName)(props.imageClassName), props.imageStyle],
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style],
++    imageStyle: [(0, _rnw.toRNWClassName)(props.imageClassName), props.imageStyle],
+     tintColor: props.tintColor ?? tintColor
+   });
+ });
+diff --git a/node_modules/uniwind/dist/common/components/web/KeyboardAvoidingView.js b/node_modules/uniwind/dist/common/components/web/KeyboardAvoidingView.js
+index ef31c2b..6fc67aa 100644
+--- a/node_modules/uniwind/dist/common/components/web/KeyboardAvoidingView.js
++++ b/node_modules/uniwind/dist/common/components/web/KeyboardAvoidingView.js
+@@ -5,14 +5,20 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.KeyboardAvoidingView = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const KeyboardAvoidingView = exports.KeyboardAvoidingView = (0, _utils.copyComponentProperties)(_reactNative.KeyboardAvoidingView, props => {
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.KeyboardAvoidingView, {
++const RNKeyboardAvoidingView = _reactNative.KeyboardAvoidingView ?? (() => null);
++const KeyboardAvoidingView = exports.KeyboardAvoidingView = (0, _utils.copyComponentProperties)(RNKeyboardAvoidingView, props => {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNKeyboardAvoidingView, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style],
+-    contentContainerStyle: [(0, _rnw.to_reactNative.WClassName)(props.contentContainerClassName), props.contentContainerStyle]
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style],
++    contentContainerStyle: [(0, _rnw.toRNWClassName)(props.contentContainerClassName), props.contentContainerStyle]
+   });
+ });
+ module.exports = KeyboardAvoidingView;
+\ No newline at end of file
+diff --git a/node_modules/uniwind/dist/common/components/web/VirtualizedList.js b/node_modules/uniwind/dist/common/components/web/VirtualizedList.js
+index 5d8e950..8d55b86 100644
+--- a/node_modules/uniwind/dist/common/components/web/VirtualizedList.js
++++ b/node_modules/uniwind/dist/common/components/web/VirtualizedList.js
+@@ -5,16 +5,22 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.VirtualizedList = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const VirtualizedList = exports.VirtualizedList = (0, _utils.copyComponentProperties)(_reactNative.VirtualizedList, props => {
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.VirtualizedList, {
++const RNVirtualizedList = _reactNative.VirtualizedList ?? (() => null);
++const VirtualizedList = exports.VirtualizedList = (0, _utils.copyComponentProperties)(RNVirtualizedList, props => {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNVirtualizedList, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style],
+-    contentContainerStyle: [(0, _rnw.to_reactNative.WClassName)(props.contentContainerClassName), props.contentContainerStyle],
+-    ListFooterComponentStyle: [(0, _rnw.to_reactNative.WClassName)(props.ListFooterComponentClassName), props.ListFooterComponentStyle],
+-    ListHeaderComponentStyle: [(0, _rnw.to_reactNative.WClassName)(props.ListHeaderComponentClassName), props.ListHeaderComponentStyle]
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style],
++    contentContainerStyle: [(0, _rnw.toRNWClassName)(props.contentContainerClassName), props.contentContainerStyle],
++    ListFooterComponentStyle: [(0, _rnw.toRNWClassName)(props.ListFooterComponentClassName), props.ListFooterComponentStyle],
++    ListHeaderComponentStyle: [(0, _rnw.toRNWClassName)(props.ListHeaderComponentClassName), props.ListHeaderComponentStyle]
+   });
+ });
+ module.exports = VirtualizedList;
+\ No newline at end of file
+diff --git a/node_modules/uniwind/dist/common/components/web/Switch.js b/node_modules/uniwind/dist/common/components/web/Switch.js
+index 5f99bc7..d3478b0 100644
+--- a/node_modules/uniwind/dist/common/components/web/Switch.js
++++ b/node_modules/uniwind/dist/common/components/web/Switch.js
+@@ -5,17 +5,23 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.Switch = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _hooks = require("../../hooks");
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const Switch = exports.Switch = (0, _utils.copyComponentProperties)(_reactNative.Switch, props => {
++const RNSwitch = _reactNative.Switch ?? (() => null);
++const Switch = exports.Switch = (0, _utils.copyComponentProperties)(RNSwitch, props => {
+   const trackColorOn = (0, _hooks.useUniwindAccent)(props.trackColorOnClassName);
+   const trackColorOff = (0, _hooks.useUniwindAccent)(props.trackColorOffClassName);
+   const thumbColor = (0, _hooks.useUniwindAccent)(props.thumbColorClassName);
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.Switch, {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNSwitch, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style],
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style],
+     thumbColor: props.thumbColor ?? thumbColor,
+     trackColor: {
+       true: props.trackColor?.true ?? trackColorOn,
+diff --git a/node_modules/uniwind/dist/common/components/web/TouchableWithoutFeedback.js b/node_modules/uniwind/dist/common/components/web/TouchableWithoutFeedback.js
+index 9d3d7b3..0d2572b 100644
+--- a/node_modules/uniwind/dist/common/components/web/TouchableWithoutFeedback.js
++++ b/node_modules/uniwind/dist/common/components/web/TouchableWithoutFeedback.js
+@@ -5,13 +5,19 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.TouchableWithoutFeedback = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const TouchableWithoutFeedback = exports.TouchableWithoutFeedback = (0, _utils.copyComponentProperties)(_reactNative.TouchableWithoutFeedback, props => {
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.TouchableWithoutFeedback, {
++const RNTouchableWithoutFeedback = _reactNative.TouchableWithoutFeedback ?? (() => null);
++const TouchableWithoutFeedback = exports.TouchableWithoutFeedback = (0, _utils.copyComponentProperties)(RNTouchableWithoutFeedback, props => {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNTouchableWithoutFeedback, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style]
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style]
+   });
+ });
+ module.exports = TouchableWithoutFeedback;
+\ No newline at end of file
+diff --git a/node_modules/uniwind/dist/common/components/web/TextInput.js b/node_modules/uniwind/dist/common/components/web/TextInput.js
+index 879ffcb..4aed5a4 100644
+--- a/node_modules/uniwind/dist/common/components/web/TextInput.js
++++ b/node_modules/uniwind/dist/common/components/web/TextInput.js
+@@ -5,13 +5,19 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.TextInput = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const TextInput = exports.TextInput = (0, _utils.copyComponentProperties)(_reactNative.TextInput, props => {
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.TextInput, {
++const RNTextInput = _reactNative.TextInput ?? (() => null);
++const TextInput = exports.TextInput = (0, _utils.copyComponentProperties)(RNTextInput, props => {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNTextInput, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style]
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style]
+   });
+ });
+ module.exports = TextInput;
+\ No newline at end of file
+diff --git a/node_modules/uniwind/dist/common/components/web/ActivityIndicator.js b/node_modules/uniwind/dist/common/components/web/ActivityIndicator.js
+index 1bf91cf..d68ea08 100644
+--- a/node_modules/uniwind/dist/common/components/web/ActivityIndicator.js
++++ b/node_modules/uniwind/dist/common/components/web/ActivityIndicator.js
+@@ -5,15 +5,21 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.ActivityIndicator = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _hooks = require("../../hooks");
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const ActivityIndicator = exports.ActivityIndicator = (0, _utils.copyComponentProperties)(_reactNative.ActivityIndicator, props => {
++const RNActivityIndicator = _reactNative.ActivityIndicator ?? (() => null);
++const ActivityIndicator = exports.ActivityIndicator = (0, _utils.copyComponentProperties)(RNActivityIndicator, props => {
+   const color = (0, _hooks.useUniwindAccent)(props.colorClassName);
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.ActivityIndicator, {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNActivityIndicator, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style],
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style],
+     color: props.color ?? color
+   });
+ });
+diff --git a/node_modules/uniwind/dist/common/components/web/TouchableHighlight.js b/node_modules/uniwind/dist/common/components/web/TouchableHighlight.js
+index bf708aa..607a3a2 100644
+--- a/node_modules/uniwind/dist/common/components/web/TouchableHighlight.js
++++ b/node_modules/uniwind/dist/common/components/web/TouchableHighlight.js
+@@ -5,15 +5,21 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.TouchableHighlight = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _hooks = require("../../hooks");
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const TouchableHighlight = exports.TouchableHighlight = (0, _utils.copyComponentProperties)(_reactNative.TouchableHighlight, props => {
++const RNTouchableHighlight = _reactNative.TouchableHighlight ?? (() => null);
++const TouchableHighlight = exports.TouchableHighlight = (0, _utils.copyComponentProperties)(RNTouchableHighlight, props => {
+   const underlayColor = (0, _hooks.useUniwindAccent)(props.underlayColorClassName);
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.TouchableHighlight, {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNTouchableHighlight, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style],
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style],
+     underlayColor: props.underlayColor ?? underlayColor
+   });
+ });
+diff --git a/node_modules/uniwind/dist/common/components/web/Pressable.js b/node_modules/uniwind/dist/common/components/web/Pressable.js
+index 982a291..56bc09c 100644
+--- a/node_modules/uniwind/dist/common/components/web/Pressable.js
++++ b/node_modules/uniwind/dist/common/components/web/Pressable.js
+@@ -5,13 +5,19 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.Pressable = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const Pressable = exports.Pressable = (0, _utils.copyComponentProperties)(_reactNative.Pressable, props => {
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.Pressable, {
++const RNPressable = _reactNative.Pressable ?? (() => null);
++const Pressable = exports.Pressable = (0, _utils.copyComponentProperties)(RNPressable, props => {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNPressable, {
+     ...props,
+-    style: state => [(0, _rnw.to_reactNative.WClassName)(props.className), typeof props.style === "function" ? props.style(state) : props.style]
++    style: state => [(0, _rnw.toRNWClassName)(props.className), typeof props.style === "function" ? props.style(state) : props.style]
+   });
+ });
+ module.exports = Pressable;
+\ No newline at end of file
+diff --git a/node_modules/uniwind/dist/common/components/web/FlatList.js b/node_modules/uniwind/dist/common/components/web/FlatList.js
+index a609a68..d5e166f 100644
+--- a/node_modules/uniwind/dist/common/components/web/FlatList.js
++++ b/node_modules/uniwind/dist/common/components/web/FlatList.js
+@@ -5,18 +5,24 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.FlatList = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const FlatList = exports.FlatList = (0, _utils.copyComponentProperties)(_reactNative.FlatList, props => {
++const RNFlatList = _reactNative.FlatList ?? (() => null);
++const FlatList = exports.FlatList = (0, _utils.copyComponentProperties)(RNFlatList, props => {
+   const hasSingleColumn = !("numColumns" in props) || props.numColumns === 1;
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.FlatList, {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNFlatList, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style],
+-    columnWrapperStyle: hasSingleColumn ? void 0 : [(0, _rnw.to_reactNative.WClassName)(props.columnWrapperClassName), props.columnWrapperStyle],
+-    contentContainerStyle: [(0, _rnw.to_reactNative.WClassName)(props.contentContainerClassName), props.contentContainerStyle],
+-    ListFooterComponentStyle: [(0, _rnw.to_reactNative.WClassName)(props.ListFooterComponentClassName), props.ListFooterComponentStyle],
+-    ListHeaderComponentStyle: [(0, _rnw.to_reactNative.WClassName)(props.ListHeaderComponentClassName), props.ListHeaderComponentStyle]
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style],
++    columnWrapperStyle: hasSingleColumn ? void 0 : [(0, _rnw.toRNWClassName)(props.columnWrapperClassName), props.columnWrapperStyle],
++    contentContainerStyle: [(0, _rnw.toRNWClassName)(props.contentContainerClassName), props.contentContainerStyle],
++    ListFooterComponentStyle: [(0, _rnw.toRNWClassName)(props.ListFooterComponentClassName), props.ListFooterComponentStyle],
++    ListHeaderComponentStyle: [(0, _rnw.toRNWClassName)(props.ListHeaderComponentClassName), props.ListHeaderComponentStyle]
+   });
+ });
+ module.exports = FlatList;
+diff --git a/node_modules/uniwind/dist/common/components/web/Image.js b/node_modules/uniwind/dist/common/components/web/Image.js
+index 200e0b8..f2d0c0d 100644
+--- a/node_modules/uniwind/dist/common/components/web/Image.js
++++ b/node_modules/uniwind/dist/common/components/web/Image.js
+@@ -5,15 +5,21 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.Image = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _hooks = require("../../hooks");
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const Image = exports.Image = (0, _utils.copyComponentProperties)(_reactNative.Image, props => {
++const RNImage = _reactNative.Image ?? (() => null);
++const Image = exports.Image = (0, _utils.copyComponentProperties)(RNImage, props => {
+   const tintColor = (0, _hooks.useUniwindAccent)(props.tintColorClassName);
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.Image, {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNImage, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style],
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style],
+     tintColor: props.tintColor ?? tintColor
+   });
+ });
+diff --git a/node_modules/uniwind/dist/common/components/web/ScrollView.js b/node_modules/uniwind/dist/common/components/web/ScrollView.js
+index b69a6d2..0a89fbb 100644
+--- a/node_modules/uniwind/dist/common/components/web/ScrollView.js
++++ b/node_modules/uniwind/dist/common/components/web/ScrollView.js
+@@ -5,14 +5,20 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.ScrollView = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const ScrollView = exports.ScrollView = (0, _utils.copyComponentProperties)(_reactNative.ScrollView, props => {
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.ScrollView, {
++const RNScrollView = _reactNative.ScrollView ?? (() => null);
++const ScrollView = exports.ScrollView = (0, _utils.copyComponentProperties)(RNScrollView, props => {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNScrollView, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style],
+-    contentContainerStyle: [(0, _rnw.to_reactNative.WClassName)(props.contentContainerClassName), props.contentContainerStyle]
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style],
++    contentContainerStyle: [(0, _rnw.toRNWClassName)(props.contentContainerClassName), props.contentContainerStyle]
+   });
+ });
+ module.exports = ScrollView;
+\ No newline at end of file
+diff --git a/node_modules/uniwind/dist/common/components/web/Button.js b/node_modules/uniwind/dist/common/components/web/Button.js
+index b36458c..1c3be7a 100644
+--- a/node_modules/uniwind/dist/common/components/web/Button.js
++++ b/node_modules/uniwind/dist/common/components/web/Button.js
+@@ -5,12 +5,18 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.Button = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _hooks = require("../../hooks");
+ var _utils = require("../utils");
+-const Button = exports.Button = (0, _utils.copyComponentProperties)(_reactNative.Button, props => {
++const RNButton = _reactNative.Button ?? (() => null);
++const Button = exports.Button = (0, _utils.copyComponentProperties)(RNButton, props => {
+   const color = (0, _hooks.useUniwindAccent)(props.colorClassName);
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.Button, {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNButton, {
+     ...props,
+     color: props.color ?? color
+   });
+diff --git a/node_modules/uniwind/dist/common/components/web/View.js b/node_modules/uniwind/dist/common/components/web/View.js
+index e8364a2..f327b5d 100644
+--- a/node_modules/uniwind/dist/common/components/web/View.js
++++ b/node_modules/uniwind/dist/common/components/web/View.js
+@@ -5,13 +5,19 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.View = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const View = exports.View = (0, _utils.copyComponentProperties)(_reactNative.View, props => {
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.View, {
++const RNView = _reactNative.View ?? (() => null);
++const View = exports.View = (0, _utils.copyComponentProperties)(RNView, props => {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNView, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style]
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style]
+   });
+ });
+ module.exports = View;
+\ No newline at end of file
+diff --git a/node_modules/uniwind/dist/common/components/web/RefreshControl.js b/node_modules/uniwind/dist/common/components/web/RefreshControl.js
+index 9510f49..d933ae8 100644
+--- a/node_modules/uniwind/dist/common/components/web/RefreshControl.js
++++ b/node_modules/uniwind/dist/common/components/web/RefreshControl.js
+@@ -5,13 +5,19 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.RefreshControl = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const RefreshControl = exports.RefreshControl = (0, _utils.copyComponentProperties)(_reactNative.RefreshControl, props => {
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.RefreshControl, {
++const RNRefreshControl = _reactNative.RefreshControl ?? (() => null);
++const RefreshControl = exports.RefreshControl = (0, _utils.copyComponentProperties)(RNRefreshControl, props => {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNRefreshControl, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style]
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style]
+   });
+ });
+ module.exports = RefreshControl;
+\ No newline at end of file
+diff --git a/node_modules/uniwind/dist/common/components/web/TouchableOpacity.js b/node_modules/uniwind/dist/common/components/web/TouchableOpacity.js
+index 60bf5bb..248d152 100644
+--- a/node_modules/uniwind/dist/common/components/web/TouchableOpacity.js
++++ b/node_modules/uniwind/dist/common/components/web/TouchableOpacity.js
+@@ -5,13 +5,19 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.TouchableOpacity = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const TouchableOpacity = exports.TouchableOpacity = (0, _utils.copyComponentProperties)(_reactNative.TouchableOpacity, props => {
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.TouchableOpacity, {
++const RNTouchableOpacity = _reactNative.TouchableOpacity ?? (() => null);
++const TouchableOpacity = exports.TouchableOpacity = (0, _utils.copyComponentProperties)(RNTouchableOpacity, props => {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNTouchableOpacity, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style]
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style]
+   });
+ });
+ module.exports = TouchableOpacity;
+\ No newline at end of file
+diff --git a/node_modules/uniwind/dist/common/components/web/SectionList.js b/node_modules/uniwind/dist/common/components/web/SectionList.js
+index 7721511..6d3538f 100644
+--- a/node_modules/uniwind/dist/common/components/web/SectionList.js
++++ b/node_modules/uniwind/dist/common/components/web/SectionList.js
+@@ -5,16 +5,22 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.SectionList = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const SectionList = exports.SectionList = (0, _utils.copyComponentProperties)(_reactNative.SectionList, props => {
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.SectionList, {
++const RNSectionList = _reactNative.SectionList ?? (() => null);
++const SectionList = exports.SectionList = (0, _utils.copyComponentProperties)(RNSectionList, props => {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNSectionList, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style],
+-    contentContainerStyle: [(0, _rnw.to_reactNative.WClassName)(props.contentContainerClassName), props.contentContainerStyle],
+-    ListFooterComponentStyle: [(0, _rnw.to_reactNative.WClassName)(props.ListFooterComponentClassName), props.ListFooterComponentStyle],
+-    ListHeaderComponentStyle: [(0, _rnw.to_reactNative.WClassName)(props.ListHeaderComponentClassName), props.ListHeaderComponentStyle]
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style],
++    contentContainerStyle: [(0, _rnw.toRNWClassName)(props.contentContainerClassName), props.contentContainerStyle],
++    ListFooterComponentStyle: [(0, _rnw.toRNWClassName)(props.ListFooterComponentClassName), props.ListFooterComponentStyle],
++    ListHeaderComponentStyle: [(0, _rnw.toRNWClassName)(props.ListHeaderComponentClassName), props.ListHeaderComponentStyle]
+   });
+ });
+ module.exports = SectionList;
+\ No newline at end of file
+diff --git a/node_modules/uniwind/dist/common/components/web/SafeAreaView.js b/node_modules/uniwind/dist/common/components/web/SafeAreaView.js
+index 6a690e7..85343d1 100644
+--- a/node_modules/uniwind/dist/common/components/web/SafeAreaView.js
++++ b/node_modules/uniwind/dist/common/components/web/SafeAreaView.js
+@@ -5,13 +5,19 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.SafeAreaView = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const SafeAreaView = exports.SafeAreaView = (0, _utils.copyComponentProperties)(_reactNative.SafeAreaView, props => {
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.SafeAreaView, {
++const RNSafeAreaView = _reactNative.SafeAreaView ?? (() => null);
++const SafeAreaView = exports.SafeAreaView = (0, _utils.copyComponentProperties)(RNSafeAreaView, props => {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNSafeAreaView, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style]
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style]
+   });
+ });
+ module.exports = SafeAreaView;
+\ No newline at end of file
+diff --git a/node_modules/uniwind/dist/common/components/web/Modal.js b/node_modules/uniwind/dist/common/components/web/Modal.js
+index 6a78ed5..049f6e2 100644
+--- a/node_modules/uniwind/dist/common/components/web/Modal.js
++++ b/node_modules/uniwind/dist/common/components/web/Modal.js
+@@ -5,13 +5,19 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.Modal = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const Modal = exports.Modal = (0, _utils.copyComponentProperties)(_reactNative.Modal, props => {
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.Modal, {
++const RNModal = _reactNative.Modal ?? (() => null);
++const Modal = exports.Modal = (0, _utils.copyComponentProperties)(RNModal, props => {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNModal, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style]
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style]
+   });
+ });
+ module.exports = Modal;
+\ No newline at end of file
+diff --git a/node_modules/uniwind/dist/common/components/web/Text.js b/node_modules/uniwind/dist/common/components/web/Text.js
+index 86ba827..dec75e1 100644
+--- a/node_modules/uniwind/dist/common/components/web/Text.js
++++ b/node_modules/uniwind/dist/common/components/web/Text.js
+@@ -5,13 +5,19 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ module.exports = exports.Text = void 0;
+ var _jsxRuntime = require("react/jsx-runtime");
+-var _reactNative = require("react-native");
++var _reactNative;
++try {
++  _reactNative = require("react-native");
++} catch (error) {
++  _reactNative = {};
++}
+ var _utils = require("../utils");
+ var _rnw = require("./rnw");
+-const Text = exports.Text = (0, _utils.copyComponentProperties)(_reactNative.Text, props => {
+-  return /* @__PURE__ */(0, _jsxRuntime.jsx)(_reactNative.Text, {
++const RNText = _reactNative.Text ?? (() => null);
++const Text = exports.Text = (0, _utils.copyComponentProperties)(RNText, props => {
++  return /* @__PURE__ */(0, _jsxRuntime.jsx)(RNText, {
+     ...props,
+-    style: [(0, _rnw.to_reactNative.WClassName)(props.className), props.style]
++    style: [(0, _rnw.toRNWClassName)(props.className), props.style]
+   });
+ });
+ module.exports = Text;
+\ No newline at end of file
