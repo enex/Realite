@@ -13,7 +13,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { colorScheme as nativewindColorScheme } from "nativewind";
+import { Uniwind } from "uniwind";
 
 import { useSession } from "@/client/auth";
 import { ShareIntentHandler } from "@/components/share-intent-handler";
@@ -36,7 +36,7 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    nativewindColorScheme.set(colorScheme ?? "system");
+    Uniwind.setTheme(colorScheme ?? "system");
   }, [colorScheme]);
 
   useEffect(() => {

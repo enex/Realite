@@ -1,4 +1,4 @@
-import { useColorScheme } from "nativewind";
+import { useUniwind } from "uniwind";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
@@ -32,8 +32,8 @@ export default function RadiusSelector({
   onRadiusChange,
   style = { color: "#4F46E5" },
 }: RadiusSelectorProps) {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const { theme } = useUniwind();
+  const isDark = theme === "dark";
 
   return (
     <ScrollView

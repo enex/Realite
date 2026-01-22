@@ -1,13 +1,13 @@
 import { Stack } from "expo-router";
-import { useColorScheme } from "nativewind";
+import { useUniwind } from "uniwind";
 
 export const unstable_settings = {
   initialRouteName: "sign-in",
 };
 
 export default function AuthLayout() {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const { theme } = useUniwind();
+  const isDark = theme === "dark";
 
   return (
     <Stack

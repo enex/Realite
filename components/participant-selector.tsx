@@ -10,7 +10,7 @@ import { WhoInput } from "@/shared/validation/realite";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import * as SecureStore from "expo-secure-store";
-import { useColorScheme } from "nativewind";
+import { useUniwind } from "uniwind";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -69,8 +69,8 @@ export default function ParticipantSelector({
   onDataChange,
   style,
 }: ParticipantSelectorProps) {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const { theme } = useUniwind();
+  const isDark = theme === "dark";
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showDebugInfo, setShowDebugInfo] = useState(false);
@@ -86,7 +86,7 @@ export default function ParticipantSelector({
   React.useEffect(() => {
     if (contacts) {
       console.log(
-        `🎯 ParticipantSelector: Received ${contacts.length} contacts`
+        `🎯 ParticipantSelector: Received ${contacts.length} contacts`,
       );
       if (contacts.length === 0) {
         console.warn("⚠️ No contacts available in ParticipantSelector");
@@ -95,7 +95,7 @@ export default function ParticipantSelector({
     if (contactsError) {
       console.error(
         "❌ Contact loading error in ParticipantSelector:",
-        contactsError
+        contactsError,
       );
     }
   }, [contacts, contactsError]);
@@ -135,8 +135,8 @@ export default function ParticipantSelector({
       (contact) =>
         contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         contact.phoneNumbers?.some((phone) =>
-          phone.number?.includes(searchQuery)
-        )
+          phone.number?.includes(searchQuery),
+        ),
     );
   }, [contacts, searchQuery]);
 
@@ -183,7 +183,7 @@ export default function ParticipantSelector({
 
   const toggleAnyoneFilter = (
     property: "gender" | "relationshipStatus",
-    value: string
+    value: string,
   ) => {
     const currentFilters = data.anyone || {};
     const currentValues = currentFilters[property] as string[];
@@ -274,7 +274,7 @@ export default function ParticipantSelector({
 
     if (explicitYes > 0) {
       parts.push(
-        `${explicitYes} ausgewählte Kontakt${explicitYes !== 1 ? "e" : ""}`
+        `${explicitYes} ausgewählte Kontakt${explicitYes !== 1 ? "e" : ""}`,
       );
     }
 
@@ -516,7 +516,7 @@ export default function ParticipantSelector({
                         if (!contactHash) {
                           console.warn(
                             "⚠️ Contact without hash:",
-                            contact.name
+                            contact.name,
                           );
                           return null;
                         }

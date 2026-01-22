@@ -82,7 +82,7 @@ export default function PlanDetails() {
     orpc.user.get.queryOptions({
       input: { id: (plan?.creatorId as any) || "" },
       enabled: Boolean(plan?.creatorId),
-    })
+    }),
   );
 
   // Get location for participant queries
@@ -123,7 +123,7 @@ export default function PlanDetails() {
     return (similarPlans as any[]).some(
       (similarPlan: any) =>
         (similarPlan?.creatorId || similarPlan?.creator_id) === session.id &&
-        similarPlan.id !== plan.id
+        similarPlan.id !== plan.id,
     );
   }, [similarPlans, plan, session?.id]);
 
@@ -169,7 +169,7 @@ export default function PlanDetails() {
       onSuccess: async () => {
         await queryClient.invalidateQueries();
       },
-    })
+    }),
   );
   const joinPlan = useMutation(
     orpc.plan.join.mutationOptions({
@@ -181,7 +181,7 @@ export default function PlanDetails() {
         } else {
           Alert.alert(
             "Erfolgreich!",
-            "Der Plan wurde zu deinen Plänen hinzugefügt."
+            "Der Plan wurde zu deinen Plänen hinzugefügt.",
           );
         }
       },
@@ -191,11 +191,11 @@ export default function PlanDetails() {
         } else {
           Alert.alert(
             "Fehler",
-            "Konnte dem Plan nicht beitreten. Bitte versuche es erneut."
+            "Konnte dem Plan nicht beitreten. Bitte versuche es erneut.",
           );
         }
       },
-    })
+    }),
   );
 
   const activity = (plan?.activity ?? undefined) as ActivityId | undefined;
@@ -216,10 +216,10 @@ export default function PlanDetails() {
       onError: (error: any) => {
         Alert.alert(
           "Fehler",
-          "Konnte Plan nicht löschen. Bitte versuche es erneut."
+          "Konnte Plan nicht löschen. Bitte versuche es erneut.",
         );
       },
-    })
+    }),
   );
 
   const primaryLocation = plan?.location ?? null;
@@ -302,7 +302,7 @@ export default function PlanDetails() {
         url = `maps://maps.apple.com/?q=${lat},${lng}`;
       } else {
         url = `geo:${lat},${lng}?q=${lat},${lng}(${encodeURIComponent(
-          address || ""
+          address || "",
         )})`;
       }
     } else if (address) {
@@ -323,7 +323,7 @@ export default function PlanDetails() {
         lat && lng
           ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
           : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-              address || ""
+              address || "",
             )}`;
       Linking.openURL(googleMapsUrl);
     });
@@ -429,19 +429,19 @@ export default function PlanDetails() {
               height: HEADER_HEIGHT + insets.top,
             }}
           >
-          {locationImageUrl ? (
-            <Image
-              source={{ uri: locationImageUrl }}
-              className="w-full h-full"
-              resizeMode="cover"
-            />
-          ) : (
+            {locationImageUrl ? (
+              <Image
+                source={{ uri: locationImageUrl }}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+            ) : (
               <LinearGradient
                 colors={placeholderGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={{
-                  // this is not nativewind because it has problems on ios
+                  // this is not uniwind because it has problems on ios
                   height: HEADER_HEIGHT + insets.top,
                   display: "flex",
                   alignItems: "center",
@@ -638,9 +638,7 @@ export default function PlanDetails() {
             >
               <Icon name={PlusCircleIcon} size={20} color="#FFFFFF" />
               <Text className="text-[17px] leading-5 text-white font-semibold">
-                {joinPlan.isPending
-                  ? "Wird hinzugefügt..."
-                  : "Ich auch"}
+                {joinPlan.isPending ? "Wird hinzugefügt..." : "Ich auch"}
               </Text>
             </Pressable>
           </View>
@@ -665,7 +663,7 @@ export default function PlanDetails() {
                     cancelPlan.mutate({ id });
                   },
                 },
-              ]
+              ],
             );
           }}
           onDuplicate={() => {

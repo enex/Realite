@@ -1,6 +1,6 @@
 import { formatLocalTime } from "@/shared/utils/datetime";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useColorScheme } from "nativewind";
+import { useUniwind } from "uniwind";
 import React, { useCallback, useState } from "react";
 import { Modal, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,7 +13,7 @@ interface OnboardingDateTimePickerProps {
   onDateSelect: (date: Date) => void;
   onDateRemove: (index: number) => void;
   onTimeRangesChange?: (
-    ranges: { start: Date; end: Date; day: string }[]
+    ranges: { start: Date; end: Date; day: string }[],
   ) => void;
   accentColor: string;
 }
@@ -26,8 +26,8 @@ export default function OnboardingDateTimePicker({
   onTimeRangesChange,
   accentColor,
 }: OnboardingDateTimePickerProps) {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const { theme } = useUniwind();
+  const isDark = theme === "dark";
   const [showPicker, setShowPicker] = useState(false);
 
   const handleDateSelect = useCallback(
@@ -35,7 +35,7 @@ export default function OnboardingDateTimePicker({
       onDateSelect(date);
       // Don't auto-close to allow multiple selections
     },
-    [onDateSelect]
+    [onDateSelect],
   );
 
   return (

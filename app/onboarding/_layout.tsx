@@ -1,9 +1,9 @@
 import { Stack } from "expo-router";
-import { useColorScheme } from "nativewind";
+import { useUniwind } from "uniwind";
 
 export default function OnboardingLayout() {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const { theme } = useUniwind();
+  const isDark = theme === "dark";
 
   return (
     <Stack

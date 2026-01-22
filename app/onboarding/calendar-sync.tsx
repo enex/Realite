@@ -1,15 +1,15 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Calendar from "expo-calendar";
 import { useRouter } from "expo-router";
-import { useColorScheme } from "nativewind";
+import { useUniwind } from "uniwind";
 import React, { useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CalendarSyncScreen() {
   const router = useRouter();
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const { theme } = useUniwind();
+  const isDark = theme === "dark";
   const [isConnecting, setIsConnecting] = useState(false);
 
   const handleConnectCalendar = async () => {
@@ -29,20 +29,20 @@ export default function CalendarSyncScreen() {
               text: "Einstellungen",
               onPress: () => router.push("/onboarding/permissions" as never),
             },
-          ]
+          ],
         );
         return;
       }
 
       // Kalender abrufen um zu testen ob es funktioniert
       const calendars = await Calendar.getCalendarsAsync(
-        Calendar.EntityTypes.EVENT
+        Calendar.EntityTypes.EVENT,
       );
 
       if (calendars.length === 0) {
         Alert.alert(
           "Keine Kalender gefunden",
-          "Es wurden keine Kalender auf deinem Gerät gefunden. Du kannst später Termine manuell hinzufügen."
+          "Es wurden keine Kalender auf deinem Gerät gefunden. Du kannst später Termine manuell hinzufügen.",
         );
       }
 
@@ -52,7 +52,7 @@ export default function CalendarSyncScreen() {
       console.error("Error connecting calendar:", error);
       Alert.alert(
         "Fehler",
-        "Es gab ein Problem beim Verbinden mit deinem Kalender. Du kannst dies später in den Einstellungen versuchen."
+        "Es gab ein Problem beim Verbinden mit deinem Kalender. Du kannst dies später in den Einstellungen versuchen.",
       );
     } finally {
       setIsConnecting(false);
