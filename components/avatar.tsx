@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import React from "react";
-import { Text, View, useColorScheme } from "react-native";
+import { Text, View } from "react-native";
 
 interface AvatarProps {
   name: string;
@@ -22,8 +22,6 @@ export function Avatar({
   size = 40,
   className = "",
 }: AvatarProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
   const initials = getInitials(name);
 
   return (
