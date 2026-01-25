@@ -128,16 +128,32 @@ describe("RealiteCore", () => {
     const plans1 = await b.getSuggestions();
     expect(plans1).toHaveLength(1);
     // accept the plan and make it more specific
-    await b.putPlan({
-      what: plans1[0].what,
-      who: plans1[0].who,
+    await b.acceptPlan(plans1[0], {
       when: {
         start: "2026-01-23T19:00:00",
-        end: "2026-01-23T20:00:00",
+        end: "2026-01-23T21:00:00",
       },
     });
     // a now sees the concrete plan
     const plans2 = await a.getSuggestions();
     expect(plans2).toHaveLength(1);
+  });
+
+  test("only suggest stuff not collidating with my event in my calendar", async () => {
+    const c = create();
+    const a = c.user("a");
+    const b = c.user("b");
+    await a.importBlockedTimes([
+      {
+        start: "2026-01-23T18:00:00",
+        end: "2026-01-23T20:00:00",
+        id: "blocked-1",
+      },
+      {
+        start: "2026-02-14T13:00:00",
+        end: "2026-02-14T16:00:00",
+        id: "blocked-2",
+      },
+    ]);
   });
 });

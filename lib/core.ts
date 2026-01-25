@@ -138,6 +138,32 @@ export class RealiteCore {
     return fullPlan;
   }
 
+  async acceptPlan(
+    { id, creator, createdAt, updatedAt, ...plan }: StoredPlan,
+    additional?: Partial<StoredPlan>,
+  ): Promise<StoredPlan> {
+    return this.putPlan({ ...plan, ...additional });
+  }
+
+  /**
+   * this function can be called to import blocked times from a Calendar of the user
+   * This way we will only suggest stuff not colliding with those events.
+   */
+  async importBlockedTimes(
+    blockedTimes: { start: string; end: string; id: string }[],
+  ): Promise<void> {
+    for (const blockedTime of blockedTimes) {
+      await this.putPlan({
+        id: blockedTime.id,
+        when: {
+          start: blockedTime.start,
+          end: blockedTime.end,
+        },
+        certainty: 0,
+      });
+    }
+  }
+
   async getSuggestions({ limit = 10 }: { limit?: number } = {}) {
     const plans = await this.storage.getPlans();
     const myPlans = plans.filter((p) => p.creator === this.user.id);

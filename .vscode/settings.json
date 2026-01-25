@@ -4,5 +4,6 @@
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
   },
-  "cSpell.words": ["orpc", "Pressable", "Realite", "uuidv"]
+  "cSpell.words": ["orpc", "Pressable", "Realite", "uuidv"],
+  "editor.indentSize": 2
 }

@@ -1,29 +1,30 @@
-import { Text } from "@/components/ui/text";
-import { Plan } from "@/lib/core";
-import { isSameDay } from "date-fns";
-import { useCallback, useRef } from "react";
-import { View, Pressable, Animated } from "react-native";
-import AppScreen, { AppScreenScrollableContent } from "./ui/app-screen";
-import { Button } from "./ui/button";
-import { ScrollView } from "./ui/scroll-view";
-import { LinearGradient } from "expo-linear-gradient";
-import { GlassView } from "expo-glass-effect";
-import { Icon } from "@/components/ui/icon";
 import { Avatar } from "@/components/avatar";
-import { MapPinIcon } from "lucide-react-native";
+import { Icon } from "@/components/ui/icon";
+import { Text } from "@/components/ui/text";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { Plan } from "@/lib/core";
 import {
+    activities,
     getActivityIconColor,
     getActivityLabel,
     getGroupIdFromActivity,
-    type ActivityId,
     type ActivityGroupId,
-    activities,
+    type ActivityId,
 } from "@/shared/activities";
 import { getActivityIcon } from "@/shared/activity-icons";
-import { formatLocalTime, formatLocalDateTime } from "@/shared/utils/datetime";
+import { formatLocalDateTime, formatLocalTime } from "@/shared/utils/datetime";
+import { isSameDay } from "date-fns";
+import { GlassView } from "expo-glass-effect";
 import * as Haptics from "expo-haptics";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { MapPinIcon } from "lucide-react-native";
+import { useCallback, useRef } from "react";
+import { Animated, Pressable, View } from "react-native";
 import tinycolor from "tinycolor2";
+import AppScreen, { AppScreenScrollableContent } from "./ui/app-screen";
+import { Button } from "./ui/button";
+import { ScrollView } from "./ui/scroll-view";
 
 export default function OverviewScreen() {
     return (
@@ -39,7 +40,16 @@ export default function OverviewScreen() {
 }
 
 function Header() {
-    return null;
+    const router = useRouter();
+    return <View className="flex-row items-center gap-2">
+        <Button variant="ghost" size="icon" onPress={() => router.push("/profile")}>
+            <Avatar name="John Doe" image="https://github.com/shadcn.png" size={40} />
+        </Button>
+        <View className="flex flex-col gap-0">
+            <Text variant="caption">Was möchtest du machen?</Text>
+            <Text className="text-base font-semibold">John Doe</Text>
+        </View>
+    </View>;
 }
 
 function PlanFilterChips() {
@@ -109,21 +119,21 @@ function PlanSuggestions() {
             certainty: 0
         }
     ];
-    return <View className="gap-4">{plans.map((plan, i) => <PlanCard key={i} plan={plan} />)}</View>;
+    return <View className="gap-2 px-4">{plans.map((plan, i) => <PlanCard key={i} plan={plan} />)}</View>;
 }
 
 
 // Helper functions
 function getActivityGradientForMode(activityId: ActivityId | undefined, isDark: boolean): readonly [string, string, string] {
     if (!activityId) {
-        return isDark 
+        return isDark
             ? ["#1e293b", "#334155", "#475569"] as const
             : ["#e2e8f0", "#cbd5e1", "#94a3b8"] as const;
     }
-    
+
     const groupId = getGroupIdFromActivity(activityId);
     const base = (groupId && activities[groupId]?.color) || "#94a3b8";
-    
+
     if (isDark) {
         // Dark mode: darker, more saturated gradients
         const c1 = tinycolor(base).darken(25).saturate(10).toHexString();
@@ -142,7 +152,7 @@ function getActivityGradientForMode(activityId: ActivityId | undefined, isDark: 
 function getActivityIdFromPlan(plan: Plan): ActivityId | undefined {
     if (!plan.what) return undefined;
     const { category, activity } = plan.what;
-    
+
     if (category && activity) {
         const groupId = category as ActivityGroupId;
         const group = activities[groupId];
@@ -150,37 +160,37 @@ function getActivityIdFromPlan(plan: Plan): ActivityId | undefined {
             return `${category}/${activity}` as ActivityId;
         }
     }
-    
+
     if (category && activities[category as ActivityGroupId]) {
         return category as ActivityId;
     }
-    
+
     return undefined;
 }
 
 function derivePlanTitle(plan: Plan): string {
     if (plan.what?.title) return plan.what.title;
-    
+
     const activityId = getActivityIdFromPlan(plan);
     if (activityId) {
         const label = getActivityLabel(activityId);
         if (label) return label;
     }
-    
+
     if (plan.what?.activity) {
         // Capitalize first letter
         return plan.what.activity.charAt(0).toUpperCase() + plan.what.activity.slice(1);
     }
-    
+
     if (plan.what?.category) {
         const categoryName = activities[plan.what.category as ActivityGroupId]?.nameDe || plan.what.category;
         return categoryName;
     }
-    
+
     if (plan.where?.name) {
         return `Treffen bei ${plan.where.name}`;
     }
-    
+
     if (plan.when) {
         const start = new Date(plan.when.start);
         return formatLocalDateTime(start, {
@@ -188,7 +198,7 @@ function derivePlanTitle(plan: Plan): string {
             dateOptions: { weekday: "long", day: "numeric", month: "long" }
         });
     }
-    
+
     return "Plan";
 }
 
@@ -210,10 +220,10 @@ function isSameTime(start: string, end: string): boolean {
 function PlanTimeChip({ when, isDark, certainty }: { when: { start: string; end: string }; isDark: boolean; certainty?: number }) {
     const start = new Date(when.start);
     const end = new Date(when.end);
-    
+
     // Check if it's a single time (same or very close)
     const isSingleTime = isSameTime(when.start, when.end);
-    
+
     let timeStr: string;
     if (isSingleTime) {
         // Single time: show as availability
@@ -237,7 +247,7 @@ function PlanTimeChip({ when, isDark, certainty }: { when: { start: string; end:
             dateOptions: { weekday: "short", day: "2-digit", month: "short" },
         });
     }
-    
+
     return (
         <View className="absolute top-3 right-3" pointerEvents="none">
             <GlassView
@@ -268,10 +278,10 @@ function PlanTitle({ title, isDark }: { title: string; isDark: boolean }) {
 
 function PlanLocation({ where, isDark }: { where: { name?: string; address?: string }; isDark: boolean }) {
     if (!where.name && !where.address) return null;
-    
+
     const iconColor = isDark ? "#ffffff" : "#1C1C1E";
     const textColor = isDark ? "text-white" : "text-[#1C1C1E]";
-    
+
     return (
         <View className="flex-row items-center gap-2 mb-2">
             <Icon name={MapPinIcon} size={14} color={iconColor} />
@@ -284,9 +294,9 @@ function PlanLocation({ where, isDark }: { where: { name?: string; address?: str
 
 function PlanParticipants({ who, isDark }: { who: { explicit?: string[] }; isDark: boolean }) {
     if (!who.explicit || who.explicit.length === 0) return null;
-    
+
     const participants = who.explicit.map(name => ({ name, image: undefined }));
-    
+
     return (
         <View className="flex-row items-center justify-start">
             <View className="flex-row items-center">
@@ -334,7 +344,7 @@ function PlanStatus({ certainty, isDark, when }: { certainty: number; isDark: bo
     if (when && isSameTime(when.start, when.end)) {
         return null;
     }
-    
+
     if (certainty === 0) {
         return (
             <View className="mt-2">
@@ -344,7 +354,7 @@ function PlanStatus({ certainty, isDark, when }: { certainty: number; isDark: bo
             </View>
         );
     }
-    
+
     if (certainty < 1) {
         return (
             <View className="mt-2">
@@ -354,7 +364,7 @@ function PlanStatus({ certainty, isDark, when }: { certainty: number; isDark: bo
             </View>
         );
     }
-    
+
     return null;
 }
 
@@ -362,7 +372,7 @@ function PlanCard({ plan }: { plan: Plan }) {
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const colorScheme = useColorScheme();
     const isDark = colorScheme === "dark";
-    
+
     const handlePressIn = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         Animated.spring(scaleAnim, {
@@ -372,7 +382,7 @@ function PlanCard({ plan }: { plan: Plan }) {
             friction: 8,
         }).start();
     }, [scaleAnim]);
-    
+
     const handlePressOut = useCallback(() => {
         Animated.spring(scaleAnim, {
             toValue: 1,
@@ -381,13 +391,13 @@ function PlanCard({ plan }: { plan: Plan }) {
             friction: 8,
         }).start();
     }, [scaleAnim]);
-    
+
     const activityId = getActivityIdFromPlan(plan);
     const title = derivePlanTitle(plan);
     const gradient = getActivityGradientForMode(activityId, isDark);
     const icon = activityId ? getActivityIcon(activityId) : undefined;
     const iconColor = activityId ? getActivityIconColor(activityId) : undefined;
-    
+
     return (
         <Animated.View
             style={{
@@ -426,17 +436,17 @@ function PlanCard({ plan }: { plan: Plan }) {
                                 />
                             </View>
                         )}
-                        
+
                         {/* Time chip */}
                         {plan.when && <PlanTimeChip when={plan.when} isDark={isDark} certainty={plan.certainty} />}
-                        
+
                         {/* Content */}
                         <View className="relative z-10">
                             <View className="mb-4">
                                 <PlanTitle title={title} isDark={isDark} />
                                 {plan.where && <PlanLocation where={plan.where} isDark={isDark} />}
                             </View>
-                            
+
                             {plan.who && <PlanParticipants who={plan.who} isDark={isDark} />}
                             {typeof plan.certainty === "number" && (
                                 <PlanStatus certainty={plan.certainty} isDark={isDark} when={plan.when} />

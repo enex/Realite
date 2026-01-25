@@ -9,7 +9,7 @@ import React, { useEffect } from "react";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaListener, SafeAreaProvider } from "react-native-safe-area-context";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -46,7 +46,7 @@ export default function RootLayout() {
       // With edge-to-edge enabled on Android, only style & visibility are effective.
       NavigationBar.setStyle(colorScheme === "dark" ? "light" : "dark");
       NavigationBar.setVisibilityAsync("visible");
-    } catch {}
+    } catch { }
   }, [colorScheme]);
 
   if (!loaded) {
@@ -76,24 +76,30 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaProvider>
-          {shouldInitPostHog ? (
-            <PostHogProvider
-              apiKey={POSTHOG_API_KEY}
-              options={{
-                host: POSTHOG_HOST,
-                enableSessionReplay: true,
-              }}
-            >
-              {content}
-            </PostHogProvider>
-          ) : (
-            content
-          )}
-        </SafeAreaProvider>
-      </GestureHandlerRootView>
-      <StatusBar style="auto" />
+      <SafeAreaListener
+        onChange={({ insets }) => {
+          Uniwind.updateInsets(insets)
+        }}
+      >
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <SafeAreaProvider>
+            {shouldInitPostHog ? (
+              <PostHogProvider
+                apiKey={POSTHOG_API_KEY}
+                options={{
+                  host: POSTHOG_HOST,
+                  enableSessionReplay: true,
+                }}
+              >
+                {content}
+              </PostHogProvider>
+            ) : (
+              content
+            )}
+          </SafeAreaProvider>
+        </GestureHandlerRootView>
+        <StatusBar style="auto" />
+      </SafeAreaListener>
     </ThemeProvider>
   );
 }
@@ -124,11 +130,11 @@ function RootNavigator() {
             presentation: Platform.OS === "ios" ? "formSheet" : "modal",
             ...(Platform.OS === "ios"
               ? ({
-                  sheetGrabberVisible: true,
-                  sheetAllowedDetents: "all",
-                  sheetInitialDetentIndex: 0,
-                  sheetCornerRadius: 24,
-                } as any)
+                sheetGrabberVisible: true,
+                sheetAllowedDetents: "all",
+                sheetInitialDetentIndex: 0,
+                sheetCornerRadius: 24,
+              } as any)
               : null),
           }}
         />
@@ -139,11 +145,11 @@ function RootNavigator() {
             presentation: Platform.OS === "ios" ? "formSheet" : "modal",
             ...(Platform.OS === "ios"
               ? ({
-                  sheetGrabberVisible: true,
-                  sheetAllowedDetents: "all",
-                  sheetInitialDetentIndex: 0,
-                  sheetCornerRadius: 24,
-                } as any)
+                sheetGrabberVisible: true,
+                sheetAllowedDetents: "all",
+                sheetInitialDetentIndex: 0,
+                sheetCornerRadius: 24,
+              } as any)
               : null),
           }}
         />
