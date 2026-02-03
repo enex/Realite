@@ -2,7 +2,7 @@ import { Avatar } from "@/components/avatar";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { Plan } from "@/lib/core";
+import { normalizeOptions, Plan, PlanLocation, PlanLocationOption } from "@/lib/core";
 import {
     activities,
     getActivityIconColor,
@@ -168,6 +168,11 @@ function getActivityIdFromPlan(plan: Plan): ActivityId | undefined {
     return undefined;
 }
 
+function getPrimaryLocation(location: PlanLocation): PlanLocationOption | undefined {
+    const options = normalizeOptions(location);
+    return options[0];
+}
+
 function derivePlanTitle(plan: Plan): string {
     if (plan.what?.title) return plan.what.title;
 
@@ -187,8 +192,11 @@ function derivePlanTitle(plan: Plan): string {
         return categoryName;
     }
 
-    if (plan.where?.name) {
-        return `Treffen bei ${plan.where.name}`;
+    if (plan.where) {
+        const primary = getPrimaryLocation(plan.where);
+        if (primary?.name) {
+            return `Treffen bei ${primary.name}`;
+        }
     }
 
     if (plan.when) {
@@ -276,8 +284,9 @@ function PlanTitle({ title, isDark }: { title: string; isDark: boolean }) {
     );
 }
 
-function PlanLocation({ where, isDark }: { where: { name?: string; address?: string }; isDark: boolean }) {
-    if (!where.name && !where.address) return null;
+function PlanLocationView({ where, isDark }: { where: PlanLocation; isDark: boolean }) {
+    const primary = getPrimaryLocation(where);
+    if (!primary?.name && !primary?.address) return null;
 
     const iconColor = isDark ? "#ffffff" : "#1C1C1E";
     const textColor = isDark ? "text-white" : "text-[#1C1C1E]";
@@ -286,7 +295,7 @@ function PlanLocation({ where, isDark }: { where: { name?: string; address?: str
         <View className="flex-row items-center gap-2 mb-2">
             <Icon name={MapPinIcon} size={14} color={iconColor} />
             <Text className={`text-[15px] font-normal leading-5 ${textColor}`}>
-                {where.name || where.address}
+                {primary.name || primary.address}
             </Text>
         </View>
     );
@@ -444,7 +453,7 @@ function PlanCard({ plan }: { plan: Plan }) {
                         <View className="relative z-10">
                             <View className="mb-4">
                                 <PlanTitle title={title} isDark={isDark} />
-                                {plan.where && <PlanLocation where={plan.where} isDark={isDark} />}
+                                {plan.where && <PlanLocationView where={plan.where} isDark={isDark} />}
                             </View>
 
                             {plan.who && <PlanParticipants who={plan.who} isDark={isDark} />}
@@ -458,4 +467,3 @@ function PlanCard({ plan }: { plan: Plan }) {
         </Animated.View>
     );
 }
-

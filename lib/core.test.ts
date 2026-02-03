@@ -26,6 +26,45 @@ describe("plansMatch", () => {
     const planB: Plan = {};
     expect(plansMatch(planA, planB)).toBeTrue();
   });
+
+  test("locations match within radius", () => {
+    const planA: Plan = {
+      where: { latitude: 0, longitude: 0, radiusMeters: 1000 },
+    };
+    const planB: Plan = {
+      where: { latitude: 0, longitude: 0.005 },
+    };
+    expect(plansMatch(planA, planB)).toBeTrue();
+  });
+
+  test("locations do not match outside radius", () => {
+    const planA: Plan = {
+      where: { latitude: 0, longitude: 0, radiusMeters: 1000 },
+    };
+    const planB: Plan = {
+      where: { latitude: 0, longitude: 0.02 },
+    };
+    expect(plansMatch(planA, planB)).toBeFalse();
+  });
+
+  test("locations match with anyOf selection", () => {
+    const planA: Plan = {
+      where: {
+        anyOf: [
+          { name: "Club A", latitude: 52.52, longitude: 13.405 },
+          { name: "Club B", latitude: 52.5205, longitude: 13.409 },
+        ],
+      },
+    };
+    const planB: Plan = {
+      where: { name: "Club B", latitude: 52.5205, longitude: 13.409 },
+    };
+    const planC: Plan = {
+      where: { name: "Club C", latitude: 48.137, longitude: 11.575 },
+    };
+    expect(plansMatch(planA, planB)).toBeTrue();
+    expect(plansMatch(planA, planC)).toBeFalse();
+  });
 });
 
 describe("specificity", () => {
@@ -155,5 +194,32 @@ describe("RealiteCore", () => {
         id: "blocked-2",
       },
     ]);
+  });
+
+  test("location choices narrow to the selected location", async () => {
+    const c = create();
+    const a = c.user("a");
+    const b = c.user("b");
+    await a.putPlan({
+      what: { category: "eat" },
+      where: {
+        anyOf: [
+          { name: "Club A", latitude: 52.52, longitude: 13.405 },
+          { name: "Club B", latitude: 52.5205, longitude: 13.409 },
+        ],
+      },
+    });
+    await b.putPlan({
+      what: { category: "eat" },
+      where: { name: "Club B", latitude: 52.5205, longitude: 13.409 },
+    });
+
+    const plans = await b.getSuggestions();
+    expect(plans).toHaveLength(1);
+    expect(plans[0].where).toMatchObject({
+      name: "Club B",
+      latitude: 52.5205,
+      longitude: 13.409,
+    });
   });
 });

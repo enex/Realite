@@ -31,14 +31,20 @@ export type Availability = z.infer<typeof availabilitySchema>;
 // LOCATION SCHEMA
 // ============================================
 
-export const locationSchema = z.object({
-  title: z.string(),
-  address: z.string(),
+export const locationOptionSchema = z.object({
+  title: z.string().optional(),
+  address: z.string().optional(),
   latitude: z.number(),
   longitude: z.number(),
+  radiusMeters: z.number().positive().optional(),
   url: z.string().optional(),
   description: z.string().optional(),
 });
+
+export const locationSchema = z.union([
+  locationOptionSchema,
+  z.object({ anyOf: z.array(locationOptionSchema).min(1) }),
+]);
 
 export type Location = z.infer<typeof locationSchema>;
 
@@ -190,9 +196,7 @@ export const gatheringSchema = z.object({
   endDate: z.iso.datetime().optional(),
 
   // Location (optional bei Online-Events)
-  location: locationSchema
-    .extend({ address: z.string().optional() })
-    .optional(),
+  location: locationSchema.optional(),
 
   // Quelle
   source: gatheringSourceSchema,
