@@ -11,8 +11,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.realite",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+      "associatedDomains": ["applinks:realite.app"],
+      "config": {
+        "usesNonExemptEncryption": false
       }
     },
     "android": {

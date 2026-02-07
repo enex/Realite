@@ -115,6 +115,26 @@ Bun.serve({
       });
     }
 
+    // App Links / Digital Asset Links – must be application/json and no redirect
+    if (url.pathname === "/.well-known/assetlinks.json") {
+      const file = Bun.file(`${PUBLIC_DIR}/.well-known/assetlinks.json`);
+      if (await file.exists()) {
+        return new Response(await file.text(), {
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+    if (url.pathname === "/.well-known/apple-app-site-association") {
+      const file = Bun.file(
+        `${PUBLIC_DIR}/.well-known/apple-app-site-association`,
+      );
+      if (await file.exists()) {
+        return new Response(await file.text(), {
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+
     if (url.pathname === "/api/image") {
       const { ImageResponse } = await import("@vercel/og");
       const element = React.createElement(Test, {}, []);
