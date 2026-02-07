@@ -1,11 +1,22 @@
 import { describe, expect, test } from "bun:test";
 import { addSeconds } from "date-fns";
 import {
+  classifyByCertainty,
+  combinePlans,
+  getSelectedLocationOption,
+  getSelectedTimeOption,
+  isCollaborativePlan,
+  isOpenInvitation,
+  isPlanExpired,
   InMemoryStorage,
   type Plan,
   plansMatch,
+  readinessScore,
   RealiteCore,
+  selectPlanOptions,
   specificity,
+  timesMatch,
+  willLikelyExecute,
 } from "./core";
 
 describe("plansMatch", () => {
@@ -74,6 +85,233 @@ describe("specificity", () => {
     };
     const planB: Plan = {};
     expect(specificity(planA)).toBeGreaterThan(specificity(planB));
+  });
+});
+
+describe("plan model capabilities", () => {
+  test("can represent and narrow multiple time and location options", () => {
+    const proposal: Plan = {
+      what: { category: "sport", activity: "jogging", title: "Joggen gehen" },
+      whenOptions: [
+        {
+          id: "morning",
+          start: "2026-01-24T08:00:00.000Z",
+          end: "2026-01-24T09:00:00.000Z",
+        },
+        {
+          id: "evening",
+          start: "2026-01-24T18:00:00.000Z",
+          end: "2026-01-24T19:00:00.000Z",
+        },
+      ],
+      whereOptions: [
+        {
+          id: "aschaffenburg-city",
+          name: "Aschaffenburg Innenstadt",
+          latitude: 49.975,
+          longitude: 9.145,
+        },
+        {
+          id: "park-schoenbusch",
+          name: "Schönbusch",
+          latitude: 49.96,
+          longitude: 9.129,
+        },
+      ],
+      participation: {
+        visibility: "specific",
+        targetUsers: ["friend-a"],
+        maxParticipants: 3,
+      },
+      certainty: 0.9,
+    };
+
+    const narrowed = selectPlanOptions(proposal, {
+      whenOptionId: "morning",
+      whereOptionId: "park-schoenbusch",
+    });
+    expect(getSelectedTimeOption(narrowed)?.id).toBe("morning");
+    expect(getSelectedLocationOption(narrowed)?.id).toBe("park-schoenbusch");
+    expect(narrowed.when).toEqual({
+      start: "2026-01-24T08:00:00.000Z",
+      end: "2026-01-24T09:00:00.000Z",
+    });
+    expect(narrowed.where).toMatchObject({ id: "park-schoenbusch" });
+  });
+
+  test("captures invitation visibility and collaboration mode", () => {
+    const personal: Plan = {
+      participation: { mode: "personal", visibility: "private" },
+      certainty: 0.85,
+    };
+    const publicInvite: Plan = {
+      participation: {
+        mode: "collaborative",
+        visibility: "public",
+        maxParticipants: 8,
+      },
+      certainty: 0.8,
+    };
+    expect(isOpenInvitation(personal)).toBeFalse();
+    expect(isCollaborativePlan(personal)).toBeFalse();
+    expect(isOpenInvitation(publicInvite)).toBeTrue();
+    expect(isCollaborativePlan(publicInvite)).toBeTrue();
+  });
+
+  test("supports recurrence, gathering linkage and lifecycle expiration", () => {
+    const recurringGatheringPlan: Plan = {
+      what: { category: "sport", activity: "running" },
+      recurrence: {
+        frequency: "WEEKLY",
+        interval: 1,
+        byWeekday: ["SA"],
+      },
+      gathering: {
+        id: "run-club-ash",
+        title: "Run Club Aschaffenburg",
+        source: "manual",
+      },
+      lifecycle: {
+        status: "open",
+        expiresAt: "2026-01-24T07:00:00.000Z",
+      },
+      reminders: {
+        remindBeforeMinutes: [60, 15],
+      },
+      certainty: 0.72,
+    };
+
+    expect(
+      isPlanExpired(recurringGatheringPlan, new Date("2026-01-24T08:00:00.000Z")),
+    ).toBeTrue();
+    expect(specificity(recurringGatheringPlan)).toBeGreaterThan(0);
+  });
+});
+
+describe("matching and ranking", () => {
+  test("time matching respects overlap for concrete plans", () => {
+    const a: Plan = {
+      when: {
+        start: "2026-01-24T08:00:00.000Z",
+        end: "2026-01-24T09:00:00.000Z",
+      },
+      certainty: 0.9,
+    };
+    const b: Plan = {
+      when: {
+        start: "2026-01-24T10:00:00.000Z",
+        end: "2026-01-24T11:00:00.000Z",
+      },
+      certainty: 0.9,
+    };
+    expect(timesMatch(a, b)).toBeFalse();
+    expect(plansMatch(a, b)).toBeFalse();
+  });
+
+  test("same certainty but higher specificity yields higher readiness", () => {
+    const generic: Plan = {
+      what: { category: "sport" },
+      certainty: 0.9,
+    };
+    const specific: Plan = {
+      what: { category: "sport", activity: "jogging", title: "Joggen morgen" },
+      when: {
+        start: "2026-01-24T08:00:00.000Z",
+        end: "2026-01-24T09:00:00.000Z",
+      },
+      where: {
+        name: "Aschaffenburg Innenstadt",
+        latitude: 49.975,
+        longitude: 9.145,
+      },
+      certainty: 0.9,
+    };
+    expect(classifyByCertainty(generic)).toBe("commitment");
+    expect(classifyByCertainty(specific)).toBe("commitment");
+    expect(readinessScore(specific)).toBeGreaterThan(readinessScore(generic));
+  });
+});
+
+describe("combinePlans", () => {
+  test("combining time windows does not mutate the base plan", () => {
+    const base: Plan = {
+      when: {
+        start: "2026-01-24T08:00:00.000Z",
+        end: "2026-01-24T11:00:00.000Z",
+      },
+      certainty: 0.9,
+    };
+    const incoming: Plan = {
+      when: {
+        start: "2026-01-24T09:00:00.000Z",
+        end: "2026-01-24T10:00:00.000Z",
+      },
+      certainty: 0.8,
+    };
+
+    const combined = combinePlans(base, incoming);
+
+    expect(base.when).toEqual({
+      start: "2026-01-24T08:00:00.000Z",
+      end: "2026-01-24T11:00:00.000Z",
+    });
+    expect(combined.when).toEqual({
+      start: "2026-01-24T09:00:00.000Z",
+      end: "2026-01-24T10:00:00.000Z",
+    });
+    expect(combined.certainty).toBeCloseTo(0.72, 8);
+  });
+
+  test("non-overlapping concrete times force certainty to zero", () => {
+    const base: Plan = {
+      when: {
+        start: "2026-01-24T08:00:00.000Z",
+        end: "2026-01-24T09:00:00.000Z",
+      },
+      certainty: 0.95,
+    };
+    const incoming: Plan = {
+      when: {
+        start: "2026-01-24T10:00:00.000Z",
+        end: "2026-01-24T11:00:00.000Z",
+      },
+      certainty: 0.9,
+    };
+
+    const combined = combinePlans(base, incoming);
+    expect(combined.certainty).toBe(0);
+    expect(combined.when).toBeUndefined();
+  });
+
+  test("location options are narrowed and selected", () => {
+    const base: Plan = {
+      whereOptions: [
+        { id: "center", name: "Aschaffenburg Innenstadt" },
+        { id: "park", name: "Schönbusch" },
+      ],
+      certainty: 0.9,
+    };
+    const incoming: Plan = {
+      whereOptions: [{ id: "park", name: "Schönbusch" }],
+      certainty: 0.85,
+    };
+
+    const combined = combinePlans(base, incoming);
+    expect(combined.whereOptions).toHaveLength(1);
+    expect(combined.selectedWhereOptionId).toBe("park");
+    expect(combined.where).toMatchObject({ id: "park", name: "Schönbusch" });
+    expect(combined.certainty).toBeCloseTo(0.765, 8);
+  });
+});
+
+describe("certainty semantics", () => {
+  test("likely execution is decided by threshold", () => {
+    const uncertain: Plan = { certainty: 0.5 };
+    const likely: Plan = { certainty: 0.75 };
+
+    expect(willLikelyExecute(uncertain)).toBeFalse();
+    expect(willLikelyExecute(likely)).toBeTrue();
+    expect(willLikelyExecute(uncertain, 0.5)).toBeTrue();
   });
 });
 

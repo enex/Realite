@@ -5,14 +5,23 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function AppScreen({ children }: { children: React.ReactNode }) {
     const backgroundColor = useColor("background");
     return (
-        <View style={{ backgroundColor }}>
+        <View style={{ flex: 1, backgroundColor }}>
             {children}
         </View>
     )
 }
 
 
-export function AppScreenScrollableContent({ children, noHorizontalPadding = false, ...props }: { noHorizontalPadding?: boolean, children: React.ReactNode } & Partial<React.ComponentProps<typeof ScrollView>>) {
+export function AppScreenScrollableContent({
+    children,
+    noHorizontalPadding = false,
+    withTopInset = true,
+    ...props
+}: {
+    noHorizontalPadding?: boolean,
+    withTopInset?: boolean,
+    children: React.ReactNode
+} & Partial<React.ComponentProps<typeof ScrollView>>) {
     const insets = useSafeAreaInsets();
     return (
         <ScrollView
@@ -21,7 +30,7 @@ export function AppScreenScrollableContent({ children, noHorizontalPadding = fal
             contentContainerStyle={[
                 {
                     padding: noHorizontalPadding ? 0 : 16,
-                    paddingTop: insets.top + 16,
+                    paddingTop: (withTopInset ? insets.top : 0) + 16,
                 },
                 props.contentContainerStyle,
             ]}

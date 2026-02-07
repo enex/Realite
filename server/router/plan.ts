@@ -4,6 +4,15 @@ import {
   getActivityLabel,
   type ActivityId,
 } from "@/shared/activities";
+import {
+  DEFAULT_EXECUTION_THRESHOLD,
+  normalizeCertainty,
+} from "@/lib/core/plans";
+import type { Plan as CorePlan } from "@/lib/core/types";
+import {
+  genderSchema,
+  relationshipStatusSchema,
+} from "@/shared/validation";
 import { coreRepetitionSchema } from "@/shared/validation/plan";
 import { openai } from "@ai-sdk/openai";
 import { ToolLoopAgent, stepCountIs, tool } from "ai";
@@ -54,6 +63,158 @@ const planSchema = z.object({
   gatheringId: z.string().optional(),
 });
 
+const exchangeLocationOptionSchema = z.object({
+  id: z.string().optional(),
+  label: z.string().optional(),
+  name: z.string().optional(),
+  address: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  radiusMeters: z.number().positive().optional(),
+});
+
+const exchangeTimeOptionSchema = z.object({
+  id: z.string().optional(),
+  label: z.string().optional(),
+  start: z.string(),
+  end: z.string(),
+});
+
+const exchangeLocationSchema = z.union([
+  exchangeLocationOptionSchema,
+  z.object({
+    anyOf: z.array(exchangeLocationOptionSchema).min(1),
+  }),
+]);
+
+const exchangePlanVisibilitySchema = z.enum([
+  "private",
+  "contacts",
+  "public",
+  "specific",
+]);
+const exchangePlanModeSchema = z.enum(["personal", "collaborative", "gathering"]);
+const exchangePlanStatusSchema = z.enum([
+  "draft",
+  "open",
+  "proposed",
+  "accepted",
+  "declined",
+  "cancelled",
+  "completed",
+  "expired",
+]);
+const exchangeRecurrenceSchema = z.object({
+  frequency: z.enum(["DAILY", "WEEKLY", "MONTHLY"]),
+  interval: z.number().int().positive().optional(),
+  byWeekday: z.array(z.string()).optional(),
+  count: z.number().int().positive().optional(),
+  until: z.string().optional(),
+  exceptions: z.array(z.string()).optional(),
+});
+const exchangeParticipationSchema = z.object({
+  visibility: exchangePlanVisibilitySchema.optional(),
+  mode: exchangePlanModeSchema.optional(),
+  minParticipants: z.number().int().positive().optional(),
+  maxParticipants: z.number().int().positive().optional(),
+  hostApprovalRequired: z.boolean().optional(),
+  targetUsers: z.array(z.string()).optional(),
+  preferences: z
+    .object({
+      contactsOnly: z.boolean().optional(),
+      genders: z.array(genderSchema).optional(),
+      relationshipStatuses: z.array(relationshipStatusSchema).optional(),
+    })
+    .optional(),
+});
+const exchangeGatheringSchema = z.object({
+  id: z.string(),
+  title: z.string().optional(),
+  source: z.string().optional(),
+});
+const exchangeCollaborationSchema = z.object({
+  threadId: z.string().optional(),
+  basedOnPlanId: z.string().optional(),
+  responseToPlanId: z.string().optional(),
+  negotiationStep: z.number().int().nonnegative().optional(),
+});
+const exchangeLifecycleSchema = z.object({
+  status: exchangePlanStatusSchema.optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  expiresAt: z.string().optional(),
+  completedAt: z.string().optional(),
+});
+const exchangeReminderSchema = z.object({
+  expiresAt: z.string().optional(),
+  remindAt: z.array(z.string()).optional(),
+  remindBeforeMinutes: z.array(z.number().int().nonnegative()).optional(),
+});
+const exchangeDiscoverySchema = z.object({
+  activityTypes: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(),
+  suggestedUserIds: z.array(z.string()).optional(),
+  reconnectWithUserIds: z.array(z.string()).optional(),
+});
+
+const exchangePlanSchema = z.object({
+  when: z
+    .object({
+      start: z.string(),
+      end: z.string(),
+    })
+    .optional(),
+  whenOptions: z.array(exchangeTimeOptionSchema).optional(),
+  selectedWhenOptionId: z.string().optional(),
+  timeZone: z.string().optional(),
+  what: z
+    .object({
+      category: z.string().optional(),
+      activity: z.string().optional(),
+      title: z.string().optional(),
+      description: z.string().optional(),
+      url: z.string().optional(),
+    })
+    .optional(),
+  where: exchangeLocationSchema.optional(),
+  whereOptions: z.array(exchangeLocationOptionSchema).optional(),
+  selectedWhereOptionId: z.string().optional(),
+  who: z
+    .object({
+      gender: z.array(genderSchema).optional(),
+      explicit: z.array(z.string()).optional(),
+    })
+    .optional(),
+  participation: exchangeParticipationSchema.optional(),
+  recurrence: exchangeRecurrenceSchema.optional(),
+  gathering: exchangeGatheringSchema.optional(),
+  collaboration: exchangeCollaborationSchema.optional(),
+  lifecycle: exchangeLifecycleSchema.optional(),
+  reminders: exchangeReminderSchema.optional(),
+  discovery: exchangeDiscoverySchema.optional(),
+  certainty: z.number().min(0).max(1).optional(),
+});
+
+const exchangeVisibilitySchema = z.enum(["public", "contacts", "specific"]);
+const exchangePlanPatchSchema = exchangePlanSchema.partial();
+
+function toCorePlan(input: z.infer<typeof exchangePlanSchema>): CorePlan {
+  const { certainty, ...rest } = input;
+  return {
+    ...(rest as Omit<CorePlan, "certainty">),
+    certainty: normalizeCertainty(certainty ?? 0.5),
+  };
+}
+
+function toCorePlanPatch(
+  input: z.infer<typeof exchangePlanPatchSchema>
+): Partial<CorePlan> {
+  const { certainty, ...rest } = input;
+  const patch: Partial<CorePlan> = rest as Partial<CorePlan>;
+  if (typeof certainty === "number") patch.certainty = normalizeCertainty(certainty);
+  return patch;
+}
+
 const getGroupIdFromActivity = (
   activityId?: ActivityId
 ): keyof typeof activities | undefined => {
@@ -77,75 +238,262 @@ export const planRouter = {
             new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
         )[0] ?? null;
 
-    const myIntents = await context.es.projections.intent.listMine(
-      context.session.id
-    );
-    const activities = Array.from(
-      new Set(myIntents.map((i) => i.activity as ActivityId))
-    );
-    const matches = await context.es.projections.intent.getActivityMatchSummary(
-      {
+    const planSuggestionsRaw =
+      await context.es.projections.planExchange.suggestFor({
         userId: context.session.id,
-        activities,
         limit: 6,
-      }
-    );
-
-    const intentSuggestions = await Promise.all(
-      matches.map(async (m) => {
-        const mine =
-          myIntents.find((i) => (i.activity as string) === (m.activity as string)) ??
-          null;
-        const exampleUsers = await Promise.all(
-          (m.userIds ?? []).slice(0, 3).map(async (id) => {
-            const u = await context.es.projections.user.getProfile(id);
-            return u ? { id: u.id, name: u.name, image: u.image } : null;
-          })
-        );
-        const users = exampleUsers.filter(Boolean) as Array<{
-          id: string;
-          name: string;
-          image: string;
-        }>;
-
-        const title = mine?.title?.trim()
-          ? mine.title
-          : getActivityLabel(m.activity);
-        const initialText = mine?.title?.trim()
-          ? `Ich hätte Lust auf: ${mine.title}. Wer ist dabei?`
-          : `Ich hätte Lust auf: ${getActivityLabel(m.activity)}. Wer ist dabei?`;
-
+        executionThreshold: DEFAULT_EXECUTION_THRESHOLD,
+      });
+    const planSuggestions = await Promise.all(
+      planSuggestionsRaw.map(async (s) => {
+        const u = await context.es.projections.user.getProfile(s.fromUserId);
         return {
-          activity: m.activity,
-          title,
-          initialText,
-          matchCount: m.matchCount,
-          users,
-        };
-      })
-    );
-
-    const intentRequests = await context.es.projections.intentRequest.listInbox(
-      context.session.id
-    );
-    const intentRequestsWithUsers = await Promise.all(
-      intentRequests.map(async (r) => {
-        const u = await context.es.projections.user.getProfile(r.fromUserId);
-        return {
-          ...r,
+          ...s,
           fromUser: u ? { id: u.id, name: u.name, image: u.image } : null,
         };
       })
     );
+    const legacyIntentSuggestions: Array<{
+      activity: ActivityId;
+      title: string;
+      initialText: string;
+      matchCount: number;
+      users: Array<{ id: string; name: string; image: string }>;
+    }> = [];
+    const legacyIntentRequests: Array<{
+      id: string;
+      fromUserId: string;
+      activity: ActivityId;
+      title?: string;
+      message?: string;
+      status?: string;
+      fromUser: { id: string; name: string; image: string } | null;
+    }> = [];
 
     return {
       user: context.session,
       plans,
       nextPlan,
-      intentSuggestions,
-      intentRequests: intentRequestsWithUsers,
+      planSuggestions,
+      // Legacy fields kept for backward compatibility with old clients.
+      intentSuggestions: legacyIntentSuggestions,
+      intentRequests: legacyIntentRequests,
     };
   }),
+  exchangeCreate: protectedRoute
+    .input(
+      z.object({
+        plan: exchangePlanSchema,
+        visibility: exchangeVisibilitySchema.optional().default("public"),
+        toUserIds: z.array(z.uuid()).optional(),
+        basedOnId: z.uuid().optional(),
+      })
+    )
+    .handler(async ({ context, input }) => {
+      const id = uuidv7();
+      const plan = toCorePlan(input.plan);
+      await context.es.add({
+        type: "realite.plan-exchange.created",
+        subject: id,
+        data: {
+          plan,
+          visibility: input.visibility,
+          toUserIds: input.toUserIds,
+          basedOnId: input.basedOnId,
+        },
+      });
+      return { id, plan };
+    }),
+  exchangeRefine: protectedRoute
+    .errors({
+      NOT_FOUND: { message: "Plan exchange not found" },
+      NOT_OWNER: { message: "You are not the owner of this plan exchange" },
+    })
+    .input(
+      z.object({
+        id: z.uuid(),
+        plan: exchangePlanPatchSchema.optional(),
+        visibility: exchangeVisibilitySchema.optional(),
+        toUserIds: z.array(z.uuid()).optional(),
+      })
+    )
+    .handler(async ({ context, input, errors }) => {
+      const exchange = await context.es.projections.planExchange.getById({
+        id: input.id,
+        userId: context.session.id,
+      });
+      if (!exchange) throw errors.NOT_FOUND();
+      if (exchange.creatorId !== context.session.id) throw errors.NOT_OWNER();
+
+      if (!input.plan && !input.visibility && !input.toUserIds) {
+        return exchange;
+      }
+
+      const normalizedPlan = input.plan ? toCorePlanPatch(input.plan) : undefined;
+
+      await context.es.add({
+        type: "realite.plan-exchange.refined",
+        subject: input.id,
+        data: {
+          plan: normalizedPlan,
+          visibility: input.visibility,
+          toUserIds: input.toUserIds,
+        },
+      });
+      return { success: true };
+    }),
+  exchangeWithdraw: protectedRoute
+    .errors({
+      NOT_FOUND: { message: "Plan exchange not found" },
+      NOT_OWNER: { message: "You are not the owner of this plan exchange" },
+    })
+    .input(
+      z.object({
+        id: z.uuid(),
+        reason: z
+          .enum(["not-interested-anymore", "done", "other"])
+          .optional(),
+      })
+    )
+    .handler(async ({ context, input, errors }) => {
+      const exchange = await context.es.projections.planExchange.getById({
+        id: input.id,
+        userId: context.session.id,
+      });
+      if (!exchange) throw errors.NOT_FOUND();
+      if (exchange.creatorId !== context.session.id) throw errors.NOT_OWNER();
+
+      await context.es.add({
+        type: "realite.plan-exchange.withdrawn",
+        subject: input.id,
+        data: { reason: input.reason ?? "other" },
+      });
+      return { success: true };
+    }),
+  exchangeRespond: protectedRoute
+    .errors({
+      NOT_FOUND: { message: "Plan exchange not found" },
+      OWN_EXCHANGE: { message: "You cannot respond to your own exchange" },
+      COUNTER_PLAN_REQUIRED: {
+        message: "Counter plan is required for counter response",
+      },
+    })
+    .input(
+      z.object({
+        id: z.uuid(),
+        status: z.enum(["accepted", "declined", "counter"]),
+        message: z.string().max(500).optional(),
+        counterPlan: exchangePlanPatchSchema.optional(),
+      })
+    )
+    .handler(async ({ context, input, errors }) => {
+      const exchange = await context.es.projections.planExchange.getById({
+        id: input.id,
+        userId: context.session.id,
+      });
+      if (!exchange) throw errors.NOT_FOUND();
+      if (exchange.creatorId === context.session.id) throw errors.OWN_EXCHANGE();
+      if (input.status === "counter" && !input.counterPlan) {
+        throw errors.COUNTER_PLAN_REQUIRED();
+      }
+
+      const counterPlan = input.counterPlan
+        ? toCorePlanPatch(input.counterPlan)
+        : undefined;
+
+      await context.es.add({
+        type: "realite.plan-exchange.responded",
+        subject: input.id,
+        data: {
+          status: input.status,
+          message: input.message,
+          counterPlan,
+        },
+      });
+
+      let counterId: string | undefined;
+      if (input.status === "counter") {
+        counterId = uuidv7();
+        await context.es.add({
+          type: "realite.plan-exchange.created",
+          subject: counterId,
+          data: {
+            plan: {
+              ...(exchange.plan ?? {}),
+              ...(counterPlan ?? {}),
+              certainty: normalizeCertainty(
+                counterPlan?.certainty ?? exchange.plan?.certainty ?? 0.5
+              ),
+            } as CorePlan,
+            visibility: "specific",
+            toUserIds: [exchange.creatorId],
+            basedOnId: exchange.id,
+          },
+        });
+      }
+
+      return {
+        success: true,
+        status: input.status,
+        counterId,
+      };
+    }),
+  exchangeListMine: protectedRoute.handler(async ({ context }) => {
+    return context.es.projections.planExchange.listMine(context.session.id);
+  }),
+  exchangeInbox: protectedRoute.handler(async ({ context }) => {
+    const items = await context.es.projections.planExchange.listInbox(
+      context.session.id
+    );
+    const enriched = await Promise.all(
+      items.map(async (item) => {
+        const creator = await context.es.projections.user.getProfile(
+          item.creatorId
+        );
+        return {
+          ...item,
+          creator: creator
+            ? { id: creator.id, name: creator.name, image: creator.image }
+            : null,
+        };
+      })
+    );
+    return enriched;
+  }),
+  exchangeSuggest: protectedRoute
+    .input(
+      z
+        .object({
+          limit: z.number().min(1).max(50).optional(),
+          executionThreshold: z.number().min(0).max(1).optional(),
+        })
+        .optional()
+    )
+    .handler(async ({ context, input }) => {
+      const suggestions = await context.es.projections.planExchange.suggestFor({
+        userId: context.session.id,
+        limit: input?.limit,
+        executionThreshold:
+          input?.executionThreshold ?? DEFAULT_EXECUTION_THRESHOLD,
+      });
+      const enriched = await Promise.all(
+        suggestions.map(async (s) => {
+          const creator = await context.es.projections.user.getProfile(
+            s.fromUserId
+          );
+          return {
+            ...s,
+            creator: creator
+              ? { id: creator.id, name: creator.name, image: creator.image }
+              : null,
+          };
+        })
+      );
+      return {
+        threshold: input?.executionThreshold ?? DEFAULT_EXECUTION_THRESHOLD,
+        suggestions: enriched,
+      };
+    }),
   create: protectedRoute
     .input(
       planSchema.partial().extend({
@@ -796,9 +1144,12 @@ export const planRouter = {
       if (input.createOwnPlan) {
         newPlanId = uuidv7();
         
-        // Get first location from original plan
-        const location = originalPlan.locations?.[0];
-        if (!location) {
+        const location = originalPlan.location;
+        if (
+          !location ||
+          location.latitude == null ||
+          location.longitude == null
+        ) {
           throw new Error("Original plan has no location");
         }
 
@@ -810,8 +1161,8 @@ export const planRouter = {
           description: originalPlan.description || undefined,
           url: originalPlan.url || undefined,
           location: {
-            title: location.title || "",
-            address: location.address || "",
+            title: location.title || location.address || "",
+            address: location.address || location.title || "",
             latitude: location.latitude,
             longitude: location.longitude,
             url: location.url || undefined,

@@ -1,4 +1,13 @@
 import { ActivityId } from "@/shared/activities";
+import {
+  DEFAULT_EXECUTION_THRESHOLD,
+  combinePlans,
+  normalizeCertainty,
+  normalizeSpecificity,
+  plansMatch,
+  specificity,
+} from "@/lib/core/plans";
+import type { Plan } from "@/lib/core/types";
 import { addSeconds } from "date-fns";
 import {
   and,
@@ -29,6 +38,143 @@ import {
 } from "./utils/pg";
 import { isDerivedPlan } from "./utils/plan-helpers";
 import { getPostHogClient } from "./utils/posthog";
+import type { PlanExchangeVisibility } from "./events";
+
+type PlanExchangeStatus = "open" | "accepted" | "declined" | "counter";
+
+type PlanExchangeAggregate = {
+  id: string;
+  creatorId: string;
+  plan: Plan;
+  visibility: PlanExchangeVisibility;
+  toUserIds: string[];
+  basedOnId?: string;
+  status: PlanExchangeStatus;
+  message?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  withdrawnAt?: Date;
+};
+
+const PLAN_EXCHANGE_EVENT_TYPES = [
+  "realite.plan-exchange.created",
+  "realite.plan-exchange.refined",
+  "realite.plan-exchange.responded",
+  "realite.plan-exchange.withdrawn",
+] as const;
+
+function normalizePlanInput(plan: Plan | Partial<Plan>): Plan {
+  return {
+    ...plan,
+    certainty: normalizeCertainty(plan.certainty ?? 0.5),
+  };
+}
+
+function applyPlanPatch(current: Plan, patch: Partial<Plan>): Plan {
+  const merged = combinePlans(current, patch as Plan);
+  if (typeof patch.certainty === "number") {
+    merged.certainty = normalizeCertainty(patch.certainty);
+  } else {
+    merged.certainty = normalizeCertainty(merged.certainty);
+  }
+  return merged;
+}
+
+function isPlanExchangeVisibleTo(
+  exchange: PlanExchangeAggregate,
+  userId: string
+): boolean {
+  if (exchange.creatorId === userId) return true;
+  if (exchange.visibility === "public") return true;
+  if (exchange.visibility === "contacts") {
+    // Contacts visibility is currently treated like public until contacts graph
+    // projection is materialized.
+    return true;
+  }
+  return exchange.toUserIds.includes(userId);
+}
+
+function getExchangeTitle(plan: Plan): string {
+  return (
+    plan.what?.title?.trim() ||
+    plan.what?.activity?.trim() ||
+    plan.what?.category?.trim() ||
+    "Vorschlag"
+  );
+}
+
+async function loadPlanExchangeAggregates(
+  ctx: {
+    reduce: <T>(
+      filter: { type?: string[] },
+      fn: (acc: T, event: any) => T,
+      initial: T
+    ) => Promise<T>;
+  }
+): Promise<PlanExchangeAggregate[]> {
+  const byId = await ctx.reduce(
+    {
+      type: [...PLAN_EXCHANGE_EVENT_TYPES] as unknown as string[],
+    },
+    (acc, event) => {
+      switch (event.type) {
+        case "realite.plan-exchange.created": {
+          acc.set(event.subject, {
+            id: event.subject,
+            creatorId: event.actor,
+            plan: normalizePlanInput(event.data.plan),
+            visibility: event.data.visibility ?? "public",
+            toUserIds: event.data.toUserIds ?? [],
+            basedOnId: event.data.basedOnId,
+            status: "open",
+            createdAt: event.time,
+            updatedAt: event.time,
+          } satisfies PlanExchangeAggregate);
+          return acc;
+        }
+        case "realite.plan-exchange.refined": {
+          const current = acc.get(event.subject);
+          if (!current) return acc;
+          if (event.data.plan) {
+            current.plan = applyPlanPatch(current.plan, event.data.plan);
+          }
+          if (event.data.visibility) current.visibility = event.data.visibility;
+          if (Array.isArray(event.data.toUserIds)) {
+            current.toUserIds = event.data.toUserIds;
+          }
+          current.updatedAt = event.time;
+          acc.set(event.subject, current);
+          return acc;
+        }
+        case "realite.plan-exchange.responded": {
+          const current = acc.get(event.subject);
+          if (!current) return acc;
+          current.status = event.data.status;
+          current.message = event.data.message;
+          current.updatedAt = event.time;
+          if (event.data.counterPlan) {
+            current.plan = applyPlanPatch(current.plan, event.data.counterPlan);
+          }
+          acc.set(event.subject, current);
+          return acc;
+        }
+        case "realite.plan-exchange.withdrawn": {
+          const current = acc.get(event.subject);
+          if (!current) return acc;
+          current.withdrawnAt = event.time;
+          current.updatedAt = event.time;
+          acc.set(event.subject, current);
+          return acc;
+        }
+        default:
+          return acc;
+      }
+    },
+    new Map<string, PlanExchangeAggregate>()
+  );
+
+  return Array.from(byId.values()).filter((x) => !x.withdrawnAt);
+}
 
 export const es = builder.store({
   projections: {
@@ -745,6 +891,114 @@ export const es = builder.store({
       }),
     },
     lazy: {
+      planExchange: {
+        async getById(ctx, input: { id: string; userId: string }) {
+          const exchanges = await loadPlanExchangeAggregates(ctx as any);
+          const item = exchanges.find((x) => x.id === input.id);
+          if (!item) return null;
+          if (!isPlanExchangeVisibleTo(item, input.userId)) return null;
+          return item;
+        },
+        async listMine(ctx, userId: string) {
+          const exchanges = await loadPlanExchangeAggregates(ctx as any);
+          return exchanges
+            .filter((x) => x.creatorId === userId)
+            .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+        },
+        async listInbox(ctx, userId: string) {
+          const exchanges = await loadPlanExchangeAggregates(ctx as any);
+          return exchanges
+            .filter(
+              (x) =>
+                x.creatorId !== userId &&
+                isPlanExchangeVisibleTo(x, userId) &&
+                x.status !== "declined"
+            )
+            .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+        },
+        async suggestFor(
+          ctx,
+          input: {
+            userId: string;
+            limit?: number;
+            executionThreshold?: number;
+          }
+        ) {
+          const threshold =
+            typeof input.executionThreshold === "number"
+              ? normalizeCertainty(input.executionThreshold)
+              : DEFAULT_EXECUTION_THRESHOLD;
+          const exchanges = await loadPlanExchangeAggregates(ctx as any);
+          const myPlanSignals = exchanges.filter(
+            (x) =>
+              x.creatorId === input.userId &&
+              x.status !== "declined" &&
+              normalizeCertainty(x.plan.certainty) > 0
+          );
+          const candidates = exchanges.filter(
+            (x) =>
+              x.creatorId !== input.userId &&
+              isPlanExchangeVisibleTo(x, input.userId) &&
+              x.status !== "declined" &&
+              normalizeCertainty(x.plan.certainty) > 0
+          );
+
+          const suggestions = candidates
+            .map((candidate) => {
+              const matchingMine = myPlanSignals.filter((mine) =>
+                plansMatch(mine.plan, candidate.plan)
+              );
+              const concreteCounterpart = {
+                who: { explicit: [candidate.creatorId] },
+              } satisfies Plan;
+
+              const predicted = combinePlans(
+                candidate.plan,
+                concreteCounterpart,
+                ...matchingMine.map((m) => m.plan)
+              );
+              const predictedCertainty = normalizeCertainty(
+                predicted.certainty
+              );
+              const predictedSpecificity = specificity(predicted);
+              const predictedSpecificityNormalized = normalizeSpecificity(
+                predictedSpecificity
+              );
+              // Keep certainty as primary signal and use specificity as tie-break
+              // / readiness boost for immediately actionable suggestions.
+              const readinessScore =
+                predictedCertainty *
+                (0.7 + 0.3 * predictedSpecificityNormalized);
+
+              return {
+                id: candidate.id,
+                fromUserId: candidate.creatorId,
+                basedOnId: candidate.basedOnId,
+                title: getExchangeTitle(predicted),
+                predictedPlan: predicted,
+                predictedCertainty,
+                predictedSpecificity,
+                predictedSpecificityNormalized,
+                readinessScore,
+                matchingMineCount: matchingMine.length,
+                isLikely: predictedCertainty >= threshold,
+              };
+            })
+            .filter((s) => s.predictedCertainty > 0)
+            .sort((a, b) => {
+              if (b.readinessScore !== a.readinessScore) {
+                return b.readinessScore - a.readinessScore;
+              }
+              if (b.predictedCertainty !== a.predictedCertainty) {
+                return b.predictedCertainty - a.predictedCertainty;
+              }
+              return b.predictedSpecificity - a.predictedSpecificity;
+            })
+            .slice(0, input.limit ?? 10);
+
+          return suggestions;
+        },
+      },
       user: {
         getProfile: async (ctx, id: string) =>
           ctx.reduce(

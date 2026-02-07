@@ -1,6 +1,7 @@
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useFonts } from "expo-font";
 import * as NavigationBar from "expo-navigation-bar";
+import * as SystemUI from "expo-system-ui";
 import { Stack } from "expo-router";
 import { ShareIntentProvider } from "expo-share-intent";
 import { StatusBar } from "expo-status-bar";
@@ -40,11 +41,18 @@ export default function RootLayout() {
   }, [colorScheme]);
 
   useEffect(() => {
+    const backgroundColor = colorScheme === "dark" ? "#000000" : "#FFFFFF";
+    SystemUI.setBackgroundColorAsync(backgroundColor).catch(() => {});
+  }, [colorScheme]);
+
+  useEffect(() => {
     if (Platform.OS !== "android") return;
-    console.log("Setting navigation bar style", colorScheme);
+    const isDark = colorScheme === "dark";
+    const backgroundColor = isDark ? "#000000" : "#FFFFFF";
     try {
-      // With edge-to-edge enabled on Android, only style & visibility are effective.
-      NavigationBar.setStyle(colorScheme === "dark" ? "light" : "dark");
+      NavigationBar.setStyle(isDark ? "light" : "dark");
+      NavigationBar.setBackgroundColorAsync(backgroundColor);
+      NavigationBar.setBorderColorAsync(backgroundColor);
       NavigationBar.setVisibilityAsync("visible");
     } catch { }
   }, [colorScheme]);
@@ -81,7 +89,12 @@ export default function RootLayout() {
           Uniwind.updateInsets(insets)
         }}
       >
-        <GestureHandlerRootView style={{ flex: 1 }}>
+        <GestureHandlerRootView
+          style={{
+            flex: 1,
+            backgroundColor: colorScheme === "dark" ? "#000000" : "#FFFFFF",
+          }}
+        >
           <SafeAreaProvider>
             {shouldInitPostHog ? (
               <PostHogProvider
@@ -98,7 +111,7 @@ export default function RootLayout() {
             )}
           </SafeAreaProvider>
         </GestureHandlerRootView>
-        <StatusBar style="auto" />
+        <StatusBar style="auto" translucent backgroundColor="transparent" />
       </SafeAreaListener>
     </ThemeProvider>
   );

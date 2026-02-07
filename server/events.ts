@@ -1,4 +1,5 @@
 import { ActivityId } from "@/shared/activities";
+import type { Plan } from "@/lib/core/types";
 import { Gender, RelationshipStatus } from "@/shared/validation";
 // CoreRepetition wird beim API-Call verwendet, nicht im Event gespeichert
 // (Serien werden materialisiert, jede Instanz ist ein eigenes Event)
@@ -13,6 +14,8 @@ export type GatheringSource =
   | "ical" // iCal/ICS Import
   | "scrape" // Von Website gescraped
   | "other"; // Sonstige Quelle
+
+export type PlanExchangeVisibility = "public" | "contacts" | "specific";
 
 export interface RealiteEvents {
   // ============================================
@@ -136,6 +139,35 @@ export interface RealiteEvents {
       | "other";
     message?: string;
     hideReason?: boolean; // Wenn true: Grund nicht an Ersteller zeigen
+  };
+
+  // ============================================
+  // PLAN EXCHANGE EVENTS - Austauschbare Plan-Objekte
+  // subject = exchangeId, actor = userId
+  // certainty in plan bestimmt Wahrscheinlichkeit, dass der Actor den Plan ausführt
+  // ============================================
+
+  "realite.plan-exchange.created": {
+    plan: Plan;
+    visibility?: PlanExchangeVisibility;
+    toUserIds?: string[];
+    basedOnId?: string;
+  };
+
+  "realite.plan-exchange.refined": {
+    plan?: Partial<Plan>;
+    visibility?: PlanExchangeVisibility;
+    toUserIds?: string[];
+  };
+
+  "realite.plan-exchange.responded": {
+    status: "accepted" | "declined" | "counter";
+    message?: string;
+    counterPlan?: Partial<Plan>;
+  };
+
+  "realite.plan-exchange.withdrawn": {
+    reason?: "not-interested-anymore" | "done" | "other";
   };
 
   // ============================================

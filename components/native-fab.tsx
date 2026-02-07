@@ -1,10 +1,11 @@
 import * as Haptics from "expo-haptics";
 import { useCallback, useRef } from "react";
 import { Animated, Pressable, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { shadows } from "@/components/plan-card";
 import { Icon } from "@/components/ui/icon";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useColor } from "@/hooks/use-color";
 import { PlusIcon } from "lucide-react-native";
 
 // Native iOS FAB Component
@@ -16,8 +17,8 @@ export function NativeFAB({
   children?: React.ReactNode;
 }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const insets = useSafeAreaInsets();
+  const backgroundColor = useColor("blue");
 
   const handlePressIn = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -43,7 +44,12 @@ export function NativeFAB({
       onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      className="right-6 bottom-6 absolute z-1000"
+      style={{
+        position: "absolute",
+        right: 20,
+        bottom: Math.max(16, insets.bottom + 12),
+        zIndex: 1000,
+      }}
     >
       <Animated.View
         style={{
@@ -51,16 +57,19 @@ export function NativeFAB({
         }}
       >
         <View
-          className="w-16 h-16 rounded-2xl bg-black dark:bg-white items-center justify-center flex"
-          style={shadows.medium}
+          style={[
+            shadows.medium,
+            {
+              width: 60,
+              height: 60,
+              borderRadius: 30,
+              backgroundColor,
+              alignItems: "center",
+              justifyContent: "center",
+            },
+          ]}
         >
-          {children || (
-            <Icon
-              name={PlusIcon}
-              size={28}
-              color={isDark ? "#000000" : "#FFFFFF"}
-            />
-          )}
+          {children || <Icon name={PlusIcon} size={28} color="#FFFFFF" />}
         </View>
       </Animated.View>
     </Pressable>

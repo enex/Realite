@@ -324,6 +324,7 @@ export default function ProfileScreen() {
 
   return (
     <Page
+      withTopInset={false}
       contentContainerStyle={{
         flexDirection: "column",
         gap: 16,

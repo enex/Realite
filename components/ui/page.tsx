@@ -12,11 +12,13 @@ export default function Page({
   contentContainerStyle,
   rightButton,
   bottom,
+  withTopInset = true,
   ...rest
 }: {
   children?: React.ReactNode;
   rightButton?: React.ReactNode;
   bottom?: React.ReactNode;
+  withTopInset?: boolean;
 } & React.ComponentProps<typeof ScrollView>) {
   const backgroundColor = useColor("background");
   const insets = useSafeAreaInsets();
@@ -33,7 +35,7 @@ export default function Page({
         contentContainerStyle={[
           {
             padding: 16,
-            paddingTop: insets.top + 16,
+            paddingTop: (withTopInset ? insets.top : 0) + 16,
           },
           contentContainerStyle,
         ]}
