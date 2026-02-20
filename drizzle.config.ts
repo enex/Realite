@@ -1,15 +1,18 @@
-import "dotenv/config";
 import { defineConfig } from "drizzle-kit";
+import { config as loadEnv } from "dotenv";
 
-import { config } from "dotenv";
-config({ path: ".env.local" });
+loadEnv({ path: ".env.local" });
+loadEnv();
+
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is required for drizzle-kit commands");
+}
 
 export default defineConfig({
+  out: "./drizzle",
+  schema: "./src/db/schema.ts",
   dialect: "postgresql",
-  schema: "./db/schema.ts",
-  out: "./db/migrations",
-  casing: "snake_case",
   dbCredentials: {
-    url: process.env.POSTGRES_URL!,
-  },
+    url: process.env.DATABASE_URL
+  }
 });

@@ -1,1 +1,0 @@
-ALTER TABLE "plans" ADD COLUMN "maybe" boolean DEFAULT false NOT NULL;

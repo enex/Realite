@@ -1,0 +1,1 @@
+ALTER TABLE "groups" ADD COLUMN "hashtag" text DEFAULT '#öffentlich' NOT NULL;

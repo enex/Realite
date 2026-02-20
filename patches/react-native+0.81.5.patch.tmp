@@ -1,9 +1,0 @@
-@@ -24,7 +24,7 @@
- // whenever updating React Native's public API.
- // ----------------------------------------------------------------------------
- 
--import typeof * as ReactNativePublicAPI from './index.js.flow';
-+// import typeof * as ReactNativePublicAPI from './index.js.flow'; // Commented out: Flow syntax not supported by Metro
- 
- const warnOnce = require('./Libraries/Utilities/warnOnce').default;
- const invariant = require('invariant');
