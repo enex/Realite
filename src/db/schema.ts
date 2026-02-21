@@ -76,6 +76,8 @@ export const userSettings = pgTable("user_settings", {
     .primaryKey(),
   autoInsertSuggestions: boolean("auto_insert_suggestions").notNull().default(true),
   suggestionCalendarId: text("suggestion_calendar_id").notNull().default("primary"),
+  suggestionDeliveryMode: text("suggestion_delivery_mode").notNull().default("calendar_copy"),
+  shareEmailInSourceInvites: boolean("share_email_in_source_invites").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { syncSuggestionDecisionInCalendar } from "@/src/lib/google-calendar";
 import { applyDecisionFeedback } from "@/src/lib/repository";
 import { requireAppUser } from "@/src/lib/session";
 
@@ -27,11 +28,19 @@ export async function POST(
   const { suggestionId } = await context.params;
 
   try {
-    await applyDecisionFeedback({
+    const suggestion = await applyDecisionFeedback({
       userId: user.id,
       suggestionId,
       decision: parsed.data.decision
     });
+
+    if (suggestion.calendarEventId) {
+      await syncSuggestionDecisionInCalendar({
+        userId: user.id,
+        calendarEventRef: suggestion.calendarEventId,
+        decision: parsed.data.decision
+      });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

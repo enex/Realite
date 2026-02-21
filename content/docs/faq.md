@@ -32,6 +32,19 @@ In der Gruppen-Detailseite (`/groups/<id>`), nicht mehr in der kompakten Übersi
 
 ## In welchen Kalender werden Vorschläge eingetragen?
 
-Das stellst du auf **`/settings`** ein. Dort kannst du automatische Einträge ein-/ausschalten und den Zielkalender auswählen.
+Das stellst du auf **`/settings`** ein. Dort kannst du automatische Einträge ein-/ausschalten und den Zustellmodus wählen.
 
-Falls der gewählte Kalender später nicht mehr verfügbar ist, versucht Realite automatisch den Primary-Kalender.
+Modi:
+
+- `Kalenderkopie`: Eintrag in deinen gewählten Kalender.
+- `Source-Einladung`: Du wirst als Teilnehmer im Quell-Event eingeladen (Google RSVP).
+
+Falls der gewählte Kalender für Kalenderkopien später nicht mehr verfügbar ist, nutzt Realite automatisch einen Fallback (Primary oder erster verfügbarer Kalender).
+
+## Warum wurde keine Source-Einladung erstellt?
+
+Typische Gründe:
+
+- das Quell-Event ist nicht aus Google synchronisiert
+- der Event-Owner hat für diesen Kalender keine Schreibrechte
+- du hast „E-Mail sichtbar“ für Source-Einladungen deaktiviert (dann fällt Realite auf Kalenderkopie zurück)

@@ -7,7 +7,9 @@ import { requireAppUser } from "@/src/lib/session";
 
 const updateSettingsSchema = z.object({
   autoInsertSuggestions: z.boolean(),
-  suggestionCalendarId: z.string().min(1).max(200)
+  suggestionCalendarId: z.string().min(1).max(200),
+  suggestionDeliveryMode: z.enum(["calendar_copy", "source_invite"]),
+  shareEmailInSourceInvites: z.boolean()
 });
 
 export async function GET() {
@@ -30,7 +32,9 @@ export async function GET() {
     settings = await updateUserSuggestionSettings({
       userId: user.id,
       autoInsertSuggestions: settings.autoInsertSuggestions,
-      suggestionCalendarId: fallbackCalendarId
+      suggestionCalendarId: fallbackCalendarId,
+      suggestionDeliveryMode: settings.suggestionDeliveryMode,
+      shareEmailInSourceInvites: settings.shareEmailInSourceInvites
     });
   }
 
@@ -57,18 +61,25 @@ export async function PATCH(request: Request) {
   const calendars = await listWritableCalendars(user.id);
   const selectedCalendarId = parsed.data.suggestionCalendarId.trim();
   const isKnownCalendar = calendars.some((calendar) => calendar.id === selectedCalendarId);
+  let finalCalendarId = selectedCalendarId;
 
   if (!isKnownCalendar) {
-    return NextResponse.json(
-      { error: "Der ausgewählte Kalender ist nicht verfügbar oder nicht beschreibbar." },
-      { status: 400 }
-    );
+    if (parsed.data.suggestionDeliveryMode === "source_invite") {
+      finalCalendarId = calendars[0]?.id ?? "primary";
+    } else {
+      return NextResponse.json(
+        { error: "Der ausgewählte Kalender ist nicht verfügbar oder nicht beschreibbar." },
+        { status: 400 }
+      );
+    }
   }
 
   const settings = await updateUserSuggestionSettings({
     userId: user.id,
     autoInsertSuggestions: parsed.data.autoInsertSuggestions,
-    suggestionCalendarId: selectedCalendarId
+    suggestionCalendarId: finalCalendarId,
+    suggestionDeliveryMode: parsed.data.suggestionDeliveryMode,
+    shareEmailInSourceInvites: parsed.data.shareEmailInSourceInvites
   });
 
   return NextResponse.json({ settings, calendars });

@@ -22,6 +22,8 @@ export type SuggestionStatus = "pending" | "calendar_inserted" | "accepted" | "d
 export type UserSuggestionSettings = {
   autoInsertSuggestions: boolean;
   suggestionCalendarId: string;
+  suggestionDeliveryMode: "calendar_copy" | "source_invite";
+  shareEmailInSourceInvites: boolean;
 };
 
 export type VisibleEvent = {
@@ -35,6 +37,8 @@ export type VisibleEvent = {
   groupId: string | null;
   groupName: string | null;
   createdBy: string;
+  sourceProvider: string | null;
+  sourceEventId: string | null;
   tags: string[];
 };
 
@@ -102,6 +106,10 @@ function normalizeEmail(value: string) {
   return value.trim().toLowerCase();
 }
 
+function normalizeSuggestionDeliveryMode(value: string | null | undefined): "calendar_copy" | "source_invite" {
+  return value === "source_invite" ? "source_invite" : "calendar_copy";
+}
+
 export async function upsertUser(input: { email: string; name?: string | null; image?: string | null }) {
   const db = getDb();
   const normalizedEmail = normalizeEmail(input.email);
@@ -147,6 +155,12 @@ export async function getUserByEmail(email: string) {
     .from(users)
     .where(sql`lower(${users.email}) = ${normalizedEmail}`)
     .limit(1);
+  return user ?? null;
+}
+
+export async function getUserById(userId: string) {
+  const db = getDb();
+  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   return user ?? null;
 }
 
@@ -241,6 +255,8 @@ export async function ensureUserSuggestionSettings(userId: string) {
       userId,
       autoInsertSuggestions: true,
       suggestionCalendarId: "primary",
+      suggestionDeliveryMode: "calendar_copy",
+      shareEmailInSourceInvites: true,
       updatedAt: new Date()
     })
     .onConflictDoNothing({ target: [userSettings.userId] });
@@ -253,17 +269,26 @@ export async function getUserSuggestionSettings(userId: string): Promise<UserSug
   const [settings] = await db
     .select({
       autoInsertSuggestions: userSettings.autoInsertSuggestions,
-      suggestionCalendarId: userSettings.suggestionCalendarId
+      suggestionCalendarId: userSettings.suggestionCalendarId,
+      suggestionDeliveryMode: userSettings.suggestionDeliveryMode,
+      shareEmailInSourceInvites: userSettings.shareEmailInSourceInvites
     })
     .from(userSettings)
     .where(eq(userSettings.userId, userId))
     .limit(1);
 
   return (
-    settings ?? {
+    settings
+      ? {
+          ...settings,
+          suggestionDeliveryMode: normalizeSuggestionDeliveryMode(settings.suggestionDeliveryMode)
+        }
+      : {
       autoInsertSuggestions: true,
-      suggestionCalendarId: "primary"
-    }
+      suggestionCalendarId: "primary",
+      suggestionDeliveryMode: "calendar_copy",
+      shareEmailInSourceInvites: true
+        }
   );
 }
 
@@ -271,6 +296,8 @@ export async function updateUserSuggestionSettings(input: {
   userId: string;
   autoInsertSuggestions: boolean;
   suggestionCalendarId: string;
+  suggestionDeliveryMode: "calendar_copy" | "source_invite";
+  shareEmailInSourceInvites: boolean;
 }): Promise<UserSuggestionSettings> {
   const db = getDb();
 
@@ -280,6 +307,8 @@ export async function updateUserSuggestionSettings(input: {
       userId: input.userId,
       autoInsertSuggestions: input.autoInsertSuggestions,
       suggestionCalendarId: input.suggestionCalendarId,
+      suggestionDeliveryMode: input.suggestionDeliveryMode,
+      shareEmailInSourceInvites: input.shareEmailInSourceInvites,
       updatedAt: new Date()
     })
     .onConflictDoUpdate({
@@ -287,17 +316,23 @@ export async function updateUserSuggestionSettings(input: {
       set: {
         autoInsertSuggestions: input.autoInsertSuggestions,
         suggestionCalendarId: input.suggestionCalendarId,
+        suggestionDeliveryMode: input.suggestionDeliveryMode,
+        shareEmailInSourceInvites: input.shareEmailInSourceInvites,
         updatedAt: new Date()
       }
     })
     .returning({
       autoInsertSuggestions: userSettings.autoInsertSuggestions,
-      suggestionCalendarId: userSettings.suggestionCalendarId
+      suggestionCalendarId: userSettings.suggestionCalendarId,
+      suggestionDeliveryMode: userSettings.suggestionDeliveryMode,
+      shareEmailInSourceInvites: userSettings.shareEmailInSourceInvites
     });
 
   return {
     autoInsertSuggestions: settings?.autoInsertSuggestions ?? input.autoInsertSuggestions,
-    suggestionCalendarId: settings?.suggestionCalendarId ?? input.suggestionCalendarId
+    suggestionCalendarId: settings?.suggestionCalendarId ?? input.suggestionCalendarId,
+    suggestionDeliveryMode: normalizeSuggestionDeliveryMode(settings?.suggestionDeliveryMode ?? input.suggestionDeliveryMode),
+    shareEmailInSourceInvites: settings?.shareEmailInSourceInvites ?? input.shareEmailInSourceInvites
   };
 }
 
@@ -1079,6 +1114,46 @@ export async function upsertExternalPublicEvent(input: {
   });
 }
 
+export async function listExternalSourceEventsForUser(input: {
+  userId: string;
+  sourceProvider: string;
+}) {
+  const db = getDb();
+  return db
+    .select({
+      id: events.id,
+      sourceEventId: events.sourceEventId
+    })
+    .from(events)
+    .where(and(eq(events.createdBy, input.userId), eq(events.sourceProvider, input.sourceProvider)));
+}
+
+export async function listSuggestionCalendarRefsByEventIds(eventIds: string[]) {
+  if (!eventIds.length) {
+    return [] as Array<{ id: string; userId: string; calendarEventId: string | null }>;
+  }
+
+  const db = getDb();
+  return db
+    .select({
+      id: suggestions.id,
+      userId: suggestions.userId,
+      calendarEventId: suggestions.calendarEventId
+    })
+    .from(suggestions)
+    .where(inArray(suggestions.eventId, eventIds));
+}
+
+export async function deleteEventsByIds(eventIds: string[]) {
+  if (!eventIds.length) {
+    return 0;
+  }
+
+  const db = getDb();
+  await db.delete(events).where(inArray(events.id, eventIds));
+  return eventIds.length;
+}
+
 export async function listVisibleEventsForUser(userId: string) {
   const db = getDb();
   const memberships = await db
@@ -1104,7 +1179,9 @@ export async function listVisibleEventsForUser(userId: string) {
       visibility: events.visibility,
       groupId: events.groupId,
       createdBy: events.createdBy,
-      groupName: groups.name
+      groupName: groups.name,
+      sourceProvider: events.sourceProvider,
+      sourceEventId: events.sourceEventId
     })
     .from(events)
     .leftJoin(groups, eq(events.groupId, groups.id))
@@ -1155,7 +1232,9 @@ export async function listPublicAlleEvents(limit = 20) {
       visibility: events.visibility,
       groupId: events.groupId,
       createdBy: events.createdBy,
-      groupName: groups.name
+      groupName: groups.name,
+      sourceProvider: events.sourceProvider,
+      sourceEventId: events.sourceEventId
     })
     .from(events)
     .leftJoin(groups, eq(events.groupId, groups.id))
@@ -1207,6 +1286,22 @@ export async function listSuggestionStatesForUser(userId: string) {
     .where(eq(suggestions.userId, userId));
 
   return rows;
+}
+
+export async function removeSuggestionsForUserByEventIds(input: {
+  userId: string;
+  eventIds: string[];
+}) {
+  if (!input.eventIds.length) {
+    return 0;
+  }
+
+  const db = getDb();
+  await db
+    .delete(suggestions)
+    .where(and(eq(suggestions.userId, input.userId), inArray(suggestions.eventId, input.eventIds)));
+
+  return input.eventIds.length;
 }
 
 export async function upsertSuggestion(input: {

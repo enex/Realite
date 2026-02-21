@@ -39,4 +39,6 @@ Dein Feedback verbessert zukünftige Vorschläge.
 Auf der Seite **`/settings`** (Button **"Einstellungen"** in der Übersicht) kannst du:
 
 - automatische Kalendereinträge für passende Vorschläge aktivieren/deaktivieren
-- den Zielkalender für diese Einträge auswählen
+- Zustellmodus wählen: Kalenderkopie oder Source-Einladung
+- Sichtbarkeit deiner E-Mail für Source-Einladungen steuern
+- den Zielkalender für Kalenderkopien auswählen

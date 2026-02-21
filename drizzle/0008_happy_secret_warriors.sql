@@ -1,0 +1,2 @@
+ALTER TABLE "user_settings" ADD COLUMN "suggestion_delivery_mode" text DEFAULT 'calendar_copy' NOT NULL;--> statement-breakpoint
+ALTER TABLE "user_settings" ADD COLUMN "share_email_in_source_invites" boolean DEFAULT true NOT NULL;

@@ -13,6 +13,8 @@ type SettingsPayload = {
   settings: {
     autoInsertSuggestions: boolean;
     suggestionCalendarId: string;
+    suggestionDeliveryMode: "calendar_copy" | "source_invite";
+    shareEmailInSourceInvites: boolean;
   };
   calendars: WritableCalendar[];
   calendarConnected: boolean;
@@ -22,7 +24,9 @@ type SettingsPayload = {
 const emptySettings: SettingsPayload = {
   settings: {
     autoInsertSuggestions: true,
-    suggestionCalendarId: "primary"
+    suggestionCalendarId: "primary",
+    suggestionDeliveryMode: "calendar_copy",
+    shareEmailInSourceInvites: true
   },
   calendars: [],
   calendarConnected: false
@@ -35,7 +39,9 @@ export function SettingsPage({ userName }: { userName: string }) {
   const [error, setError] = useState<string | null>(null);
   const [settingsForm, setSettingsForm] = useState({
     autoInsertSuggestions: true,
-    suggestionCalendarId: "primary"
+    suggestionCalendarId: "primary",
+    suggestionDeliveryMode: "calendar_copy" as "calendar_copy" | "source_invite",
+    shareEmailInSourceInvites: true
   });
 
   async function loadData() {
@@ -53,7 +59,9 @@ export function SettingsPage({ userName }: { userName: string }) {
       setData(payload);
       setSettingsForm({
         autoInsertSuggestions: payload.settings.autoInsertSuggestions,
-        suggestionCalendarId: payload.settings.suggestionCalendarId
+        suggestionCalendarId: payload.settings.suggestionCalendarId,
+        suggestionDeliveryMode: payload.settings.suggestionDeliveryMode,
+        shareEmailInSourceInvites: payload.settings.shareEmailInSourceInvites
       });
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Unbekannter Fehler");
@@ -89,7 +97,9 @@ export function SettingsPage({ userName }: { userName: string }) {
       }));
       setSettingsForm({
         autoInsertSuggestions: payload.settings.autoInsertSuggestions,
-        suggestionCalendarId: payload.settings.suggestionCalendarId
+        suggestionCalendarId: payload.settings.suggestionCalendarId,
+        suggestionDeliveryMode: payload.settings.suggestionDeliveryMode,
+        shareEmailInSourceInvites: payload.settings.shareEmailInSourceInvites
       });
     } catch (settingsError) {
       setError(settingsError instanceof Error ? settingsError.message : "Unbekannter Fehler");
@@ -106,7 +116,7 @@ export function SettingsPage({ userName }: { userName: string }) {
             <p className="text-sm text-slate-500">Nutzereinstellungen</p>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{userName}</h1>
             <p className="mt-2 text-sm text-slate-600">
-              Steuere hier, ob Realite potenzielle Events automatisch in deinen Kalender einträgt.
+              Steuere hier, wie Realite potenzielle Events zustellt: als Kalenderkopie oder als Source-Einladung.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -150,6 +160,40 @@ export function SettingsPage({ userName }: { userName: string }) {
             />
             <span className="text-sm text-slate-700">Potenzielle Events automatisch in meinen Kalender eintragen</span>
           </label>
+
+          <select
+            value={settingsForm.suggestionDeliveryMode}
+            onChange={(event) =>
+              setSettingsForm((state) => ({
+                ...state,
+                suggestionDeliveryMode: event.target.value as "calendar_copy" | "source_invite"
+              }))
+            }
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
+            disabled={!data.calendarConnected || busy}
+          >
+            <option value="calendar_copy">Kalenderkopie (wie bisher)</option>
+            <option value="source_invite">Einladung vom Source-Event (Google RSVP)</option>
+          </select>
+
+          <label className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 sm:col-span-2">
+            <input
+              type="checkbox"
+              checked={settingsForm.shareEmailInSourceInvites}
+              onChange={(event) =>
+                setSettingsForm((state) => ({ ...state, shareEmailInSourceInvites: event.target.checked }))
+              }
+              disabled={busy || settingsForm.suggestionDeliveryMode !== "source_invite"}
+            />
+            <span className="text-sm text-slate-700">Meine E-Mail bei Source-Einladungen sichtbar machen</span>
+          </label>
+
+          {settingsForm.suggestionDeliveryMode === "source_invite" && !settingsForm.shareEmailInSourceInvites ? (
+            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 sm:col-span-2">
+              Ohne sichtbare E-Mail kann Google RSVP nicht als echte Einladung abgebildet werden. Realite nutzt dann
+              automatisch die Kalenderkopie als Fallback.
+            </p>
+          ) : null}
 
           <select
             value={settingsForm.suggestionCalendarId}

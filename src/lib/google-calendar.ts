@@ -1,6 +1,10 @@
 import {
+  deleteEventsByIds,
   ensureAlleGroupForUser,
   getGoogleConnection,
+  getUserById,
+  listExternalSourceEventsForUser,
+  listSuggestionCalendarRefsByEventIds,
   updateGoogleConnectionTokens,
   upsertExternalPublicEvent
 } from "@/src/lib/repository";
@@ -18,12 +22,20 @@ export type WritableGoogleCalendar = {
 
 const FREE_BUSY_CHUNK_MS = 60 * 24 * 60 * 60 * 1000;
 const MAX_FREE_BUSY_SPLIT_DEPTH = 8;
+const SOURCE_INVITE_REF_PREFIX = "source-invite::";
 
 type CalendarApiEvent = {
   id?: string;
   summary?: string;
   description?: string;
   location?: string;
+  attendees?: Array<{
+    email?: string;
+    responseStatus?: string;
+  }>;
+  extendedProperties?: {
+    private?: Record<string, string | undefined>;
+  };
   start?: {
     dateTime?: string;
     date?: string;
@@ -32,6 +44,13 @@ type CalendarApiEvent = {
     dateTime?: string;
     date?: string;
   };
+};
+
+type SourceInviteRef = {
+  ownerUserId: string;
+  calendarId: string;
+  eventId: string;
+  attendeeEmail: string;
 };
 
 async function readGoogleError(response: Response) {
@@ -60,6 +79,16 @@ function containsAlleTagInTitle(title?: string) {
   return /(^|\s)#alle(\b|$)/iu.test(title);
 }
 
+function isRealiteManagedCalendarEvent(event: CalendarApiEvent) {
+  const normalizedSummary = event.summary?.trim() ?? "";
+  if (/^\[realite\]\s*/iu.test(normalizedSummary)) {
+    return true;
+  }
+
+  const suggestionId = event.extendedProperties?.private?.realiteSuggestionId;
+  return Boolean(suggestionId?.trim());
+}
+
 function parseGoogleEventDate(value?: { dateTime?: string; date?: string }) {
   if (value?.dateTime) {
     return new Date(value.dateTime);
@@ -70,6 +99,69 @@ function parseGoogleEventDate(value?: { dateTime?: string; date?: string }) {
   }
 
   return null;
+}
+
+function parseGoogleSourceEventId(sourceEventId: string) {
+  const normalized = sourceEventId.trim();
+  if (!normalized) {
+    return null;
+  }
+
+  const separatorIndex = normalized.lastIndexOf(":");
+  if (separatorIndex <= 0 || separatorIndex >= normalized.length - 1) {
+    return null;
+  }
+
+  return {
+    calendarId: normalized.slice(0, separatorIndex),
+    eventId: normalized.slice(separatorIndex + 1)
+  };
+}
+
+function encodeSourceInviteRef(input: SourceInviteRef) {
+  const encoded = Buffer.from(JSON.stringify(input), "utf8").toString("base64url");
+  return `${SOURCE_INVITE_REF_PREFIX}${encoded}`;
+}
+
+function decodeSourceInviteRef(value: string): SourceInviteRef | null {
+  if (!value.startsWith(SOURCE_INVITE_REF_PREFIX)) {
+    return null;
+  }
+
+  const encoded = value.slice(SOURCE_INVITE_REF_PREFIX.length);
+  if (!encoded) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8")) as Partial<SourceInviteRef>;
+    if (!parsed.ownerUserId || !parsed.calendarId || !parsed.eventId || !parsed.attendeeEmail) {
+      return null;
+    }
+
+    return {
+      ownerUserId: parsed.ownerUserId,
+      calendarId: parsed.calendarId,
+      eventId: parsed.eventId,
+      attendeeEmail: parsed.attendeeEmail
+    };
+  } catch {
+    return null;
+  }
+}
+
+function parseCalendarEventRef(eventRef: string) {
+  if (!eventRef.includes("::")) {
+    return {
+      calendarId: null as string | null,
+      eventId: eventRef
+    };
+  }
+
+  return {
+    calendarId: eventRef.split("::")[0] || null,
+    eventId: eventRef.split("::").slice(1).join("::")
+  };
 }
 
 async function refreshAccessToken(userId: string, refreshToken: string) {
@@ -135,10 +227,15 @@ export async function getGoogleAccessToken(userId: string) {
 export async function getBusyWindows(input: { userId: string; timeMin: Date; timeMax: Date }) {
   const token = await getGoogleAccessToken(input.userId);
   if (!token) {
-    return [] as BusyWindow[];
+    return null as BusyWindow[] | null;
   }
 
   if (input.timeMax <= input.timeMin) {
+    return [] as BusyWindow[];
+  }
+
+  const calendarIds = await listReadableCalendarIds(token);
+  if (!calendarIds.length) {
     return [] as BusyWindow[];
   }
 
@@ -147,12 +244,11 @@ export async function getBusyWindows(input: { userId: string; timeMin: Date; tim
 
   while (cursor < input.timeMax) {
     const chunkEnd = new Date(Math.min(cursor.getTime() + FREE_BUSY_CHUNK_MS, input.timeMax.getTime()));
-    const busy = await fetchBusyWindowsWithSplit(token, cursor, chunkEnd, 0);
+    const busy = await fetchBusyWindowsWithSplit(token, calendarIds, cursor, chunkEnd, 0);
 
-    // Ohne FreeBusy-Berechtigung fällt die App auf "best effort" zurück,
-    // statt das Dashboard hart scheitern zu lassen.
+    // Ohne FreeBusy-Berechtigung geben wir "unknown" zurück.
     if (busy === null) {
-      return [] as BusyWindow[];
+      return null as BusyWindow[] | null;
     }
 
     allWindows.push(...busy);
@@ -164,6 +260,7 @@ export async function getBusyWindows(input: { userId: string; timeMin: Date; tim
 
 async function fetchBusyWindowsWithSplit(
   token: string,
+  calendarIds: string[],
   timeMin: Date,
   timeMax: Date,
   depth: number
@@ -177,7 +274,7 @@ async function fetchBusyWindowsWithSplit(
     body: JSON.stringify({
       timeMin: timeMin.toISOString(),
       timeMax: timeMax.toISOString(),
-      items: [{ id: "primary" }]
+      items: calendarIds.map((id) => ({ id }))
     })
   });
 
@@ -202,12 +299,12 @@ async function fetchBusyWindowsWithSplit(
         );
       }
 
-      const left = await fetchBusyWindowsWithSplit(token, timeMin, middle, depth + 1);
+      const left = await fetchBusyWindowsWithSplit(token, calendarIds, timeMin, middle, depth + 1);
       if (left === null) {
         return null;
       }
 
-      const right = await fetchBusyWindowsWithSplit(token, middle, timeMax, depth + 1);
+      const right = await fetchBusyWindowsWithSplit(token, calendarIds, middle, timeMax, depth + 1);
       if (right === null) {
         return null;
       }
@@ -221,14 +318,15 @@ async function fetchBusyWindowsWithSplit(
   }
 
   const data = (await response.json()) as {
-    calendars?: {
-      primary?: {
-        busy?: BusyWindow[];
-      };
-    };
+    calendars?: Record<string, { busy?: BusyWindow[] }>;
   };
 
-  return data.calendars?.primary?.busy ?? ([] as BusyWindow[]);
+  const windows: BusyWindow[] = [];
+  for (const calendar of Object.values(data.calendars ?? {})) {
+    windows.push(...(calendar.busy ?? []));
+  }
+
+  return windows;
 }
 
 function mergeBusyWindows(windows: BusyWindow[]) {
@@ -273,25 +371,38 @@ function mergeBusyWindows(windows: BusyWindow[]) {
 export async function insertSuggestionIntoCalendar(input: {
   userId: string;
   suggestionId: string;
+  eventId: string;
   title: string;
   description?: string | null;
   location?: string | null;
   startsAt: Date;
   endsAt: Date;
   calendarId?: string;
+  blockedCalendarIds?: string[];
 }) {
   const token = await getGoogleAccessToken(input.userId);
   if (!token) {
     return null;
   }
 
-  const calendarId = input.calendarId?.trim() || "primary";
+  const preferredCalendarId = input.calendarId?.trim() || "primary";
+  const blockedCalendarIds = new Set(
+    (input.blockedCalendarIds ?? []).map((id) => id.trim()).filter(Boolean)
+  );
+  const candidateCalendars = Array.from(
+    new Set([preferredCalendarId, "primary"].filter((id) => id && !blockedCalendarIds.has(id)))
+  );
+
+  if (!candidateCalendars.length) {
+    return null;
+  }
+
   const baseUrl = process.env.NEXTAUTH_URL || process.env.REALITE_APP_URL || "https://realite.app";
   const realiteUrl = `${baseUrl.replace(/\/+$/, "")}/?suggestion=${encodeURIComponent(input.suggestionId)}`;
   const acceptUrl = `${realiteUrl}&decision=accepted`;
   const declineUrl = `${realiteUrl}&decision=declined`;
   const eventPayload = {
-    summary: `[Realite] ${input.title}`,
+    summary: `[Realite] ${input.title.replace(/^\[realite\]\s*/iu, "")}`,
     description:
       `${input.description ?? ""}\n\nVorschlag von Realite.\nIn Realite öffnen: ${realiteUrl}\nZusage: ${acceptUrl}\nAbsage: ${declineUrl}`.trim(),
     location: input.location ?? undefined,
@@ -301,9 +412,12 @@ export async function insertSuggestionIntoCalendar(input: {
     end: {
       dateTime: input.endsAt.toISOString()
     },
+    transparency: "transparent",
+    iCalUID: `realite-${input.userId}-${input.eventId}@realite.app`,
     extendedProperties: {
       private: {
-        realiteSuggestionId: input.suggestionId
+        realiteSuggestionId: input.suggestionId,
+        realiteEventId: input.eventId
       }
     }
   };
@@ -322,19 +436,538 @@ export async function insertSuggestionIntoCalendar(input: {
     );
   }
 
-  let response = await createInCalendar(calendarId);
+  async function findExistingInCalendar(targetCalendarId: string) {
+    async function queryIds(property: string, value: string) {
+      const params = new URLSearchParams({
+        privateExtendedProperty: `${property}=${value}`,
+        maxResults: "10",
+        showDeleted: "false"
+      });
 
-  if (!response.ok && calendarId !== "primary" && (response.status === 403 || response.status === 404)) {
-    response = await createInCalendar("primary");
+      const response = await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(targetCalendarId)}/events?${params.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        return [] as string[];
+      }
+
+      const payload = (await response.json()) as {
+        items?: Array<{ id?: string }>;
+      };
+
+      return (payload.items ?? []).map((item) => item.id).filter((id): id is string => Boolean(id));
+    }
+
+    const ids = Array.from(
+      new Set([
+        ...(await queryIds("realiteEventId", input.eventId)),
+        ...(await queryIds("realiteSuggestionId", input.suggestionId))
+      ])
+    );
+
+    if (!ids.length) {
+      return null;
+    }
+
+    const keepId = ids[0];
+
+    // Bestehende Alt-Dubletten derselben Suggestion bereinigen.
+    for (const duplicateId of ids.slice(1)) {
+      await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(targetCalendarId)}/events/${encodeURIComponent(duplicateId)}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+    }
+
+    return `${targetCalendarId}::${keepId}`;
   }
 
-  if (!response.ok) {
-    const details = await readGoogleError(response);
-    throw new Error(`Kalendereintrag fehlgeschlagen (${response.status})${details ? `: ${details}` : ""}`);
+  for (const calendarId of candidateCalendars) {
+    const existingInCalendar = await findExistingInCalendar(calendarId);
+    if (existingInCalendar) {
+      return existingInCalendar;
+    }
   }
 
-  const payload = (await response.json()) as { id?: string };
-  return payload.id ?? null;
+  let lastFailure: { status: number; details: string | null } | null = null;
+
+  for (const calendarId of candidateCalendars) {
+    const response = await createInCalendar(calendarId);
+    if (!response.ok) {
+      const details = await readGoogleError(response);
+      lastFailure = { status: response.status, details };
+
+      if (response.status === 403 || response.status === 404) {
+        continue;
+      }
+
+      throw new Error(`Kalendereintrag fehlgeschlagen (${response.status})${details ? `: ${details}` : ""}`);
+    }
+
+    const payload = (await response.json()) as { id?: string };
+    return payload.id ? `${calendarId}::${payload.id}` : null;
+  }
+
+  if (lastFailure) {
+    throw new Error(
+      `Kalendereintrag fehlgeschlagen (${lastFailure.status})${
+        lastFailure.details ? `: ${lastFailure.details}` : ""
+      }`
+    );
+  }
+
+  return null;
+}
+
+export async function insertSuggestionAsSourceInvite(input: {
+  suggestionId: string;
+  targetUserId: string;
+  sourceOwnerUserId: string;
+  sourceEventId: string;
+}) {
+  if (input.targetUserId === input.sourceOwnerUserId) {
+    return null;
+  }
+
+  const sourceRef = parseGoogleSourceEventId(input.sourceEventId);
+  if (!sourceRef) {
+    return null;
+  }
+
+  const [sourceOwnerToken, targetUser] = await Promise.all([
+    getGoogleAccessToken(input.sourceOwnerUserId),
+    getUserById(input.targetUserId)
+  ]);
+
+  const attendeeEmail = targetUser?.email?.trim().toLowerCase() ?? "";
+  if (!sourceOwnerToken || !attendeeEmail) {
+    return null;
+  }
+
+  const sourceEventUrl =
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(sourceRef.calendarId)}` +
+    `/events/${encodeURIComponent(sourceRef.eventId)}`;
+
+  const sourceEventResponse = await fetch(sourceEventUrl, {
+    headers: {
+      Authorization: `Bearer ${sourceOwnerToken}`
+    }
+  });
+
+  if (!sourceEventResponse.ok) {
+    if (sourceEventResponse.status === 403 || sourceEventResponse.status === 404) {
+      return null;
+    }
+
+    const details = await readGoogleError(sourceEventResponse);
+    throw new Error(
+      `Source-Event konnte nicht geladen werden (${sourceEventResponse.status})${
+        details ? `: ${details}` : ""
+      }`
+    );
+  }
+
+  const sourceEvent = (await sourceEventResponse.json()) as CalendarApiEvent;
+  const attendees = sourceEvent.attendees ?? [];
+  const alreadyInvited = attendees.some(
+    (attendee) => attendee.email?.trim().toLowerCase() === attendeeEmail
+  );
+
+  if (alreadyInvited) {
+    return encodeSourceInviteRef({
+      ownerUserId: input.sourceOwnerUserId,
+      calendarId: sourceRef.calendarId,
+      eventId: sourceRef.eventId,
+      attendeeEmail
+    });
+  }
+
+  const patchResponse = await fetch(`${sourceEventUrl}?sendUpdates=all`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${sourceOwnerToken}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      attendees: [...attendees, { email: attendeeEmail, responseStatus: "needsAction" }],
+      extendedProperties: {
+        private: {
+          ...(sourceEvent.extendedProperties?.private ?? {}),
+          realiteSuggestionSourceInvite: input.suggestionId
+        }
+      }
+    })
+  });
+
+  if (!patchResponse.ok) {
+    if (patchResponse.status === 403 || patchResponse.status === 404) {
+      return null;
+    }
+
+    const details = await readGoogleError(patchResponse);
+    throw new Error(
+      `Source-Einladung konnte nicht erstellt werden (${patchResponse.status})${details ? `: ${details}` : ""}`
+    );
+  }
+
+  return encodeSourceInviteRef({
+    ownerUserId: input.sourceOwnerUserId,
+    calendarId: sourceRef.calendarId,
+    eventId: sourceRef.eventId,
+    attendeeEmail
+  });
+}
+
+async function updateSourceInviteResponseStatus(
+  input: SourceInviteRef & { responseStatus: "needsAction" | "accepted" | "declined" }
+) {
+  const token = await getGoogleAccessToken(input.ownerUserId);
+  if (!token) {
+    return false;
+  }
+
+  const sourceEventUrl =
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(input.calendarId)}` +
+    `/events/${encodeURIComponent(input.eventId)}`;
+
+  const sourceEventResponse = await fetch(sourceEventUrl, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!sourceEventResponse.ok) {
+    return sourceEventResponse.status === 403 || sourceEventResponse.status === 404 || sourceEventResponse.status === 410;
+  }
+
+  const sourceEvent = (await sourceEventResponse.json()) as CalendarApiEvent;
+  const attendees = sourceEvent.attendees ?? [];
+  const email = input.attendeeEmail.trim().toLowerCase();
+  let touched = false;
+  const updatedAttendees = attendees.map((attendee) => {
+    if (attendee.email?.trim().toLowerCase() !== email) {
+      return attendee;
+    }
+
+    touched = true;
+    return {
+      ...attendee,
+      responseStatus: input.responseStatus
+    };
+  });
+
+  if (!touched) {
+    return true;
+  }
+
+  const patchResponse = await fetch(`${sourceEventUrl}?sendUpdates=all`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      attendees: updatedAttendees
+    })
+  });
+
+  if (patchResponse.ok) {
+    return true;
+  }
+
+  return patchResponse.status === 403 || patchResponse.status === 404 || patchResponse.status === 410;
+}
+
+export async function syncSuggestionDecisionInCalendar(input: {
+  userId: string;
+  calendarEventRef: string;
+  decision: "accepted" | "declined";
+}) {
+  const eventRef = input.calendarEventRef.trim();
+  if (!eventRef) {
+    return false;
+  }
+
+  const sourceInviteRef = decodeSourceInviteRef(eventRef);
+  if (sourceInviteRef) {
+    return updateSourceInviteResponseStatus({
+      ...sourceInviteRef,
+      responseStatus: input.decision
+    });
+  }
+
+  const token = await getGoogleAccessToken(input.userId);
+  if (!token) {
+    return false;
+  }
+
+  const parsed = parseCalendarEventRef(eventRef);
+  if (!parsed.eventId) {
+    return false;
+  }
+
+  const candidateCalendars = Array.from(
+    new Set(
+      [parsed.calendarId, "primary"]
+        .map((value) => value?.trim() || null)
+        .filter((value): value is string => Boolean(value))
+    )
+  );
+
+  const transparency = input.decision === "accepted" ? "opaque" : "transparent";
+
+  for (const calendarId of candidateCalendars) {
+    const patchResponse = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(parsed.eventId)}?sendUpdates=none`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ transparency })
+      }
+    );
+
+    if (patchResponse.ok) {
+      return true;
+    }
+
+    if (patchResponse.status === 403 || patchResponse.status === 404) {
+      continue;
+    }
+  }
+
+  return false;
+}
+
+export async function ensureSuggestionNonBusyInCalendar(input: {
+  userId: string;
+  calendarEventRef: string;
+  eventId?: string;
+}) {
+  const eventRef = input.calendarEventRef.trim();
+  if (!eventRef) {
+    return false;
+  }
+
+  const sourceInviteRef = decodeSourceInviteRef(eventRef);
+  if (sourceInviteRef) {
+    return updateSourceInviteResponseStatus({
+      ...sourceInviteRef,
+      responseStatus: "needsAction"
+    });
+  }
+
+  const token = await getGoogleAccessToken(input.userId);
+  if (!token) {
+    return false;
+  }
+
+  const parsed = parseCalendarEventRef(eventRef);
+  if (!parsed.eventId) {
+    return false;
+  }
+
+  const candidateCalendars = Array.from(
+    new Set(
+      [parsed.calendarId, "primary"]
+        .map((value) => value?.trim() || null)
+        .filter((value): value is string => Boolean(value))
+    )
+  );
+
+  if (input.eventId) {
+    for (const calendarId of candidateCalendars) {
+      const params = new URLSearchParams({
+        privateExtendedProperty: `realiteEventId=${input.eventId}`,
+        maxResults: "20",
+        showDeleted: "false"
+      });
+
+      const listResponse = await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!listResponse.ok) {
+        continue;
+      }
+
+      const payload = (await listResponse.json()) as {
+        items?: Array<{ id?: string }>;
+      };
+      const ids = (payload.items ?? []).map((item) => item.id).filter((id): id is string => Boolean(id));
+      if (ids.length <= 1) {
+        continue;
+      }
+
+      const keepId = ids.includes(parsed.eventId) ? parsed.eventId : ids[0];
+      for (const duplicateId of ids) {
+        if (duplicateId === keepId) {
+          continue;
+        }
+
+        await fetch(
+          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(duplicateId)}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+      }
+    }
+  }
+
+  for (const calendarId of candidateCalendars) {
+    const patchResponse = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(parsed.eventId)}?sendUpdates=none`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ transparency: "transparent" })
+      }
+    );
+
+    if (patchResponse.ok) {
+      return true;
+    }
+
+    if (patchResponse.status === 403 || patchResponse.status === 404) {
+      continue;
+    }
+  }
+
+  return false;
+}
+
+async function removeSourceInviteAttendee(input: SourceInviteRef) {
+  const token = await getGoogleAccessToken(input.ownerUserId);
+  if (!token) {
+    return false;
+  }
+
+  const sourceEventUrl =
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(input.calendarId)}` +
+    `/events/${encodeURIComponent(input.eventId)}`;
+
+  const sourceEventResponse = await fetch(sourceEventUrl, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!sourceEventResponse.ok) {
+    if (sourceEventResponse.status === 403 || sourceEventResponse.status === 404 || sourceEventResponse.status === 410) {
+      return true;
+    }
+
+    return false;
+  }
+
+  const sourceEvent = (await sourceEventResponse.json()) as CalendarApiEvent;
+  const attendees = sourceEvent.attendees ?? [];
+  const filteredAttendees = attendees.filter(
+    (attendee) => attendee.email?.trim().toLowerCase() !== input.attendeeEmail.trim().toLowerCase()
+  );
+
+  if (filteredAttendees.length === attendees.length) {
+    return true;
+  }
+
+  const patchResponse = await fetch(`${sourceEventUrl}?sendUpdates=all`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      attendees: filteredAttendees
+    })
+  });
+
+  if (patchResponse.ok) {
+    return true;
+  }
+
+  return patchResponse.status === 403 || patchResponse.status === 404 || patchResponse.status === 410;
+}
+
+export async function removeSuggestionCalendarEvent(input: {
+  userId: string;
+  calendarEventRef: string;
+  preferredCalendarId?: string | null;
+}) {
+  const eventRef = input.calendarEventRef.trim();
+  if (!eventRef) {
+    return false;
+  }
+
+  const sourceInviteRef = decodeSourceInviteRef(eventRef);
+  if (sourceInviteRef) {
+    return removeSourceInviteAttendee(sourceInviteRef);
+  }
+
+  const token = await getGoogleAccessToken(input.userId);
+  if (!token) {
+    return false;
+  }
+
+  const parsed = parseCalendarEventRef(eventRef);
+
+  if (!parsed.eventId) {
+    return false;
+  }
+
+  const candidateCalendars = Array.from(
+    new Set(
+      [parsed.calendarId, input.preferredCalendarId ?? null, "primary"]
+        .map((value) => value?.trim() || null)
+        .filter((value): value is string => Boolean(value))
+    )
+  );
+
+  for (const calendarId of candidateCalendars) {
+    const response = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(parsed.eventId)}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    if (response.ok || response.status === 410) {
+      return true;
+    }
+
+    if (response.status === 404 || response.status === 403) {
+      continue;
+    }
+  }
+
+  return false;
 }
 
 export async function syncPublicEventsFromGoogleCalendar(userId: string) {
@@ -349,6 +982,7 @@ export async function syncPublicEventsFromGoogleCalendar(userId: string) {
   const timeMax = new Date(now.getTime() + 120 * 24 * 60 * 60 * 1000);
   let scanned = 0;
   let synced = 0;
+  const seenSourceEventIds = new Set<string>();
   const calendarIds = await listReadableCalendarIds(token);
   let forbiddenCalendars = 0;
   let forbiddenDetail: string | null = null;
@@ -409,6 +1043,10 @@ export async function syncPublicEventsFromGoogleCalendar(userId: string) {
           continue;
         }
 
+        if (isRealiteManagedCalendarEvent(item)) {
+          continue;
+        }
+
         if (!containsAlleTagInTitle(item.summary)) {
           continue;
         }
@@ -423,10 +1061,13 @@ export async function syncPublicEventsFromGoogleCalendar(userId: string) {
           continue;
         }
 
+        const sourceEventId = `${calendarId}:${item.id}`;
+        seenSourceEventIds.add(sourceEventId);
+
         await upsertExternalPublicEvent({
           userId,
           sourceProvider: "google",
-          sourceEventId: `${calendarId}:${item.id}`,
+          sourceEventId,
           title: item.summary?.trim() || "Öffentliches Kalender-Event",
           description: item.description ?? null,
           location: item.location ?? null,
@@ -459,6 +1100,31 @@ export async function syncPublicEventsFromGoogleCalendar(userId: string) {
         forbiddenDetail ? `: ${forbiddenDetail}` : ""
       }. Bitte einmal abmelden und erneut mit Google anmelden.`
     );
+  }
+
+  const externalEvents = await listExternalSourceEventsForUser({
+    userId,
+    sourceProvider: "google"
+  });
+
+  const staleEventIds = externalEvents
+    .filter((event) => event.sourceEventId && !seenSourceEventIds.has(event.sourceEventId))
+    .map((event) => event.id);
+
+  if (staleEventIds.length) {
+    const staleSuggestions = await listSuggestionCalendarRefsByEventIds(staleEventIds);
+    for (const suggestion of staleSuggestions) {
+      if (!suggestion.calendarEventId) {
+        continue;
+      }
+
+      await removeSuggestionCalendarEvent({
+        userId: suggestion.userId,
+        calendarEventRef: suggestion.calendarEventId
+      });
+    }
+
+    await deleteEventsByIds(staleEventIds);
   }
 
   return { synced, scanned };
