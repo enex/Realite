@@ -86,6 +86,9 @@ export default async function EventShortcutPage({
         createdByShortId={shortenUUID(event.createdBy)}
         createdByName={event.createdByName}
         createdByEmail={event.createdByEmail}
+        isOwnedByCurrentUser={event.createdBy === user.id}
+        sourceProvider={event.sourceProvider}
+        sourceEventId={event.sourceEventId}
       />
 
       {suggestionForFlow ? (

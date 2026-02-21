@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 
+import { SiteFooter } from "@/src/components/site-footer";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,7 +28,12 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de">
-      <body className="min-h-screen bg-slate-100 text-slate-900">{children}</body>
+      <body className="min-h-screen bg-slate-100 text-slate-900">
+        <div className="flex min-h-screen flex-col">
+          <div className="flex-1">{children}</div>
+          <SiteFooter />
+        </div>
+      </body>
     </html>
   );
 }

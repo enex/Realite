@@ -273,9 +273,6 @@ export function Dashboard({
               </a>
             </div>
           </div>
-          {data.me.calendarScope ? (
-            <p className="mt-3 break-all text-xs text-slate-500">Scope: {data.me.calendarScope}</p>
-          ) : null}
         </header>
 
         {error ? (
@@ -385,13 +382,12 @@ export function Dashboard({
                   href={`/e/${shortenUUID(event.id)}`}
                   className="break-words text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
                 >
-                  {event.title}
+                  {event.title.replace(/#[^\s]+/gi, "").trim()}
                 </a>
                 <p className="text-xs text-slate-500">
                   {new Date(event.startsAt).toLocaleString("de-DE")} - {new Date(event.endsAt).toLocaleTimeString("de-DE")} ·{" "}
-                  {event.groupName ?? "ohne Gruppe"}
+                  {event.tags.join(" · ")}
                 </p>
-                {event.tags.length ? <p className="mt-1 text-xs text-slate-600">{event.tags.join(" · ")}</p> : null}
               </article>
             ))}
           </div>

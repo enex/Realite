@@ -100,3 +100,11 @@ In der Gruppenansicht:
 Realite zeigt Profilbilder nur dann, wenn für diesen Kontakt ein bekanntes Nutzerprofil vorhanden ist.
 
 Wenn kein Bild verfügbar ist, zeigt Realite stattdessen Initialen an.
+
+## Wo finde ich Datenschutz, AGB und Impressum?
+
+Die rechtlichen Seiten findest du jederzeit im Footer:
+
+- Datenschutz: `/datenschutz`
+- AGB: `/agb`
+- Impressum: `/impressum`

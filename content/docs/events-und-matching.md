@@ -75,6 +75,23 @@ Wenn für dich zu einem Event bereits eine Suggestion existiert und du nicht der
 
 Event- und Vorschlagslisten in Realite verlinken direkt auf diese Seiten, damit du von jeder Übersicht sofort entscheiden kannst.
 
+## Event-Detailseite
+
+Auf der Eventseite (`/e/<shortUUID>`) siehst du jetzt alle wichtigen Event-Informationen gesammelt:
+
+- Titel und Termin
+- Ort
+- Beschreibung
+- Ersteller
+
+Wenn der Termin aus deinem Google Kalender stammt und du der Ersteller bist, findest du oben rechts einen **Bearbeiten**-Button mit Stift-Symbol.  
+Damit springst du direkt zum Original-Termin in Google Kalender.
+
+Wenn ein Ort hinterlegt ist, zeigt Realite zusätzlich:
+
+- Distanz von deinem aktuellen Standort (wenn Standortfreigabe aktiv ist)
+- einen Link **Route planen / navigieren** für direkte Navigation
+
 ## Profilseiten von Nutzern
 
 Jeder registrierte Nutzer hat eine Profilseite unter:
