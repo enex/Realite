@@ -4,8 +4,22 @@ import { Dashboard } from "@/src/components/dashboard";
 import { authOptions } from "@/src/lib/auth";
 import { listPublicAlleEvents } from "@/src/lib/repository";
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const session = await getServerSession(authOptions);
+  const params = await searchParams;
+  const query = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    if (typeof value === "string") {
+      query.set(key, value);
+    }
+  }
+
+  const callbackUrl = query.toString() ? `/?${query.toString()}` : "/";
 
   if (!session?.user?.email) {
     const publicAlleEvents = await listPublicAlleEvents(8);
@@ -22,7 +36,7 @@ export default async function HomePage() {
             #dating oder #alle. Realite schlägt dir passende Termine vor.
           </p>
           <a
-            href="/api/auth/signin/google?callbackUrl=/"
+            href={`/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}`}
             className="mt-8 inline-flex rounded-lg bg-teal-700 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-800"
           >
             Mit Google starten

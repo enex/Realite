@@ -11,6 +11,8 @@ Jede Gruppe hat:
 
 Auf der Startseite wird jede Gruppe kompakt mit Zahlen angezeigt.
 
+Synchronisierte Gruppen (z. B. aus Google Kontakte Labels) können zusätzlich ausgeblendet werden.
+
 ## Gruppen-Detailseite
 
 Auf `/groups/<id>` findest du alle Aktionen:
@@ -27,6 +29,12 @@ Wenn Google Kontakte verbunden sind:
 - wird die Gruppe `#kontakte` automatisch gepflegt
 - können Google-Labels als synchronisierte Gruppen erscheinen
 - erkennst du synchronisierte Gruppen am Sync-Badge
+
+## Gruppen löschen oder verstecken
+
+- Normale (nicht synchronisierte) Gruppen kannst du auf der Detailseite löschen.
+- Synchronisierte Gruppen werden nicht gelöscht, sondern versteckt.
+- Versteckte Sync-Gruppen erscheinen in der Übersicht separat und können auf der Detailseite wieder eingeblendet werden.
 
 ## Was passiert beim Einladen per E-Mail?
 

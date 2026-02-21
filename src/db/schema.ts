@@ -69,6 +69,21 @@ export const calendarConnections = pgTable(
   ],
 );
 
+export const userSettings = pgTable("user_settings", {
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" })
+    .primaryKey(),
+  autoInsertSuggestions: boolean("auto_insert_suggestions").notNull().default(true),
+  suggestionCalendarId: text("suggestion_calendar_id").notNull().default("primary"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 export const groups = pgTable("groups", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
@@ -78,6 +93,7 @@ export const groups = pgTable("groups", {
   syncProvider: text("sync_provider"),
   syncReference: text("sync_reference"),
   syncEnabled: boolean("sync_enabled").notNull().default(false),
+  isHidden: boolean("is_hidden").notNull().default(false),
   createdBy: uuid("created_by")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),

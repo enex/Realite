@@ -17,6 +17,7 @@ Nach dem Login siehst du die Gruppen als kompakte Karten in der Übersicht.
 
 - Klick auf eine Gruppe öffnet die Detailseite
 - Dort kannst du Mitglieder verwalten, Invite-Link erstellen und Hashtags bearbeiten
+- Kalender- und Kontakte-Sync laufen im Hintergrund; die Ansicht aktualisiert sich automatisch
 
 ## 4. Event erstellen
 
@@ -32,3 +33,10 @@ Tipps:
 Nutze **"Matching starten"** und entscheide Vorschläge mit **Zusagen** oder **Absagen**.
 
 Dein Feedback verbessert zukünftige Vorschläge.
+
+## 6. Nutzereinstellungen setzen
+
+Auf der Seite **`/settings`** (Button **"Einstellungen"** in der Übersicht) kannst du:
+
+- automatische Kalendereinträge für passende Vorschläge aktivieren/deaktivieren
+- den Zielkalender für diese Einträge auswählen

@@ -43,6 +43,20 @@
       "when": 1771630784999,
       "tag": "0005_fuzzy_the_renegades",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1771632181857,
+      "tag": "0006_white_aqueduct",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1771654471979,
+      "tag": "0007_youthful_blink",
+      "breakpoints": true
     }
   ]
 }

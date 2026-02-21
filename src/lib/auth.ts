@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import {
   ensureAlleGroupForUser,
   ensureKontakteGroupForUser,
+  ensureUserSuggestionSettings,
   upsertGoogleConnection,
   upsertUser
 } from "@/src/lib/repository";
@@ -41,6 +42,7 @@ export const authOptions: NextAuthOptions = {
 
       await ensureAlleGroupForUser(appUser.id);
       await ensureKontakteGroupForUser(appUser.id);
+      await ensureUserSuggestionSettings(appUser.id);
 
       if (account?.provider === "google" && account.access_token) {
         await upsertGoogleConnection({

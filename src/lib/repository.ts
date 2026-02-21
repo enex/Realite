@@ -11,12 +11,18 @@ import {
   inviteLinks,
   suggestions,
   tagPreferences,
+  userSettings,
   users
 } from "@/src/db/schema";
 
 export type GroupVisibility = "public" | "private";
 export type EventVisibility = "public" | "group";
 export type SuggestionStatus = "pending" | "calendar_inserted" | "accepted" | "declined";
+
+export type UserSuggestionSettings = {
+  autoInsertSuggestions: boolean;
+  suggestionCalendarId: string;
+};
 
 export type VisibleEvent = {
   id: string;
@@ -224,6 +230,75 @@ export async function getGoogleConnection(userId: string) {
     .limit(1);
 
   return connection ?? null;
+}
+
+export async function ensureUserSuggestionSettings(userId: string) {
+  const db = getDb();
+
+  await db
+    .insert(userSettings)
+    .values({
+      userId,
+      autoInsertSuggestions: true,
+      suggestionCalendarId: "primary",
+      updatedAt: new Date()
+    })
+    .onConflictDoNothing({ target: [userSettings.userId] });
+}
+
+export async function getUserSuggestionSettings(userId: string): Promise<UserSuggestionSettings> {
+  const db = getDb();
+  await ensureUserSuggestionSettings(userId);
+
+  const [settings] = await db
+    .select({
+      autoInsertSuggestions: userSettings.autoInsertSuggestions,
+      suggestionCalendarId: userSettings.suggestionCalendarId
+    })
+    .from(userSettings)
+    .where(eq(userSettings.userId, userId))
+    .limit(1);
+
+  return (
+    settings ?? {
+      autoInsertSuggestions: true,
+      suggestionCalendarId: "primary"
+    }
+  );
+}
+
+export async function updateUserSuggestionSettings(input: {
+  userId: string;
+  autoInsertSuggestions: boolean;
+  suggestionCalendarId: string;
+}): Promise<UserSuggestionSettings> {
+  const db = getDb();
+
+  const [settings] = await db
+    .insert(userSettings)
+    .values({
+      userId: input.userId,
+      autoInsertSuggestions: input.autoInsertSuggestions,
+      suggestionCalendarId: input.suggestionCalendarId,
+      updatedAt: new Date()
+    })
+    .onConflictDoUpdate({
+      target: [userSettings.userId],
+      set: {
+        autoInsertSuggestions: input.autoInsertSuggestions,
+        suggestionCalendarId: input.suggestionCalendarId,
+        updatedAt: new Date()
+      }
+    })
+    .returning({
+      autoInsertSuggestions: userSettings.autoInsertSuggestions,
+      suggestionCalendarId: userSettings.suggestionCalendarId
+    });
+
+  return {
+    autoInsertSuggestions: settings?.autoInsertSuggestions ?? input.autoInsertSuggestions,
+    suggestionCalendarId: settings?.suggestionCalendarId ?? input.suggestionCalendarId
+  };
 }
 
 export async function createGroup(input: {
@@ -475,6 +550,7 @@ export async function listGroupsForUser(userId: string) {
       syncProvider: groups.syncProvider,
       syncReference: groups.syncReference,
       syncEnabled: groups.syncEnabled,
+      isHidden: groups.isHidden,
       role: groupMemberships.role,
       createdAt: groups.createdAt
     })
@@ -487,6 +563,97 @@ export async function listGroupsForUser(userId: string) {
     ...row,
     hashtags: parseGroupHashtags(row.hashtag)
   }));
+}
+
+export async function setGroupHiddenState(input: {
+  groupId: string;
+  userId: string;
+  isHidden: boolean;
+}) {
+  const db = getDb();
+  const [membership] = await db
+    .select({
+      role: groupMemberships.role,
+      syncProvider: groups.syncProvider
+    })
+    .from(groupMemberships)
+    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+    .where(and(eq(groupMemberships.groupId, input.groupId), eq(groupMemberships.userId, input.userId)))
+    .limit(1);
+
+  if (!membership) {
+    throw new Error("Keine Berechtigung für diese Gruppe");
+  }
+
+  if (membership.role !== "owner") {
+    throw new Error("Nur Owner dürfen diese Gruppe ausblenden oder einblenden");
+  }
+
+  if (!membership.syncProvider) {
+    throw new Error("Nur synchronisierte Gruppen können ausgeblendet werden");
+  }
+
+  const [group] = await db
+    .update(groups)
+    .set({
+      isHidden: input.isHidden
+    })
+    .where(eq(groups.id, input.groupId))
+    .returning();
+
+  if (!group) {
+    throw new Error("Gruppe nicht gefunden");
+  }
+
+  return {
+    ...group,
+    hashtags: parseGroupHashtags(group.hashtag)
+  };
+}
+
+export async function deleteOrHideGroup(input: { groupId: string; userId: string }) {
+  const db = getDb();
+  const [membership] = await db
+    .select({
+      role: groupMemberships.role,
+      groupName: groups.name,
+      syncProvider: groups.syncProvider
+    })
+    .from(groupMemberships)
+    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+    .where(and(eq(groupMemberships.groupId, input.groupId), eq(groupMemberships.userId, input.userId)))
+    .limit(1);
+
+  if (!membership) {
+    throw new Error("Keine Berechtigung für diese Gruppe");
+  }
+
+  if (membership.role !== "owner") {
+    throw new Error("Nur Owner dürfen Gruppen löschen oder ausblenden");
+  }
+
+  if (isAlleGroupName(membership.groupName)) {
+    throw new Error("Die Systemgruppe #alle kann nicht gelöscht werden");
+  }
+
+  if (membership.syncProvider) {
+    await db
+      .update(groups)
+      .set({
+        isHidden: true
+      })
+      .where(eq(groups.id, input.groupId));
+
+    return {
+      action: "hidden" as const
+    };
+  }
+
+  await db.delete(groups).where(eq(groups.id, input.groupId));
+
+  return {
+    action: "deleted" as const
+  };
 }
 
 export async function updateGroupHashtags(input: {
@@ -1141,10 +1308,13 @@ export async function listSuggestionsForUser(userId: string) {
       description: events.description,
       location: events.location,
       startsAt: events.startsAt,
-      endsAt: events.endsAt
+      endsAt: events.endsAt,
+      createdByName: users.name,
+      createdByEmail: users.email
     })
     .from(suggestions)
     .innerJoin(events, eq(suggestions.eventId, events.id))
+    .innerJoin(users, eq(events.createdBy, users.id))
     .where(eq(suggestions.userId, userId))
     .orderBy(desc(suggestions.createdAt));
 

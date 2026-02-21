@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { syncPublicEventsFromGoogleCalendar } from "@/src/lib/google-calendar";
-import { syncGoogleContactsToGroups } from "@/src/lib/google-contacts";
-import { buildAvailabilityMap } from "@/src/lib/matcher";
+import { getDashboardSyncSnapshot, triggerDashboardBackgroundSync } from "@/src/lib/background-sync";
 import {
   getGoogleConnection,
   listGroupContactsForUser,
@@ -18,22 +16,8 @@ export async function GET() {
     return NextResponse.json({ error: "Nicht eingeloggt" }, { status: 401 });
   }
 
-  let syncWarning: string | null = null;
-  let syncStats: { synced: number; scanned: number } | null = null;
-  let contactsSyncWarning: string | null = null;
-  let contactsSyncStats: { syncedGroups: number; syncedMembers: number; scannedContacts: number } | null = null;
-
-  try {
-    syncStats = await syncPublicEventsFromGoogleCalendar(user.id);
-  } catch (error) {
-    syncWarning = error instanceof Error ? error.message : "Kalender-Sync fehlgeschlagen";
-  }
-
-  try {
-    contactsSyncStats = await syncGoogleContactsToGroups(user.id);
-  } catch (error) {
-    contactsSyncWarning = error instanceof Error ? error.message : "Kontakte-Sync fehlgeschlagen";
-  }
+  triggerDashboardBackgroundSync(user.id);
+  const syncState = getDashboardSyncSnapshot(user.id);
 
   const [groups, events, suggestions, connection, groupContacts] = await Promise.all([
     listGroupsForUser(user.id),
@@ -43,7 +27,6 @@ export async function GET() {
     listGroupContactsForUser(user.id)
   ]);
 
-  const availability = await buildAvailabilityMap(user.id, events);
   const groupEventCounts = new Map<string, number>();
   const contactsByGroup = new Map<string, Awaited<ReturnType<typeof listGroupContactsForUser>>>();
 
@@ -72,10 +55,13 @@ export async function GET() {
       calendarScope: connection?.scope ?? null
     },
     sync: {
-      warning: syncWarning,
-      stats: syncStats,
-      contactsWarning: contactsSyncWarning,
-      contactsStats: contactsSyncStats
+      warning: syncState.warning,
+      stats: syncState.stats,
+      contactsWarning: syncState.contactsWarning,
+      contactsStats: syncState.contactsStats,
+      revalidating: syncState.revalidating,
+      lastTriggeredAt: syncState.lastTriggeredAt,
+      lastCompletedAt: syncState.lastCompletedAt
     },
     groups: groups.map((group) => ({
       ...group,
@@ -88,7 +74,7 @@ export async function GET() {
       ...event,
       startsAt: event.startsAt.toISOString(),
       endsAt: event.endsAt.toISOString(),
-      isAvailable: availability.get(event.id) ?? true
+      isAvailable: true
     })),
     suggestions: suggestions.map((suggestion) => ({
       ...suggestion,

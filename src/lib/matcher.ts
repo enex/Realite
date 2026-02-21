@@ -1,5 +1,6 @@
 import { getBusyWindows, insertSuggestionIntoCalendar } from "@/src/lib/google-calendar";
 import {
+  getUserSuggestionSettings,
   listSuggestionStatesForUser,
   listVisibleEventsForUser,
   markSuggestionInserted,
@@ -7,6 +8,8 @@ import {
   upsertSuggestion,
   getTagPreferenceMap
 } from "@/src/lib/repository";
+
+const AUTO_INSERT_MIN_SCORE = 1.5;
 
 function overlaps(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) {
   return aStart < bEnd && bStart < aEnd;
@@ -62,10 +65,11 @@ export async function generateSuggestions(userId: string) {
     return [];
   }
 
-  const [preferences, availabilityMap, existingSuggestions] = await Promise.all([
+  const [preferences, availabilityMap, existingSuggestions, settings] = await Promise.all([
     getTagPreferenceMap(userId),
     buildAvailabilityMap(userId, candidateEvents),
-    listSuggestionStatesForUser(userId)
+    listSuggestionStatesForUser(userId),
+    getUserSuggestionSettings(userId)
   ]);
 
   const existingByEvent = new Map(existingSuggestions.map((entry) => [entry.eventId, entry]));
@@ -92,7 +96,7 @@ export async function generateSuggestions(userId: string) {
 
     const existing = existingByEvent.get(event.id);
 
-    if (score >= 2.4 && !existing?.calendarEventId) {
+    if (settings.autoInsertSuggestions && score >= AUTO_INSERT_MIN_SCORE && !existing?.calendarEventId) {
       try {
         const calendarEventId = await insertSuggestionIntoCalendar({
           userId,
@@ -101,13 +105,18 @@ export async function generateSuggestions(userId: string) {
           description: event.description,
           location: event.location,
           startsAt: event.startsAt,
-          endsAt: event.endsAt
+          endsAt: event.endsAt,
+          calendarId: settings.suggestionCalendarId
         });
 
         if (calendarEventId) {
           await markSuggestionInserted(suggestion.id, calendarEventId);
         }
-      } catch {
+      } catch (error) {
+        console.error(
+          `Kalendereintrag für Suggestion ${suggestion.id} fehlgeschlagen`,
+          error instanceof Error ? error.message : error
+        );
         // Ein reiner Kalender-Fehler soll den Suggestion-Flow nicht blockieren.
       }
     }

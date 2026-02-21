@@ -10,6 +10,12 @@ type BusyWindow = {
   end: string;
 };
 
+export type WritableGoogleCalendar = {
+  id: string;
+  summary: string;
+  primary: boolean;
+};
+
 const FREE_BUSY_CHUNK_MS = 60 * 24 * 60 * 60 * 1000;
 const MAX_FREE_BUSY_SPLIT_DEPTH = 8;
 
@@ -272,42 +278,59 @@ export async function insertSuggestionIntoCalendar(input: {
   location?: string | null;
   startsAt: Date;
   endsAt: Date;
+  calendarId?: string;
 }) {
   const token = await getGoogleAccessToken(input.userId);
   if (!token) {
     return null;
   }
 
-  const response = await fetch(
-    "https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=none",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        summary: `[Realite] ${input.title}`,
-        description:
-          `${input.description ?? ""}\n\nVorschlag von Realite. Bitte in der App Zu- oder Absagen.`.trim(),
-        location: input.location ?? undefined,
-        start: {
-          dateTime: input.startsAt.toISOString()
-        },
-        end: {
-          dateTime: input.endsAt.toISOString()
-        },
-        extendedProperties: {
-          private: {
-            realiteSuggestionId: input.suggestionId
-          }
-        }
-      })
+  const calendarId = input.calendarId?.trim() || "primary";
+  const baseUrl = process.env.NEXTAUTH_URL || process.env.REALITE_APP_URL || "https://realite.app";
+  const realiteUrl = `${baseUrl.replace(/\/+$/, "")}/?suggestion=${encodeURIComponent(input.suggestionId)}`;
+  const acceptUrl = `${realiteUrl}&decision=accepted`;
+  const declineUrl = `${realiteUrl}&decision=declined`;
+  const eventPayload = {
+    summary: `[Realite] ${input.title}`,
+    description:
+      `${input.description ?? ""}\n\nVorschlag von Realite.\nIn Realite öffnen: ${realiteUrl}\nZusage: ${acceptUrl}\nAbsage: ${declineUrl}`.trim(),
+    location: input.location ?? undefined,
+    start: {
+      dateTime: input.startsAt.toISOString()
+    },
+    end: {
+      dateTime: input.endsAt.toISOString()
+    },
+    extendedProperties: {
+      private: {
+        realiteSuggestionId: input.suggestionId
+      }
     }
-  );
+  };
+
+  async function createInCalendar(targetCalendarId: string) {
+    return fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(targetCalendarId)}/events?sendUpdates=none`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(eventPayload)
+      }
+    );
+  }
+
+  let response = await createInCalendar(calendarId);
+
+  if (!response.ok && calendarId !== "primary" && (response.status === 403 || response.status === 404)) {
+    response = await createInCalendar("primary");
+  }
 
   if (!response.ok) {
-    throw new Error(`Kalendereintrag fehlgeschlagen (${response.status})`);
+    const details = await readGoogleError(response);
+    throw new Error(`Kalendereintrag fehlgeschlagen (${response.status})${details ? `: ${details}` : ""}`);
   }
 
   const payload = (await response.json()) as { id?: string };
@@ -461,4 +484,67 @@ async function listReadableCalendarIds(token: string) {
 
   const ids = (payload.items ?? []).map((item) => item.id).filter((id): id is string => Boolean(id));
   return ids.length ? ids : ["primary"];
+}
+
+export async function listWritableCalendars(userId: string) {
+  const token = await getGoogleAccessToken(userId);
+  if (!token) {
+    return [] as WritableGoogleCalendar[];
+  }
+
+  const response = await fetch(
+    "https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=writer&showHidden=false&maxResults=250",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+
+  if (!response.ok) {
+    return [
+      {
+        id: "primary",
+        summary: "Primary",
+        primary: true
+      }
+    ] as WritableGoogleCalendar[];
+  }
+
+  const payload = (await response.json()) as {
+    items?: Array<{ id?: string; summary?: string; primary?: boolean }>;
+  };
+
+  const calendars: WritableGoogleCalendar[] = [];
+  for (const item of payload.items ?? []) {
+    if (!item.id) {
+      continue;
+    }
+
+    calendars.push({
+      id: item.id,
+      summary: item.summary?.trim() || (item.primary ? "Primary" : item.id),
+      primary: Boolean(item.primary)
+    });
+  }
+
+  if (!calendars.length) {
+    return [
+      {
+        id: "primary",
+        summary: "Primary",
+        primary: true
+      }
+    ] as WritableGoogleCalendar[];
+  }
+
+  return calendars.sort((a, b) => {
+    if (a.primary && !b.primary) {
+      return -1;
+    }
+    if (!a.primary && b.primary) {
+      return 1;
+    }
+    return a.summary.localeCompare(b.summary);
+  });
 }

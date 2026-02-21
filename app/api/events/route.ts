@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { syncPublicEventsFromGoogleCalendar } from "@/src/lib/google-calendar";
-import { buildAvailabilityMap } from "@/src/lib/matcher";
+import { triggerDashboardBackgroundSync } from "@/src/lib/background-sync";
 import { createEvent, listVisibleEventsForUser } from "@/src/lib/repository";
 import { requireAppUser } from "@/src/lib/session";
 
@@ -32,17 +31,12 @@ export async function GET() {
     return NextResponse.json({ error: "Nicht eingeloggt" }, { status: 401 });
   }
 
-  try {
-    await syncPublicEventsFromGoogleCalendar(user.id);
-  } catch {
-    // Der Feed bleibt nutzbar, auch wenn der Sync temporär fehlschlägt.
-  }
+  triggerDashboardBackgroundSync(user.id);
 
   const events = await listVisibleEventsForUser(user.id);
-  const availability = await buildAvailabilityMap(user.id, events);
 
   return NextResponse.json({
-    events: events.map((event) => serializeEvent(event, availability.get(event.id) ?? true))
+    events: events.map((event) => serializeEvent(event, true))
   });
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -20,6 +21,7 @@ type Group = {
   syncProvider: string | null;
   syncReference: string | null;
   syncEnabled: boolean;
+  isHidden: boolean;
   role: "owner" | "member";
   eventCount: number;
   contactCount: number;
@@ -60,6 +62,7 @@ const emptyPayload: DashboardPayload = {
 };
 
 export function GroupDetail({ groupId, userName }: { groupId: string; userName: string }) {
+  const router = useRouter();
   const [data, setData] = useState<DashboardPayload>(emptyPayload);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -256,6 +259,68 @@ export function GroupDetail({ groupId, userName }: { groupId: string; userName: 
     }
   }
 
+  async function toggleGroupHidden() {
+    if (!group || !group.syncProvider) {
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/groups/${groupId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isHidden: !group.isHidden })
+      });
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Gruppe konnte nicht umgeschaltet werden");
+      }
+
+      await loadData();
+    } catch (toggleError) {
+      setError(toggleError instanceof Error ? toggleError.message : "Unbekannter Fehler");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deleteCurrentGroup() {
+    if (!group || group.syncProvider) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Gruppe wirklich löschen? Alle Gruppenzugehörigkeiten, Kontakte und Invite-Links dieser Gruppe werden entfernt."
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/groups/${groupId}`, {
+        method: "DELETE"
+      });
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Gruppe konnte nicht gelöscht werden");
+      }
+
+      router.push("/");
+      router.refresh();
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "Unbekannter Fehler");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -308,6 +373,11 @@ export function GroupDetail({ groupId, userName }: { groupId: string; userName: 
                   {group.syncProvider === "google_contacts" && group.syncEnabled ? (
                     <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-semibold text-teal-700">
                       Google Kontakte Sync
+                    </span>
+                  ) : null}
+                  {group.isHidden ? (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                      Versteckt
                     </span>
                   ) : null}
                 </div>
@@ -379,6 +449,28 @@ export function GroupDetail({ groupId, userName }: { groupId: string; userName: 
                 </button>
                 {inviteLink ? <p className="mt-2 break-all text-xs text-teal-700">{inviteLink}</p> : null}
               </div>
+
+              {group.role === "owner" ? (
+                <div className="mt-4">
+                  {group.syncProvider ? (
+                    <button
+                      onClick={toggleGroupHidden}
+                      disabled={busy}
+                      className="rounded-lg border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-700 disabled:opacity-50"
+                    >
+                      {group.isHidden ? "Gruppe einblenden" : "Gruppe verstecken"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={deleteCurrentGroup}
+                      disabled={busy}
+                      className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-50"
+                    >
+                      Gruppe löschen
+                    </button>
+                  )}
+                </div>
+              ) : null}
 
               <form onSubmit={saveHashtags} className="mt-4 space-y-2">
                 <label className="text-sm font-medium text-slate-700">Hashtags bearbeiten</label>

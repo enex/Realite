@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/src/lib/auth";
-import { ensureAlleGroupForUser, ensureKontakteGroupForUser, getUserByEmail } from "@/src/lib/repository";
+import { ensureAlleGroupForUser, ensureKontakteGroupForUser, ensureUserSuggestionSettings, getUserByEmail } from "@/src/lib/repository";
 
 export async function requireAppUser() {
   const session = await getServerSession(authOptions);
@@ -15,6 +15,7 @@ export async function requireAppUser() {
   if (user) {
     await ensureAlleGroupForUser(user.id);
     await ensureKontakteGroupForUser(user.id);
+    await ensureUserSuggestionSettings(user.id);
   }
   return user;
 }
