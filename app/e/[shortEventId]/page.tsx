@@ -80,7 +80,6 @@ export default async function EventShortcutPage({
         endsAtIso={event.endsAt.toISOString()}
         description={event.description}
         location={event.location}
-        tags={event.tags}
         groupName={event.groupName}
         createdByName={event.createdByName}
         createdByEmail={event.createdByEmail}

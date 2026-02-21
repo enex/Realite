@@ -15,16 +15,16 @@ type AppShellProps = {
 };
 
 const DESKTOP_ITEMS = [
-  { href: "/", label: "Übersicht" },
-  { href: "/#gruppen", label: "Gruppen" },
-  { href: "/#vorschlaege", label: "Vorschläge" },
+  { href: "/events", label: "Events" },
+  { href: "/groups", label: "Gruppen" },
+  { href: "/suggestions", label: "Vorschläge" },
   { href: "/docs", label: "Docs" }
 ];
 
 const MOBILE_ITEMS = [
-  { href: "/", label: "Start" },
-  { href: "/#gruppen", label: "Gruppen" },
-  { href: "/#vorschlaege", label: "Vorschläge" },
+  { href: "/events", label: "Events" },
+  { href: "/groups", label: "Gruppen" },
+  { href: "/suggestions", label: "Vorschläge" },
   { href: "/settings", label: "Profil" }
 ];
 
@@ -47,7 +47,7 @@ export function AppShell({ user, children }: AppShellProps) {
     <div className="min-h-screen">
       <header className="sticky top-0 z-40 border-b border-slate-200/90 bg-white/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-lg font-bold tracking-tight text-slate-900">
+          <a href="/events" className="inline-flex items-center gap-2 text-lg font-bold tracking-tight text-slate-900">
             <img
               src="/icon.svg"
               alt=""
@@ -55,7 +55,7 @@ export function AppShell({ user, children }: AppShellProps) {
               aria-hidden="true"
             />
             <span>Realite</span>
-          </Link>
+          </a>
 
           <nav className="hidden items-center gap-1 md:flex" aria-label="Hauptnavigation">
             {DESKTOP_ITEMS.map((item) => {

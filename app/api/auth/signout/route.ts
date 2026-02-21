@@ -1,6 +1,6 @@
 import { splitSetCookieHeader } from "better-auth/cookies";
 
-import { auth } from "@/src/lib/auth";
+import { getAuth } from "@/src/lib/auth";
 
 function createRedirectResponse(location: string, setCookieHeader: string | null) {
   const headers = new Headers({ Location: location });
@@ -18,6 +18,7 @@ function createRedirectResponse(location: string, setCookieHeader: string | null
 }
 
 export async function GET(request: Request) {
+  const auth = getAuth();
   const requestUrl = new URL(request.url);
   const callbackURL =
     requestUrl.searchParams.get("callbackURL") ?? requestUrl.searchParams.get("callbackUrl") ?? "/";

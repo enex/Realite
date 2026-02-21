@@ -4,7 +4,6 @@ type SharedEventContentProps = {
   endsAtIso: string;
   description?: string | null;
   location?: string | null;
-  tags?: string[];
   groupName?: string | null;
   createdByName?: string | null;
   createdByEmail?: string | null;
@@ -41,16 +40,6 @@ export function SharedEventContent(props: SharedEventContentProps) {
           Von {props.createdByName ?? props.createdByEmail}
           {props.createdByName ? ` (${props.createdByEmail})` : ""}
         </p>
-      ) : null}
-
-      {props.tags?.length ? (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {props.tags.map((tag) => (
-            <span key={tag} className="rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700">
-              {tag}
-            </span>
-          ))}
-        </div>
       ) : null}
 
       {props.description ? <p className="mt-4 whitespace-pre-wrap text-sm text-slate-700">{props.description}</p> : null}

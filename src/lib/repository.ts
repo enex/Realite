@@ -149,6 +149,17 @@ function serializeCalendarIdList(ids: string[]) {
   return normalizeCalendarIdList(ids).join(",");
 }
 
+function normalizeSuggestionReason(reason: string) {
+  const fallback = "Match basierend auf deinen bisherigen Entscheidungen und freier Zeit im Kalender";
+  const trimmed = reason.trim();
+
+  if (!trimmed) {
+    return fallback;
+  }
+
+  return /(^|\s)#[\p{L}\p{N}_-]+/u.test(trimmed) ? fallback : trimmed;
+}
+
 export async function upsertUser(input: { email: string; name?: string | null; image?: string | null }) {
   const db = getDb();
   const normalizedEmail = normalizeEmail(input.email);
@@ -1365,6 +1376,7 @@ export async function getSuggestionForEventForUser(input: { userId: string; even
 
   return {
     ...row,
+    reason: normalizeSuggestionReason(row.reason),
     decisionReasons: parseDecisionReasons(row.decisionReasons)
   };
 }
@@ -1471,6 +1483,7 @@ export async function upsertSuggestion(input: {
   status?: SuggestionStatus;
 }) {
   const db = getDb();
+  const reason = normalizeSuggestionReason(input.reason);
 
   const [row] = await db
     .insert(suggestions)
@@ -1478,7 +1491,7 @@ export async function upsertSuggestion(input: {
       userId: input.userId,
       eventId: input.eventId,
       score: input.score,
-      reason: input.reason,
+      reason,
       status: input.status ?? "pending",
       updatedAt: new Date()
     })
@@ -1486,7 +1499,7 @@ export async function upsertSuggestion(input: {
       target: [suggestions.userId, suggestions.eventId],
       set: {
         score: input.score,
-        reason: input.reason,
+        reason,
         status: input.status ?? "pending",
         updatedAt: new Date()
       }
@@ -1577,6 +1590,7 @@ export async function getSuggestionForUser(suggestionId: string, userId: string)
 
   return {
     ...rows[0],
+    reason: normalizeSuggestionReason(rows[0].reason),
     decisionReasons: parseDecisionReasons(rows[0].decisionReasons),
     tags: tagRows.map((row) => row.tag)
   };
@@ -1627,6 +1641,7 @@ export async function listSuggestionsForUser(userId: string) {
 
   return rows.map((row) => ({
     ...row,
+    reason: normalizeSuggestionReason(row.reason),
     decisionReasons: parseDecisionReasons(row.decisionReasons),
     tags: tagsMap.get(row.eventId) ?? []
   }));

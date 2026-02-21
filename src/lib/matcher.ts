@@ -169,7 +169,7 @@ export async function generateSuggestions(userId: string) {
       userId,
       eventId: candidate.event.id,
       score: candidate.score,
-      reason: `Match auf ${candidate.event.tags.join(", ")} und freie Zeit im Kalender`,
+      reason: "Match basierend auf deinen bisherigen Entscheidungen und freier Zeit im Kalender",
       status: existingByEvent.get(candidate.event.id)?.status ?? "pending"
     });
 

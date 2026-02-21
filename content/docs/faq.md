@@ -27,6 +27,14 @@ Mögliche Gründe:
 - du bist zur Zeit des Termins nicht verfügbar
 - der Termin liegt außerhalb der aktuell genutzten Kalenderauswahl
 
+Wichtig:
+
+- Realite bewertet deine Verfügbarkeit über die Kalender-Eigenschaft pro Termin.
+- Termine mit **Beschäftigt** blockieren Zeitfenster.
+- Termine mit **Frei/Verfügbar** blockieren Zeitfenster nicht.
+
+Wenn Vorschläge fehlen, prüfe deshalb direkt im Kalender, ob die Verfügbarkeit für betroffene Termine korrekt gesetzt ist.
+
 ## Warum fragt Realite bei Absage nach Gründen?
 
 Du kannst mehrere Gründe angeben (z. B. keine Zeit und zu weit entfernt).
@@ -58,6 +66,7 @@ Du kannst sie aber ausblenden und später wieder einblenden.
 
 In der Gruppenansicht:
 
+- neue Gruppen erstellen
 - Mitglieder hinzufügen
 - Einladungslink teilen
 - Hashtags bearbeiten

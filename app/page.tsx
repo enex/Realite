@@ -1,4 +1,5 @@
-import { Dashboard } from "@/src/components/dashboard";
+import { redirect } from "next/navigation";
+
 import { getAuthSession } from "@/src/lib/auth";
 import { listPublicAlleEvents } from "@/src/lib/repository";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
@@ -82,7 +83,7 @@ export default async function HomePage({
               </div>
               <div className="mt-7 flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-200 sm:mt-8 sm:text-xs">
                 <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1">Kalenderbasiertes Matching</span>
-                <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1">Hashtags für Sichtbarkeit</span>
+                <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1">Privatsphäre bei Interessen</span>
                 <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1">Fokus auf echtes Treffen</span>
               </div>
             </div>
@@ -93,7 +94,7 @@ export default async function HomePage({
             >
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">Live-Einblick</p>
               <h2 className="mt-3 text-xl font-bold text-white sm:text-2xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
-                Öffentliche `#alle`-Events
+                Öffentliche Events
               </h2>
               <p className="mt-2 text-sm leading-6 text-slate-200">
                 {publicAlleEvents.length > 0
@@ -114,7 +115,7 @@ export default async function HomePage({
                 ))}
                 {publicAlleEvents.length === 0 ? (
                   <article className="rounded-2xl border border-dashed border-white/20 bg-slate-900/50 p-4 text-sm text-slate-300">
-                    Noch keine öffentlichen `#alle`-Events vorhanden.
+                    Noch keine öffentlichen Events vorhanden.
                   </article>
                 ) : null}
               </div>
@@ -131,7 +132,7 @@ export default async function HomePage({
               },
               {
                 title: "2. Teilen",
-                text: "Erstelle oder entdecke Events mit klaren Hashtags wie #alle oder #kontakte."
+                text: "Erstelle oder entdecke Events und halte Interessen privat."
               },
               {
                 title: "3. Treffen",
@@ -181,11 +182,8 @@ export default async function HomePage({
     );
   }
 
-  return (
-    <Dashboard
-      userName={session.user.name ?? session.user.email}
-      userEmail={session.user.email}
-      userImage={session.user.image ?? null}
-    />
-  );
+  const hasSuggestionFlow = query.has("suggestion") || query.has("decision");
+  const baseTarget = hasSuggestionFlow ? "/suggestions" : "/events";
+  const redirectTarget = query.toString() ? `${baseTarget}?${query.toString()}` : baseTarget;
+  redirect(redirectTarget as never);
 }

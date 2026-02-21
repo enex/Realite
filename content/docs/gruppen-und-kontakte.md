@@ -15,6 +15,7 @@ Jede Gruppe hat:
 
 In der Gruppenansicht kannst du:
 
+- neue Gruppen anlegen
 - Personen per E-Mail hinzufügen
 - Einladungslink teilen
 - Hashtags ändern

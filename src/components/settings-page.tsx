@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/src/components/app-shell";
 import { UserAvatar } from "@/src/components/user-avatar";
@@ -166,9 +165,9 @@ export function SettingsPage({
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Link href="/" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
-                Zur Übersicht
-              </Link>
+              <a href="/events" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
+                Zu Events
+              </a>
               <a
                 href="/api/auth/signout?callbackUrl=/"
                 className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"

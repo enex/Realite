@@ -1,7 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/components/app-shell";
 import { UserAvatar } from "@/src/components/user-avatar";
@@ -76,7 +74,6 @@ export function GroupDetail({
   userEmail: string;
   userImage: string | null;
 }) {
-  const router = useRouter();
   const [data, setData] = useState<DashboardPayload>(emptyPayload);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -326,8 +323,7 @@ export function GroupDetail({
         throw new Error(payload.error ?? "Gruppe konnte nicht gelöscht werden");
       }
 
-      router.push("/");
-      router.refresh();
+      window.location.href = "/groups";
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : "Unbekannter Fehler");
     } finally {
@@ -355,15 +351,15 @@ export function GroupDetail({
               </div>
             </div>
             <div className="flex w-full flex-wrap gap-2 sm:w-auto">
-              <Link href="/" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
-                Zur Übersicht
-              </Link>
-              <Link
+              <a href="/groups" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
+                Zur Gruppenliste
+              </a>
+              <a
                 href="/settings"
                 className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
               >
                 Profil
-              </Link>
+              </a>
             </div>
           </div>
         </header>

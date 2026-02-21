@@ -17,19 +17,6 @@ export const size = {
 };
 export const contentType = "image/png";
 
-function getTagList(tags: string[]) {
-  const visible = tags
-    .map((tag) => tag.trim())
-    .filter(Boolean)
-    .slice(0, 3);
-
-  if (!visible.length) {
-    return "Realite Event";
-  }
-
-  return visible.join(" | ");
-}
-
 export default async function EventOgImage({
   params
 }: {
@@ -39,7 +26,6 @@ export default async function EventOgImage({
   const preview = await getPublicEventSharePreviewByShortId(shortEventId);
   const copy = getEventShareCopy(preview);
   const schedule = preview ? formatEventShareSchedule(preview) : EVENT_SHARE_FALLBACK_DESCRIPTION;
-  const tags = preview ? getTagList(preview.tags) : "Einloggen und Event öffnen";
 
   return new ImageResponse(
     (
@@ -102,7 +88,7 @@ export default async function EventOgImage({
             paddingTop: 20
           }}
         >
-          <span style={{ fontSize: 24, color: "#134e4a", fontWeight: 600 }}>{tags}</span>
+          <span style={{ fontSize: 24, color: "#134e4a", fontWeight: 600 }}>Event auf Realite</span>
           <span style={{ fontSize: 22, color: "#334155" }}>realite.app/e</span>
         </div>
       </div>
