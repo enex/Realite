@@ -62,3 +62,9 @@ In der Gruppenansicht:
 - Einladungslink teilen
 - Hashtags bearbeiten
 - Gruppe löschen oder ausblenden
+
+## Warum sehe ich bei manchen Kontakten kein Profilbild?
+
+Realite zeigt Profilbilder nur dann, wenn für diesen Kontakt ein bekanntes Nutzerprofil vorhanden ist.
+
+Wenn kein Bild verfügbar ist, zeigt Realite stattdessen Initialen an.

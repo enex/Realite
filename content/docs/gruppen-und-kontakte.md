@@ -28,6 +28,12 @@ Wenn du Kontakte aktiviert hast:
 - können Kontakt-Listen als Gruppen erscheinen
 - siehst du bei passenden Gruppen, dass sie synchronisiert sind
 
+## Profilbilder in Kontakten
+
+- In Gruppen und Kontaktlisten zeigt Realite Profilbilder an, wenn ein Kontakt bereits als Realite-Nutzer registriert ist.
+- Für Kontakte ohne verfügbares Bild zeigt Realite automatisch Initialen als Fallback.
+- Dein eigenes Profilbild siehst du im Profilbereich und in der App-Navigation.
+
 ## Löschen oder verstecken
 
 - Eigene, normale Gruppen kannst du löschen.

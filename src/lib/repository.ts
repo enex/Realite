@@ -54,10 +54,21 @@ export type VisibleEvent = {
   tags: string[];
 };
 
+export type PublicEventSharePreview = {
+  id: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+  startsAt: Date;
+  endsAt: Date;
+  tags: string[];
+};
+
 export type GroupContact = {
   groupId: string;
   email: string;
   name: string | null;
+  image: string | null;
   isRegistered: boolean;
   source: string;
 };
@@ -955,7 +966,8 @@ export async function listGroupContactsForUser(userId: string) {
       .select({
         groupId: groupMemberships.groupId,
         email: users.email,
-        name: users.name
+        name: users.name,
+        image: users.image
       })
       .from(groupMemberships)
       .innerJoin(users, eq(groupMemberships.userId, users.id))
@@ -971,6 +983,7 @@ export async function listGroupContactsForUser(userId: string) {
       groupId: contact.groupId,
       email,
       name: contact.name ?? null,
+      image: null,
       isRegistered: false,
       source: contact.source
     });
@@ -984,6 +997,7 @@ export async function listGroupContactsForUser(userId: string) {
       groupId: member.groupId,
       email,
       name: member.name ?? existing?.name ?? null,
+      image: member.image ?? existing?.image ?? null,
       isRegistered: true,
       source: existing?.source ?? "member"
     });
@@ -1246,6 +1260,36 @@ export async function listVisibleEventsForUser(userId: string) {
     ...row,
     tags: tagsMap.get(row.id) ?? []
   }));
+}
+
+export async function getPublicEventSharePreviewById(eventId: string): Promise<PublicEventSharePreview | null> {
+  const db = getDb();
+  const [event] = await db
+    .select({
+      id: events.id,
+      title: events.title,
+      description: events.description,
+      location: events.location,
+      startsAt: events.startsAt,
+      endsAt: events.endsAt
+    })
+    .from(events)
+    .where(and(eq(events.id, eventId), eq(events.visibility, "public" as EventVisibility)))
+    .limit(1);
+
+  if (!event) {
+    return null;
+  }
+
+  const tags = await db
+    .select({ tag: eventTags.tag })
+    .from(eventTags)
+    .where(eq(eventTags.eventId, eventId));
+
+  return {
+    ...event,
+    tags: tags.map((entry) => entry.tag)
+  };
 }
 
 export async function getVisibleEventForUserById(input: { userId: string; eventId: string }) {

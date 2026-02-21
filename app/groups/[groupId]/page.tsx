@@ -12,5 +12,12 @@ export default async function GroupPage({ params }: { params: Promise<{ groupId:
 
   const { groupId } = await params;
 
-  return <GroupDetail groupId={groupId} userName={session.user.name ?? session.user.email} />;
+  return (
+    <GroupDetail
+      groupId={groupId}
+      userName={session.user.name ?? session.user.email}
+      userEmail={session.user.email}
+      userImage={session.user.image ?? null}
+    />
+  );
 }

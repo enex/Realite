@@ -10,5 +10,11 @@ export default async function UserSettingsPage() {
     redirect("/");
   }
 
-  return <SettingsPage userName={session.user.name ?? session.user.email} />;
+  return (
+    <SettingsPage
+      userName={session.user.name ?? session.user.email}
+      userEmail={session.user.email}
+      userImage={session.user.image ?? null}
+    />
+  );
 }

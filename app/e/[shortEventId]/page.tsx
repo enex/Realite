@@ -1,10 +1,39 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
 import { SharedEventContent } from "@/src/components/shared-event-content";
 import { SuggestionDecisionPanel } from "@/src/components/suggestion-decision-panel";
+import { getEventShareCopy, getPublicEventSharePreviewByShortId } from "@/src/lib/event-share";
 import { getSuggestionForEventForUser, getVisibleEventForUserById } from "@/src/lib/repository";
 import { enlargeUUID, shortenUUID } from "@/src/lib/utils/short-uuid";
 import { requireAppUser } from "@/src/lib/session";
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ shortEventId: string }>;
+}): Promise<Metadata> {
+  const { shortEventId } = await params;
+  const preview = await getPublicEventSharePreviewByShortId(shortEventId);
+  const copy = getEventShareCopy(preview);
+  const imagePath = `/e/${encodeURIComponent(shortEventId)}/opengraph-image`;
+
+  return {
+    title: copy.title,
+    description: copy.description,
+    openGraph: {
+      title: copy.title,
+      description: copy.description,
+      images: [{ url: imagePath, width: 1200, height: 630, alt: "Event auf Realite" }]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: copy.title,
+      description: copy.description,
+      images: [imagePath]
+    }
+  };
+}
 
 export default async function EventShortcutPage({
   params

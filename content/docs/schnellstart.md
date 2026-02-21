@@ -2,11 +2,15 @@
 
 ## 1. Mit Google anmelden
 
-Öffne Realite und klicke auf **„Mit Google starten“**.
+Öffne Realite und klicke auf **„Jetzt kostenlos anmelden“** oder **„Kostenlos mit Google starten“**.
 
 ## 2. Zugriff erlauben
 
 Bestätige den Zugriff auf Kalender und Kontakte, damit Realite dir passende Events anzeigen kann.
+
+Hinweis:
+
+- Auf der Startseite siehst du direkt öffentliche `#alle`-Events als Beispiel, bevor du dich anmeldest.
 
 ## 3. Gruppen ansehen
 
@@ -14,6 +18,7 @@ Nach dem Login siehst du deine Gruppen in der Übersicht.
 
 - Tippe auf eine Gruppe, um Details zu öffnen.
 - Dort kannst du Mitglieder einladen und Hashtags anpassen.
+- Auf dem Handy nutzt du unten die Navigation mit **Start**, **Gruppen**, **Vorschläge** und **Profil**.
 
 ## 4. Erstes Event erstellen
 
@@ -31,10 +36,12 @@ Starte das Matching und prüfe deine Vorschläge.
 - **Zusagen**: passt für dich
 - **Absagen**: passt nicht
 
-## 6. Einstellungen festlegen
+## 6. Profil und Einstellungen festlegen
 
-Unter **Einstellungen** kannst du steuern:
+Über **Mein Profil** (oben rechts) oder den Punkt **Profil** in der mobilen Navigation kannst du:
 
+- dein eigenes Profil öffnen
+- deine Kontodaten sehen
 - ob Vorschläge automatisch in deinem Kalender erscheinen
 - ob Vorschläge als eigener Kalendereintrag oder als Einladung erscheinen
 - ob deine E-Mail bei Einladungen sichtbar ist

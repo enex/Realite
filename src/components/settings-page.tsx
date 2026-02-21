@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { AppShell } from "@/src/components/app-shell";
+import { UserAvatar } from "@/src/components/user-avatar";
 
 type WritableCalendar = {
   id: string;
@@ -42,7 +44,15 @@ const emptySettings: SettingsPayload = {
   calendarConnected: false
 };
 
-export function SettingsPage({ userName }: { userName: string }) {
+export function SettingsPage({
+  userName,
+  userEmail,
+  userImage
+}: {
+  userName: string;
+  userEmail: string;
+  userImage: string | null;
+}) {
   const [data, setData] = useState<SettingsPayload>(emptySettings);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -134,32 +144,40 @@ export function SettingsPage({ userName }: { userName: string }) {
   }
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-      <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-slate-500">Nutzereinstellungen</p>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{userName}</h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Steuere hier, wie Realite potenzielle Events zustellt: als Kalenderkopie oder als Source-Einladung.
-            </p>
+    <AppShell
+      user={{
+        name: userName,
+        email: userEmail,
+        image: userImage
+      }}
+    >
+      <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
+        <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <UserAvatar name={userName} email={userEmail} image={userImage} size="lg" />
+              <div>
+                <p className="text-sm text-slate-500">Profil & Einstellungen</p>
+                <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{userName}</h1>
+                <p className="text-xs text-slate-500">{userEmail}</p>
+                <p className="mt-2 text-sm text-slate-600">
+                  Steuere hier, wie Realite potenzielle Events zustellt: als Kalenderkopie oder als Source-Einladung.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
+                Zur Übersicht
+              </Link>
+              <a
+                href="/api/auth/signout?callbackUrl=/"
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+              >
+                Abmelden
+              </a>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
-              Zur Übersicht
-            </Link>
-            <a
-              href="/api/auth/signout?callbackUrl=/"
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
-            >
-              Abmelden
-            </a>
-            <a href="/docs" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
-              Docs
-            </a>
-          </div>
-        </div>
-      </header>
+        </header>
 
       {error ? (
         <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
@@ -299,5 +317,6 @@ export function SettingsPage({ userName }: { userName: string }) {
         </form>
       </section>
     </main>
+    </AppShell>
   );
 }

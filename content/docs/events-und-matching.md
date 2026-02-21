@@ -41,6 +41,10 @@ Jeder von Realite angelegte Kalendereintrag enthält jetzt kurze Realite-Links:
 - `realite.app/e/<shortUUID>` zur Eventseite
 - `realite.app/s/<shortUUID>` zur Antwortseite für die Suggestion
 
+Wenn du einen `/e/...`-Link in Messenger-Apps oder Social-Feeds teilst, zeigt Realite jetzt ein Open-Graph-Vorschaubild.
+
+Wichtig: Aus Datenschutzgründen werden darin nur Daten für öffentliche Events angezeigt. Für nicht-öffentliche Events erscheint eine neutrale Vorschau ohne Eventdetails.
+
 Wenn für dich zu einem Event bereits eine Suggestion existiert und du nicht der Event-Ersteller bist, zeigt die Eventseite (`/e/...`) direkt denselben Antwort-Flow wie die Suggestionseite.
 
 Event- und Vorschlagslisten in Realite verlinken direkt auf diese Seiten, damit du von jeder Übersicht sofort entscheiden kannst.

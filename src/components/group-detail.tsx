@@ -3,12 +3,15 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { AppShell } from "@/src/components/app-shell";
+import { UserAvatar } from "@/src/components/user-avatar";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
 type GroupContact = {
   groupId: string;
   email: string;
   name: string | null;
+  image: string | null;
   isRegistered: boolean;
   source: string;
 };
@@ -62,7 +65,17 @@ const emptyPayload: DashboardPayload = {
   events: []
 };
 
-export function GroupDetail({ groupId, userName }: { groupId: string; userName: string }) {
+export function GroupDetail({
+  groupId,
+  userName,
+  userEmail,
+  userImage
+}: {
+  groupId: string;
+  userName: string;
+  userEmail: string;
+  userImage: string | null;
+}) {
   const router = useRouter();
   const [data, setData] = useState<DashboardPayload>(emptyPayload);
   const [loading, setLoading] = useState(true);
@@ -323,25 +336,37 @@ export function GroupDetail({ groupId, userName }: { groupId: string; userName: 
   }
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm text-slate-500">Gruppe verwalten</p>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              {group?.name ?? "Gruppe"} <span className="text-base font-normal text-slate-500">· {userName}</span>
-            </h1>
+    <AppShell
+      user={{
+        name: userName,
+        email: userEmail,
+        image: userImage
+      }}
+    >
+      <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+        <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <UserAvatar name={userName} email={userEmail} image={userImage} size="lg" />
+              <div>
+                <p className="text-sm text-slate-500">Gruppe verwalten</p>
+                <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{group?.name ?? "Gruppe"}</h1>
+                <p className="text-xs text-slate-500">{userName}</p>
+              </div>
+            </div>
+            <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+              <Link href="/" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
+                Zur Übersicht
+              </Link>
+              <Link
+                href="/settings"
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+              >
+                Profil
+              </Link>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Link href="/" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
-              Zur Übersicht
-            </Link>
-            <a href="/docs" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
-              Docs
-            </a>
-          </div>
-        </div>
-      </header>
+        </header>
 
       {error ? (
         <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
@@ -369,8 +394,8 @@ export function GroupDetail({ groupId, userName }: { groupId: string; userName: 
           <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-lg font-semibold text-slate-900">{group.name}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="break-words text-lg font-semibold text-slate-900">{group.name}</p>
                   {group.syncProvider === "google_contacts" && group.syncEnabled ? (
                     <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-semibold text-teal-700">
                       Google Kontakte Sync
@@ -389,12 +414,15 @@ export function GroupDetail({ groupId, userName }: { groupId: string; userName: 
               </div>
               <div className="flex flex-wrap gap-2">
                 {group.hashtags.map((tag) => (
-                  <span key={tag} className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
-                    {tag}
-                  </span>
-                ))}
+                    <span
+                      key={tag}
+                      className="max-w-full break-all rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
           </section>
 
           <section className="mt-6 grid gap-6 lg:grid-cols-2">
@@ -402,7 +430,7 @@ export function GroupDetail({ groupId, userName }: { groupId: string; userName: 
               <h2 className="text-lg font-semibold text-slate-900">Mitglieder & Kontakte</h2>
               <p className="mt-1 text-sm text-slate-600">Alle bekannten Kontakte in dieser Gruppe.</p>
 
-              <form onSubmit={addMemberByEmail} className="mt-4 flex gap-2">
+              <form onSubmit={addMemberByEmail} className="mt-4 flex flex-col gap-2 sm:flex-row">
                 <input
                   type="email"
                   value={memberEmail}
@@ -414,7 +442,7 @@ export function GroupDetail({ groupId, userName }: { groupId: string; userName: 
                 <button
                   type="submit"
                   disabled={busy}
-                  className="rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                  className="rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50 sm:w-auto"
                 >
                   Hinzufügen
                 </button>
@@ -427,11 +455,16 @@ export function GroupDetail({ groupId, userName }: { groupId: string; userName: 
                     key={`${group.id}:${contact.email}`}
                     className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2"
                   >
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">{contact.name ?? contact.email}</p>
-                      {contact.name ? <p className="text-xs text-slate-500">{contact.email}</p> : null}
+                    <div className="flex min-w-0 items-center gap-2">
+                      <UserAvatar name={contact.name} email={contact.email} image={contact.image} size="sm" />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-slate-900">{contact.name ?? contact.email}</p>
+                        {contact.name ? <p className="truncate text-xs text-slate-500">{contact.email}</p> : null}
+                      </div>
                     </div>
-                    <span className="text-xs text-slate-500">{contact.isRegistered ? "Realite" : "Kontakt"}</span>
+                    <span className="shrink-0 pl-2 text-xs text-slate-500">
+                      {contact.email === userEmail ? "Du" : contact.isRegistered ? "Realite" : "Kontakt"}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -554,7 +587,7 @@ export function GroupDetail({ groupId, userName }: { groupId: string; userName: 
                 <article key={event.id} className="rounded-md border border-slate-200 p-3">
                   <a
                     href={`/e/${shortenUUID(event.id)}`}
-                    className="text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
+                    className="break-words text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
                   >
                     {event.title}
                   </a>
@@ -569,5 +602,6 @@ export function GroupDetail({ groupId, userName }: { groupId: string; userName: 
         </>
       ) : null}
     </main>
+    </AppShell>
   );
 }
