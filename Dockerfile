@@ -17,7 +17,6 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/next.config.ts ./next.config.ts
-COPY --from=builder /app/data ./data
 COPY --from=builder /app/drizzle ./drizzle
 EXPOSE 3000
 CMD ["bun", "run", "start"]
