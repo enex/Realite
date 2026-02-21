@@ -15,6 +15,7 @@ import {
   upsertSuggestion,
   getTagPreferenceMap
 } from "@/src/lib/repository";
+import { getEventPreferenceTags } from "@/src/lib/suggestion-feedback";
 
 const AUTO_INSERT_MIN_SCORE = 1.5;
 
@@ -49,6 +50,19 @@ function scoreEvent(event: VisibleEvent, preferences: Map<string, { weight: numb
 
   if (event.tags.some((tag) => tag.includes("#alle"))) {
     score += 0.2;
+  }
+
+  const contextTags = getEventPreferenceTags({
+    createdBy: event.createdBy,
+    startsAt: event.startsAt,
+    location: event.location
+  });
+
+  for (const tag of contextTags) {
+    const preference = preferences.get(tag);
+    if (preference) {
+      score += preference.weight;
+    }
   }
 
   return Number(score.toFixed(2));

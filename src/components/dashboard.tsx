@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
 type Group = {
   id: string;
@@ -35,6 +36,8 @@ type Suggestion = {
   tags: string[];
   createdByName: string | null;
   createdByEmail: string;
+  decisionReasons?: string[];
+  decisionNote?: string | null;
 };
 
 type DashboardPayload = {
@@ -653,7 +656,12 @@ export function Dashboard({ userName }: { userName: string }) {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-medium text-slate-900">{suggestion.title}</p>
+                      <a
+                        href={`/e/${shortenUUID(suggestion.eventId)}`}
+                        className="font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
+                      >
+                        {suggestion.title}
+                      </a>
                       <p className="text-xs text-slate-500">
                         {new Date(suggestion.startsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} -{" "}
                         {new Date(suggestion.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} · von{" "}
@@ -664,6 +672,12 @@ export function Dashboard({ userName }: { userName: string }) {
                       </p>
                     </div>
                     <div className="flex gap-2">
+                      <a
+                        href={`/s/${shortenUUID(suggestion.id)}`}
+                        className="rounded-md border border-teal-200 px-3 py-1 text-xs font-semibold text-teal-700"
+                      >
+                        Antworten
+                      </a>
                       <button
                         onClick={() => decideSuggestion(suggestion.id, "accepted")}
                         disabled={busy}

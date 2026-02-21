@@ -27,6 +27,19 @@ Mögliche Gründe:
 - du bist zur Zeit des Termins nicht verfügbar
 - der Termin liegt außerhalb der aktuell genutzten Kalenderauswahl
 
+## Warum fragt Realite bei Absage nach Gründen?
+
+Du kannst mehrere Gründe angeben (z. B. keine Zeit und zu weit entfernt).
+
+Diese Informationen werden gespeichert und für zukünftige Vorschläge genutzt, damit Ergebnisse besser passen.
+
+## Was bedeuten die neuen kurzen Links (`/s/...` und `/e/...`)?
+
+- `/e/<shortUUID>` öffnet die Eventseite
+- `/s/<shortUUID>` öffnet die Seite zur Zusage/Absage
+
+Diese Links findest du auch in von Realite angelegten Kalendereinträgen.
+
 ## Warum wurde keine Einladung erstellt?
 
 Mögliche Gründe:

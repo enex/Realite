@@ -36,12 +36,30 @@ Du entscheidest in den Einstellungen:
 - welcher Kalender für Kalendereinträge genutzt wird
 - welche Kalender für Verfügbarkeit und Vorschläge einbezogen werden
 
+Jeder von Realite angelegte Kalendereintrag enthält jetzt kurze Realite-Links:
+
+- `realite.app/e/<shortUUID>` zur Eventseite
+- `realite.app/s/<shortUUID>` zur Antwortseite für die Suggestion
+
+Wenn für dich zu einem Event bereits eine Suggestion existiert und du nicht der Event-Ersteller bist, zeigt die Eventseite (`/e/...`) direkt denselben Antwort-Flow wie die Suggestionseite.
+
+Event- und Vorschlagslisten in Realite verlinken direkt auf diese Seiten, damit du von jeder Übersicht sofort entscheiden kannst.
+
 ## Wichtig zu Zusage und Absage
 
-- Ein neuer Vorschlag blockiert deine Zeit zunächst nicht.
-- Erst wenn du **zusagst**, wird der Termin als belegt behandelt.
-- Bei **Absage** bleibt der Termin unbelegt.
+- Bei **Zusage** wird der Termin in deinem Kalender geführt.
+- Bei **Absage** wird der Vorschlag nicht in deinem Kalender behalten.
 
 ## Warum Entscheidungen wichtig sind
 
 Jede Zusage oder Absage verbessert zukünftige Vorschläge.
+
+Wenn du absagst, kannst du mehrere Gründe auswählen:
+
+- Nicht mit dieser Person
+- Nicht diese Aktivität
+- Habe da keine Zeit
+- Zu weit entfernt
+- Wenn folgendes anders wäre ja
+
+Diese Gründe werden gespeichert und im Matching für zukünftige Termine verwendet.

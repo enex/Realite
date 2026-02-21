@@ -14,10 +14,21 @@ import {
   userSettings,
   users
 } from "@/src/db/schema";
+import {
+  type DeclineReason,
+  createLocationPreferenceTag,
+  createPersonPreferenceTag,
+  createTimeslotPreferenceTag,
+  normalizeDecisionNote,
+  normalizeDecisionReasons,
+  parseDecisionReasons,
+  serializeDecisionReasons
+} from "@/src/lib/suggestion-feedback";
 
 export type GroupVisibility = "public" | "private";
 export type EventVisibility = "public" | "group";
 export type SuggestionStatus = "pending" | "calendar_inserted" | "accepted" | "declined";
+export type SuggestionDeclineReason = DeclineReason;
 
 export type UserSuggestionSettings = {
   autoInsertSuggestions: boolean;
@@ -1237,6 +1248,83 @@ export async function listVisibleEventsForUser(userId: string) {
   }));
 }
 
+export async function getVisibleEventForUserById(input: { userId: string; eventId: string }) {
+  const db = getDb();
+  const memberships = await db
+    .select({ groupId: groupMemberships.groupId })
+    .from(groupMemberships)
+    .where(eq(groupMemberships.userId, input.userId));
+
+  const groupIds = memberships.map((membership) => membership.groupId);
+  const visibilityFilters = [eq(events.visibility, "public" as EventVisibility), eq(events.createdBy, input.userId)];
+
+  if (groupIds.length > 0) {
+    visibilityFilters.push(inArray(events.groupId, groupIds));
+  }
+
+  const rows = await db
+    .select({
+      id: events.id,
+      title: events.title,
+      description: events.description,
+      location: events.location,
+      startsAt: events.startsAt,
+      endsAt: events.endsAt,
+      visibility: events.visibility,
+      groupId: events.groupId,
+      groupName: groups.name,
+      createdBy: events.createdBy,
+      createdByName: users.name,
+      createdByEmail: users.email,
+      sourceProvider: events.sourceProvider,
+      sourceEventId: events.sourceEventId
+    })
+    .from(events)
+    .leftJoin(groups, eq(events.groupId, groups.id))
+    .innerJoin(users, eq(events.createdBy, users.id))
+    .where(and(eq(events.id, input.eventId), or(...visibilityFilters)))
+    .limit(1);
+
+  if (!rows[0]) {
+    return null;
+  }
+
+  const tags = await db
+    .select({ tag: eventTags.tag })
+    .from(eventTags)
+    .where(eq(eventTags.eventId, input.eventId));
+
+  return {
+    ...rows[0],
+    tags: tags.map((entry) => entry.tag)
+  };
+}
+
+export async function getSuggestionForEventForUser(input: { userId: string; eventId: string }) {
+  const db = getDb();
+  const [row] = await db
+    .select({
+      id: suggestions.id,
+      status: suggestions.status,
+      decisionReasons: suggestions.decisionReasons,
+      decisionNote: suggestions.decisionNote,
+      score: suggestions.score,
+      reason: suggestions.reason
+    })
+    .from(suggestions)
+    .where(and(eq(suggestions.userId, input.userId), eq(suggestions.eventId, input.eventId)))
+    .limit(1);
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    ...row,
+    decisionReasons: parseDecisionReasons(row.decisionReasons)
+  };
+}
+
 export async function listPublicAlleEvents(limit = 20) {
   const db = getDb();
   const alleEvents = await db
@@ -1379,6 +1467,34 @@ export async function markSuggestionInserted(suggestionId: string, calendarEvent
   return row;
 }
 
+export async function setSuggestionCalendarEventRef(input: { suggestionId: string; calendarEventId: string }) {
+  const db = getDb();
+  const [row] = await db
+    .update(suggestions)
+    .set({
+      calendarEventId: input.calendarEventId,
+      updatedAt: new Date()
+    })
+    .where(eq(suggestions.id, input.suggestionId))
+    .returning();
+
+  return row ?? null;
+}
+
+export async function clearSuggestionCalendarEventRef(suggestionId: string) {
+  const db = getDb();
+  const [row] = await db
+    .update(suggestions)
+    .set({
+      calendarEventId: null,
+      updatedAt: new Date()
+    })
+    .where(eq(suggestions.id, suggestionId))
+    .returning();
+
+  return row ?? null;
+}
+
 export async function getSuggestionForUser(suggestionId: string, userId: string) {
   const db = getDb();
   const rows = await db
@@ -1389,14 +1505,20 @@ export async function getSuggestionForUser(suggestionId: string, userId: string)
       score: suggestions.score,
       reason: suggestions.reason,
       calendarEventId: suggestions.calendarEventId,
+      decisionReasons: suggestions.decisionReasons,
+      decisionNote: suggestions.decisionNote,
       title: events.title,
       description: events.description,
       startsAt: events.startsAt,
       endsAt: events.endsAt,
-      location: events.location
+      location: events.location,
+      createdBy: events.createdBy,
+      createdByName: users.name,
+      createdByEmail: users.email
     })
     .from(suggestions)
     .innerJoin(events, eq(suggestions.eventId, events.id))
+    .innerJoin(users, eq(events.createdBy, users.id))
     .where(and(eq(suggestions.id, suggestionId), eq(suggestions.userId, userId)))
     .limit(1);
 
@@ -1411,6 +1533,7 @@ export async function getSuggestionForUser(suggestionId: string, userId: string)
 
   return {
     ...rows[0],
+    decisionReasons: parseDecisionReasons(rows[0].decisionReasons),
     tags: tagRows.map((row) => row.tag)
   };
 }
@@ -1425,6 +1548,8 @@ export async function listSuggestionsForUser(userId: string) {
       score: suggestions.score,
       reason: suggestions.reason,
       calendarEventId: suggestions.calendarEventId,
+      decisionReasons: suggestions.decisionReasons,
+      decisionNote: suggestions.decisionNote,
       createdAt: suggestions.createdAt,
       title: events.title,
       description: events.description,
@@ -1458,6 +1583,7 @@ export async function listSuggestionsForUser(userId: string) {
 
   return rows.map((row) => ({
     ...row,
+    decisionReasons: parseDecisionReasons(row.decisionReasons),
     tags: tagsMap.get(row.eventId) ?? []
   }));
 }
@@ -1478,6 +1604,8 @@ export async function applyDecisionFeedback(input: {
   userId: string;
   suggestionId: string;
   decision: "accepted" | "declined";
+  reasons?: DeclineReason[];
+  note?: string | null;
 }) {
   const db = getDb();
   const suggestion = await getSuggestionForUser(input.suggestionId, input.userId);
@@ -1486,16 +1614,22 @@ export async function applyDecisionFeedback(input: {
     throw new Error("Suggestion nicht gefunden");
   }
 
+  const reasons = input.decision === "declined" ? normalizeDecisionReasons(input.reasons) : [];
+  const note = input.decision === "declined" ? normalizeDecisionNote(input.note) : null;
+
   await db.transaction(async (tx) => {
     await tx
       .update(suggestions)
       .set({
         status: input.decision,
+        decisionReasons: serializeDecisionReasons(reasons),
+        decisionNote: note,
         updatedAt: new Date()
       })
       .where(and(eq(suggestions.id, input.suggestionId), eq(suggestions.userId, input.userId)));
 
-    const delta = input.decision === "accepted" ? 1 : -0.5;
+    const isConditionalDecline = input.decision === "declined" && reasons.length === 1 && reasons[0] === "would_if_changed";
+    const delta = input.decision === "accepted" ? 1 : isConditionalDecline ? -0.1 : -0.5;
 
     for (const tag of suggestion.tags) {
       await tx
@@ -1511,6 +1645,123 @@ export async function applyDecisionFeedback(input: {
           target: [tagPreferences.userId, tagPreferences.tag],
           set: {
             weight: sql`${tagPreferences.weight} + ${delta}`,
+            votes: sql`${tagPreferences.votes} + 1`,
+            updatedAt: new Date()
+          }
+        });
+    }
+
+    if (input.decision === "accepted") {
+      const contextTags = [
+        createPersonPreferenceTag(suggestion.createdBy),
+        createTimeslotPreferenceTag(suggestion.startsAt)
+      ] as string[];
+      const locationTag = createLocationPreferenceTag(suggestion.location);
+      if (locationTag) {
+        contextTags.push(locationTag);
+      }
+
+      for (const contextTag of contextTags) {
+        await tx
+          .insert(tagPreferences)
+          .values({
+            userId: input.userId,
+            tag: contextTag,
+            weight: 0.35,
+            votes: 1,
+            updatedAt: new Date()
+          })
+          .onConflictDoUpdate({
+            target: [tagPreferences.userId, tagPreferences.tag],
+            set: {
+              weight: sql`${tagPreferences.weight} + ${0.35}`,
+              votes: sql`${tagPreferences.votes} + 1`,
+              updatedAt: new Date()
+            }
+          });
+      }
+
+      return;
+    }
+
+    const locationTag = createLocationPreferenceTag(suggestion.location);
+
+    if (reasons.includes("not_with_this_person")) {
+      await tx
+        .insert(tagPreferences)
+        .values({
+          userId: input.userId,
+          tag: createPersonPreferenceTag(suggestion.createdBy),
+          weight: -1.2,
+          votes: 1,
+          updatedAt: new Date()
+        })
+        .onConflictDoUpdate({
+          target: [tagPreferences.userId, tagPreferences.tag],
+          set: {
+            weight: sql`${tagPreferences.weight} + ${-1.2}`,
+            votes: sql`${tagPreferences.votes} + 1`,
+            updatedAt: new Date()
+          }
+        });
+    }
+
+    if (reasons.includes("not_this_activity")) {
+      for (const tag of suggestion.tags) {
+        await tx
+          .insert(tagPreferences)
+          .values({
+            userId: input.userId,
+            tag,
+            weight: -1,
+            votes: 1,
+            updatedAt: new Date()
+          })
+          .onConflictDoUpdate({
+            target: [tagPreferences.userId, tagPreferences.tag],
+            set: {
+              weight: sql`${tagPreferences.weight} + ${-1}`,
+              votes: sql`${tagPreferences.votes} + 1`,
+              updatedAt: new Date()
+            }
+          });
+      }
+    }
+
+    if (reasons.includes("no_time")) {
+      await tx
+        .insert(tagPreferences)
+        .values({
+          userId: input.userId,
+          tag: createTimeslotPreferenceTag(suggestion.startsAt),
+          weight: -0.9,
+          votes: 1,
+          updatedAt: new Date()
+        })
+        .onConflictDoUpdate({
+          target: [tagPreferences.userId, tagPreferences.tag],
+          set: {
+            weight: sql`${tagPreferences.weight} + ${-0.9}`,
+            votes: sql`${tagPreferences.votes} + 1`,
+            updatedAt: new Date()
+          }
+        });
+    }
+
+    if (locationTag && reasons.includes("too_far")) {
+      await tx
+        .insert(tagPreferences)
+        .values({
+          userId: input.userId,
+          tag: locationTag,
+          weight: -1,
+          votes: 1,
+          updatedAt: new Date()
+        })
+        .onConflictDoUpdate({
+          target: [tagPreferences.userId, tagPreferences.tag],
+          set: {
+            weight: sql`${tagPreferences.weight} + ${-1}`,
             votes: sql`${tagPreferences.votes} + 1`,
             updatedAt: new Date()
           }

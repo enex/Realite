@@ -1,6 +1,7 @@
 import { Dashboard } from "@/src/components/dashboard";
 import { getAuthSession } from "@/src/lib/auth";
 import { listPublicAlleEvents } from "@/src/lib/repository";
+import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
 export default async function HomePage({
   searchParams
@@ -52,7 +53,12 @@ export default async function HomePage({
             {publicAlleEvents.length === 0 ? <p className="text-sm text-slate-500">Aktuell keine #alle Events.</p> : null}
             {publicAlleEvents.map((event) => (
               <article key={event.id} className="rounded-lg border border-slate-200 p-3">
-                <p className="font-medium text-slate-900">{event.title}</p>
+                <a
+                  href={`/e/${shortenUUID(event.id)}`}
+                  className="font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
+                >
+                  {event.title}
+                </a>
                 <p className="text-xs text-slate-500">
                   {new Date(event.startsAt).toLocaleString("de-DE")} - {new Date(event.endsAt).toLocaleTimeString("de-DE")}
                 </p>

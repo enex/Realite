@@ -9,6 +9,7 @@ import {
   updateGoogleConnectionTokens,
   upsertExternalPublicEvent
 } from "@/src/lib/repository";
+import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
 type BusyWindow = {
   start: string;
@@ -420,13 +421,13 @@ export async function insertSuggestionIntoCalendar(input: {
 
   const baseUrl =
     process.env.BETTER_AUTH_URL || process.env.NEXTAUTH_URL || process.env.REALITE_APP_URL || "https://realite.app";
-  const realiteUrl = `${baseUrl.replace(/\/+$/, "")}/?suggestion=${encodeURIComponent(input.suggestionId)}`;
-  const acceptUrl = `${realiteUrl}&decision=accepted`;
-  const declineUrl = `${realiteUrl}&decision=declined`;
+  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+  const eventUrl = `${normalizedBaseUrl}/e/${shortenUUID(input.eventId)}`;
+  const suggestionUrl = `${normalizedBaseUrl}/s/${shortenUUID(input.suggestionId)}`;
   const eventPayload = {
     summary: `[Realite] ${input.title.replace(/^\[realite\]\s*/iu, "")}`,
     description:
-      `${input.description ?? ""}\n\nVorschlag von Realite.\nIn Realite öffnen: ${realiteUrl}\nZusage: ${acceptUrl}\nAbsage: ${declineUrl}`.trim(),
+      `${input.description ?? ""}\n\nVorschlag von Realite.\nEventseite: ${eventUrl}\nAntwortseite: ${suggestionUrl}`.trim(),
     location: input.location ?? undefined,
     start: {
       dateTime: input.startsAt.toISOString()

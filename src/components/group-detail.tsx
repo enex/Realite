@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
 type GroupContact = {
   groupId: string;
@@ -551,7 +552,12 @@ export function GroupDetail({ groupId, userName }: { groupId: string; userName: 
               ) : null}
               {groupEvents.map((event) => (
                 <article key={event.id} className="rounded-md border border-slate-200 p-3">
-                  <p className="text-sm font-medium text-slate-900">{event.title}</p>
+                  <a
+                    href={`/e/${shortenUUID(event.id)}`}
+                    className="text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
+                  >
+                    {event.title}
+                  </a>
                   <p className="text-xs text-slate-500">
                     {new Date(event.startsAt).toLocaleString("de-DE")} - {new Date(event.endsAt).toLocaleTimeString("de-DE")}
                   </p>

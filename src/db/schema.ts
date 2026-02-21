@@ -222,6 +222,8 @@ export const suggestions = pgTable(
     reason: text("reason").notNull(),
     status: suggestionStatusEnum("status").notNull().default("pending"),
     calendarEventId: text("calendar_event_id"),
+    decisionReasons: text("decision_reasons").notNull().default(""),
+    decisionNote: text("decision_note"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
