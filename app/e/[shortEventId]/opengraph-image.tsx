@@ -1,5 +1,4 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
+import { ImageResponse } from "next/og";
 
 import {
   EVENT_SHARE_FALLBACK_DESCRIPTION,
@@ -17,18 +16,7 @@ export const size = {
   width: 1200,
   height: 630
 };
-export const contentType = "image/svg+xml";
-
-let appIconDataUriPromise: Promise<string | null> | null = null;
-
-function escapeXml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll("\"", "&quot;")
-    .replaceAll("'", "&#39;");
-}
+export const contentType = "image/png";
 
 function wrapText(value: string, maxCharsPerLine: number, maxLines: number) {
   const words = value.trim().split(/\s+/).filter(Boolean);
@@ -70,16 +58,6 @@ function wrapText(value: string, maxCharsPerLine: number, maxLines: number) {
   return lines;
 }
 
-async function getAppIconDataUri() {
-  if (!appIconDataUriPromise) {
-    appIconDataUriPromise = readFile(path.join(process.cwd(), "public", "icon-192.png"))
-      .then((buffer) => `data:image/png;base64,${buffer.toString("base64")}`)
-      .catch(() => null);
-  }
-
-  return appIconDataUriPromise;
-}
-
 export default async function EventOgImage({
   params
 }: {
@@ -91,43 +69,85 @@ export default async function EventOgImage({
   const schedule = preview ? formatEventShareSchedule(preview) : EVENT_SHARE_FALLBACK_DESCRIPTION;
   const owner = preview ? formatEventShareOwner(preview) : "";
   const title = preview ? copy.title : EVENT_SHARE_FALLBACK_TITLE;
-  const titleLines = wrapText(title, 28, 3);
-  const appIconDataUri = await getAppIconDataUri();
+  const titleLines = wrapText(title, 30, 3);
 
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fbf8f2"/>
-      <stop offset="40%" stop-color="#f5f1e8"/>
-      <stop offset="100%" stop-color="#e7dfcf"/>
-    </linearGradient>
-  </defs>
-  <rect width="100%" height="100%" fill="url(#bg)"/>
-  ${
-    appIconDataUri
-      ? `<image x="56" y="44" width="64" height="64" href="${appIconDataUri}"/>`
-      : '<rect x="56" y="44" rx="12" ry="12" width="64" height="64" fill="#2f5d50"/>'
-  }
-  <text x="132" y="86" font-size="34" font-weight="700" fill="#1e3a34" font-family="Arial, sans-serif">Realite</text>
-  <text x="56" y="178" font-size="40" font-weight="700" fill="#2f5d50" font-family="Arial, sans-serif">Event</text>
-  ${titleLines
-    .map(
-      (line, index) =>
-        `<text x="56" y="${250 + index * 74}" font-size="64" font-weight="700" fill="#2f281f" font-family="Arial, sans-serif">${escapeXml(line)}</text>`
-    )
-    .join("\n  ")}
-  <text x="56" y="500" font-size="34" fill="#5d503d" font-family="Arial, sans-serif">${escapeXml(schedule)}</text>
-  ${owner ? `<text x="56" y="542" font-size="30" fill="#76664f" font-family="Arial, sans-serif">${escapeXml(owner)}</text>` : ""}
-  <line x1="56" y1="560" x2="1144" y2="560" stroke="#d88973" stroke-width="2"/>
-  <text x="56" y="603" font-size="28" font-weight="700" fill="#1e3a34" font-family="Arial, sans-serif">Event auf Realite</text>
-  <text x="1144" y="603" text-anchor="end" font-size="26" fill="#76664f" font-family="Arial, sans-serif">realite.app</text>
-</svg>`;
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          padding: "52px 56px",
+          background:
+            "radial-gradient(circle at 12% 14%, rgba(103, 193, 168, 0.2), transparent 35%), radial-gradient(circle at 82% 24%, rgba(249, 162, 117, 0.18), transparent 38%), linear-gradient(140deg, #f7f1e3 0%, #f2ead8 56%, #eadfc8 100%)",
+          color: "#2f281f",
+          fontFamily: "Arial, sans-serif"
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignSelf: "flex-start",
+              borderRadius: "999px",
+              border: "1px solid rgba(47, 93, 80, 0.35)",
+              padding: "8px 16px",
+              fontSize: 24,
+              fontWeight: 700,
+              color: "#1e3a34"
+            }}
+          >
+            Event auf Realite
+          </div>
 
-  return new Response(svg, {
-    headers: {
-      "content-type": contentType,
-      "cache-control": "public, max-age=0, s-maxage=86400"
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {titleLines.map((line, index) => (
+              <div
+                key={`${line}-${index}`}
+                style={{
+                  fontSize: 66,
+                  fontWeight: 800,
+                  lineHeight: 1.02,
+                  color: "#2f281f"
+                }}
+              >
+                {line}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px", color: "#5d503d" }}>
+          <div style={{ fontSize: 32, lineHeight: 1.25 }}>{schedule}</div>
+          {owner ? (
+            <div style={{ fontSize: 28, lineHeight: 1.2, color: "#76664f" }}>{owner}</div>
+          ) : (
+            <div style={{ fontSize: 28, lineHeight: 1.2, color: "#76664f" }}>Teilen und gemeinsam planen</div>
+          )}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              borderTop: "1px solid rgba(216, 137, 115, 0.7)",
+              paddingTop: "18px",
+              marginTop: "4px"
+            }}
+          >
+            <div style={{ fontSize: 28, fontWeight: 700, color: "#1e3a34" }}>Realite</div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: "#76664f" }}>realite.app</div>
+          </div>
+        </div>
+      </div>
+    ),
+    {
+      ...size,
+      headers: {
+        "cache-control": "public, max-age=0, s-maxage=86400"
+      }
     }
-  });
+  );
 }

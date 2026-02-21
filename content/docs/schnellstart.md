@@ -11,6 +11,7 @@ Bestätige den Zugriff auf Kalender und Kontakte, damit Realite dir passende Eve
 Hinweis:
 
 - Auf der Startseite siehst du direkt öffentliche Events als Beispiel, bevor du dich anmeldest.
+- Die Startseite zeigt kurze Einstiege für **neue Leute kennenlernen**, **Reconnecten** und optional **Dating** (`#date`).
 
 ## 3. Gruppen ansehen
 

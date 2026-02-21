@@ -314,7 +314,7 @@ export function SuggestionsPage({
                           href={`/e/${shortenUUID(suggestion.eventId)}`}
                           className="font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
                         >
-                          {suggestion.title}
+                          {suggestion.title.replace(/#[^\s]+/gi, "").trim()}
                         </a>
                         <p className="text-xs text-slate-500">
                           {new Date(suggestion.startsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} -{" "}
@@ -332,20 +332,6 @@ export function SuggestionsPage({
                         >
                           Antworten
                         </a>
-                        <button
-                          onClick={() => decideSuggestion(suggestion.id, "accepted")}
-                          disabled={busy}
-                          className="rounded-md bg-teal-700 px-3 py-1 text-xs font-semibold text-white disabled:opacity-50"
-                        >
-                          Zusagen
-                        </button>
-                        <button
-                          onClick={() => decideSuggestion(suggestion.id, "declined")}
-                          disabled={busy}
-                          className="rounded-md border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 disabled:opacity-50"
-                        >
-                          Absagen
-                        </button>
                       </div>
                     </div>
                     <p className="mt-2 text-sm text-slate-600">{suggestion.reason}</p>

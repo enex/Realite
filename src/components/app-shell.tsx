@@ -18,7 +18,6 @@ const DESKTOP_ITEMS = [
   { href: "/events", label: "Events" },
   { href: "/groups", label: "Gruppen" },
   { href: "/suggestions", label: "Vorschläge" },
-  { href: "/docs", label: "Docs" }
 ];
 
 const MOBILE_ITEMS = [
@@ -64,9 +63,8 @@ export function AppShell({ user, children }: AppShellProps) {
                 <a
                   key={item.href}
                   href={item.href}
-                  className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                    active ? "bg-teal-100 text-teal-800" : "text-slate-700 hover:bg-slate-100"
-                  }`}
+                  className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${active ? "bg-teal-100 text-teal-800" : "text-slate-700 hover:bg-slate-100"
+                    }`}
                 >
                   {item.label}
                 </a>
@@ -99,9 +97,8 @@ export function AppShell({ user, children }: AppShellProps) {
               <a
                 key={item.href}
                 href={item.href}
-                className={`rounded-md px-2 py-2 text-center text-xs font-semibold ${
-                  active ? "bg-teal-100 text-teal-800" : "text-slate-700"
-                }`}
+                className={`rounded-md px-2 py-2 text-center text-xs font-semibold ${active ? "bg-teal-100 text-teal-800" : "text-slate-700"
+                  }`}
               >
                 {item.label}
               </a>

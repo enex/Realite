@@ -1,4 +1,6 @@
 import { EventLocationDetails } from "@/src/components/event-location-details";
+import { stripRealiteCalendarMetadata } from "@/src/lib/realite-calendar-links";
+import { sanitizeBasicHtml } from "@/src/lib/sanitize-basic-html";
 
 type SharedEventContentProps = {
   title: string;
@@ -32,7 +34,8 @@ export function SharedEventContent(props: SharedEventContentProps) {
   const startsAt = new Date(props.startsAtIso);
   const endsAt = new Date(props.endsAtIso);
   const location = props.location?.trim() ?? "";
-  const description = props.description?.trim() ?? "";
+  const description = stripRealiteCalendarMetadata(props.description)?.trim() ?? "";
+  const sanitizedDescriptionHtml = sanitizeBasicHtml(description);
   const originalEditUrl = props.isOwnedByCurrentUser
     ? buildGoogleCalendarEditUrl(props.sourceProvider, props.sourceEventId)
     : null;
@@ -99,7 +102,14 @@ export function SharedEventContent(props: SharedEventContentProps) {
 
       <section className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
         <p className="text-sm font-semibold text-slate-900">Beschreibung</p>
-        <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{description || "Keine Beschreibung vorhanden."}</p>
+        {sanitizedDescriptionHtml ? (
+          <div
+            className="mt-1 whitespace-pre-wrap text-sm text-slate-700 [&_a]:font-medium [&_a]:text-teal-700 [&_a]:underline hover:[&_a]:text-teal-800 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-6"
+            dangerouslySetInnerHTML={{ __html: sanitizedDescriptionHtml }}
+          />
+        ) : (
+          <p className="mt-1 text-sm text-slate-700">Keine Beschreibung vorhanden.</p>
+        )}
       </section>
     </section>
   );

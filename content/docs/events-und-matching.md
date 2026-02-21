@@ -90,6 +90,16 @@ Auf der Eventseite (`/e/<shortUUID>`) siehst du jetzt alle wichtigen Event-Infor
 - Beschreibung
 - Ersteller
 
+Die Beschreibung unterstützt einfache HTML-Formatierung. Erlaubt sind z. B.:
+
+- Absätze und Zeilenumbrüche (`<p>`, `<br>`)
+- Betonung (`<strong>`, `<b>`, `<em>`, `<i>`, `<u>`)
+- Listen (`<ul>`, `<ol>`, `<li>`)
+- Links (`<a href="...">`)
+
+Unsichere oder nicht erlaubte HTML-Inhalte werden automatisch bereinigt und nicht ausgeführt.
+Der automatisch von Realite ergänzte Kalender-Zusatz (`Realite-Link (automatisch ergänzt): ...`) wird auf der Eventseite ausgeblendet.
+
 Wenn der Termin aus deinem Google Kalender stammt und du der Ersteller bist, findest du oben rechts einen **Bearbeiten**-Button mit Stift-Symbol.  
 Damit springst du direkt zum Original-Termin in Google Kalender.
 

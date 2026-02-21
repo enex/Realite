@@ -71,6 +71,16 @@ Diese Informationen werden gespeichert und für zukünftige Vorschläge genutzt,
 
 Diese Links findest du in von Realite angelegten Kalendereinträgen. Bei aus Google importierten Events ergänzt Realite den `/e/...`-Link in der Google-Beschreibung automatisch und ignoriert diesen Zusatztext beim erneuten Import in Realite.
 
+## Warum sehe ich beim Teilen manchmal noch eine alte Link-Vorschau?
+
+Viele Messenger und soziale Netzwerke speichern Vorschauen (Titel, Beschreibung, Bild) für eine URL für einige Zeit im Cache.
+
+Das heißt:
+
+- Realite liefert aktuelle OG-Metadaten inklusive Vorschaubild
+- einzelne Plattformen zeigen trotzdem vorübergehend noch ältere Vorschauen
+- nach Ablauf des Plattform-Caches wird die Vorschau automatisch aktualisiert
+
 ## Warum sehe ich im Google Kalender keine direkten Zusage/Absage-Buttons?
 
 Das ist beabsichtigt.

@@ -18,12 +18,18 @@ export async function generateMetadata({
   const { shortEventId } = await params;
   const preview = await getPublicEventSharePreviewByShortId(shortEventId);
   const copy = getEventShareCopy(preview);
-  const imagePath = `/e/${encodeURIComponent(shortEventId)}/opengraph-image`;
+  const eventPath = `/e/${encodeURIComponent(shortEventId)}`;
+  const imagePath = `${eventPath}/opengraph-image`;
 
   return {
     title: copy.title,
     description: copy.description,
+    alternates: {
+      canonical: eventPath
+    },
     openGraph: {
+      type: "article",
+      url: eventPath,
       title: copy.title,
       description: copy.description,
       images: [{ url: imagePath, width: 1200, height: 630, alt: "Event auf Realite" }]

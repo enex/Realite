@@ -116,10 +116,29 @@ export async function generateMetadata({
 
   const overview = await getUserProfileOverview({ profileUserId, viewerUserId: null });
   const profileName = overview?.profile.name?.trim() || "Realite Nutzer";
+  const profileTitle = `${profileName} | Realite Profil`;
+  const profileDescription = `Profilübersicht von ${profileName} mit zugänglichen Events.`;
+  const profilePath = `/u/${encodeURIComponent(shortUserId)}`;
 
   return {
-    title: `${profileName} | Realite Profil`,
-    description: `Profilübersicht von ${profileName} mit zugänglichen Events.`
+    title: profileTitle,
+    description: profileDescription,
+    alternates: {
+      canonical: profilePath
+    },
+    openGraph: {
+      type: "profile",
+      url: profilePath,
+      title: profileTitle,
+      description: profileDescription,
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Realite Profil" }]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: profileTitle,
+      description: profileDescription,
+      images: ["/opengraph-image"]
+    }
   };
 }
 
