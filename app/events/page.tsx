@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { Dashboard } from "@/src/components/dashboard";
 import { getAuthSession } from "@/src/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export default async function EventsPage() {
   const session = await getAuthSession();
 

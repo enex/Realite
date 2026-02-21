@@ -20,7 +20,9 @@ export const groupRoleEnum = pgEnum("group_role", ["owner", "member"]);
 export const eventVisibilityEnum = pgEnum("event_visibility", [
   "public",
   "group",
+  "smart_date",
 ]);
+export const datingGenderEnum = pgEnum("dating_gender", ["woman", "man", "non_binary"]);
 export const suggestionStatusEnum = pgEnum("suggestion_status", [
   "pending",
   "calendar_inserted",
@@ -86,6 +88,31 @@ export const userSettings = pgTable("user_settings", {
     .defaultNow()
     .notNull(),
 });
+
+export const datingProfiles = pgTable(
+  "dating_profiles",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" })
+      .primaryKey(),
+    enabled: boolean("enabled").notNull().default(false),
+    birthYear: integer("birth_year"),
+    gender: datingGenderEnum("gender"),
+    isSingle: boolean("is_single").notNull().default(false),
+    soughtGenders: text("sought_genders").notNull().default(""),
+    soughtAgeMin: integer("sought_age_min"),
+    soughtAgeMax: integer("sought_age_max"),
+    soughtOnlySingles: boolean("sought_only_singles").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index().on(table.gender), index().on(table.enabled)],
+);
 
 export const groups = pgTable("groups", {
   id: uuid("id").defaultRandom().primaryKey(),

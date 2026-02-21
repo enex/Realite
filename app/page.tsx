@@ -4,6 +4,8 @@ import { getAuthSession } from "@/src/lib/auth";
 import { listPublicAlleEvents } from "@/src/lib/repository";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage({
   searchParams
 }: {
@@ -105,7 +107,7 @@ export default async function HomePage({
                 {publicAlleEvents.slice(0, 3).map((event) => (
                   <article key={event.id} className="rounded-xl border border-white/15 bg-slate-900/70 p-4 sm:rounded-2xl">
                     <a href={`/e/${shortenUUID(event.id)}`} className="break-words font-semibold text-white hover:text-teal-200">
-                      {event.title}
+                      {event.title.replace(/#[^\s]+/gi, "").trim()}
                     </a>
                     <p className="mt-1 text-xs text-slate-300">
                       {new Date(event.startsAt).toLocaleString("de-DE")} bis{" "}

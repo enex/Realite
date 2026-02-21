@@ -3,7 +3,14 @@ import { and, desc, eq } from "drizzle-orm";
 import { authAccount } from "@/src/db/auth-schema";
 import { getDb } from "@/src/db/client";
 import { getAuthSession } from "@/src/lib/auth";
-import { ensureAlleGroupForUser, ensureKontakteGroupForUser, ensureUserSuggestionSettings, upsertGoogleConnection, upsertUser } from "@/src/lib/repository";
+import {
+  ensureAlleGroupForUser,
+  ensureKontakteGroupForUser,
+  ensureUserDatingProfile,
+  ensureUserSuggestionSettings,
+  upsertGoogleConnection,
+  upsertUser
+} from "@/src/lib/repository";
 
 async function syncGoogleConnectionFromAuthAccount(input: { authUserId: string; appUserId: string }) {
   const db = getDb();
@@ -57,6 +64,7 @@ export async function requireAppUser() {
 
   await ensureAlleGroupForUser(user.id);
   await ensureKontakteGroupForUser(user.id);
+  await ensureUserDatingProfile(user.id);
   await ensureUserSuggestionSettings(user.id);
   await syncGoogleConnectionFromAuthAccount({
     authUserId: session.user.id,

@@ -92,6 +92,13 @@
       "when": 1771679535504,
       "tag": "0012_wandering_justice",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1771689432875,
+      "tag": "0013_short_guardsmen",
+      "breakpoints": true
     }
   ]
 }

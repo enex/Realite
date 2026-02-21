@@ -7,6 +7,8 @@ import { getUserProfileOverview, type UserProfileEvent, type UserProfileVisibili
 import { requireAppUser } from "@/src/lib/session";
 import { enlargeUUID, shortenUUID } from "@/src/lib/utils/short-uuid";
 
+export const dynamic = "force-dynamic";
+
 const MATCH_STATUS_LABEL: Record<"pending" | "calendar_inserted" | "accepted" | "declined", string> = {
   pending: "Gematcht",
   calendar_inserted: "Gematcht",

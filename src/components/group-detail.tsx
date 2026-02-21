@@ -38,7 +38,7 @@ type EventItem = {
   location: string | null;
   startsAt: string;
   endsAt: string;
-  visibility: "public" | "group";
+  visibility: "public" | "group" | "smart_date";
   groupId: string | null;
   groupName: string | null;
   tags: string[];
@@ -553,6 +553,10 @@ export function GroupDetail({
                 placeholder="#kontakte"
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               />
+              <p className="text-xs text-slate-500">
+                `#date` erfordert ein freigeschaltetes Dating-Profil und kann nicht mit `#alle` oder `#kontakte` kombiniert
+                werden.
+              </p>
               <select
                 value={eventForm.visibility}
                 onChange={(event) =>

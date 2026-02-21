@@ -11,6 +11,7 @@ import {
 } from "@/src/lib/event-share";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const alt = "Event auf Realite";
 export const size = {
   width: 1200,

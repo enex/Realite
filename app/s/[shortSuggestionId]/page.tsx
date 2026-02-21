@@ -6,6 +6,8 @@ import { getSuggestionForUser } from "@/src/lib/repository";
 import { enlargeUUID, shortenUUID } from "@/src/lib/utils/short-uuid";
 import { requireAppUser } from "@/src/lib/session";
 
+export const dynamic = "force-dynamic";
+
 export default async function SuggestionShortcutPage({
   params
 }: {

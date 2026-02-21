@@ -14,8 +14,15 @@ Ein Event besteht aus:
 
 - `#alle`: Event ist allgemein sichtbar
 - `#kontakte`: Event richtet sich an deine Kontakte
+- `#date`: Event für Dating-Matches (nur nach gegenseitigem Profil-Match sichtbar)
 
 Du kannst mehrere Hashtags nutzen.
+
+Regeln für `#date`:
+
+- `#date` muss in deinem Profil freigeschaltet sein
+- `#date` kann nicht mit `#alle` oder `#kontakte` kombiniert werden
+- `#dating` wird automatisch als `#date` behandelt
 
 ## Wie Vorschläge entstehen
 
@@ -24,6 +31,7 @@ Realite vergleicht:
 - deine Interessen (über Hashtags und bisherige Entscheidungen)
 - deine verfügbare Zeit
 - passende Events aus deinen Gruppen und öffentlichen Bereichen
+- bei `#date` zusätzlich: gegenseitige Profilkriterien (Geschlecht, Altersbereich, Single-Status)
 
 Verfügbarkeit bedeutet hier die Kalender-Eigenschaft pro Termin:
 
@@ -31,6 +39,7 @@ Verfügbarkeit bedeutet hier die Kalender-Eigenschaft pro Termin:
 - **Frei/Verfügbar** blockiert den Zeitraum nicht
 
 Realite macht Vorschläge nur dann, wenn du im betreffenden Zeitraum verfügbar bist.
+Für `#date`-Events gilt zusätzlich: beide Seiten müssen sich gegenseitig matchen.
 
 Hinweis zum Datenschutz:
 

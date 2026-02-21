@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { GroupDetail } from "@/src/components/group-detail";
 import { getAuthSession } from "@/src/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export default async function GroupPage({ params }: { params: Promise<{ groupId: string }> }) {
   const session = await getAuthSession();
 

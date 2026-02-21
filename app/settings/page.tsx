@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { SettingsPage } from "@/src/components/settings-page";
 import { getAuthSession } from "@/src/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export default async function UserSettingsPage() {
   const session = await getAuthSession();
 

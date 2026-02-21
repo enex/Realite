@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { GroupsPage } from "@/src/components/groups-page";
 import { getAuthSession } from "@/src/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export default async function GroupsOverviewPage() {
   const session = await getAuthSession();
 

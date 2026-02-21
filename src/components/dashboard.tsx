@@ -19,6 +19,7 @@ type EventItem = {
   endsAt: string;
   groupName: string | null;
   tags: string[];
+  visibility: "public" | "group" | "smart_date";
 };
 
 type Suggestion = {
@@ -43,6 +44,11 @@ type DashboardPayload = {
     contactsWarning: string | null;
     revalidating: boolean;
   };
+  dating: {
+    enabled: boolean;
+    unlocked: boolean;
+    missingRequirements: string[];
+  };
   groups: Group[];
   events: EventItem[];
   suggestions: Suggestion[];
@@ -61,6 +67,11 @@ const emptyPayload: DashboardPayload = {
     stats: null,
     contactsWarning: null,
     revalidating: false
+  },
+  dating: {
+    enabled: false,
+    unlocked: false,
+    missingRequirements: []
   },
   groups: [],
   events: [],
@@ -320,6 +331,10 @@ export function Dashboard({
                 placeholder="#alle, #kontakte"
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               />
+              <p className="text-xs text-slate-500">
+                Für `#date` brauchst du ein freigeschaltetes Dating-Profil in den Profileinstellungen. `#date` kann nicht mit
+                `#alle` oder `#kontakte` kombiniert werden.
+              </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <select
                   value={eventForm.visibility}

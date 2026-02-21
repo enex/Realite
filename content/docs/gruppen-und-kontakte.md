@@ -21,6 +21,17 @@ In der Gruppenansicht kannst du:
 - Hashtags ändern
 - Events direkt in der Gruppe erstellen
 
+## Smarte Gruppe `#date`
+
+`#date` ist eine Smart Group für Dating-Szenarien.
+
+Wichtig:
+
+- `#date` wird erst freigeschaltet, wenn dein Dating-Profil vollständig ist
+- die Freischaltung passiert in **Profil & Einstellungen** unter **Dating-Modus (`#date`)**
+- `#date`-Events sind nicht allgemein öffentlich, sondern nur für passende Matches sichtbar
+- in der Gruppenansicht siehst du eine eigene Smart-Group-Karte mit deinem aktuellen Freischalt-Status
+
 ## Kontakte nutzen
 
 Wenn du Kontakte aktiviert hast:
@@ -45,3 +56,4 @@ Wenn du Kontakte aktiviert hast:
 
 - `#alle`: für alle in Realite sichtbar
 - Gruppen-Events: für Mitglieder dieser Gruppe sichtbar
+- `#date`: nur für Nutzer sichtbar, die mit dir im Dating-Modus gegenseitig matchen

@@ -8,6 +8,8 @@ import { getSuggestionForEventForUser, getVisibleEventForUserById } from "@/src/
 import { enlargeUUID, shortenUUID } from "@/src/lib/utils/short-uuid";
 import { requireAppUser } from "@/src/lib/session";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params
 }: {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getDashboardSyncSnapshot, triggerDashboardBackgroundSync } from "@/src/lib/background-sync";
 import {
+  getDateHashtagStatus,
   getGoogleConnection,
   listGroupContactsForUser,
   listGroupsForUser,
@@ -19,12 +20,13 @@ export async function GET() {
   triggerDashboardBackgroundSync(user.id);
   const syncState = getDashboardSyncSnapshot(user.id);
 
-  const [groups, events, suggestions, connection, groupContacts] = await Promise.all([
+  const [groups, events, suggestions, connection, groupContacts, dating] = await Promise.all([
     listGroupsForUser(user.id),
     listVisibleEventsForUser(user.id),
     listSuggestionsForUser(user.id),
     getGoogleConnection(user.id),
-    listGroupContactsForUser(user.id)
+    listGroupContactsForUser(user.id),
+    getDateHashtagStatus(user.id)
   ]);
   const ownEmail = user.email.trim().toLowerCase();
 
@@ -67,6 +69,11 @@ export async function GET() {
       revalidating: syncState.revalidating,
       lastTriggeredAt: syncState.lastTriggeredAt,
       lastCompletedAt: syncState.lastCompletedAt
+    },
+    dating: {
+      enabled: dating.profile.enabled,
+      unlocked: dating.unlocked,
+      missingRequirements: dating.missingRequirements
     },
     groups: groups.map((group) => ({
       ...group,

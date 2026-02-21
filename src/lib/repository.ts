@@ -3,6 +3,7 @@ import { and, desc, eq, gt, inArray, or, sql } from "drizzle-orm";
 import { getDb } from "@/src/db/client";
 import {
   calendarConnections,
+  datingProfiles,
   eventTags,
   events,
   groupContacts,
@@ -15,6 +16,21 @@ import {
   users
 } from "@/src/db/schema";
 import {
+  DATE_TAG,
+  EMPTY_DATING_PROFILE,
+  getDatingProfileStatus,
+  isDateTag,
+  isDatingMutualMatch,
+  normalizeDateTags,
+  normalizeDatingGenders,
+  parseDatingGenders,
+  serializeDatingGenders,
+  titleContainsDateTag,
+  type DateMissingRequirement,
+  type DatingGender,
+  type DatingProfile
+} from "@/src/lib/dating";
+import {
   type DeclineReason,
   createLocationPreferenceTag,
   createPersonPreferenceTag,
@@ -26,9 +42,16 @@ import {
 } from "@/src/lib/suggestion-feedback";
 
 export type GroupVisibility = "public" | "private";
-export type EventVisibility = "public" | "group";
+export type EventVisibility = "public" | "group" | "smart_date";
 export type SuggestionStatus = "pending" | "calendar_inserted" | "accepted" | "declined";
 export type SuggestionDeclineReason = DeclineReason;
+
+export class RepositoryValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RepositoryValidationError";
+  }
+}
 
 export type UserSuggestionSettings = {
   autoInsertSuggestions: boolean;
@@ -100,15 +123,23 @@ export type UserProfileOverview = {
   events: UserProfileEvent[];
 };
 
+export type UserDatingProfile = DatingProfile;
+export type DateHashtagStatus = {
+  profile: UserDatingProfile;
+  unlocked: boolean;
+  age: number | null;
+  missingRequirements: DateMissingRequirement[];
+};
+
 function normalizeTags(tags: string[]) {
-  return Array.from(
-    new Set(
-      tags
-        .map((tag) => tag.trim().toLowerCase())
-        .filter(Boolean)
-        .map((tag) => (tag.startsWith("#") ? tag : `#${tag}`))
-    )
+  const normalized = normalizeDateTags(
+    tags
+      .map((tag) => tag.trim().toLowerCase())
+      .filter(Boolean)
+      .map((tag) => (tag.startsWith("#") ? tag : `#${tag}`))
   );
+
+  return normalized;
 }
 
 function normalizeGroupHashtags(hashtags?: string[] | null) {
@@ -142,6 +173,10 @@ function parseGroupHashtags(value: string | null | undefined) {
 
 function titleContainsAlleTag(title: string) {
   return /(^|\s)#alle(\b|$)/iu.test(title);
+}
+
+function titleContainsKontakteTag(title: string) {
+  return /(^|\s)#kontakte(\b|$)/iu.test(title);
 }
 
 function isAlleGroupName(name: string) {
@@ -185,6 +220,41 @@ function normalizeSuggestionReason(reason: string) {
   }
 
   return /(^|\s)#[\p{L}\p{N}_-]+/u.test(trimmed) ? fallback : trimmed;
+}
+
+function createDefaultDatingProfile(userId: string): UserDatingProfile {
+  return {
+    userId,
+    ...EMPTY_DATING_PROFILE
+  };
+}
+
+function mapDatingProfileRow(row: {
+  userId: string;
+  enabled: boolean;
+  birthYear: number | null;
+  gender: DatingGender | null;
+  isSingle: boolean;
+  soughtGenders: string;
+  soughtAgeMin: number | null;
+  soughtAgeMax: number | null;
+  soughtOnlySingles: boolean;
+}): UserDatingProfile {
+  return {
+    userId: row.userId,
+    enabled: row.enabled,
+    birthYear: row.birthYear,
+    gender: row.gender,
+    isSingle: row.isSingle,
+    soughtGenders: parseDatingGenders(row.soughtGenders),
+    soughtAgeMin: row.soughtAgeMin,
+    soughtAgeMax: row.soughtAgeMax,
+    soughtOnlySingles: row.soughtOnlySingles
+  };
+}
+
+function getDateUnlockStatus(profile: UserDatingProfile) {
+  return getDatingProfileStatus(profile);
 }
 
 export async function upsertUser(input: { email: string; name?: string | null; image?: string | null }) {
@@ -338,6 +408,162 @@ export async function ensureUserSuggestionSettings(userId: string) {
       updatedAt: new Date()
     })
     .onConflictDoNothing({ target: [userSettings.userId] });
+}
+
+export async function ensureUserDatingProfile(userId: string) {
+  const db = getDb();
+
+  await db
+    .insert(datingProfiles)
+    .values({
+      userId,
+      enabled: false,
+      birthYear: null,
+      gender: null,
+      isSingle: false,
+      soughtGenders: "",
+      soughtAgeMin: null,
+      soughtAgeMax: null,
+      soughtOnlySingles: false,
+      updatedAt: new Date()
+    })
+    .onConflictDoNothing({ target: [datingProfiles.userId] });
+}
+
+export async function getUserDatingProfile(userId: string): Promise<UserDatingProfile> {
+  const db = getDb();
+  await ensureUserDatingProfile(userId);
+
+  const [profile] = await db
+    .select({
+      userId: datingProfiles.userId,
+      enabled: datingProfiles.enabled,
+      birthYear: datingProfiles.birthYear,
+      gender: datingProfiles.gender,
+      isSingle: datingProfiles.isSingle,
+      soughtGenders: datingProfiles.soughtGenders,
+      soughtAgeMin: datingProfiles.soughtAgeMin,
+      soughtAgeMax: datingProfiles.soughtAgeMax,
+      soughtOnlySingles: datingProfiles.soughtOnlySingles
+    })
+    .from(datingProfiles)
+    .where(eq(datingProfiles.userId, userId))
+    .limit(1);
+
+  if (!profile) {
+    return createDefaultDatingProfile(userId);
+  }
+
+  return mapDatingProfileRow(profile);
+}
+
+export async function updateUserDatingProfile(input: {
+  userId: string;
+  enabled: boolean;
+  birthYear: number | null;
+  gender: DatingGender | null;
+  isSingle: boolean;
+  soughtGenders: DatingGender[];
+  soughtAgeMin: number | null;
+  soughtAgeMax: number | null;
+  soughtOnlySingles: boolean;
+}): Promise<UserDatingProfile> {
+  const db = getDb();
+  const normalizedSoughtGenders = normalizeDatingGenders(input.soughtGenders);
+
+  const [profile] = await db
+    .insert(datingProfiles)
+    .values({
+      userId: input.userId,
+      enabled: input.enabled,
+      birthYear: input.birthYear,
+      gender: input.gender,
+      isSingle: input.isSingle,
+      soughtGenders: serializeDatingGenders(normalizedSoughtGenders),
+      soughtAgeMin: input.soughtAgeMin,
+      soughtAgeMax: input.soughtAgeMax,
+      soughtOnlySingles: input.soughtOnlySingles,
+      updatedAt: new Date()
+    })
+    .onConflictDoUpdate({
+      target: [datingProfiles.userId],
+      set: {
+        enabled: input.enabled,
+        birthYear: input.birthYear,
+        gender: input.gender,
+        isSingle: input.isSingle,
+        soughtGenders: serializeDatingGenders(normalizedSoughtGenders),
+        soughtAgeMin: input.soughtAgeMin,
+        soughtAgeMax: input.soughtAgeMax,
+        soughtOnlySingles: input.soughtOnlySingles,
+        updatedAt: new Date()
+      }
+    })
+    .returning({
+      userId: datingProfiles.userId,
+      enabled: datingProfiles.enabled,
+      birthYear: datingProfiles.birthYear,
+      gender: datingProfiles.gender,
+      isSingle: datingProfiles.isSingle,
+      soughtGenders: datingProfiles.soughtGenders,
+      soughtAgeMin: datingProfiles.soughtAgeMin,
+      soughtAgeMax: datingProfiles.soughtAgeMax,
+      soughtOnlySingles: datingProfiles.soughtOnlySingles
+    });
+
+  if (!profile) {
+    return createDefaultDatingProfile(input.userId);
+  }
+
+  return mapDatingProfileRow(profile);
+}
+
+export async function getDateHashtagStatus(userId: string): Promise<DateHashtagStatus> {
+  const profile = await getUserDatingProfile(userId);
+  const status = getDateUnlockStatus(profile);
+
+  return {
+    profile,
+    unlocked: status.unlocked,
+    age: status.age,
+    missingRequirements: status.missingRequirements
+  };
+}
+
+async function getDatingProfileMapForUsers(userIds: string[]) {
+  const normalizedIds = Array.from(new Set(userIds.map((id) => id.trim()).filter(Boolean)));
+  if (!normalizedIds.length) {
+    return new Map<string, UserDatingProfile>();
+  }
+
+  const db = getDb();
+  const rows = await db
+    .select({
+      userId: datingProfiles.userId,
+      enabled: datingProfiles.enabled,
+      birthYear: datingProfiles.birthYear,
+      gender: datingProfiles.gender,
+      isSingle: datingProfiles.isSingle,
+      soughtGenders: datingProfiles.soughtGenders,
+      soughtAgeMin: datingProfiles.soughtAgeMin,
+      soughtAgeMax: datingProfiles.soughtAgeMax,
+      soughtOnlySingles: datingProfiles.soughtOnlySingles
+    })
+    .from(datingProfiles)
+    .where(inArray(datingProfiles.userId, normalizedIds));
+
+  const byUserId = new Map<string, UserDatingProfile>();
+  for (const row of rows) {
+    byUserId.set(row.userId, mapDatingProfileRow(row));
+  }
+
+  for (const userId of normalizedIds) {
+    if (!byUserId.has(userId)) {
+      byUserId.set(userId, createDefaultDatingProfile(userId));
+    }
+  }
+
+  return byUserId;
 }
 
 export async function getUserSuggestionSettings(userId: string): Promise<UserSuggestionSettings> {
@@ -1106,16 +1332,53 @@ export async function createEvent(input: {
   const db = getDb();
   const normalizedTags = normalizeTags(input.tags);
   const hasAlleInTitle = titleContainsAlleTag(input.title);
+  const hasKontakteInTitle = titleContainsKontakteTag(input.title);
+  const hasDateInTitle = titleContainsDateTag(input.title);
+  const hasDateTag = hasDateInTitle || normalizedTags.some((tag) => isDateTag(tag));
   const alleGroup = await ensureAlleGroupForUser(input.userId);
   const kontakteGroup = await ensureKontakteGroupForUser(input.userId);
   const targetsAlleGroup = input.groupId === alleGroup.id;
   const targetsKontakteGroup = input.groupId === kontakteGroup.id;
   const isGlobalAlleEvent = hasAlleInTitle || targetsAlleGroup;
+  const isKontakteEvent = hasKontakteInTitle || targetsKontakteGroup;
   const finalTags = normalizeTags([
     ...normalizedTags,
     ...(isGlobalAlleEvent ? ["#alle"] : []),
-    ...(targetsKontakteGroup ? ["#kontakte"] : [])
+    ...(isKontakteEvent ? ["#kontakte"] : []),
+    ...(hasDateTag ? [DATE_TAG] : [])
   ]);
+
+  if (hasDateTag) {
+    const dateStatus = await getDateHashtagStatus(input.userId);
+    if (!dateStatus.unlocked) {
+      const requirementLabels: Record<DateMissingRequirement, string> = {
+        enable_mode: "Dating-Modus aktivieren",
+        birth_year: "Geburtsjahr ausfüllen",
+        adult: "mindestens 18 Jahre alt sein",
+        gender: "dein Geschlecht auswählen",
+        must_be_single: "Single-Status auf 'single' setzen",
+        sought_genders: "gesuchte Geschlechter auswählen",
+        sought_age_range: "gesuchten Altersbereich vollständig setzen"
+      };
+      const missing = dateStatus.missingRequirements.map((item) => requirementLabels[item]).join(", ");
+      throw new RepositoryValidationError(
+        `#date ist noch nicht freigeschaltet. Bitte zuerst dein Dating-Profil vervollständigen: ${missing}.`
+      );
+    }
+
+    if (finalTags.includes("#alle") || finalTags.includes("#kontakte") || isGlobalAlleEvent || isKontakteEvent) {
+      throw new RepositoryValidationError("#date kann nicht mit #alle oder #kontakte kombiniert werden.");
+    }
+  }
+
+  const finalVisibility: EventVisibility = hasDateTag
+    ? "smart_date"
+    : isGlobalAlleEvent
+      ? "public"
+      : targetsKontakteGroup
+        ? "group"
+        : input.visibility;
+  const finalGroupId = hasDateTag ? null : hasAlleInTitle ? alleGroup?.id ?? null : input.groupId ?? null;
 
   return db.transaction(async (tx) => {
     const [event] = await tx
@@ -1126,8 +1389,8 @@ export async function createEvent(input: {
         location: input.location ?? null,
         startsAt: input.startsAt,
         endsAt: input.endsAt,
-        visibility: isGlobalAlleEvent ? "public" : targetsKontakteGroup ? "group" : input.visibility,
-        groupId: hasAlleInTitle ? alleGroup?.id ?? null : input.groupId ?? null,
+        visibility: finalVisibility,
+        groupId: finalGroupId,
         createdBy: input.userId
       })
       .returning();
@@ -1252,7 +1515,11 @@ export async function listVisibleEventsForUser(userId: string) {
     .where(eq(groupMemberships.userId, userId));
 
   const groupIds = memberships.map((membership) => membership.groupId);
-  const filters = [eq(events.visibility, "public" as EventVisibility), eq(events.createdBy, userId)];
+  const filters = [
+    eq(events.visibility, "public" as EventVisibility),
+    eq(events.visibility, "smart_date" as EventVisibility),
+    eq(events.createdBy, userId)
+  ];
 
   if (groupIds.length > 0) {
     filters.push(inArray(events.groupId, groupIds));
@@ -1294,10 +1561,38 @@ export async function listVisibleEventsForUser(userId: string) {
     tagsMap.set(tag.eventId, current);
   }
 
-  return rows.map((row) => ({
+  const mapped = rows.map((row) => ({
     ...row,
-    tags: tagsMap.get(row.id) ?? []
+    tags: normalizeTags(tagsMap.get(row.id) ?? [])
   }));
+
+  const smartDateCreatorIds = Array.from(
+    new Set(
+      mapped
+        .filter((event) => event.visibility === "smart_date" && event.createdBy !== userId)
+        .map((event) => event.createdBy)
+    )
+  );
+
+  if (!smartDateCreatorIds.length) {
+    return mapped;
+  }
+
+  const profiles = await getDatingProfileMapForUsers([userId, ...smartDateCreatorIds]);
+  const viewerProfile = profiles.get(userId) ?? createDefaultDatingProfile(userId);
+
+  return mapped.filter((event) => {
+    if (event.visibility !== "smart_date") {
+      return true;
+    }
+
+    if (event.createdBy === userId) {
+      return true;
+    }
+
+    const creatorProfile = profiles.get(event.createdBy) ?? createDefaultDatingProfile(event.createdBy);
+    return isDatingMutualMatch(viewerProfile, creatorProfile);
+  });
 }
 
 export async function getPublicEventSharePreviewById(eventId: string): Promise<PublicEventSharePreview | null> {
@@ -1333,7 +1628,11 @@ export async function getVisibleEventForUserById(input: { userId: string; eventI
     .where(eq(groupMemberships.userId, input.userId));
 
   const groupIds = memberships.map((membership) => membership.groupId);
-  const visibilityFilters = [eq(events.visibility, "public" as EventVisibility), eq(events.createdBy, input.userId)];
+  const visibilityFilters = [
+    eq(events.visibility, "public" as EventVisibility),
+    eq(events.visibility, "smart_date" as EventVisibility),
+    eq(events.createdBy, input.userId)
+  ];
 
   if (groupIds.length > 0) {
     visibilityFilters.push(inArray(events.groupId, groupIds));
@@ -1371,10 +1670,22 @@ export async function getVisibleEventForUserById(input: { userId: string; eventI
     .from(eventTags)
     .where(eq(eventTags.eventId, input.eventId));
 
-  return {
+  const event = {
     ...rows[0],
-    tags: tags.map((entry) => entry.tag)
+    tags: normalizeTags(tags.map((entry) => entry.tag))
   };
+
+  if (event.visibility === "smart_date" && event.createdBy !== input.userId) {
+    const profiles = await getDatingProfileMapForUsers([input.userId, event.createdBy]);
+    const viewerProfile = profiles.get(input.userId) ?? createDefaultDatingProfile(input.userId);
+    const creatorProfile = profiles.get(event.createdBy) ?? createDefaultDatingProfile(event.createdBy);
+
+    if (!isDatingMutualMatch(viewerProfile, creatorProfile)) {
+      return null;
+    }
+  }
+
+  return event;
 }
 
 export async function getSuggestionForEventForUser(input: { userId: string; eventId: string }) {
@@ -1462,7 +1773,7 @@ export async function listPublicAlleEvents(limit = 20) {
 
   return rows.map((row) => ({
     ...row,
-    tags: tagsMap.get(row.id) ?? []
+    tags: normalizeTags(tagsMap.get(row.id) ?? [])
   }));
 }
 
@@ -1510,7 +1821,7 @@ async function listPublicAlleEventsForUser(userId: string) {
 
   return rows.map((row) => ({
     ...row,
-    tags: tagsMap.get(row.id) ?? []
+    tags: normalizeTags(tagsMap.get(row.id) ?? [])
   }));
 }
 
@@ -1742,7 +2053,7 @@ export async function getSuggestionForUser(suggestionId: string, userId: string)
     ...rows[0],
     reason: normalizeSuggestionReason(rows[0].reason),
     decisionReasons: parseDecisionReasons(rows[0].decisionReasons),
-    tags: tagRows.map((row) => row.tag)
+    tags: normalizeTags(tagRows.map((row) => row.tag))
   };
 }
 
@@ -1794,7 +2105,7 @@ export async function listSuggestionsForUser(userId: string) {
     ...row,
     reason: normalizeSuggestionReason(row.reason),
     decisionReasons: parseDecisionReasons(row.decisionReasons),
-    tags: tagsMap.get(row.eventId) ?? []
+    tags: normalizeTags(tagsMap.get(row.eventId) ?? [])
   }));
 }
 

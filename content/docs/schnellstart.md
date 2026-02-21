@@ -52,3 +52,4 @@ Starte dort das Matching und prüfe deine Vorschläge.
 - ob deine E-Mail bei Einladungen sichtbar ist
 - welche Kalender für Verfügbarkeit und Vorschläge berücksichtigt werden
 - ob Termine in deinem Kalender als **Beschäftigt** oder **Frei/Verfügbar** markiert sind (dies steuert, wann Realite Vorschläge macht)
+- ob dein Dating-Modus (`#date`) freigeschaltet ist und welche Kriterien für gegenseitige Matches gelten

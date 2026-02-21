@@ -35,6 +35,29 @@ Wichtig:
 
 Wenn Vorschläge fehlen, prüfe deshalb direkt im Kalender, ob die Verfügbarkeit für betroffene Termine korrekt gesetzt ist.
 
+## Warum ist `#date` bei mir noch gesperrt?
+
+`#date` wird nur freigeschaltet, wenn dein Dating-Profil vollständig ist.
+
+Prüfe in **Profil & Einstellungen**:
+
+- Dating-Modus aktiviert
+- Geburtsjahr gesetzt (mindestens 18 Jahre)
+- Geschlecht gesetzt
+- Single-Status aktiv
+- gesuchte Geschlechter gesetzt
+- gesuchter Altersbereich vollständig gesetzt
+
+Solange etwas fehlt, zeigt Realite die offenen Punkte direkt im Profil an.
+
+## Warum sieht niemand mein `#date`-Event?
+
+`#date`-Events sind absichtlich nicht allgemein sichtbar.
+
+Sie werden nur Nutzern angezeigt, die mit dir im Dating-Modus **gegenseitig** matchen.
+
+Wenn du kein gegenseitiges Match mit jemandem hast, sieht diese Person das Event nicht.
+
 ## Warum fragt Realite bei Absage nach Gründen?
 
 Du kannst mehrere Gründe angeben (z. B. keine Zeit und zu weit entfernt).
