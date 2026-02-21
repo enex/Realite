@@ -8,6 +8,7 @@ import { shortenUUID } from "@/src/lib/utils/short-uuid";
 type GroupContact = {
   groupId: string;
   email: string;
+  emails: string[];
   name: string | null;
   image: string | null;
   isRegistered: boolean;
@@ -91,6 +92,7 @@ export function GroupDetail({
     visibility: "group" as "public" | "group",
     tags: "#kontakte"
   });
+  const normalizedUserEmail = userEmail.trim().toLowerCase();
 
   const group = useMemo(() => data.groups.find((entry) => entry.id === groupId) ?? null, [data.groups, groupId]);
 
@@ -454,12 +456,18 @@ export function GroupDetail({
                     <div className="flex min-w-0 items-center gap-2">
                       <UserAvatar name={contact.name} email={contact.email} image={contact.image} size="sm" />
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-slate-900">{contact.name ?? contact.email}</p>
-                        {contact.name ? <p className="truncate text-xs text-slate-500">{contact.email}</p> : null}
+                        <p className="truncate text-sm font-medium text-slate-900">
+                          {contact.name ?? contact.emails.join(", ")}
+                        </p>
+                        {contact.name ? <p className="truncate text-xs text-slate-500">{contact.emails.join(", ")}</p> : null}
                       </div>
                     </div>
                     <span className="shrink-0 pl-2 text-xs text-slate-500">
-                      {contact.email === userEmail ? "Du" : contact.isRegistered ? "Realite" : "Kontakt"}
+                      {contact.emails.some((email) => email === normalizedUserEmail)
+                        ? "Du"
+                        : contact.isRegistered
+                          ? "Realite"
+                          : "Kontakt"}
                     </span>
                   </div>
                 ))}

@@ -9,6 +9,7 @@ import { UserAvatar } from "@/src/components/user-avatar";
 type GroupContact = {
   groupId: string;
   email: string;
+  emails: string[];
   name: string | null;
   image: string | null;
   isRegistered: boolean;

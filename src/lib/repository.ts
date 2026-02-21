@@ -91,6 +91,7 @@ export type PublicEventSharePreview = {
 export type GroupContact = {
   groupId: string;
   email: string;
+  emails: string[];
   name: string | null;
   image: string | null;
   isRegistered: boolean;
@@ -1165,7 +1166,7 @@ export async function addKnownUsersToGroupByEmails(input: {
 
 export async function replaceGoogleSyncedGroupContacts(input: {
   groupId: string;
-  contacts: Array<{ email: string; name?: string | null; sourceReference?: string | null }>;
+  contacts: Array<{ email: string; name?: string | null; image?: string | null; sourceReference?: string | null }>;
 }) {
   const db = getDb();
   const normalizedContacts = Array.from(
@@ -1174,6 +1175,7 @@ export async function replaceGoogleSyncedGroupContacts(input: {
         .map((contact) => ({
           email: normalizeEmail(contact.email),
           name: contact.name?.trim() || null,
+          image: contact.image?.trim() || null,
           sourceReference: contact.sourceReference ?? null
         }))
         .filter((contact) => Boolean(contact.email))
@@ -1194,6 +1196,7 @@ export async function replaceGoogleSyncedGroupContacts(input: {
       groupId: input.groupId,
       email: contact.email,
       name: contact.name,
+      image: contact.image,
       source: "google_contacts",
       sourceReference: contact.sourceReference,
       updatedAt: new Date()
@@ -1222,13 +1225,16 @@ export async function listGroupContactsForUser(userId: string) {
         groupId: groupContacts.groupId,
         email: groupContacts.email,
         name: groupContacts.name,
-        source: groupContacts.source
+        image: groupContacts.image,
+        source: groupContacts.source,
+        sourceReference: groupContacts.sourceReference
       })
       .from(groupContacts)
       .where(inArray(groupContacts.groupId, groupIds)),
     db
       .select({
         groupId: groupMemberships.groupId,
+        userId: users.id,
         email: users.email,
         name: users.name,
         image: users.image
@@ -1238,41 +1244,73 @@ export async function listGroupContactsForUser(userId: string) {
       .where(inArray(groupMemberships.groupId, groupIds))
   ]);
 
-  const byKey = new Map<string, GroupContact>();
+  const byKey = new Map<
+    string,
+    Omit<GroupContact, "emails"> & {
+      emails: Set<string>;
+    }
+  >();
+  const keyByGroupEmail = new Map<string, string>();
 
   for (const contact of storedContacts) {
     const email = normalizeEmail(contact.email);
-    const key = `${contact.groupId}:${email}`;
+    const emailKey = `${contact.groupId}:${email}`;
+    const key =
+      keyByGroupEmail.get(emailKey) ??
+      (contact.sourceReference ? `${contact.groupId}:ref:${contact.sourceReference}` : `${contact.groupId}:email:${email}`);
+    const existing = byKey.get(key);
+    const emails = existing?.emails ?? new Set<string>();
+    emails.add(email);
+
     byKey.set(key, {
       groupId: contact.groupId,
-      email,
-      name: contact.name ?? null,
-      image: null,
-      isRegistered: false,
-      source: contact.source
+      email: existing?.email ?? email,
+      emails,
+      name: existing?.name ?? contact.name ?? null,
+      image: existing?.image ?? contact.image ?? null,
+      isRegistered: existing?.isRegistered ?? false,
+      source: existing?.source ?? contact.source
     });
+    keyByGroupEmail.set(emailKey, key);
   }
 
   for (const member of memberContacts) {
     const email = normalizeEmail(member.email);
-    const key = `${member.groupId}:${email}`;
+    const emailKey = `${member.groupId}:${email}`;
+    const key = keyByGroupEmail.get(emailKey) ?? `${member.groupId}:member:${member.userId}`;
     const existing = byKey.get(key);
+    const emails = existing?.emails ?? new Set<string>();
+    emails.add(email);
+
     byKey.set(key, {
       groupId: member.groupId,
-      email,
+      email: existing?.email ?? email,
+      emails,
       name: member.name ?? existing?.name ?? null,
       image: member.image ?? existing?.image ?? null,
       isRegistered: true,
       source: existing?.source ?? "member"
     });
+    keyByGroupEmail.set(emailKey, key);
   }
 
-  return Array.from(byKey.values()).sort((a, b) => {
-    if (a.groupId === b.groupId) {
-      return a.email.localeCompare(b.email);
-    }
-    return a.groupId.localeCompare(b.groupId);
-  });
+  return Array.from(byKey.values())
+    .map((contact) => ({
+      ...contact,
+      emails: Array.from(contact.emails).sort((a, b) => a.localeCompare(b))
+    }))
+    .sort((a, b) => {
+      if (a.groupId === b.groupId) {
+        const aLabel = (a.name ?? a.email).toLowerCase();
+        const bLabel = (b.name ?? b.email).toLowerCase();
+        const byLabel = aLabel.localeCompare(bLabel);
+        if (byLabel !== 0) {
+          return byLabel;
+        }
+        return a.email.localeCompare(b.email);
+      }
+      return a.groupId.localeCompare(b.groupId);
+    });
 }
 
 export async function createInviteLink(input: { groupId: string; createdBy: string; expiresInDays?: number }) {

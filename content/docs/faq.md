@@ -108,9 +108,22 @@ In der Gruppenansicht:
 
 ## Warum sehe ich bei manchen Kontakten kein Profilbild?
 
-Realite zeigt Profilbilder nur dann, wenn für diesen Kontakt ein bekanntes Nutzerprofil vorhanden ist.
+Realite zeigt Profilbilder, wenn entweder:
+
+- beim Kontakt in Google Kontakte ein Foto hinterlegt ist oder
+- für diesen Kontakt ein bekanntes Realite-Nutzerprofil vorhanden ist.
 
 Wenn kein Bild verfügbar ist, zeigt Realite stattdessen Initialen an.
+
+## Warum wird ein Kontakt mit mehreren E-Mail-Adressen nur einmal angezeigt?
+
+Das ist beabsichtigt.
+
+Realite fasst mehrere E-Mail-Adressen derselben Kontaktperson zu einem Eintrag zusammen:
+
+- der Kontakt wird nur einmal angezeigt
+- der Kontakt wird nur einmal gezählt
+- die E-Mail-Adressen werden kommagetrennt dargestellt
 
 ## Wo finde ich Datenschutz, AGB und Impressum?
 

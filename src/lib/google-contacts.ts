@@ -16,6 +16,7 @@ type GooglePerson = {
   resourceName?: string;
   names?: Array<{ displayName?: string }>;
   emailAddresses?: Array<{ value?: string }>;
+  photos?: Array<{ url?: string; default?: boolean }>;
   memberships?: Array<{
     contactGroupMembership?: {
       contactGroupResourceName?: string;
@@ -142,14 +143,14 @@ export async function syncGoogleContactsToGroups(userId: string) {
 
   const contactsByLocalGroupId = new Map<
     string,
-    Map<string, { email: string; name: string | null; sourceReference: string | null }>
+    Map<string, { email: string; name: string | null; image: string | null; sourceReference: string | null }>
   >();
   let contactsPageToken: string | undefined;
 
   do {
     const params = new URLSearchParams({
       pageSize: "1000",
-      personFields: "names,emailAddresses,memberships"
+      personFields: "names,emailAddresses,photos,memberships"
     });
 
     if (contactsPageToken) {
@@ -181,6 +182,10 @@ export async function syncGoogleContactsToGroups(userId: string) {
 
       scannedContacts += 1;
       const displayName = person.names?.[0]?.displayName?.trim() || null;
+      const photo =
+        person.photos?.find((entry) => Boolean(entry.url) && !entry.default)?.url?.trim() ??
+        person.photos?.find((entry) => Boolean(entry.url))?.url?.trim() ??
+        null;
       const sourceReference = person.resourceName ?? null;
 
       const addContactsToGroup = (groupId: string) => {
@@ -189,6 +194,7 @@ export async function syncGoogleContactsToGroups(userId: string) {
           contacts.set(email, {
             email,
             name: displayName,
+            image: photo,
             sourceReference
           });
         }

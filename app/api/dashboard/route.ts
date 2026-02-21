@@ -43,7 +43,8 @@ export async function GET() {
   }
 
   for (const contact of groupContacts) {
-    if (contact.email.trim().toLowerCase() === ownEmail) {
+    const isOwnContact = contact.emails.some((email) => email.trim().toLowerCase() === ownEmail);
+    if (isOwnContact) {
       continue;
     }
 

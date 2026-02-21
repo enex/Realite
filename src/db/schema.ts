@@ -161,6 +161,7 @@ export const groupContacts = pgTable(
       .references(() => groups.id, { onDelete: "cascade" }),
     email: text("email").notNull(),
     name: text("name"),
+    image: text("image"),
     source: text("source").notNull().default("manual"),
     sourceReference: text("source_reference"),
     createdAt: timestamp("created_at", { withTimezone: true })

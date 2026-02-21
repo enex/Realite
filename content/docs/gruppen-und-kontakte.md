@@ -39,11 +39,14 @@ Wenn du Kontakte aktiviert hast:
 - wird die Gruppe `#kontakte` automatisch gepflegt
 - können Kontakt-Listen als Gruppen erscheinen
 - siehst du bei passenden Gruppen, dass sie synchronisiert sind
+- Kontakte mit mehreren E-Mail-Adressen werden nur einmal angezeigt und nur einmal gezählt
+- mehrere E-Mail-Adressen eines Kontakts werden kommagetrennt in einem Eintrag angezeigt
 - dein eigener Account wird in Gruppen nicht als Kontakt/Mitglied angezeigt und nicht mitgezählt
 
 ## Profilbilder in Kontakten
 
-- In Gruppen und Kontaktlisten zeigt Realite Profilbilder an, wenn ein Kontakt bereits als Realite-Nutzer registriert ist.
+- In Gruppen und Kontaktlisten zeigt Realite Profilbilder aus Google Kontakten, wenn beim Kontakt ein Bild hinterlegt ist.
+- Ist ein Kontakt gleichzeitig als Realite-Nutzer bekannt, nutzt Realite das zugehörige Profilbild.
 - Für Kontakte ohne verfügbares Bild zeigt Realite automatisch Initialen als Fallback.
 - Dein eigenes Profilbild siehst du im Profilbereich und in der App-Navigation.
 

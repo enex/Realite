@@ -1,0 +1,1 @@
+ALTER TABLE "group_contacts" ADD COLUMN "image" text;
