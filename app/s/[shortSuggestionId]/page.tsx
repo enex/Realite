@@ -58,6 +58,7 @@ export default async function SuggestionShortcutPage({
           initialStatus={suggestion.status}
           initialReasons={suggestion.decisionReasons}
           initialNote={suggestion.decisionNote}
+          creatorName={suggestion.createdByName ?? suggestion.createdByEmail}
         />
       </div>
 

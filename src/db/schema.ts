@@ -81,6 +81,10 @@ export const userSettings = pgTable("user_settings", {
   suggestionDeliveryMode: text("suggestion_delivery_mode").notNull().default("calendar_copy"),
   shareEmailInSourceInvites: boolean("share_email_in_source_invites").notNull().default(true),
   matchingCalendarIds: text("matching_calendar_ids").notNull().default(""),
+  blockedCreatorIds: text("blocked_creator_ids").notNull().default(""),
+  blockedActivityTags: text("blocked_activity_tags").notNull().default(""),
+  suggestionLimitPerDay: integer("suggestion_limit_per_day").notNull().default(4),
+  suggestionLimitPerWeek: integer("suggestion_limit_per_week").notNull().default(16),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

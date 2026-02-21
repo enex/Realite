@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AppShell } from "@/src/components/app-shell";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { DatingSettingsCard } from "@/src/components/settings/dating-settings-card";
+import { SuggestionLearningCard } from "@/src/components/settings/suggestion-learning-card";
 import { SuggestionSettingsCard, type SuggestionSettingsForm } from "@/src/components/settings/suggestion-settings-card";
 import { useDatingSettings } from "@/src/components/settings/use-dating-settings";
 
@@ -21,6 +22,12 @@ type ReadableCalendar = {
 
 type SettingsPayload = {
   settings: SuggestionSettingsForm;
+  criteria: {
+    positiveCriteria: Array<{ key: string; label: string; weight: number; votes: number }>;
+    negativeCriteria: Array<{ key: string; label: string; weight: number; votes: number }>;
+    blockedPeople: Array<{ id: string; label: string }>;
+    blockedActivityTags: string[];
+  };
   suggestionStats: {
     autoInsertedSuggestionCount: number;
   };
@@ -36,7 +43,17 @@ const emptySettings: SettingsPayload = {
     suggestionCalendarId: "primary",
     suggestionDeliveryMode: "calendar_copy",
     shareEmailInSourceInvites: true,
-    matchingCalendarIds: []
+    matchingCalendarIds: [],
+    blockedCreatorIds: [],
+    blockedActivityTags: [],
+    suggestionLimitPerDay: 4,
+    suggestionLimitPerWeek: 16
+  },
+  criteria: {
+    positiveCriteria: [],
+    negativeCriteria: [],
+    blockedPeople: [],
+    blockedActivityTags: []
   },
   suggestionStats: {
     autoInsertedSuggestionCount: 0
@@ -171,10 +188,16 @@ export function SettingsPage({
           calendars={data.calendars}
           readableCalendars={data.readableCalendars}
           autoInsertedSuggestionCount={data.suggestionStats.autoInsertedSuggestionCount}
+          blockedPeople={data.criteria.blockedPeople}
           form={suggestionForm}
           busy={busy}
           onFormChange={setSuggestionForm}
           onSubmit={saveSuggestionSettings}
+        />
+
+        <SuggestionLearningCard
+          positiveCriteria={data.criteria.positiveCriteria}
+          negativeCriteria={data.criteria.negativeCriteria}
         />
 
         <DatingSettingsCard

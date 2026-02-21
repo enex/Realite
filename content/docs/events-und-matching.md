@@ -56,6 +56,7 @@ Du entscheidest in den Einstellungen:
 - dass Vorschläge als Kalendereintrag mit Realite-Link erscheinen
 - welcher Kalender für Kalendereinträge genutzt wird
 - welche Kalender für Verfügbarkeit und Vorschläge einbezogen werden
+- wie viele Vorschläge maximal pro Tag und pro Kalenderwoche bleiben
 - wie viele Vorschläge aktuell automatisch in deinen Kalender eingetragen wurden
 
 Wichtig für korrektes Matching:
@@ -146,3 +147,19 @@ Wenn du absagst, kannst du mehrere Gründe auswählen:
 - Wenn folgendes anders wäre ja
 
 Diese Gründe werden gespeichert und im Matching für zukünftige Termine verwendet.
+
+Neu für Absagen:
+
+- Bei **Nicht mit dieser Person** fragt Realite konkret mit Namen (z. B. „Nicht mit Max Mustermann“).
+- Wenn du das auswählst, landet die Person in deiner Blockliste und wird nicht mehr vorgeschlagen.
+- Bei **Nicht diese Aktivität** blockiert Realite die betroffenen Aktivitäts-Tags (z. B. Karaoke), damit genau solche Vorschläge nicht wieder auftauchen.
+
+## Transparenz im Profil
+
+Unter **Profil & Einstellungen** siehst du jetzt offen:
+
+- welche Kriterien aktuell positiv gewichtet werden
+- welche Kriterien aktuell negativ gewichtet werden
+- welche Personen und Aktivitäten fest blockiert sind
+
+Blocklisten kannst du dort auch wieder bereinigen (Entfernen).

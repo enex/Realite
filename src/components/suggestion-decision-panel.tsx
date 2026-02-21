@@ -13,6 +13,7 @@ type SuggestionDecisionPanelProps = {
   initialStatus: "pending" | "calendar_inserted" | "accepted" | "declined";
   initialReasons: DeclineReason[];
   initialNote: string | null;
+  creatorName: string;
 };
 
 export function SuggestionDecisionPanel(props: SuggestionDecisionPanelProps) {
@@ -25,6 +26,14 @@ export function SuggestionDecisionPanel(props: SuggestionDecisionPanelProps) {
 
   const showDeclineForm = status === "declined" || selectedReasons.length > 0;
   const sortedReasons = useMemo(() => [...DECLINE_REASON_VALUES], []);
+
+  function getDeclineReasonLabel(reason: DeclineReason) {
+    if (reason === "not_with_this_person") {
+      return `Nicht mit ${props.creatorName}`;
+    }
+
+    return DECLINE_REASON_LABELS[reason];
+  }
 
   function toggleReason(reason: DeclineReason) {
     setSelectedReasons((current) => {
@@ -113,7 +122,7 @@ export function SuggestionDecisionPanel(props: SuggestionDecisionPanelProps) {
                   onChange={() => toggleReason(reason)}
                   disabled={busy}
                 />
-                <span>{DECLINE_REASON_LABELS[reason]}</span>
+                <span>{getDeclineReasonLabel(reason)}</span>
               </label>
             ))}
           </div>

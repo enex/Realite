@@ -59,6 +59,24 @@ export type UserSuggestionSettings = {
   suggestionDeliveryMode: "calendar_copy" | "source_invite";
   shareEmailInSourceInvites: boolean;
   matchingCalendarIds: string[];
+  blockedCreatorIds: string[];
+  blockedActivityTags: string[];
+  suggestionLimitPerDay: number;
+  suggestionLimitPerWeek: number;
+};
+
+export type SuggestionLearningCriterion = {
+  key: string;
+  label: string;
+  weight: number;
+  votes: number;
+};
+
+export type SuggestionLearningSummary = {
+  positiveCriteria: SuggestionLearningCriterion[];
+  negativeCriteria: SuggestionLearningCriterion[];
+  blockedPeople: Array<{ id: string; label: string }>;
+  blockedActivityTags: string[];
 };
 
 export type VisibleEvent = {
@@ -196,8 +214,12 @@ function normalizeSuggestionDeliveryMode(value: string | null | undefined): "cal
   return value === "source_invite" ? "source_invite" : "calendar_copy";
 }
 
+function normalizeStringList(values: string[]) {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+}
+
 function normalizeCalendarIdList(ids: string[]) {
-  return Array.from(new Set(ids.map((id) => id.trim()).filter(Boolean)));
+  return normalizeStringList(ids);
 }
 
 function parseCalendarIdList(value: string | null | undefined) {
@@ -210,6 +232,53 @@ function parseCalendarIdList(value: string | null | undefined) {
 
 function serializeCalendarIdList(ids: string[]) {
   return normalizeCalendarIdList(ids).join(",");
+}
+
+const RESERVED_ACTIVITY_TAGS = new Set(["#alle", "#kontakte", DATE_TAG]);
+
+function normalizeBlockedActivityTags(tags: string[]) {
+  return normalizeTags(tags).filter((tag) => !RESERVED_ACTIVITY_TAGS.has(tag));
+}
+
+function parseBlockedActivityTags(value: string | null | undefined) {
+  if (!value) {
+    return [] as string[];
+  }
+
+  return normalizeBlockedActivityTags(value.split(","));
+}
+
+function serializeBlockedActivityTags(tags: string[]) {
+  return normalizeBlockedActivityTags(tags).join(",");
+}
+
+function parseStringList(value: string | null | undefined) {
+  if (!value) {
+    return [] as string[];
+  }
+
+  return normalizeStringList(value.split(","));
+}
+
+function serializeStringList(values: string[]) {
+  return normalizeStringList(values).join(",");
+}
+
+function normalizeSuggestionLimit(value: number, fallback: number) {
+  if (!Number.isFinite(value)) {
+    return fallback;
+  }
+
+  const integer = Math.trunc(value);
+  if (integer < 1) {
+    return 1;
+  }
+
+  if (integer > 200) {
+    return 200;
+  }
+
+  return integer;
 }
 
 function normalizeSuggestionReason(reason: string) {
@@ -406,6 +475,10 @@ export async function ensureUserSuggestionSettings(userId: string) {
       suggestionDeliveryMode: "calendar_copy",
       shareEmailInSourceInvites: true,
       matchingCalendarIds: "",
+      blockedCreatorIds: "",
+      blockedActivityTags: "",
+      suggestionLimitPerDay: 4,
+      suggestionLimitPerWeek: 16,
       updatedAt: new Date()
     })
     .onConflictDoNothing({ target: [userSettings.userId] });
@@ -577,7 +650,11 @@ export async function getUserSuggestionSettings(userId: string): Promise<UserSug
       suggestionCalendarId: userSettings.suggestionCalendarId,
       suggestionDeliveryMode: userSettings.suggestionDeliveryMode,
       shareEmailInSourceInvites: userSettings.shareEmailInSourceInvites,
-      matchingCalendarIds: userSettings.matchingCalendarIds
+      matchingCalendarIds: userSettings.matchingCalendarIds,
+      blockedCreatorIds: userSettings.blockedCreatorIds,
+      blockedActivityTags: userSettings.blockedActivityTags,
+      suggestionLimitPerDay: userSettings.suggestionLimitPerDay,
+      suggestionLimitPerWeek: userSettings.suggestionLimitPerWeek
     })
     .from(userSettings)
     .where(eq(userSettings.userId, userId))
@@ -588,14 +665,22 @@ export async function getUserSuggestionSettings(userId: string): Promise<UserSug
       ? {
           ...settings,
           suggestionDeliveryMode: normalizeSuggestionDeliveryMode(settings.suggestionDeliveryMode),
-          matchingCalendarIds: parseCalendarIdList(settings.matchingCalendarIds)
+          matchingCalendarIds: parseCalendarIdList(settings.matchingCalendarIds),
+          blockedCreatorIds: parseStringList(settings.blockedCreatorIds),
+          blockedActivityTags: parseBlockedActivityTags(settings.blockedActivityTags),
+          suggestionLimitPerDay: normalizeSuggestionLimit(settings.suggestionLimitPerDay, 4),
+          suggestionLimitPerWeek: normalizeSuggestionLimit(settings.suggestionLimitPerWeek, 16)
         }
       : {
-      autoInsertSuggestions: true,
-      suggestionCalendarId: "primary",
-      suggestionDeliveryMode: "calendar_copy",
-      shareEmailInSourceInvites: true,
-      matchingCalendarIds: []
+          autoInsertSuggestions: true,
+          suggestionCalendarId: "primary",
+          suggestionDeliveryMode: "calendar_copy",
+          shareEmailInSourceInvites: true,
+          matchingCalendarIds: [],
+          blockedCreatorIds: [],
+          blockedActivityTags: [],
+          suggestionLimitPerDay: 4,
+          suggestionLimitPerWeek: 16
         }
   );
 }
@@ -607,9 +692,17 @@ export async function updateUserSuggestionSettings(input: {
   suggestionDeliveryMode: "calendar_copy" | "source_invite";
   shareEmailInSourceInvites: boolean;
   matchingCalendarIds: string[];
+  blockedCreatorIds: string[];
+  blockedActivityTags: string[];
+  suggestionLimitPerDay: number;
+  suggestionLimitPerWeek: number;
 }): Promise<UserSuggestionSettings> {
   const db = getDb();
   const serializedMatchingCalendarIds = serializeCalendarIdList(input.matchingCalendarIds);
+  const serializedBlockedCreatorIds = serializeStringList(input.blockedCreatorIds);
+  const serializedBlockedActivityTags = serializeBlockedActivityTags(input.blockedActivityTags);
+  const suggestionLimitPerDay = normalizeSuggestionLimit(input.suggestionLimitPerDay, 4);
+  const suggestionLimitPerWeek = normalizeSuggestionLimit(input.suggestionLimitPerWeek, 16);
 
   const [settings] = await db
     .insert(userSettings)
@@ -620,6 +713,10 @@ export async function updateUserSuggestionSettings(input: {
       suggestionDeliveryMode: input.suggestionDeliveryMode,
       shareEmailInSourceInvites: input.shareEmailInSourceInvites,
       matchingCalendarIds: serializedMatchingCalendarIds,
+      blockedCreatorIds: serializedBlockedCreatorIds,
+      blockedActivityTags: serializedBlockedActivityTags,
+      suggestionLimitPerDay,
+      suggestionLimitPerWeek,
       updatedAt: new Date()
     })
     .onConflictDoUpdate({
@@ -630,6 +727,10 @@ export async function updateUserSuggestionSettings(input: {
         suggestionDeliveryMode: input.suggestionDeliveryMode,
         shareEmailInSourceInvites: input.shareEmailInSourceInvites,
         matchingCalendarIds: serializedMatchingCalendarIds,
+        blockedCreatorIds: serializedBlockedCreatorIds,
+        blockedActivityTags: serializedBlockedActivityTags,
+        suggestionLimitPerDay,
+        suggestionLimitPerWeek,
         updatedAt: new Date()
       }
     })
@@ -638,7 +739,11 @@ export async function updateUserSuggestionSettings(input: {
       suggestionCalendarId: userSettings.suggestionCalendarId,
       suggestionDeliveryMode: userSettings.suggestionDeliveryMode,
       shareEmailInSourceInvites: userSettings.shareEmailInSourceInvites,
-      matchingCalendarIds: userSettings.matchingCalendarIds
+      matchingCalendarIds: userSettings.matchingCalendarIds,
+      blockedCreatorIds: userSettings.blockedCreatorIds,
+      blockedActivityTags: userSettings.blockedActivityTags,
+      suggestionLimitPerDay: userSettings.suggestionLimitPerDay,
+      suggestionLimitPerWeek: userSettings.suggestionLimitPerWeek
     });
 
   return {
@@ -646,7 +751,11 @@ export async function updateUserSuggestionSettings(input: {
     suggestionCalendarId: settings?.suggestionCalendarId ?? input.suggestionCalendarId,
     suggestionDeliveryMode: normalizeSuggestionDeliveryMode(settings?.suggestionDeliveryMode ?? input.suggestionDeliveryMode),
     shareEmailInSourceInvites: settings?.shareEmailInSourceInvites ?? input.shareEmailInSourceInvites,
-    matchingCalendarIds: parseCalendarIdList(settings?.matchingCalendarIds ?? serializedMatchingCalendarIds)
+    matchingCalendarIds: parseCalendarIdList(settings?.matchingCalendarIds ?? serializedMatchingCalendarIds),
+    blockedCreatorIds: parseStringList(settings?.blockedCreatorIds ?? serializedBlockedCreatorIds),
+    blockedActivityTags: parseBlockedActivityTags(settings?.blockedActivityTags ?? serializedBlockedActivityTags),
+    suggestionLimitPerDay: normalizeSuggestionLimit(settings?.suggestionLimitPerDay ?? suggestionLimitPerDay, 4),
+    suggestionLimitPerWeek: normalizeSuggestionLimit(settings?.suggestionLimitPerWeek ?? suggestionLimitPerWeek, 16)
   };
 }
 
@@ -2169,6 +2278,124 @@ export async function getTagPreferenceMap(userId: string) {
   return map;
 }
 
+function getTimeslotLabel(weekday: number, hour: number) {
+  const weekdays = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+  const weekdayLabel = weekdays[weekday] ?? `Tag ${weekday}`;
+  return `${weekdayLabel} ${String(hour).padStart(2, "0")}:00`;
+}
+
+function getPersonLabel(userId: string, userLabels: Map<string, string>) {
+  return userLabels.get(userId) ?? `Person ${userId.slice(0, 8)}`;
+}
+
+function getPreferenceCriterionLabel(tag: string, userLabels: Map<string, string>) {
+  if (tag.startsWith("person:")) {
+    const userId = tag.slice("person:".length);
+    return {
+      key: tag,
+      label: `Person: ${getPersonLabel(userId, userLabels)}`
+    };
+  }
+
+  if (tag.startsWith("timeslot:")) {
+    const [weekdayRaw, hourRaw] = tag.slice("timeslot:".length).split(":");
+    const weekday = Number.parseInt(weekdayRaw ?? "", 10);
+    const hour = Number.parseInt(hourRaw ?? "", 10);
+
+    if (Number.isInteger(weekday) && Number.isInteger(hour)) {
+      return {
+        key: tag,
+        label: `Zeitfenster: ${getTimeslotLabel(weekday, hour)}`
+      };
+    }
+  }
+
+  if (tag.startsWith("location:")) {
+    const location = tag.slice("location:".length).replace(/-/g, " ");
+    return {
+      key: tag,
+      label: `Ort: ${location || "Unbekannt"}`
+    };
+  }
+
+  if (tag.startsWith("#")) {
+    return {
+      key: tag,
+      label: `Aktivität: ${tag}`
+    };
+  }
+
+  return {
+    key: tag,
+    label: `Signal: ${tag}`
+  };
+}
+
+export async function getSuggestionLearningSummary(userId: string): Promise<SuggestionLearningSummary> {
+  const db = getDb();
+  const [settings, preferenceRows] = await Promise.all([
+    getUserSuggestionSettings(userId),
+    db
+      .select({
+        tag: tagPreferences.tag,
+        weight: tagPreferences.weight,
+        votes: tagPreferences.votes
+      })
+      .from(tagPreferences)
+      .where(eq(tagPreferences.userId, userId))
+  ]);
+
+  const personIds = normalizeStringList([
+    ...settings.blockedCreatorIds,
+    ...preferenceRows
+      .filter((row) => row.tag.startsWith("person:"))
+      .map((row) => row.tag.slice("person:".length))
+  ]);
+  const personRows = personIds.length
+    ? await db
+        .select({
+          id: users.id,
+          name: users.name,
+          email: users.email
+        })
+        .from(users)
+        .where(inArray(users.id, personIds))
+    : [];
+  const personLabelMap = new Map<string, string>();
+  for (const person of personRows) {
+    personLabelMap.set(person.id, person.name?.trim() || person.email);
+  }
+
+  const normalizedCriteria = preferenceRows.map((row) => {
+    const criterion = getPreferenceCriterionLabel(row.tag, personLabelMap);
+    return {
+      key: criterion.key,
+      label: criterion.label,
+      weight: Number(row.weight.toFixed(2)),
+      votes: row.votes
+    };
+  });
+
+  const positiveCriteria = normalizedCriteria
+    .filter((criterion) => criterion.weight > 0.15)
+    .sort((a, b) => b.weight - a.weight || b.votes - a.votes)
+    .slice(0, 6);
+  const negativeCriteria = normalizedCriteria
+    .filter((criterion) => criterion.weight < -0.15)
+    .sort((a, b) => a.weight - b.weight || b.votes - a.votes)
+    .slice(0, 6);
+
+  return {
+    positiveCriteria,
+    negativeCriteria,
+    blockedPeople: settings.blockedCreatorIds.map((id) => ({
+      id,
+      label: getPersonLabel(id, personLabelMap)
+    })),
+    blockedActivityTags: settings.blockedActivityTags
+  };
+}
+
 export async function applyDecisionFeedback(input: {
   userId: string;
   suggestionId: string;
@@ -2198,7 +2425,7 @@ export async function applyDecisionFeedback(input: {
       .where(and(eq(suggestions.id, input.suggestionId), eq(suggestions.userId, input.userId)));
 
     const isConditionalDecline = input.decision === "declined" && reasons.length === 1 && reasons[0] === "would_if_changed";
-    const delta = input.decision === "accepted" ? 1 : isConditionalDecline ? -0.1 : -0.5;
+    const delta = input.decision === "accepted" ? 1.1 : isConditionalDecline ? -0.1 : -0.5;
 
     for (const tag of suggestion.tags) {
       await tx
@@ -2236,14 +2463,14 @@ export async function applyDecisionFeedback(input: {
           .values({
             userId: input.userId,
             tag: contextTag,
-            weight: 0.35,
+            weight: 0.45,
             votes: 1,
             updatedAt: new Date()
           })
           .onConflictDoUpdate({
             target: [tagPreferences.userId, tagPreferences.tag],
             set: {
-              weight: sql`${tagPreferences.weight} + ${0.35}`,
+              weight: sql`${tagPreferences.weight} + ${0.45}`,
               votes: sql`${tagPreferences.votes} + 1`,
               updatedAt: new Date()
             }
@@ -2332,6 +2559,50 @@ export async function applyDecisionFeedback(input: {
           set: {
             weight: sql`${tagPreferences.weight} + ${-1}`,
             votes: sql`${tagPreferences.votes} + 1`,
+            updatedAt: new Date()
+          }
+        });
+    }
+
+    if (reasons.includes("not_with_this_person") || reasons.includes("not_this_activity")) {
+      const [settings] = await tx
+        .select({
+          blockedCreatorIds: userSettings.blockedCreatorIds,
+          blockedActivityTags: userSettings.blockedActivityTags
+        })
+        .from(userSettings)
+        .where(eq(userSettings.userId, input.userId))
+        .limit(1);
+
+      const blockedCreatorIds = parseStringList(settings?.blockedCreatorIds);
+      const blockedActivityTags = parseBlockedActivityTags(settings?.blockedActivityTags);
+      const nextBlockedCreatorIds = reasons.includes("not_with_this_person")
+        ? normalizeStringList([...blockedCreatorIds, suggestion.createdBy])
+        : blockedCreatorIds;
+      const nextBlockedActivityTags = reasons.includes("not_this_activity")
+        ? normalizeBlockedActivityTags([...blockedActivityTags, ...suggestion.tags])
+        : blockedActivityTags;
+
+      await tx
+        .insert(userSettings)
+        .values({
+          userId: input.userId,
+          autoInsertSuggestions: true,
+          suggestionCalendarId: "primary",
+          suggestionDeliveryMode: "calendar_copy",
+          shareEmailInSourceInvites: true,
+          matchingCalendarIds: "",
+          blockedCreatorIds: serializeStringList(nextBlockedCreatorIds),
+          blockedActivityTags: serializeBlockedActivityTags(nextBlockedActivityTags),
+          suggestionLimitPerDay: 4,
+          suggestionLimitPerWeek: 16,
+          updatedAt: new Date()
+        })
+        .onConflictDoUpdate({
+          target: [userSettings.userId],
+          set: {
+            blockedCreatorIds: serializeStringList(nextBlockedCreatorIds),
+            blockedActivityTags: serializeBlockedActivityTags(nextBlockedActivityTags),
             updatedAt: new Date()
           }
         });

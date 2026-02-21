@@ -64,6 +64,20 @@ Du kannst mehrere Gründe angeben (z. B. keine Zeit und zu weit entfernt).
 
 Diese Informationen werden gespeichert und für zukünftige Vorschläge genutzt, damit Ergebnisse besser passen.
 
+Wenn du **Nicht mit dieser Person** auswählst, wird diese Person zusätzlich auf eine Blockliste gesetzt.
+Wenn du **Nicht diese Aktivität** auswählst, blockiert Realite die betroffenen Aktivitäts-Tags (z. B. Karaoke).
+
+Beides kannst du später in **Profil & Einstellungen** wieder entfernen.
+
+## Wo stelle ich Limits für Vorschläge ein?
+
+In **Profil & Einstellungen** unter **Vorschlags-Einstellungen**:
+
+- **Maximal pro Tag**
+- **Maximal pro Woche**
+
+Realite priorisiert dann die bestbewerteten passenden Optionen innerhalb dieser Limits.
+
 ## Was bedeuten die neuen kurzen Links (`/s/...` und `/e/...`)?
 
 - `/s/<shortUUID>` öffnet die Seite zur Zusage/Absage für neue Vorschläge.

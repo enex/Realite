@@ -104,6 +104,7 @@ export default async function EventShortcutPage({
             initialStatus={suggestionForFlow.status}
             initialReasons={suggestionForFlow.decisionReasons}
             initialNote={suggestionForFlow.decisionNote}
+            creatorName={event.createdByName ?? event.createdByEmail}
           />
           <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-sm text-slate-600">Warum wurde dir das vorgeschlagen?</p>

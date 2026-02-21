@@ -5,6 +5,7 @@ import { listReadableCalendars, listWritableCalendars } from "@/src/lib/google-c
 import {
   getAutoInsertedSuggestionCountForUser,
   getGoogleConnection,
+  getSuggestionLearningSummary,
   getUserSuggestionSettings,
   updateUserSuggestionSettings
 } from "@/src/lib/repository";
@@ -15,7 +16,11 @@ const updateSettingsSchema = z.object({
   suggestionCalendarId: z.string().min(1).max(200),
   suggestionDeliveryMode: z.enum(["calendar_copy", "source_invite"]),
   shareEmailInSourceInvites: z.boolean(),
-  matchingCalendarIds: z.array(z.string().min(1).max(200)).max(250)
+  matchingCalendarIds: z.array(z.string().min(1).max(200)).max(250),
+  blockedCreatorIds: z.array(z.string().uuid()).max(500),
+  blockedActivityTags: z.array(z.string().min(2).max(80)).max(500),
+  suggestionLimitPerDay: z.number().int().min(1).max(50),
+  suggestionLimitPerWeek: z.number().int().min(1).max(200)
 });
 
 export async function GET() {
@@ -43,7 +48,11 @@ export async function GET() {
       suggestionCalendarId: fallbackCalendarId,
       suggestionDeliveryMode: settings.suggestionDeliveryMode,
       shareEmailInSourceInvites: settings.shareEmailInSourceInvites,
-      matchingCalendarIds: settings.matchingCalendarIds
+      matchingCalendarIds: settings.matchingCalendarIds,
+      blockedCreatorIds: settings.blockedCreatorIds,
+      blockedActivityTags: settings.blockedActivityTags,
+      suggestionLimitPerDay: settings.suggestionLimitPerDay,
+      suggestionLimitPerWeek: settings.suggestionLimitPerWeek
     });
   }
 
@@ -56,7 +65,11 @@ export async function GET() {
       suggestionCalendarId: settings.suggestionCalendarId,
       suggestionDeliveryMode: settings.suggestionDeliveryMode,
       shareEmailInSourceInvites: settings.shareEmailInSourceInvites,
-      matchingCalendarIds: filteredMatchingIds
+      matchingCalendarIds: filteredMatchingIds,
+      blockedCreatorIds: settings.blockedCreatorIds,
+      blockedActivityTags: settings.blockedActivityTags,
+      suggestionLimitPerDay: settings.suggestionLimitPerDay,
+      suggestionLimitPerWeek: settings.suggestionLimitPerWeek
     });
   }
 
@@ -67,12 +80,19 @@ export async function GET() {
       suggestionCalendarId: settings.suggestionCalendarId,
       suggestionDeliveryMode: "calendar_copy",
       shareEmailInSourceInvites: false,
-      matchingCalendarIds: settings.matchingCalendarIds
+      matchingCalendarIds: settings.matchingCalendarIds,
+      blockedCreatorIds: settings.blockedCreatorIds,
+      blockedActivityTags: settings.blockedActivityTags,
+      suggestionLimitPerDay: settings.suggestionLimitPerDay,
+      suggestionLimitPerWeek: settings.suggestionLimitPerWeek
     });
   }
 
+  const criteria = await getSuggestionLearningSummary(user.id);
+
   return NextResponse.json({
     settings,
+    criteria,
     suggestionStats: {
       autoInsertedSuggestionCount
     },
@@ -95,6 +115,13 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Ungültige Einstellungen" }, { status: 400 });
   }
 
+  if (parsed.data.suggestionLimitPerWeek < parsed.data.suggestionLimitPerDay) {
+    return NextResponse.json(
+      { error: "Das Wochenlimit muss mindestens so hoch sein wie das Tageslimit." },
+      { status: 400 }
+    );
+  }
+
   const [calendars, readableCalendars] = await Promise.all([
     listWritableCalendars(user.id),
     listReadableCalendars(user.id)
@@ -103,7 +130,9 @@ export async function PATCH(request: Request) {
   const isKnownCalendar = calendars.some((calendar) => calendar.id === selectedCalendarId);
   let finalCalendarId = selectedCalendarId;
 
-  if (!isKnownCalendar) {
+  if (calendars.length === 0) {
+    finalCalendarId = "primary";
+  } else if (!isKnownCalendar) {
     return NextResponse.json(
       { error: "Der ausgewählte Kalender ist nicht verfügbar oder nicht beschreibbar." },
       { status: 400 }
@@ -113,6 +142,17 @@ export async function PATCH(request: Request) {
   const readableCalendarIds = new Set(readableCalendars.map((calendar) => calendar.id));
   const normalizedMatchingIds = Array.from(
     new Set(parsed.data.matchingCalendarIds.map((id) => id.trim()).filter(Boolean))
+  );
+  const normalizedBlockedCreatorIds = Array.from(
+    new Set(parsed.data.blockedCreatorIds.map((id) => id.trim()).filter(Boolean))
+  );
+  const normalizedBlockedActivityTags = Array.from(
+    new Set(
+      parsed.data.blockedActivityTags
+        .map((tag) => tag.trim().toLowerCase())
+        .filter((tag) => tag.startsWith("#"))
+        .filter(Boolean)
+    )
   );
   const hasUnknownMatchingCalendar = normalizedMatchingIds.some((id) => !readableCalendarIds.has(id));
   if (hasUnknownMatchingCalendar) {
@@ -128,13 +168,21 @@ export async function PATCH(request: Request) {
     suggestionCalendarId: finalCalendarId,
     suggestionDeliveryMode: "calendar_copy",
     shareEmailInSourceInvites: false,
-    matchingCalendarIds: normalizedMatchingIds
+    matchingCalendarIds: normalizedMatchingIds,
+    blockedCreatorIds: normalizedBlockedCreatorIds,
+    blockedActivityTags: normalizedBlockedActivityTags,
+    suggestionLimitPerDay: parsed.data.suggestionLimitPerDay,
+    suggestionLimitPerWeek: parsed.data.suggestionLimitPerWeek
   });
 
-  const autoInsertedSuggestionCount = await getAutoInsertedSuggestionCountForUser(user.id);
+  const [autoInsertedSuggestionCount, criteria] = await Promise.all([
+    getAutoInsertedSuggestionCountForUser(user.id),
+    getSuggestionLearningSummary(user.id)
+  ]);
 
   return NextResponse.json({
     settings,
+    criteria,
     suggestionStats: {
       autoInsertedSuggestionCount
     },

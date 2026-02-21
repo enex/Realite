@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+
 type WritableCalendar = {
   id: string;
   summary: string;
@@ -18,6 +20,10 @@ export type SuggestionSettingsForm = {
   suggestionDeliveryMode: "calendar_copy" | "source_invite";
   shareEmailInSourceInvites: boolean;
   matchingCalendarIds: string[];
+  blockedCreatorIds: string[];
+  blockedActivityTags: string[];
+  suggestionLimitPerDay: number;
+  suggestionLimitPerWeek: number;
 };
 
 type SuggestionSettingsCardProps = {
@@ -25,6 +31,7 @@ type SuggestionSettingsCardProps = {
   calendars: WritableCalendar[];
   readableCalendars: ReadableCalendar[];
   autoInsertedSuggestionCount: number;
+  blockedPeople: Array<{ id: string; label: string }>;
   form: SuggestionSettingsForm;
   busy: boolean;
   onFormChange: (next: SuggestionSettingsForm) => void;
@@ -36,11 +43,17 @@ export function SuggestionSettingsCard({
   calendars,
   readableCalendars,
   autoInsertedSuggestionCount,
+  blockedPeople,
   form,
   busy,
   onFormChange,
   onSubmit
 }: SuggestionSettingsCardProps) {
+  const blockedPeopleById = useMemo(
+    () => new Map(blockedPeople.map((entry) => [entry.id, entry.label])),
+    [blockedPeople]
+  );
+
   function toggleMatchingCalendar(calendarId: string) {
     const exists = form.matchingCalendarIds.includes(calendarId);
     onFormChange({
@@ -48,6 +61,20 @@ export function SuggestionSettingsCard({
       matchingCalendarIds: exists
         ? form.matchingCalendarIds.filter((id) => id !== calendarId)
         : [...form.matchingCalendarIds, calendarId]
+    });
+  }
+
+  function removeBlockedCreator(creatorId: string) {
+    onFormChange({
+      ...form,
+      blockedCreatorIds: form.blockedCreatorIds.filter((id) => id !== creatorId)
+    });
+  }
+
+  function removeBlockedActivity(tag: string) {
+    onFormChange({
+      ...form,
+      blockedActivityTags: form.blockedActivityTags.filter((entry) => entry !== tag)
     });
   }
 
@@ -154,9 +181,94 @@ export function SuggestionSettingsCard({
           </div>
         </div>
 
+        <div className="rounded-lg border border-slate-200 p-3 text-sm">
+          <p className="font-medium text-slate-800">Maximal pro Tag</p>
+          <p className="mt-1 text-xs text-slate-600">Wie viele Vorschläge an einem Kalendertag höchstens bleiben.</p>
+          <input
+            type="number"
+            min={1}
+            max={50}
+            value={form.suggestionLimitPerDay}
+            onChange={(event) =>
+              onFormChange({
+                ...form,
+                suggestionLimitPerDay: Number.parseInt(event.target.value || "1", 10) || 1
+              })
+            }
+            className="mt-2 w-full rounded border border-slate-300 px-2 py-1"
+            disabled={busy}
+          />
+        </div>
+
+        <div className="rounded-lg border border-slate-200 p-3 text-sm">
+          <p className="font-medium text-slate-800">Maximal pro Woche</p>
+          <p className="mt-1 text-xs text-slate-600">Wie viele Vorschläge in einer Kalenderwoche höchstens bleiben.</p>
+          <input
+            type="number"
+            min={1}
+            max={200}
+            value={form.suggestionLimitPerWeek}
+            onChange={(event) =>
+              onFormChange({
+                ...form,
+                suggestionLimitPerWeek: Number.parseInt(event.target.value || "1", 10) || 1
+              })
+            }
+            className="mt-2 w-full rounded border border-slate-300 px-2 py-1"
+            disabled={busy}
+          />
+        </div>
+
+        <div className="rounded-lg border border-slate-200 p-3 text-sm sm:col-span-2">
+          <p className="font-medium text-slate-800">Feste Ausschlüsse</p>
+          <p className="mt-1 text-xs text-slate-600">
+            Diese Einträge entstehen über Absagegründe und werden künftig nicht mehr vorgeschlagen.
+          </p>
+
+          <div className="mt-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Personen</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {form.blockedCreatorIds.length === 0 ? (
+                <span className="text-xs text-slate-500">Keine blockierten Personen.</span>
+              ) : null}
+              {form.blockedCreatorIds.map((creatorId) => (
+                <button
+                  type="button"
+                  key={creatorId}
+                  onClick={() => removeBlockedCreator(creatorId)}
+                  className="rounded-full border border-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-50"
+                  disabled={busy}
+                >
+                  {blockedPeopleById.get(creatorId) ?? creatorId.slice(0, 8)} · Entfernen
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Aktivitäten</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {form.blockedActivityTags.length === 0 ? (
+                <span className="text-xs text-slate-500">Keine blockierten Aktivitäten.</span>
+              ) : null}
+              {form.blockedActivityTags.map((tag) => (
+                <button
+                  type="button"
+                  key={tag}
+                  onClick={() => removeBlockedActivity(tag)}
+                  className="rounded-full border border-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-50"
+                  disabled={busy}
+                >
+                  {tag} · Entfernen
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <button
           type="submit"
-          disabled={busy || !calendarConnected}
+          disabled={busy}
           className="w-fit rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
         >
           Einstellungen speichern
