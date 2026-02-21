@@ -42,8 +42,8 @@ Dann Werte in `.env.local` setzen:
 
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
-- `NEXTAUTH_SECRET`
-- `NEXTAUTH_URL=http://localhost:3000`
+- `BETTER_AUTH_SECRET`
+- `BETTER_AUTH_URL=http://localhost:3000`
 
 ## 4) Migrationen
 

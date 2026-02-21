@@ -1,56 +1,47 @@
 # Events und Matching
 
-## Event-Erstellung
+## Events erstellen
 
-Ein Event enthält unter anderem:
+Ein Event besteht aus:
 
 - Titel
-- Start-/Endzeit
+- Start und Ende
+- optionalem Ort
 - Sichtbarkeit
-- optionale Gruppe
-- Tags/Hashtags
+- Hashtags
 
-## Tagging-Logik
+## Hashtags richtig nutzen
 
-- `#alle` im Titel => Event wird als globales Event behandelt
-- `#kontakte` => Event wird mit Kontaktkontext verknüpft
+- `#alle`: Event ist allgemein sichtbar
+- `#kontakte`: Event richtet sich an deine Kontakte
 
-## Verfügbarkeitsabgleich
+Du kannst mehrere Hashtags nutzen.
 
-Realite prüft über Google FreeBusy, ob ein Event mit deinem Kalender kollidiert.
+## Wie Vorschläge entstehen
 
-Kalender- und Kontakte-Sync laufen für Dashboard/Listen im Hintergrund, damit die Oberfläche schnell reagiert.
+Realite vergleicht:
 
-Wenn freie Zeit nicht sicher aus Google FreeBusy ermittelt werden kann, erstellt Realite keine neuen Vorschläge.
+- deine Interessen (über Hashtags und bisherige Entscheidungen)
+- deine verfügbare Zeit
+- passende Events aus deinen Gruppen und öffentlichen Bereichen
 
-Wenn Google für lange Zeiträume Grenzen setzt, teilt Realite die Anfrage intern in kleinere Zeitfenster auf.
+## Was im Kalender passiert
 
-## Proaktive Vorschläge
+Wenn aktiviert, kann Realite Vorschläge automatisch in deinen Kalender übernehmen.
 
-Wenn ein Event gut passt, kann Realite es proaktiv zustellen.
+Du entscheidest in den Einstellungen:
 
-In den Nutzereinstellungen auf `/settings` legst du fest:
+- ob automatische Übernahme aktiv ist
+- ob Vorschläge als eigener Kalendereintrag oder als Einladung erscheinen
+- welcher Kalender für Kalendereinträge genutzt wird
+- welche Kalender für Verfügbarkeit und Vorschläge einbezogen werden
 
-- ob Vorschläge automatisch in Google Kalender eingetragen werden
-- wie zugestellt wird:
-- `Kalenderkopie` (Eintrag in deinem gewählten Kalender)
-- `Source-Einladung` (du wirst als Teilnehmer im Quell-Event eingeladen, inkl. Google RSVP)
-- ob deine E-Mail für Source-Einladungen sichtbar sein darf
-- in welchen deiner beschreibbaren Google Kalender Kalenderkopien eingetragen werden
+## Wichtig zu Zusage und Absage
 
-Du entscheidest dann in der App:
+- Ein neuer Vorschlag blockiert deine Zeit zunächst nicht.
+- Erst wenn du **zusagst**, wird der Termin als belegt behandelt.
+- Bei **Absage** bleibt der Termin unbelegt.
 
-- **Zusagen**
-- **Absagen**
+## Warum Entscheidungen wichtig sind
 
-Vorschläge werden in der Übersicht pro Tag gruppiert und zeigen Uhrzeit sowie Ersteller des Termins.
-
-Realite synchronisiert Vorschläge inklusive Entfernen: Wenn Quelle oder Match wegfällt, werden veraltete Vorschläge und zugehörige Kalendereinträge wieder entfernt.
-
-Bei Source-Einladungen entfernt Realite dich dabei wieder aus der Teilnehmerliste statt das Quell-Event zu löschen.
-
-Wichtig: Ein neuer Vorschlag blockiert deinen Kalender noch nicht. Erst nach **Zusage** wird er als belegte Zeit geführt.
-
-Im Kalendereintrag findest du außerdem einen Link zu Realite sowie direkte Zusage-/Absage-Links.
-
-Diese Entscheidungen beeinflussen spätere Vorschläge.
+Jede Zusage oder Absage verbessert zukünftige Vorschläge.

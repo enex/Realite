@@ -64,6 +64,27 @@
       "when": 1771657446195,
       "tag": "0008_happy_secret_warriors",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1771676680789,
+      "tag": "0009_dark_skullbuster",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1771676774388,
+      "tag": "0010_rich_phalanx",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1771677305659,
+      "tag": "0011_premium_mach_iv",
+      "breakpoints": true
     }
   ]
 }

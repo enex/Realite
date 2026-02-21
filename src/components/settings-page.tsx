@@ -9,14 +9,22 @@ type WritableCalendar = {
   primary: boolean;
 };
 
+type ReadableCalendar = {
+  id: string;
+  summary: string;
+  primary: boolean;
+};
+
 type SettingsPayload = {
   settings: {
     autoInsertSuggestions: boolean;
     suggestionCalendarId: string;
     suggestionDeliveryMode: "calendar_copy" | "source_invite";
     shareEmailInSourceInvites: boolean;
+    matchingCalendarIds: string[];
   };
   calendars: WritableCalendar[];
+  readableCalendars: ReadableCalendar[];
   calendarConnected: boolean;
   error?: string;
 };
@@ -26,9 +34,11 @@ const emptySettings: SettingsPayload = {
     autoInsertSuggestions: true,
     suggestionCalendarId: "primary",
     suggestionDeliveryMode: "calendar_copy",
-    shareEmailInSourceInvites: true
+    shareEmailInSourceInvites: true,
+    matchingCalendarIds: []
   },
   calendars: [],
+  readableCalendars: [],
   calendarConnected: false
 };
 
@@ -41,7 +51,8 @@ export function SettingsPage({ userName }: { userName: string }) {
     autoInsertSuggestions: true,
     suggestionCalendarId: "primary",
     suggestionDeliveryMode: "calendar_copy" as "calendar_copy" | "source_invite",
-    shareEmailInSourceInvites: true
+    shareEmailInSourceInvites: true,
+    matchingCalendarIds: [] as string[]
   });
 
   async function loadData() {
@@ -61,7 +72,8 @@ export function SettingsPage({ userName }: { userName: string }) {
         autoInsertSuggestions: payload.settings.autoInsertSuggestions,
         suggestionCalendarId: payload.settings.suggestionCalendarId,
         suggestionDeliveryMode: payload.settings.suggestionDeliveryMode,
-        shareEmailInSourceInvites: payload.settings.shareEmailInSourceInvites
+        shareEmailInSourceInvites: payload.settings.shareEmailInSourceInvites,
+        matchingCalendarIds: payload.settings.matchingCalendarIds
       });
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Unbekannter Fehler");
@@ -99,13 +111,26 @@ export function SettingsPage({ userName }: { userName: string }) {
         autoInsertSuggestions: payload.settings.autoInsertSuggestions,
         suggestionCalendarId: payload.settings.suggestionCalendarId,
         suggestionDeliveryMode: payload.settings.suggestionDeliveryMode,
-        shareEmailInSourceInvites: payload.settings.shareEmailInSourceInvites
+        shareEmailInSourceInvites: payload.settings.shareEmailInSourceInvites,
+        matchingCalendarIds: payload.settings.matchingCalendarIds
       });
     } catch (settingsError) {
       setError(settingsError instanceof Error ? settingsError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
+  }
+
+  function toggleMatchingCalendar(calendarId: string) {
+    setSettingsForm((state) => {
+      const exists = state.matchingCalendarIds.includes(calendarId);
+      return {
+        ...state,
+        matchingCalendarIds: exists
+          ? state.matchingCalendarIds.filter((id) => id !== calendarId)
+          : [...state.matchingCalendarIds, calendarId]
+      };
+    });
   }
 
   return (
@@ -213,6 +238,56 @@ export function SettingsPage({ userName }: { userName: string }) {
               </option>
             ))}
           </select>
+
+          <div className="rounded-lg border border-slate-200 p-3 text-sm sm:col-span-2">
+            <p className="font-medium text-slate-800">Kalender für Matching und Event-Fund</p>
+            <p className="mt-1 text-xs text-slate-600">
+              Nur diese Kalender werden für Verfügbarkeit und #alle-Sync des aktuellen Nutzers verwendet.
+            </p>
+            <div className="mt-2 flex gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setSettingsForm((state) => ({
+                    ...state,
+                    matchingCalendarIds: data.readableCalendars.map((calendar) => calendar.id)
+                  }))
+                }
+                disabled={busy || !data.calendarConnected}
+                className="rounded border border-slate-300 px-2 py-1 text-xs text-slate-700 disabled:opacity-50"
+              >
+                Alle
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setSettingsForm((state) => ({
+                    ...state,
+                    matchingCalendarIds: []
+                  }))
+                }
+                disabled={busy || !data.calendarConnected}
+                className="rounded border border-slate-300 px-2 py-1 text-xs text-slate-700 disabled:opacity-50"
+              >
+                Zurücksetzen (alle)
+              </button>
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {data.readableCalendars.map((calendar) => (
+                <label key={calendar.id} className="flex items-center gap-2 rounded border border-slate-200 px-2 py-1">
+                  <input
+                    type="checkbox"
+                    checked={settingsForm.matchingCalendarIds.includes(calendar.id)}
+                    onChange={() => toggleMatchingCalendar(calendar.id)}
+                    disabled={busy || !data.calendarConnected}
+                  />
+                  <span className="text-xs text-slate-700">
+                    {calendar.primary ? `${calendar.summary} (Primary)` : calendar.summary}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
 
           <button
             type="submit"

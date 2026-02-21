@@ -24,6 +24,7 @@ export type UserSuggestionSettings = {
   suggestionCalendarId: string;
   suggestionDeliveryMode: "calendar_copy" | "source_invite";
   shareEmailInSourceInvites: boolean;
+  matchingCalendarIds: string[];
 };
 
 export type VisibleEvent = {
@@ -108,6 +109,22 @@ function normalizeEmail(value: string) {
 
 function normalizeSuggestionDeliveryMode(value: string | null | undefined): "calendar_copy" | "source_invite" {
   return value === "source_invite" ? "source_invite" : "calendar_copy";
+}
+
+function normalizeCalendarIdList(ids: string[]) {
+  return Array.from(new Set(ids.map((id) => id.trim()).filter(Boolean)));
+}
+
+function parseCalendarIdList(value: string | null | undefined) {
+  if (!value) {
+    return [] as string[];
+  }
+
+  return normalizeCalendarIdList(value.split(","));
+}
+
+function serializeCalendarIdList(ids: string[]) {
+  return normalizeCalendarIdList(ids).join(",");
 }
 
 export async function upsertUser(input: { email: string; name?: string | null; image?: string | null }) {
@@ -257,6 +274,7 @@ export async function ensureUserSuggestionSettings(userId: string) {
       suggestionCalendarId: "primary",
       suggestionDeliveryMode: "calendar_copy",
       shareEmailInSourceInvites: true,
+      matchingCalendarIds: "",
       updatedAt: new Date()
     })
     .onConflictDoNothing({ target: [userSettings.userId] });
@@ -271,7 +289,8 @@ export async function getUserSuggestionSettings(userId: string): Promise<UserSug
       autoInsertSuggestions: userSettings.autoInsertSuggestions,
       suggestionCalendarId: userSettings.suggestionCalendarId,
       suggestionDeliveryMode: userSettings.suggestionDeliveryMode,
-      shareEmailInSourceInvites: userSettings.shareEmailInSourceInvites
+      shareEmailInSourceInvites: userSettings.shareEmailInSourceInvites,
+      matchingCalendarIds: userSettings.matchingCalendarIds
     })
     .from(userSettings)
     .where(eq(userSettings.userId, userId))
@@ -281,13 +300,15 @@ export async function getUserSuggestionSettings(userId: string): Promise<UserSug
     settings
       ? {
           ...settings,
-          suggestionDeliveryMode: normalizeSuggestionDeliveryMode(settings.suggestionDeliveryMode)
+          suggestionDeliveryMode: normalizeSuggestionDeliveryMode(settings.suggestionDeliveryMode),
+          matchingCalendarIds: parseCalendarIdList(settings.matchingCalendarIds)
         }
       : {
       autoInsertSuggestions: true,
       suggestionCalendarId: "primary",
       suggestionDeliveryMode: "calendar_copy",
-      shareEmailInSourceInvites: true
+      shareEmailInSourceInvites: true,
+      matchingCalendarIds: []
         }
   );
 }
@@ -298,8 +319,10 @@ export async function updateUserSuggestionSettings(input: {
   suggestionCalendarId: string;
   suggestionDeliveryMode: "calendar_copy" | "source_invite";
   shareEmailInSourceInvites: boolean;
+  matchingCalendarIds: string[];
 }): Promise<UserSuggestionSettings> {
   const db = getDb();
+  const serializedMatchingCalendarIds = serializeCalendarIdList(input.matchingCalendarIds);
 
   const [settings] = await db
     .insert(userSettings)
@@ -309,6 +332,7 @@ export async function updateUserSuggestionSettings(input: {
       suggestionCalendarId: input.suggestionCalendarId,
       suggestionDeliveryMode: input.suggestionDeliveryMode,
       shareEmailInSourceInvites: input.shareEmailInSourceInvites,
+      matchingCalendarIds: serializedMatchingCalendarIds,
       updatedAt: new Date()
     })
     .onConflictDoUpdate({
@@ -318,6 +342,7 @@ export async function updateUserSuggestionSettings(input: {
         suggestionCalendarId: input.suggestionCalendarId,
         suggestionDeliveryMode: input.suggestionDeliveryMode,
         shareEmailInSourceInvites: input.shareEmailInSourceInvites,
+        matchingCalendarIds: serializedMatchingCalendarIds,
         updatedAt: new Date()
       }
     })
@@ -325,14 +350,16 @@ export async function updateUserSuggestionSettings(input: {
       autoInsertSuggestions: userSettings.autoInsertSuggestions,
       suggestionCalendarId: userSettings.suggestionCalendarId,
       suggestionDeliveryMode: userSettings.suggestionDeliveryMode,
-      shareEmailInSourceInvites: userSettings.shareEmailInSourceInvites
+      shareEmailInSourceInvites: userSettings.shareEmailInSourceInvites,
+      matchingCalendarIds: userSettings.matchingCalendarIds
     });
 
   return {
     autoInsertSuggestions: settings?.autoInsertSuggestions ?? input.autoInsertSuggestions,
     suggestionCalendarId: settings?.suggestionCalendarId ?? input.suggestionCalendarId,
     suggestionDeliveryMode: normalizeSuggestionDeliveryMode(settings?.suggestionDeliveryMode ?? input.suggestionDeliveryMode),
-    shareEmailInSourceInvites: settings?.shareEmailInSourceInvites ?? input.shareEmailInSourceInvites
+    shareEmailInSourceInvites: settings?.shareEmailInSourceInvites ?? input.shareEmailInSourceInvites,
+    matchingCalendarIds: parseCalendarIdList(settings?.matchingCalendarIds ?? serializedMatchingCalendarIds)
   };
 }
 

@@ -1,0 +1,1 @@
+ALTER TABLE "user_settings" ADD COLUMN "matching_calendar_ids" text DEFAULT '' NOT NULL;

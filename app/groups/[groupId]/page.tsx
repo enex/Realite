@@ -1,13 +1,12 @@
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
 import { GroupDetail } from "@/src/components/group-detail";
-import { authOptions } from "@/src/lib/auth";
+import { getAuthSession } from "@/src/lib/auth";
 
 export default async function GroupPage({ params }: { params: Promise<{ groupId: string }> }) {
-  const session = await getServerSession(authOptions);
+  const session = await getAuthSession();
 
-  if (!session?.user?.email) {
+  if (!session?.user.email) {
     redirect("/");
   }
 

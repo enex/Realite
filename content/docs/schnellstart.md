@@ -2,43 +2,40 @@
 
 ## 1. Mit Google anmelden
 
-Öffne die Startseite und klicke auf **"Mit Google starten"**.
+Öffne Realite und klicke auf **„Mit Google starten“**.
 
-## 2. Berechtigungen bestätigen
+## 2. Zugriff erlauben
 
-Realite benötigt Zugriff auf:
+Bestätige den Zugriff auf Kalender und Kontakte, damit Realite dir passende Events anzeigen kann.
 
-- Google Kalender
-- Google Kontakte (für Kontakte-/Label-Sync)
+## 3. Gruppen ansehen
 
-## 3. Gruppenübersicht öffnen
+Nach dem Login siehst du deine Gruppen in der Übersicht.
 
-Nach dem Login siehst du die Gruppen als kompakte Karten in der Übersicht.
+- Tippe auf eine Gruppe, um Details zu öffnen.
+- Dort kannst du Mitglieder einladen und Hashtags anpassen.
 
-- Klick auf eine Gruppe öffnet die Detailseite
-- Dort kannst du Mitglieder verwalten, Invite-Link erstellen und Hashtags bearbeiten
-- Kalender- und Kontakte-Sync laufen im Hintergrund; die Ansicht aktualisiert sich automatisch
+## 4. Erstes Event erstellen
 
-## 4. Event erstellen
-
-Du kannst Events entweder in der Übersicht oder in der Gruppen-Detailseite anlegen.
+Lege ein Event mit Titel, Uhrzeit und Hashtags an.
 
 Tipps:
 
-- `#alle` im Titel macht Events global sichtbar
-- `#kontakte` ist gut für dein persönliches Netzwerk
+- Nutze `#alle`, wenn der Termin für alle sichtbar sein soll.
+- Nutze `#kontakte`, wenn der Termin für dein Netzwerk gedacht ist.
 
 ## 5. Vorschläge prüfen
 
-Nutze **"Matching starten"** und entscheide Vorschläge mit **Zusagen** oder **Absagen**.
+Starte das Matching und prüfe deine Vorschläge.
 
-Dein Feedback verbessert zukünftige Vorschläge.
+- **Zusagen**: passt für dich
+- **Absagen**: passt nicht
 
-## 6. Nutzereinstellungen setzen
+## 6. Einstellungen festlegen
 
-Auf der Seite **`/settings`** (Button **"Einstellungen"** in der Übersicht) kannst du:
+Unter **Einstellungen** kannst du steuern:
 
-- automatische Kalendereinträge für passende Vorschläge aktivieren/deaktivieren
-- Zustellmodus wählen: Kalenderkopie oder Source-Einladung
-- Sichtbarkeit deiner E-Mail für Source-Einladungen steuern
-- den Zielkalender für Kalenderkopien auswählen
+- ob Vorschläge automatisch in deinem Kalender erscheinen
+- ob Vorschläge als eigener Kalendereintrag oder als Einladung erscheinen
+- ob deine E-Mail bei Einladungen sichtbar ist
+- welche Kalender für Verfügbarkeit und Vorschläge berücksichtigt werden

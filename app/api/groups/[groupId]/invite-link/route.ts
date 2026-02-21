@@ -23,6 +23,6 @@ export async function POST(
   return NextResponse.json({
     token: invite.token,
     expiresAt: invite.expiresAt,
-    inviteUrl: `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/join/${invite.token}`
+    inviteUrl: `${process.env.BETTER_AUTH_URL ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/join/${invite.token}`
   });
 }

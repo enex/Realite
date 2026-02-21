@@ -2,49 +2,50 @@
 
 ## Ich sehe meine Kalender-Events nicht
 
-Prüfe:
+Prüfe bitte:
 
-- ob Google Kalender API im Google Cloud Projekt aktiviert ist
-- ob du die benötigten Scopes beim Login bestätigt hast
-- ob das Event den erwarteten Hashtag enthält (z. B. `#alle`)
+- ob dein Kalenderzugriff in Realite noch aktiv ist
+- ob der Termin den richtigen Hashtag enthält (z. B. `#alle`)
+- ob der Termin im richtigen Kalender liegt, den du in den Einstellungen ausgewählt hast
 
-Hinweis: Die App zeigt zuerst Daten aus der Datenbank und synchronisiert Google Kalender/Kontakte im Hintergrund.
+Wenn es weiter nicht klappt: einmal abmelden und neu anmelden.
 
-## Kontakte-Sync zeigt Warnungen
+## Warum erscheinen manche Termine doppelt?
 
-Typisch sind fehlende Kontakte-Berechtigungen oder API-Einschränkungen. Melde dich einmal ab und erneut mit Google an.
+Das passiert oft, wenn mehrere sehr ähnliche Kalender gleichzeitig berücksichtigt werden.
 
-## Warum ist eine Gruppe als "Sync" markiert?
+Lösung:
 
-Diese Gruppe ist mit Google Kontakte (My Contacts oder Label) verknüpft und wird automatisch aktualisiert.
+- öffne **Einstellungen**
+- reduziere die Auswahl bei **Kalender für Verfügbarkeit und Vorschläge** auf die wirklich relevanten Kalender
+
+## Warum wurde kein Vorschlag gemacht?
+
+Mögliche Gründe:
+
+- der Termin passt nicht zu deinen Gruppen oder Hashtags
+- du bist zur Zeit des Termins nicht verfügbar
+- der Termin liegt außerhalb der aktuell genutzten Kalenderauswahl
+
+## Warum wurde keine Einladung erstellt?
+
+Mögliche Gründe:
+
+- für dieses Event ist keine Einladung möglich
+- der Termin gehört nicht zu einem passenden Quell-Termin
+- deine Einstellungen erlauben aktuell nur Kalendereinträge statt Einladungen
 
 ## Warum kann ich manche Gruppen nicht löschen?
 
-Synchronisierte Gruppen werden absichtlich nicht hart gelöscht. Du kannst sie stattdessen verstecken und später wieder einblenden.
+Synchronisierte Gruppen können nicht endgültig gelöscht werden.
 
-## Warum erscheinen manche Kontakte ohne Realite-Markierung?
+Du kannst sie aber ausblenden und später wieder einblenden.
 
-Dann ist der Kontakt zwar in der Gruppe/Kontaktliste, aber die E-Mail ist noch nicht als Realite-Konto registriert.
+## Wo verwalte ich Gruppen und Mitglieder?
 
-## Wo verwalte ich Gruppenaktionen?
+In der Gruppenansicht:
 
-In der Gruppen-Detailseite (`/groups/<id>`), nicht mehr in der kompakten Übersicht.
-
-## In welchen Kalender werden Vorschläge eingetragen?
-
-Das stellst du auf **`/settings`** ein. Dort kannst du automatische Einträge ein-/ausschalten und den Zustellmodus wählen.
-
-Modi:
-
-- `Kalenderkopie`: Eintrag in deinen gewählten Kalender.
-- `Source-Einladung`: Du wirst als Teilnehmer im Quell-Event eingeladen (Google RSVP).
-
-Falls der gewählte Kalender für Kalenderkopien später nicht mehr verfügbar ist, nutzt Realite automatisch einen Fallback (Primary oder erster verfügbarer Kalender).
-
-## Warum wurde keine Source-Einladung erstellt?
-
-Typische Gründe:
-
-- das Quell-Event ist nicht aus Google synchronisiert
-- der Event-Owner hat für diesen Kalender keine Schreibrechte
-- du hast „E-Mail sichtbar“ für Source-Einladungen deaktiviert (dann fällt Realite auf Kalenderkopie zurück)
+- Mitglieder hinzufügen
+- Einladungslink teilen
+- Hashtags bearbeiten
+- Gruppe löschen oder ausblenden

@@ -1,7 +1,5 @@
-import { getServerSession } from "next-auth";
-
 import { Dashboard } from "@/src/components/dashboard";
-import { authOptions } from "@/src/lib/auth";
+import { getAuthSession } from "@/src/lib/auth";
 import { listPublicAlleEvents } from "@/src/lib/repository";
 
 export default async function HomePage({
@@ -9,7 +7,7 @@ export default async function HomePage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await getAuthSession();
   const params = await searchParams;
   const query = new URLSearchParams();
 
@@ -21,7 +19,7 @@ export default async function HomePage({
 
   const callbackUrl = query.toString() ? `/?${query.toString()}` : "/";
 
-  if (!session?.user?.email) {
+  if (!session?.user.email) {
     const publicAlleEvents = await listPublicAlleEvents(8);
 
     return (

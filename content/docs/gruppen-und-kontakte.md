@@ -1,46 +1,39 @@
 # Gruppen und Kontakte
 
-## Gruppenmodell
+## Wofür sind Gruppen da?
+
+Gruppen helfen dir, Events mit den richtigen Personen zu teilen.
 
 Jede Gruppe hat:
 
-- Namen
-- Sichtbarkeit (`öffentlich` oder `privat`)
-- Hashtags
-- Kontakte/Mitglieder
+- einen Namen
+- eine Sichtbarkeit (öffentlich oder privat)
+- einen oder mehrere Hashtags
+- Mitglieder oder Kontakte
 
-Auf der Startseite wird jede Gruppe kompakt mit Zahlen angezeigt.
+## Gruppen verwalten
 
-Synchronisierte Gruppen (z. B. aus Google Kontakte Labels) können zusätzlich ausgeblendet werden.
+In der Gruppenansicht kannst du:
 
-## Gruppen-Detailseite
-
-Auf `/groups/<id>` findest du alle Aktionen:
-
-- Kontakt per E-Mail hinzufügen
-- Invite-Link erzeugen
+- Personen per E-Mail hinzufügen
+- Einladungslink teilen
 - Hashtags ändern
-- Event direkt in der Gruppe erstellen
+- Events direkt in der Gruppe erstellen
 
-## Google Kontakte Sync
+## Kontakte nutzen
 
-Wenn Google Kontakte verbunden sind:
+Wenn du Kontakte aktiviert hast:
 
 - wird die Gruppe `#kontakte` automatisch gepflegt
-- können Google-Labels als synchronisierte Gruppen erscheinen
-- erkennst du synchronisierte Gruppen am Sync-Badge
+- können Kontakt-Listen als Gruppen erscheinen
+- siehst du bei passenden Gruppen, dass sie synchronisiert sind
 
-## Gruppen löschen oder verstecken
+## Löschen oder verstecken
 
-- Normale (nicht synchronisierte) Gruppen kannst du auf der Detailseite löschen.
-- Synchronisierte Gruppen werden nicht gelöscht, sondern versteckt.
-- Versteckte Sync-Gruppen erscheinen in der Übersicht separat und können auf der Detailseite wieder eingeblendet werden.
-
-## Was passiert beim Einladen per E-Mail?
-
-Wenn du jemanden in einer synchronisierten Kontakte-Gruppe einlädst, versucht Realite den Kontakt auch in Google Kontakte zu ergänzen.
+- Eigene, normale Gruppen kannst du löschen.
+- Synchronisierte Gruppen kannst du ausblenden und später wieder einblenden.
 
 ## Sichtbarkeit
 
-- `#alle`: global sichtbar für alle Realite-Nutzer/Besucher
-- Gruppen-Events: sichtbar für Gruppenmitglieder
+- `#alle`: für alle in Realite sichtbar
+- Gruppen-Events: für Mitglieder dieser Gruppe sichtbar

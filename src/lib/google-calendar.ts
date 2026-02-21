@@ -2,6 +2,7 @@ import {
   deleteEventsByIds,
   ensureAlleGroupForUser,
   getGoogleConnection,
+  getUserSuggestionSettings,
   getUserById,
   listExternalSourceEventsForUser,
   listSuggestionCalendarRefsByEventIds,
@@ -15,6 +16,12 @@ type BusyWindow = {
 };
 
 export type WritableGoogleCalendar = {
+  id: string;
+  summary: string;
+  primary: boolean;
+};
+
+export type ReadableGoogleCalendar = {
   id: string;
   summary: string;
   primary: boolean;
@@ -164,6 +171,16 @@ function parseCalendarEventRef(eventRef: string) {
   };
 }
 
+function filterConfiguredCalendarIds(allCalendarIds: string[], configuredIds: string[]) {
+  const normalizedConfigured = Array.from(new Set(configuredIds.map((id) => id.trim()).filter(Boolean)));
+  if (!normalizedConfigured.length) {
+    return allCalendarIds;
+  }
+
+  const filtered = allCalendarIds.filter((id) => normalizedConfigured.includes(id));
+  return filtered.length ? filtered : allCalendarIds;
+}
+
 async function refreshAccessToken(userId: string, refreshToken: string) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -234,7 +251,11 @@ export async function getBusyWindows(input: { userId: string; timeMin: Date; tim
     return [] as BusyWindow[];
   }
 
-  const calendarIds = await listReadableCalendarIds(token);
+  const [allCalendarIds, settings] = await Promise.all([
+    listReadableCalendarIds(token),
+    getUserSuggestionSettings(input.userId)
+  ]);
+  const calendarIds = filterConfiguredCalendarIds(allCalendarIds, settings.matchingCalendarIds);
   if (!calendarIds.length) {
     return [] as BusyWindow[];
   }
@@ -397,7 +418,8 @@ export async function insertSuggestionIntoCalendar(input: {
     return null;
   }
 
-  const baseUrl = process.env.NEXTAUTH_URL || process.env.REALITE_APP_URL || "https://realite.app";
+  const baseUrl =
+    process.env.BETTER_AUTH_URL || process.env.NEXTAUTH_URL || process.env.REALITE_APP_URL || "https://realite.app";
   const realiteUrl = `${baseUrl.replace(/\/+$/, "")}/?suggestion=${encodeURIComponent(input.suggestionId)}`;
   const acceptUrl = `${realiteUrl}&decision=accepted`;
   const declineUrl = `${realiteUrl}&decision=declined`;
@@ -976,14 +998,18 @@ export async function syncPublicEventsFromGoogleCalendar(userId: string) {
     return { synced: 0, scanned: 0 };
   }
 
-  const alleGroup = await ensureAlleGroupForUser(userId);
+  const [alleGroup, settings] = await Promise.all([
+    ensureAlleGroupForUser(userId),
+    getUserSuggestionSettings(userId)
+  ]);
 
   const now = new Date();
   const timeMax = new Date(now.getTime() + 120 * 24 * 60 * 60 * 1000);
   let scanned = 0;
   let synced = 0;
   const seenSourceEventIds = new Set<string>();
-  const calendarIds = await listReadableCalendarIds(token);
+  const allCalendarIds = await listReadableCalendarIds(token);
+  const calendarIds = filterConfiguredCalendarIds(allCalendarIds, settings.matchingCalendarIds);
   let forbiddenCalendars = 0;
   let forbiddenDetail: string | null = null;
 
@@ -1130,36 +1156,9 @@ export async function syncPublicEventsFromGoogleCalendar(userId: string) {
   return { synced, scanned };
 }
 
-async function listReadableCalendarIds(token: string) {
+async function listCalendarsByAccessRole(token: string, accessRole: "reader" | "writer") {
   const response = await fetch(
-    "https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=reader&showHidden=false&maxResults=250",
-    {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }
-  );
-
-  if (!response.ok) {
-    return ["primary"];
-  }
-
-  const payload = (await response.json()) as {
-    items?: Array<{ id?: string }>;
-  };
-
-  const ids = (payload.items ?? []).map((item) => item.id).filter((id): id is string => Boolean(id));
-  return ids.length ? ids : ["primary"];
-}
-
-export async function listWritableCalendars(userId: string) {
-  const token = await getGoogleAccessToken(userId);
-  if (!token) {
-    return [] as WritableGoogleCalendar[];
-  }
-
-  const response = await fetch(
-    "https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=writer&showHidden=false&maxResults=250",
+    `https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=${accessRole}&showHidden=false&maxResults=250`,
     {
       headers: {
         Authorization: `Bearer ${token}`
@@ -1174,14 +1173,14 @@ export async function listWritableCalendars(userId: string) {
         summary: "Primary",
         primary: true
       }
-    ] as WritableGoogleCalendar[];
+    ] as ReadableGoogleCalendar[];
   }
 
   const payload = (await response.json()) as {
     items?: Array<{ id?: string; summary?: string; primary?: boolean }>;
   };
 
-  const calendars: WritableGoogleCalendar[] = [];
+  const calendars: ReadableGoogleCalendar[] = [];
   for (const item of payload.items ?? []) {
     if (!item.id) {
       continue;
@@ -1201,7 +1200,7 @@ export async function listWritableCalendars(userId: string) {
         summary: "Primary",
         primary: true
       }
-    ] as WritableGoogleCalendar[];
+    ] as ReadableGoogleCalendar[];
   }
 
   return calendars.sort((a, b) => {
@@ -1213,4 +1212,29 @@ export async function listWritableCalendars(userId: string) {
     }
     return a.summary.localeCompare(b.summary);
   });
+}
+
+async function listReadableCalendarIds(token: string) {
+  const calendars = await listCalendarsByAccessRole(token, "reader");
+  const ids = calendars.map((calendar) => calendar.id).filter(Boolean);
+  return ids.length ? ids : ["primary"];
+}
+
+export async function listReadableCalendars(userId: string) {
+  const token = await getGoogleAccessToken(userId);
+  if (!token) {
+    return [] as ReadableGoogleCalendar[];
+  }
+
+  return listCalendarsByAccessRole(token, "reader");
+}
+
+export async function listWritableCalendars(userId: string) {
+  const token = await getGoogleAccessToken(userId);
+  if (!token) {
+    return [] as WritableGoogleCalendar[];
+  }
+
+  const calendars = await listCalendarsByAccessRole(token, "writer");
+  return calendars as WritableGoogleCalendar[];
 }

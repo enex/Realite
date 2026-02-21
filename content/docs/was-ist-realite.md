@@ -1,30 +1,29 @@
 # Was ist Realite?
 
-Realite ist eine Web-App, mit der du gemeinsame Aktivitäten über den Komfort deines eigenen Kalenders organisieren kannst.
+Realite hilft dir, leichter passende Aktivitäten mit anderen zu finden.
 
-## Kernidee
+Du verbindest Realite mit deinem Kalender, markierst Termine mit Hashtags und bekommst Vorschläge, die zu dir und deiner freien Zeit passen.
 
-Du markierst Termine mit Hashtags (zum Beispiel `#alle`, `#kontakte`, `#dating`) und Realite nutzt diese Informationen, um:
+## So funktioniert es für dich
 
-- relevante Events für andere sichtbar zu machen
-- freie Zeitfenster mit dem Kalender abzugleichen
-- passende Vorschläge zu erzeugen
+1. Du meldest dich mit Google an.
+2. Du siehst Gruppen und öffentliche Termine.
+3. Du erstellst eigene Events mit Hashtags wie `#alle` oder `#kontakte`.
+4. Realite schlägt dir passende Termine vor.
+5. Du sagst zu oder ab und verbesserst damit zukünftige Vorschläge.
 
-## Für wen ist Realite gedacht?
+## Für wen ist Realite?
 
-Realite ist für Menschen, die spontan oder geplant mit anderen etwas unternehmen möchten, ohne lange hin und her zu schreiben.
+Für alle, die weniger planen und mehr machen wollen:
 
-## Das passiert technisch im Hintergrund
-
-1. Anmeldung mit Google
-2. Synchronisierung von Kalender und (optional) Google Kontakten
-3. Gruppierung über Hashtags/Gruppen
-4. Matching anhand Tags + Verfügbarkeit
-5. Feedback (Zu-/Absage) zur Verbesserung zukünftiger Vorschläge
+- Freundeskreis
+- neue Kontakte
+- gemeinsame Hobbys
+- spontane Aktivitäten
 
 ## Wichtige Begriffe
 
-- **`#alle`**: global sichtbare Events
-- **`#kontakte`**: Gruppe auf Basis deiner Google Kontakte
-- **Gruppe**: organisatorischer Rahmen mit Kontakten, Tags und Events
-- **Suggestion**: proaktiver Vorschlag von Realite für dich
+- **`#alle`**: Event ist für alle sichtbar, die Realite nutzen.
+- **`#kontakte`**: Event richtet sich an deine Kontakte.
+- **Gruppe**: Bereich für bestimmte Personen und Themen.
+- **Vorschlag**: Ein passender Termin, den Realite dir empfiehlt.
