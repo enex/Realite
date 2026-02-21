@@ -5,6 +5,7 @@ type SharedEventContentProps = {
   description?: string | null;
   location?: string | null;
   groupName?: string | null;
+  createdByShortId?: string | null;
   createdByName?: string | null;
   createdByEmail?: string | null;
 };
@@ -37,7 +38,14 @@ export function SharedEventContent(props: SharedEventContentProps) {
 
       {props.createdByEmail ? (
         <p className="mt-2 text-sm text-slate-500">
-          Von {props.createdByName ?? props.createdByEmail}
+          Von{" "}
+          {props.createdByShortId ? (
+            <a href={`/u/${props.createdByShortId}`} className="font-medium text-teal-700 hover:text-teal-800">
+              {props.createdByName ?? props.createdByEmail}
+            </a>
+          ) : (
+            props.createdByName ?? props.createdByEmail
+          )}
           {props.createdByName ? ` (${props.createdByEmail})` : ""}
         </p>
       ) : null}

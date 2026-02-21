@@ -45,6 +45,7 @@ export default async function SuggestionShortcutPage({
         endsAtIso={suggestion.endsAt.toISOString()}
         description={suggestion.description}
         location={suggestion.location}
+        createdByShortId={shortenUUID(suggestion.createdBy)}
         createdByName={suggestion.createdByName}
         createdByEmail={suggestion.createdByEmail}
       />

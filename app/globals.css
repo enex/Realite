@@ -2,10 +2,68 @@
 
 :root {
   color-scheme: light;
+  --app-primary: #2f5d50;
+  --app-primary-dark: #1e3a34;
+  --app-background: #f5f1e8;
+  --app-surface: #fbf8f2;
+  --app-accent: #c76b4f;
+
+  --color-slate-50: #fbf8f2;
+  --color-slate-100: #f5f1e8;
+  --color-slate-200: #e7dfcf;
+  --color-slate-300: #d3c8b2;
+  --color-slate-400: #b39f82;
+  --color-slate-500: #958468;
+  --color-slate-600: #76664f;
+  --color-slate-700: #5d503d;
+  --color-slate-800: #463c2d;
+  --color-slate-900: #2f281f;
+  --color-slate-950: #1f1a14;
+
+  --color-teal-50: #eef6f2;
+  --color-teal-100: #d7e8e0;
+  --color-teal-200: #b2d3c6;
+  --color-teal-300: #86b7a8;
+  --color-teal-400: #679b8b;
+  --color-teal-500: #4d8172;
+  --color-teal-600: #3d6f61;
+  --color-teal-700: #2f5d50;
+  --color-teal-800: #254842;
+  --color-teal-900: #1e3a34;
+
+  --color-emerald-50: #eef6f2;
+  --color-emerald-100: #d7e8e0;
+  --color-emerald-200: #b2d3c6;
+  --color-emerald-300: #86b7a8;
+  --color-emerald-400: #679b8b;
+  --color-emerald-500: #4d8172;
+  --color-emerald-600: #3d6f61;
+  --color-emerald-700: #2f5d50;
+  --color-emerald-800: #254842;
+  --color-emerald-900: #1e3a34;
+
+  --color-amber-50: #fdf4f1;
+  --color-amber-100: #f8e7e1;
+  --color-amber-200: #f2d2c7;
+  --color-amber-300: #e7b2a3;
+  --color-amber-400: #d88973;
+  --color-amber-500: #c76b4f;
+  --color-amber-600: #b65e44;
+  --color-amber-700: #964c38;
+  --color-amber-800: #773a2a;
+  --color-amber-900: #5a2d21;
+
+  --color-rose-400: #d88973;
+  --color-rose-500: #c76b4f;
+
+  --color-indigo-100: #d7e8e0;
+  --color-indigo-700: #2f5d50;
 }
 
 body {
   font-family: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
+  background-color: var(--app-background);
+  color: var(--color-slate-900);
   overflow-x: hidden;
 }
 

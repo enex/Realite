@@ -30,9 +30,9 @@
 
   <defs>
     <linearGradient id="bg" x1="512" y1="0" x2="512" y2="1024" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#6366F1" />
-      <stop offset="0.55" stop-color="#4F46E5" />
-      <stop offset="1" stop-color="#312E81" />
+      <stop offset="0" stop-color="#4D8172" />
+      <stop offset="0.55" stop-color="#2F5D50" />
+      <stop offset="1" stop-color="#1E3A34" />
     </linearGradient>
 
     <radialGradient
@@ -43,8 +43,8 @@
       gradientUnits="userSpaceOnUse"
       gradientTransform="translate(296 260) rotate(90) scale(560)"
     >
-      <stop offset="0" stop-color="white" stop-opacity="0.16" />
-      <stop offset="1" stop-color="white" stop-opacity="0" />
+      <stop offset="0" stop-color="#C76B4F" stop-opacity="0.2" />
+      <stop offset="1" stop-color="#C76B4F" stop-opacity="0" />
     </radialGradient>
 
     <filter id="pinShadow" x="0" y="0" width="1024" height="1024" filterUnits="userSpaceOnUse">

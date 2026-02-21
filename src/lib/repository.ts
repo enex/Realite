@@ -61,7 +61,8 @@ export type PublicEventSharePreview = {
   location: string | null;
   startsAt: Date;
   endsAt: Date;
-  tags: string[];
+  createdByName: string | null;
+  createdByEmail: string | null;
 };
 
 export type GroupContact = {
@@ -71,6 +72,32 @@ export type GroupContact = {
   image: string | null;
   isRegistered: boolean;
   source: string;
+};
+
+export type UserProfileVisibility = "public_alle" | "matched" | "owner";
+
+export type UserProfileEvent = {
+  id: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+  startsAt: Date;
+  endsAt: Date;
+  visibility: EventVisibility;
+  groupName: string | null;
+  tags: string[];
+  matchStatus: SuggestionStatus | null;
+};
+
+export type UserProfileOverview = {
+  profile: {
+    id: string;
+    name: string | null;
+    image: string | null;
+    createdAt: Date;
+  };
+  visibility: UserProfileVisibility;
+  events: UserProfileEvent[];
 };
 
 function normalizeTags(tags: string[]) {
@@ -1282,9 +1309,12 @@ export async function getPublicEventSharePreviewById(eventId: string): Promise<P
       description: events.description,
       location: events.location,
       startsAt: events.startsAt,
-      endsAt: events.endsAt
+      endsAt: events.endsAt,
+      createdByName: users.name,
+      createdByEmail: users.email
     })
     .from(events)
+    .innerJoin(users, eq(events.createdBy, users.id))
     .where(and(eq(events.id, eventId), eq(events.visibility, "public" as EventVisibility)))
     .limit(1);
 
@@ -1292,15 +1322,7 @@ export async function getPublicEventSharePreviewById(eventId: string): Promise<P
     return null;
   }
 
-  const tags = await db
-    .select({ tag: eventTags.tag })
-    .from(eventTags)
-    .where(eq(eventTags.eventId, eventId));
-
-  return {
-    ...event,
-    tags: tags.map((entry) => entry.tag)
-  };
+  return event;
 }
 
 export async function getVisibleEventForUserById(input: { userId: string; eventId: string }) {
@@ -1442,6 +1464,134 @@ export async function listPublicAlleEvents(limit = 20) {
     ...row,
     tags: tagsMap.get(row.id) ?? []
   }));
+}
+
+async function listPublicAlleEventsForUser(userId: string) {
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: events.id,
+      title: events.title,
+      description: events.description,
+      location: events.location,
+      startsAt: events.startsAt,
+      endsAt: events.endsAt,
+      visibility: events.visibility,
+      groupId: events.groupId,
+      createdBy: events.createdBy,
+      groupName: groups.name,
+      sourceProvider: events.sourceProvider,
+      sourceEventId: events.sourceEventId
+    })
+    .from(events)
+    .leftJoin(groups, eq(events.groupId, groups.id))
+    .innerJoin(
+      eventTags,
+      and(eq(eventTags.eventId, events.id), or(eq(eventTags.tag, "#alle"), eq(eventTags.tag, "#all")))
+    )
+    .where(and(eq(events.createdBy, userId), eq(events.visibility, "public"), gt(events.endsAt, new Date())))
+    .orderBy(events.startsAt);
+
+  if (!rows.length) {
+    return [] as VisibleEvent[];
+  }
+
+  const tags = await db
+    .select({ eventId: eventTags.eventId, tag: eventTags.tag })
+    .from(eventTags)
+    .where(inArray(eventTags.eventId, rows.map((row) => row.id)));
+
+  const tagsMap = new Map<string, string[]>();
+  for (const tag of tags) {
+    const current = tagsMap.get(tag.eventId) ?? [];
+    current.push(tag.tag);
+    tagsMap.set(tag.eventId, current);
+  }
+
+  return rows.map((row) => ({
+    ...row,
+    tags: tagsMap.get(row.id) ?? []
+  }));
+}
+
+function mapVisibleEventToUserProfileEvent(event: VisibleEvent, matchStatus: SuggestionStatus | null): UserProfileEvent {
+  return {
+    id: event.id,
+    title: event.title,
+    description: event.description,
+    location: event.location,
+    startsAt: event.startsAt,
+    endsAt: event.endsAt,
+    visibility: event.visibility,
+    groupName: event.groupName,
+    tags: event.tags,
+    matchStatus
+  };
+}
+
+export async function getUserProfileOverview(input: {
+  profileUserId: string;
+  viewerUserId?: string | null;
+}): Promise<UserProfileOverview | null> {
+  const user = await getUserById(input.profileUserId);
+  if (!user) {
+    return null;
+  }
+
+  if (!input.viewerUserId) {
+    const events = await listPublicAlleEventsForUser(input.profileUserId);
+    return {
+      profile: {
+        id: user.id,
+        name: user.name,
+        image: user.image,
+        createdAt: user.createdAt
+      },
+      visibility: "public_alle",
+      events: events.map((event) => mapVisibleEventToUserProfileEvent(event, null))
+    };
+  }
+
+  const visibleEvents = (await listVisibleEventsForUser(input.viewerUserId)).filter(
+    (event) => event.createdBy === input.profileUserId
+  );
+
+  if (input.viewerUserId === input.profileUserId) {
+    return {
+      profile: {
+        id: user.id,
+        name: user.name,
+        image: user.image,
+        createdAt: user.createdAt
+      },
+      visibility: "owner",
+      events: visibleEvents.map((event) => mapVisibleEventToUserProfileEvent(event, null))
+    };
+  }
+
+  const suggestionStates = await listSuggestionStatesForUser(input.viewerUserId);
+  const statusByEventId = new Map(suggestionStates.map((entry) => [entry.eventId, entry.status]));
+  const matchedEvents = [] as UserProfileEvent[];
+
+  for (const event of visibleEvents) {
+    const status = statusByEventId.get(event.id);
+    if (!status) {
+      continue;
+    }
+
+    matchedEvents.push(mapVisibleEventToUserProfileEvent(event, status));
+  }
+
+  return {
+    profile: {
+      id: user.id,
+      name: user.name,
+      image: user.image,
+      createdAt: user.createdAt
+    },
+    visibility: "matched",
+    events: matchedEvents
+  };
 }
 
 export async function listSuggestionStatesForUser(userId: string) {
@@ -1614,6 +1764,7 @@ export async function listSuggestionsForUser(userId: string) {
       location: events.location,
       startsAt: events.startsAt,
       endsAt: events.endsAt,
+      createdBy: events.createdBy,
       createdByName: users.name,
       createdByEmail: users.email
     })

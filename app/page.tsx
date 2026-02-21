@@ -25,8 +25,8 @@ export default async function HomePage({
     const publicAlleEvents = await listPublicAlleEvents(8);
 
     return (
-      <main className="relative isolate overflow-hidden bg-slate-950 text-white">
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(15,118,110,0.35),_transparent_40%),radial-gradient(circle_at_80%_20%,_rgba(225,29,72,0.25),_transparent_35%),linear-gradient(160deg,#020617_0%,#0f172a_45%,#111827_100%)]" />
+      <main className="relative isolate overflow-hidden bg-teal-900 text-white">
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(77,129,114,0.34),_transparent_42%),radial-gradient(circle_at_80%_20%,_rgba(199,107,79,0.24),_transparent_36%),linear-gradient(160deg,#1E3A34_0%,#254842_48%,#2F5D50_100%)]" />
 
         <section className="mx-auto w-full max-w-6xl px-4 pb-12 pt-6 sm:px-6 sm:pb-14 sm:pt-8 lg:px-8 lg:pb-20">
           <header
@@ -48,7 +48,7 @@ export default async function HomePage({
               </a>
               <a
                 href={`/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}`}
-                className="rounded-full bg-rose-500 px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-wide text-white transition hover:bg-rose-400 sm:px-4 sm:text-xs"
+                className="rounded-full bg-amber-500 px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-wide text-white transition hover:bg-amber-400 sm:px-4 sm:text-xs"
               >
                 Jetzt anmelden
               </a>
@@ -165,7 +165,7 @@ export default async function HomePage({
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <a
                 href={`/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}`}
-                className="inline-flex items-center justify-center rounded-xl bg-rose-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-400"
+                className="inline-flex items-center justify-center rounded-xl bg-amber-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-amber-400"
               >
                 Jetzt kostenlos anmelden
               </a>

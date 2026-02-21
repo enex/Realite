@@ -17,6 +17,7 @@ type Suggestion = {
   startsAt: string;
   endsAt: string;
   tags: string[];
+  createdBy: string;
   createdByName: string | null;
   createdByEmail: string;
 };
@@ -318,7 +319,9 @@ export function SuggestionsPage({
                         <p className="text-xs text-slate-500">
                           {new Date(suggestion.startsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} -{" "}
                           {new Date(suggestion.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} · von{" "}
-                          {suggestion.createdByName ?? suggestion.createdByEmail}
+                          <a href={`/u/${shortenUUID(suggestion.createdBy)}`} className="font-medium text-teal-700 hover:text-teal-800">
+                            {suggestion.createdByName ?? suggestion.createdByEmail}
+                          </a>
                         </p>
                         <p className="text-xs text-slate-500">Score {suggestion.score.toFixed(2)} · Status {suggestion.status}</p>
                       </div>

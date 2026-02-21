@@ -28,6 +28,7 @@ Wenn du Kontakte aktiviert hast:
 - wird die Gruppe `#kontakte` automatisch gepflegt
 - können Kontakt-Listen als Gruppen erscheinen
 - siehst du bei passenden Gruppen, dass sie synchronisiert sind
+- dein eigener Account wird in Gruppen nicht als Kontakt/Mitglied angezeigt und nicht mitgezählt
 
 ## Profilbilder in Kontakten
 

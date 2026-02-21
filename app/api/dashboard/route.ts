@@ -26,6 +26,7 @@ export async function GET() {
     getGoogleConnection(user.id),
     listGroupContactsForUser(user.id)
   ]);
+  const ownEmail = user.email.trim().toLowerCase();
 
   const groupEventCounts = new Map<string, number>();
   const contactsByGroup = new Map<string, Awaited<ReturnType<typeof listGroupContactsForUser>>>();
@@ -40,6 +41,10 @@ export async function GET() {
   }
 
   for (const contact of groupContacts) {
+    if (contact.email.trim().toLowerCase() === ownEmail) {
+      continue;
+    }
+
     const current = contactsByGroup.get(contact.groupId) ?? [];
     current.push(contact);
     contactsByGroup.set(contact.groupId, current);

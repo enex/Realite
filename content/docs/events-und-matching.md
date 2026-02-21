@@ -58,13 +58,27 @@ Jeder von Realite angelegte Kalendereintrag enthält jetzt kurze Realite-Links:
 - `realite.app/e/<shortUUID>` zur Eventseite
 - `realite.app/s/<shortUUID>` zur Antwortseite für die Suggestion
 
-Wenn du einen `/e/...`-Link in Messenger-Apps oder Social-Feeds teilst, zeigt Realite jetzt ein Open-Graph-Vorschaubild.
+Wenn du einen `/e/...`-Link in Messenger-Apps oder Social-Feeds teilst, zeigt Realite jetzt ein Open-Graph-Vorschaubild mit Eventtitel, Termin und Ersteller.
 
 Wichtig: Aus Datenschutzgründen werden darin nur Daten für öffentliche Events angezeigt. Für nicht-öffentliche Events erscheint eine neutrale Vorschau ohne Eventdetails.
 
 Wenn für dich zu einem Event bereits eine Suggestion existiert und du nicht der Event-Ersteller bist, zeigt die Eventseite (`/e/...`) direkt denselben Antwort-Flow wie die Suggestionseite.
 
 Event- und Vorschlagslisten in Realite verlinken direkt auf diese Seiten, damit du von jeder Übersicht sofort entscheiden kannst.
+
+## Profilseiten von Nutzern
+
+Jeder registrierte Nutzer hat eine Profilseite unter:
+
+- `realite.app/u/<shortUUID>`
+
+Dort siehst du öffentliche Profilinfos und kommende Events der Person. Was du sehen kannst, hängt von deinem Status ab:
+
+- **Nicht eingeloggt:** nur öffentliche Events mit `#alle`
+- **Eingeloggt:** nur Events dieser Person, die mit dir gematcht wurden
+- **Eigenes Profil:** deine sichtbaren, kommenden Events
+
+In Event- und Suggestion-Ansichten kannst du den Ersteller direkt anklicken und kommst auf dieses Profil.
 
 ## Was du im Dashboard siehst
 

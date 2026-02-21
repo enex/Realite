@@ -81,6 +81,7 @@ export default async function EventShortcutPage({
         description={event.description}
         location={event.location}
         groupName={event.groupName}
+        createdByShortId={shortenUUID(event.createdBy)}
         createdByName={event.createdByName}
         createdByEmail={event.createdByEmail}
       />
