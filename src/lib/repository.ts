@@ -1920,6 +1920,16 @@ export async function listSuggestionStatesForUser(userId: string) {
   return rows;
 }
 
+export async function getAutoInsertedSuggestionCountForUser(userId: string) {
+  const db = getDb();
+  const [row] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(suggestions)
+    .where(and(eq(suggestions.userId, userId), eq(suggestions.status, "calendar_inserted")));
+
+  return Number(row?.count ?? 0);
+}
+
 export async function removeSuggestionsForUserByEventIds(input: {
   userId: string;
   eventIds: string[];

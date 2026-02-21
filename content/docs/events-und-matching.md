@@ -53,19 +53,25 @@ Wenn aktiviert, kann Realite Vorschläge automatisch in deinen Kalender überneh
 Du entscheidest in den Einstellungen:
 
 - ob automatische Übernahme aktiv ist
-- ob Vorschläge als eigener Kalendereintrag oder als Einladung erscheinen
+- dass Vorschläge als Kalendereintrag mit Realite-Link erscheinen
 - welcher Kalender für Kalendereinträge genutzt wird
 - welche Kalender für Verfügbarkeit und Vorschläge einbezogen werden
+- wie viele Vorschläge aktuell automatisch in deinen Kalender eingetragen wurden
 
 Wichtig für korrektes Matching:
 
 - Du musst die Verfügbarkeits-Eigenschaft deiner Termine im Kalender setzen und pflegen (z. B. **Beschäftigt** oder **Frei/Verfügbar**).
 - Realite nutzt diese Eigenschaft direkt, um zu entscheiden, ob ein Zeitfenster als verfügbar gilt.
 
-Jeder von Realite angelegte Kalendereintrag enthält jetzt kurze Realite-Links:
+Kalenderlinks in Realite:
 
-- `realite.app/e/<shortUUID>` zur Eventseite
-- `realite.app/s/<shortUUID>` zur Antwortseite für die Suggestion
+- Neue Vorschläge im Kalender enthalten einen Link `realite.app/s/<shortUUID>` zur direkten Zu-/Absage.
+- Angenommene Vorschläge bzw. bestätigte Einträge enthalten einen Link `realite.app/e/<shortUUID>` zur Eventseite.
+- Titel von Realite-Kalendereinträgen enthalten keine Hashtags:  
+  Bei neuen Vorschlägen `[Realite Vorschlag] <Titel ohne Hashtags>`, bei Zusage `[Realite] <Titel ohne Hashtags>`.
+- In der Beschreibung wird dafür eine einzelne Zeile ergänzt: `Realite-Link (automatisch ergänzt): <Link>`.
+- Wenn ein Event aus Google Kalender in Realite importiert wird, ergänzt Realite im Google-Termin automatisch einen `realite.app/e/...`-Link in der Beschreibung.
+- Dieser automatisch ergänzte Realite-Text wird beim Import in Realite ignoriert, damit Beschreibungen in Realite sauber bleiben.
 
 Wenn du einen `/e/...`-Link in Messenger-Apps oder Social-Feeds teilst, zeigt Realite jetzt ein Open-Graph-Vorschaubild mit Eventtitel, Termin und Ersteller.
 

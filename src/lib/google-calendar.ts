@@ -9,6 +9,11 @@ import {
   updateGoogleConnectionTokens,
   upsertExternalPublicEvent
 } from "@/src/lib/repository";
+import {
+  buildRealiteCalendarMetadata,
+  stripRealiteCalendarMetadata,
+  type RealiteCalendarLinkType
+} from "@/src/lib/realite-calendar-links";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
 type BusyWindow = {
@@ -31,6 +36,8 @@ export type ReadableGoogleCalendar = {
 const FREE_BUSY_CHUNK_MS = 60 * 24 * 60 * 60 * 1000;
 const MAX_FREE_BUSY_SPLIT_DEPTH = 8;
 const SOURCE_INVITE_REF_PREFIX = "source-invite::";
+const REALITE_TITLE_PREFIX_REGEX = /^\s*\[(?:realite(?:\s*vorschlag)?)\]\s*/iu;
+const HASHTAG_REGEX = /(^|\s)#[\p{L}\p{N}_-]+/gu;
 
 type CalendarApiEvent = {
   id?: string;
@@ -60,6 +67,89 @@ type SourceInviteRef = {
   eventId: string;
   attendeeEmail: string;
 };
+
+function getRealiteBaseUrl() {
+  const baseUrl =
+    process.env.BETTER_AUTH_URL || process.env.NEXTAUTH_URL || process.env.REALITE_APP_URL || "https://realite.app";
+  return baseUrl.replace(/\/+$/, "");
+}
+
+function buildRealiteEventUrl(eventId: string) {
+  return `${getRealiteBaseUrl()}/e/${shortenUUID(eventId)}`;
+}
+
+function buildRealiteSuggestionUrl(suggestionId: string) {
+  return `${getRealiteBaseUrl()}/s/${shortenUUID(suggestionId)}`;
+}
+
+function normalizeRealiteCalendarTitle(rawTitle: string) {
+  const titleWithoutPrefix = rawTitle.replace(REALITE_TITLE_PREFIX_REGEX, "").trim();
+  const titleWithoutTags = titleWithoutPrefix.replace(HASHTAG_REGEX, "$1");
+  const compact = titleWithoutTags.replace(/\s{2,}/g, " ").trim();
+  return compact || "Event";
+}
+
+function sanitizeRealiteCalendarDescription(rawDescription?: string | null) {
+  const normalized = (rawDescription ?? "").replace(/\r\n/g, "\n");
+  const sanitized = normalized
+    .split("\n")
+    .map((line) => line.replace(HASHTAG_REGEX, "$1").replace(/\s{2,}/g, " ").trimEnd())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
+  return sanitized || null;
+}
+
+function buildRealiteCalendarSummary(input: { title: string; type: RealiteCalendarLinkType }) {
+  const prefix = input.type === "suggestion" ? "[Realite Vorschlag]" : "[Realite]";
+  return `${prefix} ${normalizeRealiteCalendarTitle(input.title)}`.trim();
+}
+
+async function ensureGoogleEventHasRealiteLink(input: {
+  token: string;
+  calendarId: string;
+  googleEventId: string;
+  currentDescription?: string | null;
+  url: string;
+  linkType: RealiteCalendarLinkType;
+}) {
+  const nextDescription = buildRealiteCalendarMetadata({
+    description: input.currentDescription,
+    url: input.url,
+    type: input.linkType
+  });
+  const currentDescription = (input.currentDescription ?? "").replace(/\r\n/g, "\n").trim();
+  if (currentDescription === nextDescription.trim()) {
+    return;
+  }
+
+  const response = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(input.calendarId)}` +
+      `/events/${encodeURIComponent(input.googleEventId)}?sendUpdates=none`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${input.token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        description: nextDescription
+      })
+    }
+  );
+
+  if (response.ok || response.status === 403 || response.status === 404) {
+    return;
+  }
+
+  const details = await readGoogleError(response);
+  throw new Error(
+    `Google Event-Link konnte nicht aktualisiert werden (${response.status})${
+      details ? `: ${details}` : ""
+    }`
+  );
+}
 
 async function readGoogleError(response: Response) {
   try {
@@ -401,6 +491,7 @@ export async function insertSuggestionIntoCalendar(input: {
   endsAt: Date;
   calendarId?: string;
   blockedCalendarIds?: string[];
+  linkType?: RealiteCalendarLinkType;
 }) {
   const token = await getGoogleAccessToken(input.userId);
   if (!token) {
@@ -419,15 +510,20 @@ export async function insertSuggestionIntoCalendar(input: {
     return null;
   }
 
-  const baseUrl =
-    process.env.BETTER_AUTH_URL || process.env.NEXTAUTH_URL || process.env.REALITE_APP_URL || "https://realite.app";
-  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
-  const eventUrl = `${normalizedBaseUrl}/e/${shortenUUID(input.eventId)}`;
-  const suggestionUrl = `${normalizedBaseUrl}/s/${shortenUUID(input.suggestionId)}`;
+  const eventUrl = buildRealiteEventUrl(input.eventId);
+  const suggestionUrl = buildRealiteSuggestionUrl(input.suggestionId);
+  const linkType = input.linkType ?? "suggestion";
+  const shortcutUrl = linkType === "event" ? eventUrl : suggestionUrl;
   const eventPayload = {
-    summary: `[Realite] ${input.title.replace(/^\[realite\]\s*/iu, "")}`,
-    description:
-      `${input.description ?? ""}\n\nVorschlag von Realite.\nEventseite: ${eventUrl}\nAntwortseite: ${suggestionUrl}`.trim(),
+    summary: buildRealiteCalendarSummary({
+      title: input.title,
+      type: linkType
+    }),
+    description: buildRealiteCalendarMetadata({
+      description: sanitizeRealiteCalendarDescription(input.description),
+      url: shortcutUrl,
+      type: linkType
+    }),
     location: input.location ?? undefined,
     start: {
       dateTime: input.startsAt.toISOString()
@@ -751,6 +847,36 @@ export async function syncSuggestionDecisionInCalendar(input: {
   const transparency = input.decision === "accepted" ? "opaque" : "transparent";
 
   for (const calendarId of candidateCalendars) {
+    let nextDescription: string | undefined;
+    let nextSummary: string | undefined;
+    if (input.decision === "accepted") {
+      const eventResponse = await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}` +
+          `/events/${encodeURIComponent(parsed.eventId)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (eventResponse.ok) {
+        const payload = (await eventResponse.json()) as CalendarApiEvent;
+        nextSummary = buildRealiteCalendarSummary({
+          title: payload.summary ?? "Event",
+          type: "event"
+        });
+        const realiteEventId = payload.extendedProperties?.private?.realiteEventId?.trim();
+        if (realiteEventId) {
+          nextDescription = buildRealiteCalendarMetadata({
+            description: sanitizeRealiteCalendarDescription(payload.description ?? null),
+            url: buildRealiteEventUrl(realiteEventId),
+            type: "event"
+          });
+        }
+      }
+    }
+
     const patchResponse = await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(parsed.eventId)}?sendUpdates=none`,
       {
@@ -759,7 +885,11 @@ export async function syncSuggestionDecisionInCalendar(input: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ transparency })
+        body: JSON.stringify({
+          transparency,
+          ...(nextSummary ? { summary: nextSummary } : {}),
+          ...(nextDescription ? { description: nextDescription } : {})
+        })
       }
     );
 
@@ -1078,7 +1208,8 @@ export async function syncPublicEventsFromGoogleCalendar(userId: string) {
           continue;
         }
 
-        const searchableText = `${item.summary ?? ""}\n${item.description ?? ""}`;
+        const importedDescription = stripRealiteCalendarMetadata(item.description ?? null);
+        const searchableText = `${item.summary ?? ""}\n${importedDescription ?? ""}`;
         const tags = extractTags(searchableText);
 
         const startsAt = parseGoogleEventDate(item.start);
@@ -1091,18 +1222,34 @@ export async function syncPublicEventsFromGoogleCalendar(userId: string) {
         const sourceEventId = `${calendarId}:${item.id}`;
         seenSourceEventIds.add(sourceEventId);
 
-        await upsertExternalPublicEvent({
+        const importedEvent = await upsertExternalPublicEvent({
           userId,
           sourceProvider: "google",
           sourceEventId,
           title: item.summary?.trim() || "Öffentliches Kalender-Event",
-          description: item.description ?? null,
+          description: importedDescription,
           location: item.location ?? null,
           startsAt,
           endsAt,
           groupId: alleGroup.id,
           tags
         });
+
+        try {
+          await ensureGoogleEventHasRealiteLink({
+            token,
+            calendarId,
+            googleEventId: item.id,
+            currentDescription: item.description ?? null,
+            url: buildRealiteEventUrl(importedEvent.id),
+            linkType: "event"
+          });
+        } catch (error) {
+          console.error(
+            `Realite-Link für Google-Event ${sourceEventId} konnte nicht ergänzt werden`,
+            error instanceof Error ? error.message : error
+          );
+        }
 
         synced += 1;
       }

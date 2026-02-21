@@ -77,7 +77,7 @@ export default async function EventShortcutPage({
       </div>
 
       <SharedEventContent
-        title={event.title}
+        title={event.title.replace(/#[^\s]+/gi, "").trim()}
         startsAtIso={event.startsAt.toISOString()}
         endsAtIso={event.endsAt.toISOString()}
         description={event.description}

@@ -21,6 +21,9 @@ type ReadableCalendar = {
 
 type SettingsPayload = {
   settings: SuggestionSettingsForm;
+  suggestionStats: {
+    autoInsertedSuggestionCount: number;
+  };
   calendars: WritableCalendar[];
   readableCalendars: ReadableCalendar[];
   calendarConnected: boolean;
@@ -34,6 +37,9 @@ const emptySettings: SettingsPayload = {
     suggestionDeliveryMode: "calendar_copy",
     shareEmailInSourceInvites: true,
     matchingCalendarIds: []
+  },
+  suggestionStats: {
+    autoInsertedSuggestionCount: 0
   },
   calendars: [],
   readableCalendars: [],
@@ -164,6 +170,7 @@ export function SettingsPage({
           calendarConnected={data.calendarConnected}
           calendars={data.calendars}
           readableCalendars={data.readableCalendars}
+          autoInsertedSuggestionCount={data.suggestionStats.autoInsertedSuggestionCount}
           form={suggestionForm}
           busy={busy}
           onFormChange={setSuggestionForm}

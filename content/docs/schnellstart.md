@@ -48,8 +48,7 @@ Starte dort das Matching und prüfe deine Vorschläge.
 - dein eigenes Profil öffnen
 - deine Kontodaten sehen
 - ob Vorschläge automatisch in deinem Kalender erscheinen
-- ob Vorschläge als eigener Kalendereintrag oder als Einladung erscheinen
-- ob deine E-Mail bei Einladungen sichtbar ist
+- dass Vorschläge als Kalendereintrag mit Realite-Link erscheinen
 - welche Kalender für Verfügbarkeit und Vorschläge berücksichtigt werden
 - ob Termine in deinem Kalender als **Beschäftigt** oder **Frei/Verfügbar** markiert sind (dies steuert, wann Realite Vorschläge macht)
 - ob dein Dating-Modus (`#date`) freigeschaltet ist und welche Kriterien für gegenseitige Matches gelten

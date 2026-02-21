@@ -24,6 +24,7 @@ type SuggestionSettingsCardProps = {
   calendarConnected: boolean;
   calendars: WritableCalendar[];
   readableCalendars: ReadableCalendar[];
+  autoInsertedSuggestionCount: number;
   form: SuggestionSettingsForm;
   busy: boolean;
   onFormChange: (next: SuggestionSettingsForm) => void;
@@ -34,6 +35,7 @@ export function SuggestionSettingsCard({
   calendarConnected,
   calendars,
   readableCalendars,
+  autoInsertedSuggestionCount,
   form,
   busy,
   onFormChange,
@@ -52,6 +54,11 @@ export function SuggestionSettingsCard({
   return (
     <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <h2 className="text-lg font-semibold text-slate-900">Vorschlags-Einstellungen</h2>
+      <div className="mt-3 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3">
+        <p className="text-xs font-medium uppercase tracking-wide text-teal-700">Automatisch erstellt</p>
+        <p className="mt-1 text-2xl font-semibold text-teal-900">{autoInsertedSuggestionCount}</p>
+        <p className="text-xs text-teal-700">Aktuell automatisch als Vorschlag in deinen Kalender eingetragen</p>
+      </div>
       {!calendarConnected ? (
         <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
           Google Kalender ist aktuell nicht verbunden.
@@ -74,42 +81,9 @@ export function SuggestionSettingsCard({
           <span className="text-sm text-slate-700">Potenzielle Events automatisch in meinen Kalender eintragen</span>
         </label>
 
-        <select
-          value={form.suggestionDeliveryMode}
-          onChange={(event) =>
-            onFormChange({
-              ...form,
-              suggestionDeliveryMode: event.target.value as "calendar_copy" | "source_invite"
-            })
-          }
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
-          disabled={!calendarConnected || busy}
-        >
-          <option value="calendar_copy">Kalenderkopie (wie bisher)</option>
-          <option value="source_invite">Einladung vom Source-Event (Google RSVP)</option>
-        </select>
-
-        <label className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 sm:col-span-2">
-          <input
-            type="checkbox"
-            checked={form.shareEmailInSourceInvites}
-            onChange={(event) =>
-              onFormChange({
-                ...form,
-                shareEmailInSourceInvites: event.target.checked
-              })
-            }
-            disabled={busy || form.suggestionDeliveryMode !== "source_invite"}
-          />
-          <span className="text-sm text-slate-700">Meine E-Mail bei Source-Einladungen sichtbar machen</span>
-        </label>
-
-        {form.suggestionDeliveryMode === "source_invite" && !form.shareEmailInSourceInvites ? (
-          <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 sm:col-span-2">
-            Ohne sichtbare E-Mail kann Google RSVP nicht als echte Einladung abgebildet werden. Realite nutzt dann automatisch
-            die Kalenderkopie als Fallback.
-          </p>
-        ) : null}
+        <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 sm:col-span-2">
+          Vorschläge werden als Kalendereintrag mit einem Realite-Link erstellt. Zu-/Absage läuft direkt über die Realite-Seite.
+        </div>
 
         <select
           value={form.suggestionCalendarId}

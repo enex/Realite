@@ -1,7 +1,6 @@
 import {
   ensureSuggestionNonBusyInCalendar,
   getBusyWindows,
-  insertSuggestionAsSourceInvite,
   insertSuggestionIntoCalendar,
   removeSuggestionCalendarEvent
 } from "@/src/lib/google-calendar";
@@ -186,37 +185,19 @@ export async function generateSuggestions(userId: string) {
     if (settings.autoInsertSuggestions && candidate.score >= AUTO_INSERT_MIN_SCORE && !existing?.calendarEventId) {
       const sourceCalendarId = parseSourceCalendarId(candidate.event.sourceProvider, candidate.event.sourceEventId);
       try {
-        const shouldTrySourceInvite =
-          settings.suggestionDeliveryMode === "source_invite" &&
-          settings.shareEmailInSourceInvites &&
-          candidate.event.sourceProvider === "google" &&
-          Boolean(candidate.event.sourceEventId);
-
-        let calendarEventId: string | null = null;
-
-        if (shouldTrySourceInvite) {
-          calendarEventId = await insertSuggestionAsSourceInvite({
-            suggestionId: suggestion.id,
-            targetUserId: userId,
-            sourceOwnerUserId: candidate.event.createdBy,
-            sourceEventId: candidate.event.sourceEventId ?? ""
-          });
-        }
-
-        if (!calendarEventId) {
-          calendarEventId = await insertSuggestionIntoCalendar({
-            userId,
-            suggestionId: suggestion.id,
-            eventId: candidate.event.id,
-            title: candidate.event.title,
-            description: candidate.event.description,
-            location: candidate.event.location,
-            startsAt: candidate.event.startsAt,
-            endsAt: candidate.event.endsAt,
-            calendarId: settings.suggestionCalendarId,
-            blockedCalendarIds: sourceCalendarId ? [sourceCalendarId] : []
-          });
-        }
+        const calendarEventId = await insertSuggestionIntoCalendar({
+          userId,
+          suggestionId: suggestion.id,
+          eventId: candidate.event.id,
+          title: candidate.event.title,
+          description: candidate.event.description,
+          location: candidate.event.location,
+          startsAt: candidate.event.startsAt,
+          endsAt: candidate.event.endsAt,
+          calendarId: settings.suggestionCalendarId,
+          blockedCalendarIds: sourceCalendarId ? [sourceCalendarId] : [],
+          linkType: "suggestion"
+        });
 
         if (calendarEventId) {
           await markSuggestionInserted(suggestion.id, calendarEventId);

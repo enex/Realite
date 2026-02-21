@@ -66,18 +66,19 @@ Diese Informationen werden gespeichert und für zukünftige Vorschläge genutzt,
 
 ## Was bedeuten die neuen kurzen Links (`/s/...` und `/e/...`)?
 
-- `/e/<shortUUID>` öffnet die Eventseite
-- `/s/<shortUUID>` öffnet die Seite zur Zusage/Absage
+- `/s/<shortUUID>` öffnet die Seite zur Zusage/Absage für neue Vorschläge.
+- `/e/<shortUUID>` öffnet die Eventseite für angenommene bzw. bestätigte Termine.
 
-Diese Links findest du auch in von Realite angelegten Kalendereinträgen.
+Diese Links findest du in von Realite angelegten Kalendereinträgen. Bei aus Google importierten Events ergänzt Realite den `/e/...`-Link in der Google-Beschreibung automatisch und ignoriert diesen Zusatztext beim erneuten Import in Realite.
 
-## Warum wurde keine Einladung erstellt?
+## Warum sehe ich im Google Kalender keine direkten Zusage/Absage-Buttons?
 
-Mögliche Gründe:
+Das ist beabsichtigt.
 
-- für dieses Event ist keine Einladung möglich
-- der Termin gehört nicht zu einem passenden Quell-Termin
-- deine Einstellungen erlauben aktuell nur Kalendereinträge statt Einladungen
+Realite setzt im Kalendereintrag einen einzelnen Link auf die passende Realite-Seite (`/s/...` oder `/e/...`).
+Zu- und Absage laufen zentral über diese Seite, damit der Entscheidungs-Flow einheitlich bleibt.
+Außerdem entfernt Realite Hashtags aus dem Kalendertitel und nutzt klare Präfixe:
+`[Realite Vorschlag] ...` vor Zusage, `[Realite] ...` nach Zusage.
 
 ## Warum kann ich manche Gruppen nicht löschen?
 

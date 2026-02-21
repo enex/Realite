@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { listReadableCalendars, listWritableCalendars } from "@/src/lib/google-calendar";
-import { getGoogleConnection, getUserSuggestionSettings, updateUserSuggestionSettings } from "@/src/lib/repository";
+import {
+  getAutoInsertedSuggestionCountForUser,
+  getGoogleConnection,
+  getUserSuggestionSettings,
+  updateUserSuggestionSettings
+} from "@/src/lib/repository";
 import { requireAppUser } from "@/src/lib/session";
 
 const updateSettingsSchema = z.object({
@@ -19,11 +24,12 @@ export async function GET() {
     return NextResponse.json({ error: "Nicht eingeloggt" }, { status: 401 });
   }
 
-  const [storedSettings, calendars, readableCalendars, connection] = await Promise.all([
+  const [storedSettings, calendars, readableCalendars, connection, autoInsertedSuggestionCount] = await Promise.all([
     getUserSuggestionSettings(user.id),
     listWritableCalendars(user.id),
     listReadableCalendars(user.id),
-    getGoogleConnection(user.id)
+    getGoogleConnection(user.id),
+    getAutoInsertedSuggestionCountForUser(user.id)
   ]);
 
   let settings = storedSettings;
@@ -54,8 +60,22 @@ export async function GET() {
     });
   }
 
+  if (settings.suggestionDeliveryMode !== "calendar_copy" || settings.shareEmailInSourceInvites) {
+    settings = await updateUserSuggestionSettings({
+      userId: user.id,
+      autoInsertSuggestions: settings.autoInsertSuggestions,
+      suggestionCalendarId: settings.suggestionCalendarId,
+      suggestionDeliveryMode: "calendar_copy",
+      shareEmailInSourceInvites: false,
+      matchingCalendarIds: settings.matchingCalendarIds
+    });
+  }
+
   return NextResponse.json({
     settings,
+    suggestionStats: {
+      autoInsertedSuggestionCount
+    },
     calendars,
     readableCalendars,
     calendarConnected: Boolean(connection)
@@ -84,14 +104,10 @@ export async function PATCH(request: Request) {
   let finalCalendarId = selectedCalendarId;
 
   if (!isKnownCalendar) {
-    if (parsed.data.suggestionDeliveryMode === "source_invite") {
-      finalCalendarId = calendars[0]?.id ?? "primary";
-    } else {
-      return NextResponse.json(
-        { error: "Der ausgewählte Kalender ist nicht verfügbar oder nicht beschreibbar." },
-        { status: 400 }
-      );
-    }
+    return NextResponse.json(
+      { error: "Der ausgewählte Kalender ist nicht verfügbar oder nicht beschreibbar." },
+      { status: 400 }
+    );
   }
 
   const readableCalendarIds = new Set(readableCalendars.map((calendar) => calendar.id));
@@ -110,10 +126,19 @@ export async function PATCH(request: Request) {
     userId: user.id,
     autoInsertSuggestions: parsed.data.autoInsertSuggestions,
     suggestionCalendarId: finalCalendarId,
-    suggestionDeliveryMode: parsed.data.suggestionDeliveryMode,
-    shareEmailInSourceInvites: parsed.data.shareEmailInSourceInvites,
+    suggestionDeliveryMode: "calendar_copy",
+    shareEmailInSourceInvites: false,
     matchingCalendarIds: normalizedMatchingIds
   });
 
-  return NextResponse.json({ settings, calendars, readableCalendars });
+  const autoInsertedSuggestionCount = await getAutoInsertedSuggestionCountForUser(user.id);
+
+  return NextResponse.json({
+    settings,
+    suggestionStats: {
+      autoInsertedSuggestionCount
+    },
+    calendars,
+    readableCalendars
+  });
 }

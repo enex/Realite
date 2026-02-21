@@ -61,7 +61,8 @@ export async function POST(
         location: suggestion.location,
         startsAt: suggestion.startsAt,
         endsAt: suggestion.endsAt,
-        calendarId: settings.suggestionCalendarId
+        calendarId: settings.suggestionCalendarId,
+        linkType: "event"
       });
 
       if (insertedEventRef) {
