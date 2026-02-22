@@ -35,6 +35,10 @@ Wichtig:
 
 Wenn Vorschläge fehlen, prüfe deshalb direkt im Kalender, ob die Verfügbarkeit für betroffene Termine korrekt gesetzt ist.
 
+## Warum sehe ich den Dating-Modus / #date gar nicht?
+
+Der Dating-Modus wird per Feature-Flag gesteuert und kann standardmäßig ausgeblendet sein. Wenn du weder auf der Startseite noch unter Einstellungen oder Gruppen etwas zu Dating oder `#date` siehst, ist die Funktion derzeit deaktiviert.
+
 ## Warum ist `#date` bei mir noch gesperrt?
 
 `#date` wird nur freigeschaltet, wenn dein Dating-Profil vollständig ist.

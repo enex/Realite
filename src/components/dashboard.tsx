@@ -164,6 +164,7 @@ export function Dashboard({
   const profileEmail = data.me.email || userEmail;
   const profileImage = data.me.image ?? userImage;
   const smartMeetingsEnabled = useRealiteFeatureFlag("smart-meetings", true);
+  const datingModeEnabled = useRealiteFeatureFlag("dating-mode", false);
 
   async function loadData(options?: { silent?: boolean }) {
     const silent = options?.silent ?? false;
@@ -387,13 +388,15 @@ export function Dashboard({
               <input
                 value={eventForm.tags}
                 onChange={(event) => setEventForm((state) => ({ ...state, tags: event.target.value }))}
-                placeholder="#alle, #kontakte"
+                placeholder={datingModeEnabled ? "#alle, #kontakte, #date" : "#alle, #kontakte"}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               />
-              <p className="text-xs text-slate-500">
-                Für `#date` brauchst du ein freigeschaltetes Dating-Profil in den Profileinstellungen. `#date` kann nicht mit
-                `#alle` oder `#kontakte` kombiniert werden.
-              </p>
+              {datingModeEnabled ? (
+                <p className="text-xs text-slate-500">
+                  Für `#date` brauchst du ein freigeschaltetes Dating-Profil in den Profileinstellungen. `#date` kann nicht mit
+                  `#alle` oder `#kontakte` kombiniert werden.
+                </p>
+              ) : null}
               <p className="text-xs text-slate-500">
                 Smart-Meeting Shortcut im Titel: `!min=3 !frist=24h !fenster=24h` (setzt Mindestzusagen, Frist und Suchfenster).
               </p>

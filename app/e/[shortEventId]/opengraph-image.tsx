@@ -8,6 +8,9 @@ import {
   getEventShareCopy,
   getPublicEventSharePreviewByShortId
 } from "@/src/lib/event-share";
+import { notFound } from "next/navigation";
+import { enlargeUUID } from "@/src/lib/utils/short-uuid";
+import { getSuggestion, getSuggestionForUser } from "@/src/lib/repository";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -61,10 +64,21 @@ function wrapText(value: string, maxCharsPerLine: number, maxLines: number) {
 export default async function EventOgImage({
   params
 }: {
-  params: Promise<{ shortEventId: string }>;
+  params: Promise<{ shortEventId?: string, shortSuggestionId?: string }>;
 }) {
-  const { shortEventId } = await params;
-  const preview = await getPublicEventSharePreviewByShortId(shortEventId);
+  let { shortEventId, shortSuggestionId } = await params;
+  if (!shortEventId && !shortSuggestionId) {
+    notFound();
+  }
+  if (shortSuggestionId) {
+    const suggestionId = enlargeUUID(shortSuggestionId);
+    const suggestion = await getSuggestion(suggestionId);
+    if (!suggestion) {
+      notFound();
+    }
+    shortEventId = suggestion.eventId;
+  }
+  const preview = await getPublicEventSharePreviewByShortId(shortEventId!);
   const copy = getEventShareCopy(preview);
   const schedule = preview ? formatEventShareSchedule(preview) : EVENT_SHARE_FALLBACK_DESCRIPTION;
   const owner = preview ? formatEventShareOwner(preview) : "";

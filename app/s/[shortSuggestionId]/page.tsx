@@ -1,12 +1,78 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
 import { SharedEventContent } from "@/src/components/shared-event-content";
 import { SuggestionDecisionPanel } from "@/src/components/suggestion-decision-panel";
-import { getSuggestionForUser } from "@/src/lib/repository";
-import { enlargeUUID, shortenUUID } from "@/src/lib/utils/short-uuid";
+import { getAuthSession } from "@/src/lib/auth";
+import { stripRealiteCalendarMetadata } from "@/src/lib/realite-calendar-links";
+import { getSuggestionForUser, getUserByEmail } from "@/src/lib/repository";
 import { requireAppUser } from "@/src/lib/session";
+import { enlargeUUID, shortenUUID } from "@/src/lib/utils/short-uuid";
 
 export const dynamic = "force-dynamic";
+
+const FALLBACK_TITLE = "Vorschlag | Realite";
+const FALLBACK_DESCRIPTION = "Event-Vorschlag auf Realite. Melde dich an, um Details zu sehen.";
+const OG_DESCRIPTION_MAX_LENGTH = 160;
+
+function suggestionTitle(title: string): string {
+  return title.replace(/#[^\s]+/gi, "").trim() || FALLBACK_TITLE;
+}
+
+function suggestionDescription(description: string | null): string {
+  const cleaned = stripRealiteCalendarMetadata(description)?.trim() ?? "";
+  if (cleaned.length <= OG_DESCRIPTION_MAX_LENGTH) return cleaned;
+  return cleaned.slice(0, OG_DESCRIPTION_MAX_LENGTH - 3) + "...";
+}
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ shortSuggestionId: string }>;
+}): Promise<Metadata> {
+  const { shortSuggestionId } = await params;
+
+  let suggestionId = "";
+  try {
+    suggestionId = enlargeUUID(shortSuggestionId);
+  } catch {
+    return { title: FALLBACK_TITLE, description: FALLBACK_DESCRIPTION };
+  }
+
+  const session = await getAuthSession();
+  const email = session?.user?.email;
+  if (!email) {
+    return { title: FALLBACK_TITLE, description: FALLBACK_DESCRIPTION };
+  }
+
+  const user = await getUserByEmail(email);
+  if (!user) {
+    return { title: FALLBACK_TITLE, description: FALLBACK_DESCRIPTION };
+  }
+
+  const suggestion = await getSuggestionForUser(suggestionId, user.id);
+  if (!suggestion) {
+    return { title: FALLBACK_TITLE, description: FALLBACK_DESCRIPTION };
+  }
+
+  const title = suggestionTitle(suggestion.title);
+  const description = suggestionDescription(suggestion.description);
+  const path = `/s/${encodeURIComponent(shortSuggestionId)}`;
+
+  return {
+    title,
+    description: description || FALLBACK_DESCRIPTION,
+    openGraph: {
+      url: path,
+      title,
+      description: description || FALLBACK_DESCRIPTION
+    },
+    twitter: {
+      title,
+      description: description || FALLBACK_DESCRIPTION
+    }
+  };
+}
 
 export default async function SuggestionShortcutPage({
   params
@@ -42,7 +108,7 @@ export default async function SuggestionShortcutPage({
       </div>
 
       <SharedEventContent
-        title={suggestion.title}
+        title={suggestion.title.replace(/#[^\s]+/gi, "").trim()}
         startsAtIso={suggestion.startsAt.toISOString()}
         endsAtIso={suggestion.endsAt.toISOString()}
         description={suggestion.description}

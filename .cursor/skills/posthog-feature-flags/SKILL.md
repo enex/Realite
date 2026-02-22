@@ -84,8 +84,9 @@ Hooks nur in Client Components („use client“) oder in anderen Client-Hooks v
 
 ## Aktuell genutzte Flags
 
-| Key              | Verwendung                          |
-|------------------|-------------------------------------|
-| `smart-meetings` | Dashboard: Smart-Meetings-Bereich   |
+| Key              | Verwendung                                                       |
+|------------------|------------------------------------------------------------------|
+| `smart-meetings` | Dashboard: Smart-Meetings-Bereich                                |
+| `dating-mode`    | Dating-Modus (#date): Landing Page, Einstellungen, Gruppen, Events (standardmäßig deaktiviert) |
 
 Weitere Flags sind in PostHog angelegt und können jederzeit im Code mit dem gleichen Hook unter dem jeweiligen Key genutzt werden.

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/components/app-shell";
 import { UserAvatar } from "@/src/components/user-avatar";
+import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
 type GroupContact = {
@@ -102,6 +103,7 @@ export function GroupDetail({
   const [showActions, setShowActions] = useState(false);
   const [manualSyncBusy, setManualSyncBusy] = useState(false);
   const normalizedUserEmail = userEmail.trim().toLowerCase();
+  const datingModeEnabled = useRealiteFeatureFlag("dating-mode", false);
 
   const group = useMemo(() => data.groups.find((entry) => entry.id === groupId) ?? null, [data.groups, groupId]);
 
@@ -497,7 +499,7 @@ export function GroupDetail({
                   <input
                     value={hashtagsInput}
                     onChange={(event) => setHashtagsInput(event.target.value)}
-                    placeholder="#kontakte, #dating"
+                    placeholder={datingModeEnabled ? "#kontakte, #dating" : "#kontakte"}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
                   <button

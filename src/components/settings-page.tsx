@@ -8,6 +8,7 @@ import { DatingSettingsCard } from "@/src/components/settings/dating-settings-ca
 import { SuggestionLearningCard } from "@/src/components/settings/suggestion-learning-card";
 import { SuggestionSettingsCard, type SuggestionSettingsForm } from "@/src/components/settings/suggestion-settings-card";
 import { useDatingSettings } from "@/src/components/settings/use-dating-settings";
+import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 
 type WritableCalendar = {
   id: string;
@@ -82,6 +83,7 @@ export function SettingsPage({
   const [suggestionForm, setSuggestionForm] = useState<SuggestionSettingsForm>(emptySettings.settings);
 
   const dating = useDatingSettings();
+  const datingModeEnabled = useRealiteFeatureFlag("dating-mode", false);
 
   async function loadSuggestionSettings() {
     setLoading(true);
@@ -189,7 +191,9 @@ export function SettingsPage({
                 <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{userName}</h1>
                 <p className="text-xs text-slate-500">{userEmail}</p>
                 <p className="mt-2 text-sm text-slate-600">
-                  Steuere hier Vorschlagslogik, Kalenderverhalten und den Dating-Modus für die Smart Group `#date`.
+                  {datingModeEnabled
+                    ? "Steuere hier Vorschlagslogik, Kalenderverhalten und den Dating-Modus für die Smart Group `#date`."
+                    : "Steuere hier Vorschlagslogik und Kalenderverhalten."}
                 </p>
               </div>
             </div>
@@ -210,7 +214,7 @@ export function SettingsPage({
         {error ? (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
         ) : null}
-        {dating.error ? (
+        {datingModeEnabled && dating.error ? (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{dating.error}</div>
         ) : null}
         {loading ? <p className="mt-6 text-slate-600">Lade Einstellungen...</p> : null}
@@ -232,15 +236,17 @@ export function SettingsPage({
           negativeCriteria={data.criteria.negativeCriteria}
         />
 
-        <DatingSettingsCard
-          form={dating.form}
-          status={{ unlocked: dating.data.unlocked, age: dating.data.age }}
-          missingRequirementLabels={dating.missingRequirementLabels}
-          loading={dating.loading}
-          busy={dating.busy}
-          onFormChange={dating.setForm}
-          onSubmit={saveDatingSettings}
-        />
+        {datingModeEnabled ? (
+          <DatingSettingsCard
+            form={dating.form}
+            status={{ unlocked: dating.data.unlocked, age: dating.data.age }}
+            missingRequirementLabels={dating.missingRequirementLabels}
+            loading={dating.loading}
+            busy={dating.busy}
+            onFormChange={dating.setForm}
+            onSubmit={saveDatingSettings}
+          />
+        ) : null}
 
         <AccountDeleteCard busy={deleteBusy} error={deleteError} onDelete={deleteAccount} />
       </main>

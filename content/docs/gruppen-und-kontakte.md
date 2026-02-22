@@ -25,7 +25,7 @@ In der Gruppenansicht kannst du:
 
 ## Smarte Gruppe `#date`
 
-`#date` ist eine Smart Group für Dating-Szenarien.
+`#date` ist eine Smart Group für Dating-Szenarien. Die Funktion kann von uns per Feature-Flag ein- oder ausgeblendet werden; wenn du die Karte und Einstellungen dazu nicht siehst, ist der Dating-Modus derzeit deaktiviert.
 
 Wichtig:
 

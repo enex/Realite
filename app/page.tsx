@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { LandingDatingBadge, LandingDatingGate } from "@/src/components/landing-dating-gate";
 import { getAuthSession } from "@/src/lib/auth";
 import { listPublicAlleEvents } from "@/src/lib/repository";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
@@ -34,7 +35,9 @@ export default async function HomePage({
           <LandingHeader signInHref={signInHref} />
           <HeroSection signInHref={signInHref} publicAlleEvents={publicAlleEvents} />
           <PeopleIntentSection />
-          <DatingSpotlightSection />
+          <LandingDatingGate>
+            <DatingSpotlightSection />
+          </LandingDatingGate>
           <HowItWorksSection signInHref={signInHref} />
         </div>
       </main>
@@ -110,7 +113,7 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
         <div className="mt-7 flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-200 sm:mt-8 sm:text-xs">
           <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1">Neue Leute</span>
           <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1">Reconnecten</span>
-          <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1">Dating optional</span>
+          <LandingDatingBadge />
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/components/app-shell";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
+import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 
 type GroupContact = {
   groupId: string;
@@ -92,6 +93,7 @@ export function GroupsPage({
     visibility: "private" as "public" | "private"
   });
 
+  const datingModeEnabled = useRealiteFeatureFlag("dating-mode", false);
   const visibleGroups = useMemo(() => data.groups.filter((group) => !group.isHidden), [data.groups]);
   const hiddenGroups = useMemo(() => data.groups.filter((group) => group.isHidden), [data.groups]);
 
@@ -296,36 +298,38 @@ export function GroupsPage({
           </form>
         ) : null}
 
-        <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p className="text-sm text-slate-500">Smarte Gruppe</p>
-              <h2 className="text-lg font-semibold text-slate-900">#date</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Events mit `#date` sind nur für Personen sichtbar, die sich gegenseitig im Dating-Profil matchen.
-              </p>
-              <p className="mt-2 text-xs text-slate-500">
-                Status:{" "}
-                {data.dating.unlocked
-                  ? "freigeschaltet"
-                  : data.dating.enabled
-                    ? "aktiv, aber noch nicht vollständig"
-                    : "nicht aktiviert"}
-              </p>
+        {datingModeEnabled ? (
+          <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-sm text-slate-500">Smarte Gruppe</p>
+                <h2 className="text-lg font-semibold text-slate-900">#date</h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Events mit `#date` sind nur für Personen sichtbar, die sich gegenseitig im Dating-Profil matchen.
+                </p>
+                <p className="mt-2 text-xs text-slate-500">
+                  Status:{" "}
+                  {data.dating.unlocked
+                    ? "freigeschaltet"
+                    : data.dating.enabled
+                      ? "aktiv, aber noch nicht vollständig"
+                      : "nicht aktiviert"}
+                </p>
+              </div>
+              <a
+                href="/settings#dating"
+                className="rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700"
+              >
+                Dating-Profil öffnen
+              </a>
             </div>
-            <a
-              href="/settings#dating"
-              className="rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700"
-            >
-              Dating-Profil öffnen
-            </a>
-          </div>
-          {!data.dating.unlocked && data.dating.missingRequirements.length ? (
-            <p className="mt-3 text-xs text-slate-500">
-              Noch offen: {data.dating.missingRequirements.map((item) => formatMissingDatingRequirement(item)).join(", ")}
-            </p>
-          ) : null}
-        </section>
+            {!data.dating.unlocked && data.dating.missingRequirements.length ? (
+              <p className="mt-3 text-xs text-slate-500">
+                Noch offen: {data.dating.missingRequirements.map((item) => formatMissingDatingRequirement(item)).join(", ")}
+              </p>
+            ) : null}
+          </section>
+        ) : null}
 
         <section id="gruppen" className="mt-8 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">Sichtbare Gruppen</h2>

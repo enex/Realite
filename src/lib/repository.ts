@@ -13,7 +13,7 @@ import {
   suggestions,
   tagPreferences,
   userSettings,
-  users
+  users,
 } from "@/src/db/schema";
 import {
   DATE_TAG,
@@ -28,7 +28,7 @@ import {
   titleContainsDateTag,
   type DateMissingRequirement,
   type DatingGender,
-  type DatingProfile
+  type DatingProfile,
 } from "@/src/lib/dating";
 import {
   type DeclineReason,
@@ -38,12 +38,16 @@ import {
   normalizeDecisionNote,
   normalizeDecisionReasons,
   parseDecisionReasons,
-  serializeDecisionReasons
+  serializeDecisionReasons,
 } from "@/src/lib/suggestion-feedback";
 
 export type GroupVisibility = "public" | "private";
 export type EventVisibility = "public" | "group" | "smart_date";
-export type SuggestionStatus = "pending" | "calendar_inserted" | "accepted" | "declined";
+export type SuggestionStatus =
+  | "pending"
+  | "calendar_inserted"
+  | "accepted"
+  | "declined";
 export type SuggestionDeclineReason = DeclineReason;
 
 export class RepositoryValidationError extends Error {
@@ -155,7 +159,7 @@ function normalizeTags(tags: string[]) {
     tags
       .map((tag) => tag.trim().toLowerCase())
       .filter(Boolean)
-      .map((tag) => (tag.startsWith("#") ? tag : `#${tag}`))
+      .map((tag) => (tag.startsWith("#") ? tag : `#${tag}`)),
   );
 
   return normalized;
@@ -167,8 +171,8 @@ function normalizeGroupHashtags(hashtags?: string[] | null) {
       (hashtags ?? [])
         .map((tag) => tag.trim().toLowerCase())
         .filter(Boolean)
-        .map((tag) => (tag.startsWith("#") ? tag : `#${tag}`))
-    )
+        .map((tag) => (tag.startsWith("#") ? tag : `#${tag}`)),
+    ),
   );
 
   if (!normalized.length) {
@@ -210,12 +214,16 @@ function normalizeEmail(value: string) {
   return value.trim().toLowerCase();
 }
 
-function normalizeSuggestionDeliveryMode(value: string | null | undefined): "calendar_copy" | "source_invite" {
+function normalizeSuggestionDeliveryMode(
+  value: string | null | undefined,
+): "calendar_copy" | "source_invite" {
   return value === "source_invite" ? "source_invite" : "calendar_copy";
 }
 
 function normalizeStringList(values: string[]) {
-  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+  return Array.from(
+    new Set(values.map((value) => value.trim()).filter(Boolean)),
+  );
 }
 
 function normalizeCalendarIdList(ids: string[]) {
@@ -282,7 +290,8 @@ function normalizeSuggestionLimit(value: number, fallback: number) {
 }
 
 function normalizeSuggestionReason(reason: string) {
-  const fallback = "Match basierend auf deinen bisherigen Entscheidungen und freier Zeit im Kalender";
+  const fallback =
+    "Match basierend auf deinen bisherigen Entscheidungen und freier Zeit im Kalender";
   const trimmed = reason.trim();
 
   if (!trimmed) {
@@ -295,7 +304,7 @@ function normalizeSuggestionReason(reason: string) {
 function createDefaultDatingProfile(userId: string): UserDatingProfile {
   return {
     userId,
-    ...EMPTY_DATING_PROFILE
+    ...EMPTY_DATING_PROFILE,
   };
 }
 
@@ -319,7 +328,7 @@ function mapDatingProfileRow(row: {
     soughtGenders: parseDatingGenders(row.soughtGenders),
     soughtAgeMin: row.soughtAgeMin,
     soughtAgeMax: row.soughtAgeMax,
-    soughtOnlySingles: row.soughtOnlySingles
+    soughtOnlySingles: row.soughtOnlySingles,
   };
 }
 
@@ -327,7 +336,11 @@ function getDateUnlockStatus(profile: UserDatingProfile) {
   return getDatingProfileStatus(profile);
 }
 
-export async function upsertUser(input: { email: string; name?: string | null; image?: string | null }) {
+export async function upsertUser(input: {
+  email: string;
+  name?: string | null;
+  image?: string | null;
+}) {
   const db = getDb();
   const normalizedEmail = normalizeEmail(input.email);
   const existing = await db
@@ -343,7 +356,7 @@ export async function upsertUser(input: { email: string; name?: string | null; i
         email: normalizedEmail,
         name: input.name ?? existing[0].name,
         image: input.image ?? existing[0].image,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
       .where(eq(users.id, existing[0].id))
       .returning();
@@ -357,7 +370,7 @@ export async function upsertUser(input: { email: string; name?: string | null; i
       email: normalizedEmail,
       name: input.name ?? null,
       image: input.image ?? null,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
     .returning();
 
@@ -377,7 +390,11 @@ export async function getUserByEmail(email: string) {
 
 export async function getUserById(userId: string) {
   const db = getDb();
-  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
   return user ?? null;
 }
 
@@ -395,7 +412,9 @@ export async function deleteGroupContactsByEmail(email: string) {
   const db = getDb();
   const normalizedEmail = normalizeEmail(email);
 
-  await db.delete(groupContacts).where(sql`lower(${groupContacts.email}) = ${normalizedEmail}`);
+  await db
+    .delete(groupContacts)
+    .where(sql`lower(${groupContacts.email}) = ${normalizedEmail}`);
 }
 
 export async function upsertGoogleConnection(input: {
@@ -416,7 +435,7 @@ export async function upsertGoogleConnection(input: {
     accessToken: input.accessToken,
     tokenExpiresAt: input.expiresAt ? new Date(input.expiresAt * 1000) : null,
     scope: input.scope ?? null,
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 
   if (input.refreshToken) {
@@ -432,11 +451,11 @@ export async function upsertGoogleConnection(input: {
       refreshToken: input.refreshToken ?? null,
       tokenExpiresAt: input.expiresAt ? new Date(input.expiresAt * 1000) : null,
       scope: input.scope ?? null,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
     .onConflictDoUpdate({
       target: [calendarConnections.userId, calendarConnections.provider],
-      set: updateValues
+      set: updateValues,
     });
 }
 
@@ -447,7 +466,9 @@ export async function updateGoogleConnectionTokens(input: {
   refreshToken?: string;
 }) {
   const db = getDb();
-  const expiresAt = input.expiresIn ? new Date(Date.now() + input.expiresIn * 1000) : null;
+  const expiresAt = input.expiresIn
+    ? new Date(Date.now() + input.expiresIn * 1000)
+    : null;
   const updateValues: {
     accessToken: string;
     tokenExpiresAt: Date | null;
@@ -456,7 +477,7 @@ export async function updateGoogleConnectionTokens(input: {
   } = {
     accessToken: input.accessToken,
     tokenExpiresAt: expiresAt,
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 
   if (input.refreshToken) {
@@ -466,7 +487,12 @@ export async function updateGoogleConnectionTokens(input: {
   await db
     .update(calendarConnections)
     .set(updateValues)
-    .where(and(eq(calendarConnections.userId, input.userId), eq(calendarConnections.provider, "google")));
+    .where(
+      and(
+        eq(calendarConnections.userId, input.userId),
+        eq(calendarConnections.provider, "google"),
+      ),
+    );
 }
 
 export async function getGoogleConnection(userId: string) {
@@ -474,7 +500,12 @@ export async function getGoogleConnection(userId: string) {
   const [connection] = await db
     .select()
     .from(calendarConnections)
-    .where(and(eq(calendarConnections.userId, userId), eq(calendarConnections.provider, "google")))
+    .where(
+      and(
+        eq(calendarConnections.userId, userId),
+        eq(calendarConnections.provider, "google"),
+      ),
+    )
     .limit(1);
 
   return connection ?? null;
@@ -496,7 +527,7 @@ export async function ensureUserSuggestionSettings(userId: string) {
       blockedActivityTags: "",
       suggestionLimitPerDay: 4,
       suggestionLimitPerWeek: 16,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
     .onConflictDoNothing({ target: [userSettings.userId] });
 }
@@ -516,12 +547,14 @@ export async function ensureUserDatingProfile(userId: string) {
       soughtAgeMin: null,
       soughtAgeMax: null,
       soughtOnlySingles: false,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
     .onConflictDoNothing({ target: [datingProfiles.userId] });
 }
 
-export async function getUserDatingProfile(userId: string): Promise<UserDatingProfile> {
+export async function getUserDatingProfile(
+  userId: string,
+): Promise<UserDatingProfile> {
   const db = getDb();
   await ensureUserDatingProfile(userId);
 
@@ -535,7 +568,7 @@ export async function getUserDatingProfile(userId: string): Promise<UserDatingPr
       soughtGenders: datingProfiles.soughtGenders,
       soughtAgeMin: datingProfiles.soughtAgeMin,
       soughtAgeMax: datingProfiles.soughtAgeMax,
-      soughtOnlySingles: datingProfiles.soughtOnlySingles
+      soughtOnlySingles: datingProfiles.soughtOnlySingles,
     })
     .from(datingProfiles)
     .where(eq(datingProfiles.userId, userId))
@@ -574,7 +607,7 @@ export async function updateUserDatingProfile(input: {
       soughtAgeMin: input.soughtAgeMin,
       soughtAgeMax: input.soughtAgeMax,
       soughtOnlySingles: input.soughtOnlySingles,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
     .onConflictDoUpdate({
       target: [datingProfiles.userId],
@@ -587,8 +620,8 @@ export async function updateUserDatingProfile(input: {
         soughtAgeMin: input.soughtAgeMin,
         soughtAgeMax: input.soughtAgeMax,
         soughtOnlySingles: input.soughtOnlySingles,
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     })
     .returning({
       userId: datingProfiles.userId,
@@ -599,7 +632,7 @@ export async function updateUserDatingProfile(input: {
       soughtGenders: datingProfiles.soughtGenders,
       soughtAgeMin: datingProfiles.soughtAgeMin,
       soughtAgeMax: datingProfiles.soughtAgeMax,
-      soughtOnlySingles: datingProfiles.soughtOnlySingles
+      soughtOnlySingles: datingProfiles.soughtOnlySingles,
     });
 
   if (!profile) {
@@ -609,7 +642,9 @@ export async function updateUserDatingProfile(input: {
   return mapDatingProfileRow(profile);
 }
 
-export async function getDateHashtagStatus(userId: string): Promise<DateHashtagStatus> {
+export async function getDateHashtagStatus(
+  userId: string,
+): Promise<DateHashtagStatus> {
   const profile = await getUserDatingProfile(userId);
   const status = getDateUnlockStatus(profile);
 
@@ -617,12 +652,14 @@ export async function getDateHashtagStatus(userId: string): Promise<DateHashtagS
     profile,
     unlocked: status.unlocked,
     age: status.age,
-    missingRequirements: status.missingRequirements
+    missingRequirements: status.missingRequirements,
   };
 }
 
 async function getDatingProfileMapForUsers(userIds: string[]) {
-  const normalizedIds = Array.from(new Set(userIds.map((id) => id.trim()).filter(Boolean)));
+  const normalizedIds = Array.from(
+    new Set(userIds.map((id) => id.trim()).filter(Boolean)),
+  );
   if (!normalizedIds.length) {
     return new Map<string, UserDatingProfile>();
   }
@@ -638,7 +675,7 @@ async function getDatingProfileMapForUsers(userIds: string[]) {
       soughtGenders: datingProfiles.soughtGenders,
       soughtAgeMin: datingProfiles.soughtAgeMin,
       soughtAgeMax: datingProfiles.soughtAgeMax,
-      soughtOnlySingles: datingProfiles.soughtOnlySingles
+      soughtOnlySingles: datingProfiles.soughtOnlySingles,
     })
     .from(datingProfiles)
     .where(inArray(datingProfiles.userId, normalizedIds));
@@ -657,7 +694,9 @@ async function getDatingProfileMapForUsers(userIds: string[]) {
   return byUserId;
 }
 
-export async function getUserSuggestionSettings(userId: string): Promise<UserSuggestionSettings> {
+export async function getUserSuggestionSettings(
+  userId: string,
+): Promise<UserSuggestionSettings> {
   const db = getDb();
   await ensureUserSuggestionSettings(userId);
 
@@ -671,35 +710,43 @@ export async function getUserSuggestionSettings(userId: string): Promise<UserSug
       blockedCreatorIds: userSettings.blockedCreatorIds,
       blockedActivityTags: userSettings.blockedActivityTags,
       suggestionLimitPerDay: userSettings.suggestionLimitPerDay,
-      suggestionLimitPerWeek: userSettings.suggestionLimitPerWeek
+      suggestionLimitPerWeek: userSettings.suggestionLimitPerWeek,
     })
     .from(userSettings)
     .where(eq(userSettings.userId, userId))
     .limit(1);
 
-  return (
-    settings
-      ? {
-          ...settings,
-          suggestionDeliveryMode: normalizeSuggestionDeliveryMode(settings.suggestionDeliveryMode),
-          matchingCalendarIds: parseCalendarIdList(settings.matchingCalendarIds),
-          blockedCreatorIds: parseStringList(settings.blockedCreatorIds),
-          blockedActivityTags: parseBlockedActivityTags(settings.blockedActivityTags),
-          suggestionLimitPerDay: normalizeSuggestionLimit(settings.suggestionLimitPerDay, 4),
-          suggestionLimitPerWeek: normalizeSuggestionLimit(settings.suggestionLimitPerWeek, 16)
-        }
-      : {
-          autoInsertSuggestions: true,
-          suggestionCalendarId: "primary",
-          suggestionDeliveryMode: "calendar_copy",
-          shareEmailInSourceInvites: true,
-          matchingCalendarIds: [],
-          blockedCreatorIds: [],
-          blockedActivityTags: [],
-          suggestionLimitPerDay: 4,
-          suggestionLimitPerWeek: 16
-        }
-  );
+  return settings
+    ? {
+        ...settings,
+        suggestionDeliveryMode: normalizeSuggestionDeliveryMode(
+          settings.suggestionDeliveryMode,
+        ),
+        matchingCalendarIds: parseCalendarIdList(settings.matchingCalendarIds),
+        blockedCreatorIds: parseStringList(settings.blockedCreatorIds),
+        blockedActivityTags: parseBlockedActivityTags(
+          settings.blockedActivityTags,
+        ),
+        suggestionLimitPerDay: normalizeSuggestionLimit(
+          settings.suggestionLimitPerDay,
+          4,
+        ),
+        suggestionLimitPerWeek: normalizeSuggestionLimit(
+          settings.suggestionLimitPerWeek,
+          16,
+        ),
+      }
+    : {
+        autoInsertSuggestions: true,
+        suggestionCalendarId: "primary",
+        suggestionDeliveryMode: "calendar_copy",
+        shareEmailInSourceInvites: true,
+        matchingCalendarIds: [],
+        blockedCreatorIds: [],
+        blockedActivityTags: [],
+        suggestionLimitPerDay: 4,
+        suggestionLimitPerWeek: 16,
+      };
 }
 
 export async function updateUserSuggestionSettings(input: {
@@ -715,11 +762,23 @@ export async function updateUserSuggestionSettings(input: {
   suggestionLimitPerWeek: number;
 }): Promise<UserSuggestionSettings> {
   const db = getDb();
-  const serializedMatchingCalendarIds = serializeCalendarIdList(input.matchingCalendarIds);
-  const serializedBlockedCreatorIds = serializeStringList(input.blockedCreatorIds);
-  const serializedBlockedActivityTags = serializeBlockedActivityTags(input.blockedActivityTags);
-  const suggestionLimitPerDay = normalizeSuggestionLimit(input.suggestionLimitPerDay, 4);
-  const suggestionLimitPerWeek = normalizeSuggestionLimit(input.suggestionLimitPerWeek, 16);
+  const serializedMatchingCalendarIds = serializeCalendarIdList(
+    input.matchingCalendarIds,
+  );
+  const serializedBlockedCreatorIds = serializeStringList(
+    input.blockedCreatorIds,
+  );
+  const serializedBlockedActivityTags = serializeBlockedActivityTags(
+    input.blockedActivityTags,
+  );
+  const suggestionLimitPerDay = normalizeSuggestionLimit(
+    input.suggestionLimitPerDay,
+    4,
+  );
+  const suggestionLimitPerWeek = normalizeSuggestionLimit(
+    input.suggestionLimitPerWeek,
+    16,
+  );
 
   const [settings] = await db
     .insert(userSettings)
@@ -734,7 +793,7 @@ export async function updateUserSuggestionSettings(input: {
       blockedActivityTags: serializedBlockedActivityTags,
       suggestionLimitPerDay,
       suggestionLimitPerWeek,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
     .onConflictDoUpdate({
       target: [userSettings.userId],
@@ -748,8 +807,8 @@ export async function updateUserSuggestionSettings(input: {
         blockedActivityTags: serializedBlockedActivityTags,
         suggestionLimitPerDay,
         suggestionLimitPerWeek,
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     })
     .returning({
       autoInsertSuggestions: userSettings.autoInsertSuggestions,
@@ -760,19 +819,36 @@ export async function updateUserSuggestionSettings(input: {
       blockedCreatorIds: userSettings.blockedCreatorIds,
       blockedActivityTags: userSettings.blockedActivityTags,
       suggestionLimitPerDay: userSettings.suggestionLimitPerDay,
-      suggestionLimitPerWeek: userSettings.suggestionLimitPerWeek
+      suggestionLimitPerWeek: userSettings.suggestionLimitPerWeek,
     });
 
   return {
-    autoInsertSuggestions: settings?.autoInsertSuggestions ?? input.autoInsertSuggestions,
-    suggestionCalendarId: settings?.suggestionCalendarId ?? input.suggestionCalendarId,
-    suggestionDeliveryMode: normalizeSuggestionDeliveryMode(settings?.suggestionDeliveryMode ?? input.suggestionDeliveryMode),
-    shareEmailInSourceInvites: settings?.shareEmailInSourceInvites ?? input.shareEmailInSourceInvites,
-    matchingCalendarIds: parseCalendarIdList(settings?.matchingCalendarIds ?? serializedMatchingCalendarIds),
-    blockedCreatorIds: parseStringList(settings?.blockedCreatorIds ?? serializedBlockedCreatorIds),
-    blockedActivityTags: parseBlockedActivityTags(settings?.blockedActivityTags ?? serializedBlockedActivityTags),
-    suggestionLimitPerDay: normalizeSuggestionLimit(settings?.suggestionLimitPerDay ?? suggestionLimitPerDay, 4),
-    suggestionLimitPerWeek: normalizeSuggestionLimit(settings?.suggestionLimitPerWeek ?? suggestionLimitPerWeek, 16)
+    autoInsertSuggestions:
+      settings?.autoInsertSuggestions ?? input.autoInsertSuggestions,
+    suggestionCalendarId:
+      settings?.suggestionCalendarId ?? input.suggestionCalendarId,
+    suggestionDeliveryMode: normalizeSuggestionDeliveryMode(
+      settings?.suggestionDeliveryMode ?? input.suggestionDeliveryMode,
+    ),
+    shareEmailInSourceInvites:
+      settings?.shareEmailInSourceInvites ?? input.shareEmailInSourceInvites,
+    matchingCalendarIds: parseCalendarIdList(
+      settings?.matchingCalendarIds ?? serializedMatchingCalendarIds,
+    ),
+    blockedCreatorIds: parseStringList(
+      settings?.blockedCreatorIds ?? serializedBlockedCreatorIds,
+    ),
+    blockedActivityTags: parseBlockedActivityTags(
+      settings?.blockedActivityTags ?? serializedBlockedActivityTags,
+    ),
+    suggestionLimitPerDay: normalizeSuggestionLimit(
+      settings?.suggestionLimitPerDay ?? suggestionLimitPerDay,
+      4,
+    ),
+    suggestionLimitPerWeek: normalizeSuggestionLimit(
+      settings?.suggestionLimitPerWeek ?? suggestionLimitPerWeek,
+      16,
+    ),
   };
 }
 
@@ -793,19 +869,19 @@ export async function createGroup(input: {
         description: input.description ?? null,
         hashtag: serializeGroupHashtags(input.hashtags),
         visibility: input.visibility,
-        createdBy: input.userId
+        createdBy: input.userId,
       })
       .returning();
 
     await tx.insert(groupMemberships).values({
       groupId: group.id,
       userId: input.userId,
-      role: "owner"
+      role: "owner",
     });
 
     return {
       ...group,
-      hashtags: parseGroupHashtags(group.hashtag)
+      hashtags: parseGroupHashtags(group.hashtag),
     };
   });
 }
@@ -816,8 +892,16 @@ export async function ensureAlleGroupForUser(userId: string) {
   const [existing] = await db
     .select()
     .from(groups)
-    .where(or(sql`lower(${groups.name}) = '#alle'`, sql`lower(${groups.hashtag}) like '%#alle%'`))
-    .orderBy(sql`case when lower(${groups.name}) = '#alle' then 0 else 1 end`, groups.createdAt)
+    .where(
+      or(
+        sql`lower(${groups.name}) = '#alle'`,
+        sql`lower(${groups.hashtag}) like '%#alle%'`,
+      ),
+    )
+    .orderBy(
+      sql`case when lower(${groups.name}) = '#alle' then 0 else 1 end`,
+      groups.createdAt,
+    )
     .limit(1);
 
   let group = existing;
@@ -827,24 +911,32 @@ export async function ensureAlleGroupForUser(userId: string) {
       .insert(groups)
       .values({
         name: "#alle",
-        description: "Globale Realite Gruppe für alle öffentlichen Events mit #alle im Titel.",
+        description:
+          "Globale Realite Gruppe für alle öffentlichen Events mit #alle im Titel.",
         hashtag: "#alle",
         visibility: "public",
-        createdBy: userId
+        createdBy: userId,
       })
       .returning();
   }
 
-  const normalizedHashtags = normalizeGroupHashtags([...parseGroupHashtags(group.hashtag), "#alle"]);
+  const normalizedHashtags = normalizeGroupHashtags([
+    ...parseGroupHashtags(group.hashtag),
+    "#alle",
+  ]);
   const serializedHashtags = normalizedHashtags.join(",");
 
-  if (!isAlleGroupName(group.name) || group.visibility !== "public" || group.hashtag !== serializedHashtags) {
+  if (
+    !isAlleGroupName(group.name) ||
+    group.visibility !== "public" ||
+    group.hashtag !== serializedHashtags
+  ) {
     [group] = await db
       .update(groups)
       .set({
         name: "#alle",
         visibility: "public",
-        hashtag: serializedHashtags
+        hashtag: serializedHashtags,
       })
       .where(eq(groups.id, group.id))
       .returning();
@@ -855,13 +947,15 @@ export async function ensureAlleGroupForUser(userId: string) {
     .values({
       groupId: group.id,
       userId,
-      role: "member"
+      role: "member",
     })
-    .onConflictDoNothing({ target: [groupMemberships.groupId, groupMemberships.userId] });
+    .onConflictDoNothing({
+      target: [groupMemberships.groupId, groupMemberships.userId],
+    });
 
   return {
     ...group,
-    hashtags: parseGroupHashtags(group.hashtag)
+    hashtags: parseGroupHashtags(group.hashtag),
   };
 }
 
@@ -875,14 +969,17 @@ export async function ensureKontakteGroupForUser(userId: string) {
       and(
         eq(groups.createdBy, userId),
         or(
-          and(eq(groups.syncProvider, "google_contacts"), eq(groups.syncReference, "contactGroups/myContacts")),
-          sql`lower(${groups.name}) = '#kontakte'`
-        )
-      )
+          and(
+            eq(groups.syncProvider, "google_contacts"),
+            eq(groups.syncReference, "contactGroups/myContacts"),
+          ),
+          sql`lower(${groups.name}) = '#kontakte'`,
+        ),
+      ),
     )
     .orderBy(
       sql`case when ${groups.syncProvider} = 'google_contacts' and ${groups.syncReference} = 'contactGroups/myContacts' then 0 else 1 end`,
-      groups.createdAt
+      groups.createdAt,
     )
     .limit(1);
 
@@ -893,18 +990,22 @@ export async function ensureKontakteGroupForUser(userId: string) {
       .insert(groups)
       .values({
         name: "#kontakte",
-        description: "Für alle Kontakte aus Google Kontakte (automatisch synchronisiert).",
+        description:
+          "Für alle Kontakte aus Google Kontakte (automatisch synchronisiert).",
         hashtag: "#kontakte",
         visibility: "private",
         syncProvider: "google_contacts",
         syncReference: "contactGroups/myContacts",
         syncEnabled: true,
-        createdBy: userId
+        createdBy: userId,
       })
       .returning();
   }
 
-  const normalizedHashtags = normalizeGroupHashtags([...parseGroupHashtags(group.hashtag), "#kontakte"]);
+  const normalizedHashtags = normalizeGroupHashtags([
+    ...parseGroupHashtags(group.hashtag),
+    "#kontakte",
+  ]);
   const serializedHashtags = normalizedHashtags.join(",");
 
   if (
@@ -921,7 +1022,7 @@ export async function ensureKontakteGroupForUser(userId: string) {
         hashtag: serializedHashtags,
         syncProvider: "google_contacts",
         syncReference: "contactGroups/myContacts",
-        syncEnabled: true
+        syncEnabled: true,
       })
       .where(eq(groups.id, group.id))
       .returning();
@@ -932,16 +1033,16 @@ export async function ensureKontakteGroupForUser(userId: string) {
     .values({
       groupId: group.id,
       userId,
-      role: "owner"
+      role: "owner",
     })
     .onConflictDoUpdate({
       target: [groupMemberships.groupId, groupMemberships.userId],
-      set: { role: "owner" }
+      set: { role: "owner" },
     });
 
   return {
     ...group,
-    hashtags: parseGroupHashtags(group.hashtag)
+    hashtags: parseGroupHashtags(group.hashtag),
   };
 }
 
@@ -962,8 +1063,8 @@ export async function upsertGoogleContactsLabelGroup(input: {
       and(
         eq(groups.createdBy, input.userId),
         eq(groups.syncProvider, "google_contacts"),
-        eq(groups.syncReference, input.labelResourceName)
-      )
+        eq(groups.syncReference, input.labelResourceName),
+      ),
     )
     .limit(1);
 
@@ -980,7 +1081,7 @@ export async function upsertGoogleContactsLabelGroup(input: {
         syncProvider: "google_contacts",
         syncReference: input.labelResourceName,
         syncEnabled: true,
-        createdBy: input.userId
+        createdBy: input.userId,
       })
       .returning();
   } else {
@@ -989,7 +1090,7 @@ export async function upsertGoogleContactsLabelGroup(input: {
       .set({
         name: labelName,
         hashtag: serializeGroupHashtags(hashtags),
-        syncEnabled: true
+        syncEnabled: true,
       })
       .where(eq(groups.id, group.id))
       .returning();
@@ -1000,16 +1101,16 @@ export async function upsertGoogleContactsLabelGroup(input: {
     .values({
       groupId: group.id,
       userId: input.userId,
-      role: "owner"
+      role: "owner",
     })
     .onConflictDoUpdate({
       target: [groupMemberships.groupId, groupMemberships.userId],
-      set: { role: "owner" }
+      set: { role: "owner" },
     });
 
   return {
     ...group,
-    hashtags: parseGroupHashtags(group.hashtag)
+    hashtags: parseGroupHashtags(group.hashtag),
   };
 }
 
@@ -1027,7 +1128,7 @@ export async function listGroupsForUser(userId: string) {
       syncEnabled: groups.syncEnabled,
       isHidden: groups.isHidden,
       role: groupMemberships.role,
-      createdAt: groups.createdAt
+      createdAt: groups.createdAt,
     })
     .from(groupMemberships)
     .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
@@ -1036,7 +1137,7 @@ export async function listGroupsForUser(userId: string) {
 
   return rows.map((row) => ({
     ...row,
-    hashtags: parseGroupHashtags(row.hashtag)
+    hashtags: parseGroupHashtags(row.hashtag),
   }));
 }
 
@@ -1049,11 +1150,16 @@ export async function setGroupHiddenState(input: {
   const [membership] = await db
     .select({
       role: groupMemberships.role,
-      syncProvider: groups.syncProvider
+      syncProvider: groups.syncProvider,
     })
     .from(groupMemberships)
     .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
-    .where(and(eq(groupMemberships.groupId, input.groupId), eq(groupMemberships.userId, input.userId)))
+    .where(
+      and(
+        eq(groupMemberships.groupId, input.groupId),
+        eq(groupMemberships.userId, input.userId),
+      ),
+    )
     .limit(1);
 
   if (!membership) {
@@ -1071,7 +1177,7 @@ export async function setGroupHiddenState(input: {
   const [group] = await db
     .update(groups)
     .set({
-      isHidden: input.isHidden
+      isHidden: input.isHidden,
     })
     .where(eq(groups.id, input.groupId))
     .returning();
@@ -1082,21 +1188,29 @@ export async function setGroupHiddenState(input: {
 
   return {
     ...group,
-    hashtags: parseGroupHashtags(group.hashtag)
+    hashtags: parseGroupHashtags(group.hashtag),
   };
 }
 
-export async function deleteOrHideGroup(input: { groupId: string; userId: string }) {
+export async function deleteOrHideGroup(input: {
+  groupId: string;
+  userId: string;
+}) {
   const db = getDb();
   const [membership] = await db
     .select({
       role: groupMemberships.role,
       groupName: groups.name,
-      syncProvider: groups.syncProvider
+      syncProvider: groups.syncProvider,
     })
     .from(groupMemberships)
     .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
-    .where(and(eq(groupMemberships.groupId, input.groupId), eq(groupMemberships.userId, input.userId)))
+    .where(
+      and(
+        eq(groupMemberships.groupId, input.groupId),
+        eq(groupMemberships.userId, input.userId),
+      ),
+    )
     .limit(1);
 
   if (!membership) {
@@ -1115,19 +1229,19 @@ export async function deleteOrHideGroup(input: { groupId: string; userId: string
     await db
       .update(groups)
       .set({
-        isHidden: true
+        isHidden: true,
       })
       .where(eq(groups.id, input.groupId));
 
     return {
-      action: "hidden" as const
+      action: "hidden" as const,
     };
   }
 
   await db.delete(groups).where(eq(groups.id, input.groupId));
 
   return {
-    action: "deleted" as const
+    action: "deleted" as const,
   };
 }
 
@@ -1143,7 +1257,11 @@ export async function updateGroupHashtags(input: {
   }
 
   const [currentGroup] = await db
-    .select({ id: groups.id, name: groups.name, syncReference: groups.syncReference })
+    .select({
+      id: groups.id,
+      name: groups.name,
+      syncReference: groups.syncReference,
+    })
     .from(groups)
     .where(eq(groups.id, input.groupId))
     .limit(1);
@@ -1154,18 +1272,19 @@ export async function updateGroupHashtags(input: {
 
   const mustContainAlle = isAlleGroupName(currentGroup.name);
   const mustContainKontakte =
-    isKontakteGroupName(currentGroup.name) || currentGroup.syncReference === "contactGroups/myContacts";
+    isKontakteGroupName(currentGroup.name) ||
+    currentGroup.syncReference === "contactGroups/myContacts";
 
   const nextHashtags = normalizeGroupHashtags([
     ...input.hashtags,
     ...(mustContainAlle ? ["#alle"] : []),
-    ...(mustContainKontakte ? ["#kontakte"] : [])
+    ...(mustContainKontakte ? ["#kontakte"] : []),
   ]);
 
   const [group] = await db
     .update(groups)
     .set({
-      hashtag: serializeGroupHashtags(nextHashtags)
+      hashtag: serializeGroupHashtags(nextHashtags),
     })
     .where(eq(groups.id, input.groupId))
     .returning();
@@ -1176,7 +1295,7 @@ export async function updateGroupHashtags(input: {
 
   return {
     ...group,
-    hashtags: parseGroupHashtags(group.hashtag)
+    hashtags: parseGroupHashtags(group.hashtag),
   };
 }
 
@@ -1185,7 +1304,12 @@ export async function isGroupMember(groupId: string, userId: string) {
   const [membership] = await db
     .select({ id: groupMemberships.id })
     .from(groupMemberships)
-    .where(and(eq(groupMemberships.groupId, groupId), eq(groupMemberships.userId, userId)))
+    .where(
+      and(
+        eq(groupMemberships.groupId, groupId),
+        eq(groupMemberships.userId, userId),
+      ),
+    )
     .limit(1);
 
   return Boolean(membership);
@@ -1204,7 +1328,9 @@ export async function addMemberToGroupByEmail(input: {
 
   const user = await getUserByEmail(normalizeEmail(input.email));
   if (!user) {
-    throw new Error("Nutzer nicht gefunden. Er muss sich mindestens einmal mit Google anmelden.");
+    throw new Error(
+      "Nutzer nicht gefunden. Er muss sich mindestens einmal mit Google anmelden.",
+    );
   }
 
   await db
@@ -1212,9 +1338,11 @@ export async function addMemberToGroupByEmail(input: {
     .values({
       groupId: input.groupId,
       userId: user.id,
-      role: "member"
+      role: "member",
     })
-    .onConflictDoNothing({ target: [groupMemberships.groupId, groupMemberships.userId] });
+    .onConflictDoNothing({
+      target: [groupMemberships.groupId, groupMemberships.userId],
+    });
 
   await db
     .insert(groupContacts)
@@ -1224,7 +1352,7 @@ export async function addMemberToGroupByEmail(input: {
       name: user.name ?? null,
       source: "manual",
       sourceReference: user.id,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
     .onConflictDoUpdate({
       target: [groupContacts.groupId, groupContacts.email],
@@ -1232,8 +1360,8 @@ export async function addMemberToGroupByEmail(input: {
         name: user.name ?? null,
         source: "manual",
         sourceReference: user.id,
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     });
 
   const [group] = await db
@@ -1242,7 +1370,7 @@ export async function addMemberToGroupByEmail(input: {
       name: groups.name,
       syncProvider: groups.syncProvider,
       syncReference: groups.syncReference,
-      syncEnabled: groups.syncEnabled
+      syncEnabled: groups.syncEnabled,
     })
     .from(groups)
     .where(eq(groups.id, input.groupId))
@@ -1252,7 +1380,7 @@ export async function addMemberToGroupByEmail(input: {
     groupId: input.groupId,
     userId: user.id,
     email: normalizeEmail(input.email),
-    group: group ?? null
+    group: group ?? null,
   };
 }
 
@@ -1261,7 +1389,9 @@ export async function addKnownUsersToGroupByEmails(input: {
   emails: string[];
 }) {
   const db = getDb();
-  const normalized = Array.from(new Set(input.emails.map(normalizeEmail).filter(Boolean)));
+  const normalized = Array.from(
+    new Set(input.emails.map(normalizeEmail).filter(Boolean)),
+  );
 
   if (!normalized.length) {
     return { matchedUsers: 0 };
@@ -1270,7 +1400,12 @@ export async function addKnownUsersToGroupByEmails(input: {
   const knownUsers = await db
     .select({ id: users.id })
     .from(users)
-    .where(sql`lower(${users.email}) in (${sql.join(normalized.map((email) => sql`${email}`), sql`,`)})`);
+    .where(
+      sql`lower(${users.email}) in (${sql.join(
+        normalized.map((email) => sql`${email}`),
+        sql`,`,
+      )})`,
+    );
 
   if (!knownUsers.length) {
     return { matchedUsers: 0 };
@@ -1282,17 +1417,24 @@ export async function addKnownUsersToGroupByEmails(input: {
       knownUsers.map((user) => ({
         groupId: input.groupId,
         userId: user.id,
-        role: "member" as const
-      }))
+        role: "member" as const,
+      })),
     )
-    .onConflictDoNothing({ target: [groupMemberships.groupId, groupMemberships.userId] });
+    .onConflictDoNothing({
+      target: [groupMemberships.groupId, groupMemberships.userId],
+    });
 
   return { matchedUsers: knownUsers.length };
 }
 
 export async function replaceGoogleSyncedGroupContacts(input: {
   groupId: string;
-  contacts: Array<{ email: string; name?: string | null; image?: string | null; sourceReference?: string | null }>;
+  contacts: Array<{
+    email: string;
+    name?: string | null;
+    image?: string | null;
+    sourceReference?: string | null;
+  }>;
 }) {
   const db = getDb();
   const normalizedContacts = Array.from(
@@ -1302,16 +1444,21 @@ export async function replaceGoogleSyncedGroupContacts(input: {
           email: normalizeEmail(contact.email),
           name: contact.name?.trim() || null,
           image: contact.image?.trim() || null,
-          sourceReference: contact.sourceReference ?? null
+          sourceReference: contact.sourceReference ?? null,
         }))
         .filter((contact) => Boolean(contact.email))
-        .map((contact) => [contact.email, contact])
-    ).values()
+        .map((contact) => [contact.email, contact]),
+    ).values(),
   );
 
   await db
     .delete(groupContacts)
-    .where(and(eq(groupContacts.groupId, input.groupId), eq(groupContacts.source, "google_contacts")));
+    .where(
+      and(
+        eq(groupContacts.groupId, input.groupId),
+        eq(groupContacts.source, "google_contacts"),
+      ),
+    );
 
   if (!normalizedContacts.length) {
     return { syncedContacts: 0 };
@@ -1325,8 +1472,8 @@ export async function replaceGoogleSyncedGroupContacts(input: {
       image: contact.image,
       source: "google_contacts",
       sourceReference: contact.sourceReference,
-      updatedAt: new Date()
-    }))
+      updatedAt: new Date(),
+    })),
   );
 
   return { syncedContacts: normalizedContacts.length };
@@ -1353,7 +1500,7 @@ export async function listGroupContactsForUser(userId: string) {
         name: groupContacts.name,
         image: groupContacts.image,
         source: groupContacts.source,
-        sourceReference: groupContacts.sourceReference
+        sourceReference: groupContacts.sourceReference,
       })
       .from(groupContacts)
       .where(inArray(groupContacts.groupId, groupIds)),
@@ -1363,11 +1510,11 @@ export async function listGroupContactsForUser(userId: string) {
         userId: users.id,
         email: users.email,
         name: users.name,
-        image: users.image
+        image: users.image,
       })
       .from(groupMemberships)
       .innerJoin(users, eq(groupMemberships.userId, users.id))
-      .where(inArray(groupMemberships.groupId, groupIds))
+      .where(inArray(groupMemberships.groupId, groupIds)),
   ]);
 
   const byKey = new Map<
@@ -1383,7 +1530,9 @@ export async function listGroupContactsForUser(userId: string) {
     const emailKey = `${contact.groupId}:${email}`;
     const key =
       keyByGroupEmail.get(emailKey) ??
-      (contact.sourceReference ? `${contact.groupId}:ref:${contact.sourceReference}` : `${contact.groupId}:email:${email}`);
+      (contact.sourceReference
+        ? `${contact.groupId}:ref:${contact.sourceReference}`
+        : `${contact.groupId}:email:${email}`);
     const existing = byKey.get(key);
     const emails = existing?.emails ?? new Set<string>();
     emails.add(email);
@@ -1395,7 +1544,7 @@ export async function listGroupContactsForUser(userId: string) {
       name: existing?.name ?? contact.name ?? null,
       image: existing?.image ?? contact.image ?? null,
       isRegistered: existing?.isRegistered ?? false,
-      source: existing?.source ?? contact.source
+      source: existing?.source ?? contact.source,
     });
     keyByGroupEmail.set(emailKey, key);
   }
@@ -1403,7 +1552,9 @@ export async function listGroupContactsForUser(userId: string) {
   for (const member of memberContacts) {
     const email = normalizeEmail(member.email);
     const emailKey = `${member.groupId}:${email}`;
-    const key = keyByGroupEmail.get(emailKey) ?? `${member.groupId}:member:${member.userId}`;
+    const key =
+      keyByGroupEmail.get(emailKey) ??
+      `${member.groupId}:member:${member.userId}`;
     const existing = byKey.get(key);
     const emails = existing?.emails ?? new Set<string>();
     emails.add(email);
@@ -1415,7 +1566,7 @@ export async function listGroupContactsForUser(userId: string) {
       name: member.name ?? existing?.name ?? null,
       image: member.image ?? existing?.image ?? null,
       isRegistered: true,
-      source: existing?.source ?? "member"
+      source: existing?.source ?? "member",
     });
     keyByGroupEmail.set(emailKey, key);
   }
@@ -1423,7 +1574,7 @@ export async function listGroupContactsForUser(userId: string) {
   return Array.from(byKey.values())
     .map((contact) => ({
       ...contact,
-      emails: Array.from(contact.emails).sort((a, b) => a.localeCompare(b))
+      emails: Array.from(contact.emails).sort((a, b) => a.localeCompare(b)),
     }))
     .sort((a, b) => {
       if (a.groupId === b.groupId) {
@@ -1439,10 +1590,16 @@ export async function listGroupContactsForUser(userId: string) {
     });
 }
 
-export async function createInviteLink(input: { groupId: string; createdBy: string; expiresInDays?: number }) {
+export async function createInviteLink(input: {
+  groupId: string;
+  createdBy: string;
+  expiresInDays?: number;
+}) {
   const db = getDb();
   const token = crypto.randomUUID().replaceAll("-", "");
-  const expiresAt = new Date(Date.now() + (input.expiresInDays ?? 7) * 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(
+    Date.now() + (input.expiresInDays ?? 7) * 24 * 60 * 60 * 1000,
+  );
 
   const [invite] = await db
     .insert(inviteLinks)
@@ -1450,20 +1607,28 @@ export async function createInviteLink(input: { groupId: string; createdBy: stri
       groupId: input.groupId,
       createdBy: input.createdBy,
       token,
-      expiresAt
+      expiresAt,
     })
     .returning();
 
   return invite;
 }
 
-export async function joinGroupByToken(input: { token: string; userId: string }) {
+export async function joinGroupByToken(input: {
+  token: string;
+  userId: string;
+}) {
   const db = getDb();
 
   const [invite] = await db
     .select()
     .from(inviteLinks)
-    .where(and(eq(inviteLinks.token, input.token), gt(inviteLinks.expiresAt, new Date())))
+    .where(
+      and(
+        eq(inviteLinks.token, input.token),
+        gt(inviteLinks.expiresAt, new Date()),
+      ),
+    )
     .limit(1);
 
   if (!invite) {
@@ -1475,9 +1640,11 @@ export async function joinGroupByToken(input: { token: string; userId: string })
     .values({
       groupId: invite.groupId,
       userId: input.userId,
-      role: "member"
+      role: "member",
     })
-    .onConflictDoNothing({ target: [groupMemberships.groupId, groupMemberships.userId] });
+    .onConflictDoNothing({
+      target: [groupMemberships.groupId, groupMemberships.userId],
+    });
 
   return invite.groupId;
 }
@@ -1498,7 +1665,8 @@ export async function createEvent(input: {
   const hasAlleInTitle = titleContainsAlleTag(input.title);
   const hasKontakteInTitle = titleContainsKontakteTag(input.title);
   const hasDateInTitle = titleContainsDateTag(input.title);
-  const hasDateTag = hasDateInTitle || normalizedTags.some((tag) => isDateTag(tag));
+  const hasDateTag =
+    hasDateInTitle || normalizedTags.some((tag) => isDateTag(tag));
   const alleGroup = await ensureAlleGroupForUser(input.userId);
   const kontakteGroup = await ensureKontakteGroupForUser(input.userId);
   const targetsAlleGroup = input.groupId === alleGroup.id;
@@ -1509,7 +1677,7 @@ export async function createEvent(input: {
     ...normalizedTags,
     ...(isGlobalAlleEvent ? ["#alle"] : []),
     ...(isKontakteEvent ? ["#kontakte"] : []),
-    ...(hasDateTag ? [DATE_TAG] : [])
+    ...(hasDateTag ? [DATE_TAG] : []),
   ]);
 
   if (hasDateTag) {
@@ -1522,16 +1690,25 @@ export async function createEvent(input: {
         gender: "dein Geschlecht auswählen",
         must_be_single: "Single-Status auf 'single' setzen",
         sought_genders: "gesuchte Geschlechter auswählen",
-        sought_age_range: "gesuchten Altersbereich vollständig setzen"
+        sought_age_range: "gesuchten Altersbereich vollständig setzen",
       };
-      const missing = dateStatus.missingRequirements.map((item) => requirementLabels[item]).join(", ");
+      const missing = dateStatus.missingRequirements
+        .map((item) => requirementLabels[item])
+        .join(", ");
       throw new RepositoryValidationError(
-        `#date ist noch nicht freigeschaltet. Bitte zuerst dein Dating-Profil vervollständigen: ${missing}.`
+        `#date ist noch nicht freigeschaltet. Bitte zuerst dein Dating-Profil vervollständigen: ${missing}.`,
       );
     }
 
-    if (finalTags.includes("#alle") || finalTags.includes("#kontakte") || isGlobalAlleEvent || isKontakteEvent) {
-      throw new RepositoryValidationError("#date kann nicht mit #alle oder #kontakte kombiniert werden.");
+    if (
+      finalTags.includes("#alle") ||
+      finalTags.includes("#kontakte") ||
+      isGlobalAlleEvent ||
+      isKontakteEvent
+    ) {
+      throw new RepositoryValidationError(
+        "#date kann nicht mit #alle oder #kontakte kombiniert werden.",
+      );
     }
   }
 
@@ -1542,7 +1719,11 @@ export async function createEvent(input: {
       : targetsKontakteGroup
         ? "group"
         : input.visibility;
-  const finalGroupId = hasDateTag ? null : hasAlleInTitle ? alleGroup?.id ?? null : input.groupId ?? null;
+  const finalGroupId = hasDateTag
+    ? null
+    : hasAlleInTitle
+      ? (alleGroup?.id ?? null)
+      : (input.groupId ?? null);
 
   return db.transaction(async (tx) => {
     const [event] = await tx
@@ -1555,7 +1736,7 @@ export async function createEvent(input: {
         endsAt: input.endsAt,
         visibility: finalVisibility,
         groupId: finalGroupId,
-        createdBy: input.userId
+        createdBy: input.userId,
       })
       .returning();
 
@@ -1563,8 +1744,8 @@ export async function createEvent(input: {
       await tx.insert(eventTags).values(
         finalTags.map((tag) => ({
           eventId: event.id,
-          tag
-        }))
+          tag,
+        })),
       );
     }
 
@@ -1600,7 +1781,7 @@ export async function upsertExternalPublicEvent(input: {
         groupId: input.groupId ?? null,
         sourceProvider: input.sourceProvider,
         sourceEventId: input.sourceEventId,
-        createdBy: input.userId
+        createdBy: input.userId,
       })
       .onConflictDoUpdate({
         target: [events.sourceProvider, events.sourceEventId],
@@ -1611,8 +1792,8 @@ export async function upsertExternalPublicEvent(input: {
           startsAt: input.startsAt,
           endsAt: input.endsAt,
           visibility: "public",
-          groupId: input.groupId ?? null
-        }
+          groupId: input.groupId ?? null,
+        },
       })
       .returning();
 
@@ -1622,8 +1803,8 @@ export async function upsertExternalPublicEvent(input: {
       await tx.insert(eventTags).values(
         normalizedTags.map((tag) => ({
           eventId: event.id,
-          tag
-        }))
+          tag,
+        })),
       );
     }
 
@@ -1639,15 +1820,24 @@ export async function listExternalSourceEventsForUser(input: {
   return db
     .select({
       id: events.id,
-      sourceEventId: events.sourceEventId
+      sourceEventId: events.sourceEventId,
     })
     .from(events)
-    .where(and(eq(events.createdBy, input.userId), eq(events.sourceProvider, input.sourceProvider)));
+    .where(
+      and(
+        eq(events.createdBy, input.userId),
+        eq(events.sourceProvider, input.sourceProvider),
+      ),
+    );
 }
 
 export async function listSuggestionCalendarRefsByEventIds(eventIds: string[]) {
   if (!eventIds.length) {
-    return [] as Array<{ id: string; userId: string; calendarEventId: string | null }>;
+    return [] as Array<{
+      id: string;
+      userId: string;
+      calendarEventId: string | null;
+    }>;
   }
 
   const db = getDb();
@@ -1655,7 +1845,7 @@ export async function listSuggestionCalendarRefsByEventIds(eventIds: string[]) {
     .select({
       id: suggestions.id,
       userId: suggestions.userId,
-      calendarEventId: suggestions.calendarEventId
+      calendarEventId: suggestions.calendarEventId,
     })
     .from(suggestions)
     .where(inArray(suggestions.eventId, eventIds));
@@ -1682,7 +1872,7 @@ export async function listVisibleEventsForUser(userId: string) {
   const filters = [
     eq(events.visibility, "public" as EventVisibility),
     eq(events.visibility, "smart_date" as EventVisibility),
-    eq(events.createdBy, userId)
+    eq(events.createdBy, userId),
   ];
 
   if (groupIds.length > 0) {
@@ -1702,7 +1892,7 @@ export async function listVisibleEventsForUser(userId: string) {
       createdBy: events.createdBy,
       groupName: groups.name,
       sourceProvider: events.sourceProvider,
-      sourceEventId: events.sourceEventId
+      sourceEventId: events.sourceEventId,
     })
     .from(events)
     .leftJoin(groups, eq(events.groupId, groups.id))
@@ -1716,7 +1906,12 @@ export async function listVisibleEventsForUser(userId: string) {
   const tags = await db
     .select({ eventId: eventTags.eventId, tag: eventTags.tag })
     .from(eventTags)
-    .where(inArray(eventTags.eventId, rows.map((row) => row.id)));
+    .where(
+      inArray(
+        eventTags.eventId,
+        rows.map((row) => row.id),
+      ),
+    );
 
   const tagsMap = new Map<string, string[]>();
   for (const tag of tags) {
@@ -1727,23 +1922,30 @@ export async function listVisibleEventsForUser(userId: string) {
 
   const mapped = rows.map((row) => ({
     ...row,
-    tags: normalizeTags(tagsMap.get(row.id) ?? [])
+    tags: normalizeTags(tagsMap.get(row.id) ?? []),
   }));
 
   const smartDateCreatorIds = Array.from(
     new Set(
       mapped
-        .filter((event) => event.visibility === "smart_date" && event.createdBy !== userId)
-        .map((event) => event.createdBy)
-    )
+        .filter(
+          (event) =>
+            event.visibility === "smart_date" && event.createdBy !== userId,
+        )
+        .map((event) => event.createdBy),
+    ),
   );
 
   if (!smartDateCreatorIds.length) {
     return mapped;
   }
 
-  const profiles = await getDatingProfileMapForUsers([userId, ...smartDateCreatorIds]);
-  const viewerProfile = profiles.get(userId) ?? createDefaultDatingProfile(userId);
+  const profiles = await getDatingProfileMapForUsers([
+    userId,
+    ...smartDateCreatorIds,
+  ]);
+  const viewerProfile =
+    profiles.get(userId) ?? createDefaultDatingProfile(userId);
 
   return mapped.filter((event) => {
     if (event.visibility !== "smart_date") {
@@ -1754,12 +1956,16 @@ export async function listVisibleEventsForUser(userId: string) {
       return true;
     }
 
-    const creatorProfile = profiles.get(event.createdBy) ?? createDefaultDatingProfile(event.createdBy);
+    const creatorProfile =
+      profiles.get(event.createdBy) ??
+      createDefaultDatingProfile(event.createdBy);
     return isDatingMutualMatch(viewerProfile, creatorProfile);
   });
 }
 
-export async function getPublicEventSharePreviewById(eventId: string): Promise<PublicEventSharePreview | null> {
+export async function getPublicEventSharePreviewById(
+  eventId: string,
+): Promise<PublicEventSharePreview | null> {
   const db = getDb();
   const [event] = await db
     .select({
@@ -1770,11 +1976,16 @@ export async function getPublicEventSharePreviewById(eventId: string): Promise<P
       startsAt: events.startsAt,
       endsAt: events.endsAt,
       createdByName: users.name,
-      createdByEmail: users.email
+      createdByEmail: users.email,
     })
     .from(events)
     .innerJoin(users, eq(events.createdBy, users.id))
-    .where(and(eq(events.id, eventId), eq(events.visibility, "public" as EventVisibility)))
+    .where(
+      and(
+        eq(events.id, eventId),
+        eq(events.visibility, "public" as EventVisibility),
+      ),
+    )
     .limit(1);
 
   if (!event) {
@@ -1784,7 +1995,10 @@ export async function getPublicEventSharePreviewById(eventId: string): Promise<P
   return event;
 }
 
-export async function getVisibleEventForUserById(input: { userId: string; eventId: string }) {
+export async function getVisibleEventForUserById(input: {
+  userId: string;
+  eventId: string;
+}) {
   const db = getDb();
   const memberships = await db
     .select({ groupId: groupMemberships.groupId })
@@ -1795,7 +2009,7 @@ export async function getVisibleEventForUserById(input: { userId: string; eventI
   const visibilityFilters = [
     eq(events.visibility, "public" as EventVisibility),
     eq(events.visibility, "smart_date" as EventVisibility),
-    eq(events.createdBy, input.userId)
+    eq(events.createdBy, input.userId),
   ];
 
   if (groupIds.length > 0) {
@@ -1817,7 +2031,7 @@ export async function getVisibleEventForUserById(input: { userId: string; eventI
       createdByName: users.name,
       createdByEmail: users.email,
       sourceProvider: events.sourceProvider,
-      sourceEventId: events.sourceEventId
+      sourceEventId: events.sourceEventId,
     })
     .from(events)
     .leftJoin(groups, eq(events.groupId, groups.id))
@@ -1836,13 +2050,19 @@ export async function getVisibleEventForUserById(input: { userId: string; eventI
 
   const event = {
     ...rows[0],
-    tags: normalizeTags(tags.map((entry) => entry.tag))
+    tags: normalizeTags(tags.map((entry) => entry.tag)),
   };
 
   if (event.visibility === "smart_date" && event.createdBy !== input.userId) {
-    const profiles = await getDatingProfileMapForUsers([input.userId, event.createdBy]);
-    const viewerProfile = profiles.get(input.userId) ?? createDefaultDatingProfile(input.userId);
-    const creatorProfile = profiles.get(event.createdBy) ?? createDefaultDatingProfile(event.createdBy);
+    const profiles = await getDatingProfileMapForUsers([
+      input.userId,
+      event.createdBy,
+    ]);
+    const viewerProfile =
+      profiles.get(input.userId) ?? createDefaultDatingProfile(input.userId);
+    const creatorProfile =
+      profiles.get(event.createdBy) ??
+      createDefaultDatingProfile(event.createdBy);
 
     if (!isDatingMutualMatch(viewerProfile, creatorProfile)) {
       return null;
@@ -1852,7 +2072,10 @@ export async function getVisibleEventForUserById(input: { userId: string; eventI
   return event;
 }
 
-export async function getSuggestionForEventForUser(input: { userId: string; eventId: string }) {
+export async function getSuggestionForEventForUser(input: {
+  userId: string;
+  eventId: string;
+}) {
   const db = getDb();
   const [row] = await db
     .select({
@@ -1861,10 +2084,15 @@ export async function getSuggestionForEventForUser(input: { userId: string; even
       decisionReasons: suggestions.decisionReasons,
       decisionNote: suggestions.decisionNote,
       score: suggestions.score,
-      reason: suggestions.reason
+      reason: suggestions.reason,
     })
     .from(suggestions)
-    .where(and(eq(suggestions.userId, input.userId), eq(suggestions.eventId, input.eventId)))
+    .where(
+      and(
+        eq(suggestions.userId, input.userId),
+        eq(suggestions.eventId, input.eventId),
+      ),
+    )
     .limit(1);
 
   if (!row) {
@@ -1874,7 +2102,7 @@ export async function getSuggestionForEventForUser(input: { userId: string; even
   return {
     ...row,
     reason: normalizeSuggestionReason(row.reason),
-    decisionReasons: parseDecisionReasons(row.decisionReasons)
+    decisionReasons: parseDecisionReasons(row.decisionReasons),
   };
 }
 
@@ -1902,7 +2130,7 @@ export async function listPublicAlleEvents(limit = 20) {
       createdBy: events.createdBy,
       groupName: groups.name,
       sourceProvider: events.sourceProvider,
-      sourceEventId: events.sourceEventId
+      sourceEventId: events.sourceEventId,
     })
     .from(events)
     .leftJoin(groups, eq(events.groupId, groups.id))
@@ -1911,10 +2139,10 @@ export async function listPublicAlleEvents(limit = 20) {
         eq(events.visibility, "public"),
         inArray(
           events.id,
-          alleEvents.map((item) => item.eventId)
+          alleEvents.map((item) => item.eventId),
         ),
-        gt(events.endsAt, new Date())
-      )
+        gt(events.endsAt, new Date()),
+      ),
     )
     .orderBy(events.startsAt)
     .limit(limit);
@@ -1926,7 +2154,12 @@ export async function listPublicAlleEvents(limit = 20) {
   const tags = await db
     .select({ eventId: eventTags.eventId, tag: eventTags.tag })
     .from(eventTags)
-    .where(inArray(eventTags.eventId, rows.map((row) => row.id)));
+    .where(
+      inArray(
+        eventTags.eventId,
+        rows.map((row) => row.id),
+      ),
+    );
 
   const tagsMap = new Map<string, string[]>();
   for (const tag of tags) {
@@ -1937,7 +2170,7 @@ export async function listPublicAlleEvents(limit = 20) {
 
   return rows.map((row) => ({
     ...row,
-    tags: normalizeTags(tagsMap.get(row.id) ?? [])
+    tags: normalizeTags(tagsMap.get(row.id) ?? []),
   }));
 }
 
@@ -1956,15 +2189,24 @@ async function listPublicAlleEventsForUser(userId: string) {
       createdBy: events.createdBy,
       groupName: groups.name,
       sourceProvider: events.sourceProvider,
-      sourceEventId: events.sourceEventId
+      sourceEventId: events.sourceEventId,
     })
     .from(events)
     .leftJoin(groups, eq(events.groupId, groups.id))
     .innerJoin(
       eventTags,
-      and(eq(eventTags.eventId, events.id), or(eq(eventTags.tag, "#alle"), eq(eventTags.tag, "#all")))
+      and(
+        eq(eventTags.eventId, events.id),
+        or(eq(eventTags.tag, "#alle"), eq(eventTags.tag, "#all")),
+      ),
     )
-    .where(and(eq(events.createdBy, userId), eq(events.visibility, "public"), gt(events.endsAt, new Date())))
+    .where(
+      and(
+        eq(events.createdBy, userId),
+        eq(events.visibility, "public"),
+        gt(events.endsAt, new Date()),
+      ),
+    )
     .orderBy(events.startsAt);
 
   if (!rows.length) {
@@ -1974,7 +2216,12 @@ async function listPublicAlleEventsForUser(userId: string) {
   const tags = await db
     .select({ eventId: eventTags.eventId, tag: eventTags.tag })
     .from(eventTags)
-    .where(inArray(eventTags.eventId, rows.map((row) => row.id)));
+    .where(
+      inArray(
+        eventTags.eventId,
+        rows.map((row) => row.id),
+      ),
+    );
 
   const tagsMap = new Map<string, string[]>();
   for (const tag of tags) {
@@ -1985,11 +2232,14 @@ async function listPublicAlleEventsForUser(userId: string) {
 
   return rows.map((row) => ({
     ...row,
-    tags: normalizeTags(tagsMap.get(row.id) ?? [])
+    tags: normalizeTags(tagsMap.get(row.id) ?? []),
   }));
 }
 
-function mapVisibleEventToUserProfileEvent(event: VisibleEvent, matchStatus: SuggestionStatus | null): UserProfileEvent {
+function mapVisibleEventToUserProfileEvent(
+  event: VisibleEvent,
+  matchStatus: SuggestionStatus | null,
+): UserProfileEvent {
   return {
     id: event.id,
     title: event.title,
@@ -2000,7 +2250,7 @@ function mapVisibleEventToUserProfileEvent(event: VisibleEvent, matchStatus: Sug
     visibility: event.visibility,
     groupName: event.groupName,
     tags: event.tags,
-    matchStatus
+    matchStatus,
   };
 }
 
@@ -2020,16 +2270,18 @@ export async function getUserProfileOverview(input: {
         id: user.id,
         name: user.name,
         image: user.image,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
       },
       visibility: "public_alle",
-      events: events.map((event) => mapVisibleEventToUserProfileEvent(event, null))
+      events: events.map((event) =>
+        mapVisibleEventToUserProfileEvent(event, null),
+      ),
     };
   }
 
-  const visibleEvents = (await listVisibleEventsForUser(input.viewerUserId)).filter(
-    (event) => event.createdBy === input.profileUserId
-  );
+  const visibleEvents = (
+    await listVisibleEventsForUser(input.viewerUserId)
+  ).filter((event) => event.createdBy === input.profileUserId);
 
   if (input.viewerUserId === input.profileUserId) {
     return {
@@ -2037,15 +2289,21 @@ export async function getUserProfileOverview(input: {
         id: user.id,
         name: user.name,
         image: user.image,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
       },
       visibility: "owner",
-      events: visibleEvents.map((event) => mapVisibleEventToUserProfileEvent(event, null))
+      events: visibleEvents.map((event) =>
+        mapVisibleEventToUserProfileEvent(event, null),
+      ),
     };
   }
 
-  const suggestionStates = await listSuggestionStatesForUser(input.viewerUserId);
-  const statusByEventId = new Map(suggestionStates.map((entry) => [entry.eventId, entry.status]));
+  const suggestionStates = await listSuggestionStatesForUser(
+    input.viewerUserId,
+  );
+  const statusByEventId = new Map(
+    suggestionStates.map((entry) => [entry.eventId, entry.status]),
+  );
   const matchedEvents = [] as UserProfileEvent[];
 
   for (const event of visibleEvents) {
@@ -2062,10 +2320,10 @@ export async function getUserProfileOverview(input: {
       id: user.id,
       name: user.name,
       image: user.image,
-      createdAt: user.createdAt
+      createdAt: user.createdAt,
     },
     visibility: "matched",
-    events: matchedEvents
+    events: matchedEvents,
   };
 }
 
@@ -2076,7 +2334,7 @@ export async function listSuggestionStatesForUser(userId: string) {
       id: suggestions.id,
       eventId: suggestions.eventId,
       status: suggestions.status,
-      calendarEventId: suggestions.calendarEventId
+      calendarEventId: suggestions.calendarEventId,
     })
     .from(suggestions)
     .where(eq(suggestions.userId, userId));
@@ -2088,14 +2346,16 @@ export async function listSuggestionCalendarRefsForUser(userId: string) {
   const db = getDb();
   const rows = await db
     .select({
-      calendarEventId: suggestions.calendarEventId
+      calendarEventId: suggestions.calendarEventId,
     })
     .from(suggestions)
     .where(eq(suggestions.userId, userId));
 
   return rows
     .map((row) => row.calendarEventId?.trim() ?? "")
-    .filter((calendarEventId): calendarEventId is string => Boolean(calendarEventId));
+    .filter((calendarEventId): calendarEventId is string =>
+      Boolean(calendarEventId),
+    );
 }
 
 export async function getAutoInsertedSuggestionCountForUser(userId: string) {
@@ -2103,7 +2363,12 @@ export async function getAutoInsertedSuggestionCountForUser(userId: string) {
   const [row] = await db
     .select({ count: sql<number>`count(*)` })
     .from(suggestions)
-    .where(and(eq(suggestions.userId, userId), eq(suggestions.status, "calendar_inserted")));
+    .where(
+      and(
+        eq(suggestions.userId, userId),
+        eq(suggestions.status, "calendar_inserted"),
+      ),
+    );
 
   return Number(row?.count ?? 0);
 }
@@ -2119,7 +2384,12 @@ export async function removeSuggestionsForUserByEventIds(input: {
   const db = getDb();
   await db
     .delete(suggestions)
-    .where(and(eq(suggestions.userId, input.userId), inArray(suggestions.eventId, input.eventIds)));
+    .where(
+      and(
+        eq(suggestions.userId, input.userId),
+        inArray(suggestions.eventId, input.eventIds),
+      ),
+    );
 
   return input.eventIds.length;
 }
@@ -2142,7 +2412,7 @@ export async function upsertSuggestion(input: {
       score: input.score,
       reason,
       status: input.status ?? "pending",
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
     .onConflictDoUpdate({
       target: [suggestions.userId, suggestions.eventId],
@@ -2150,22 +2420,25 @@ export async function upsertSuggestion(input: {
         score: input.score,
         reason,
         status: input.status ?? "pending",
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     })
     .returning();
 
   return row;
 }
 
-export async function markSuggestionInserted(suggestionId: string, calendarEventId: string) {
+export async function markSuggestionInserted(
+  suggestionId: string,
+  calendarEventId: string,
+) {
   const db = getDb();
   const [row] = await db
     .update(suggestions)
     .set({
       status: "calendar_inserted",
       calendarEventId,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
     .where(eq(suggestions.id, suggestionId))
     .returning();
@@ -2173,13 +2446,16 @@ export async function markSuggestionInserted(suggestionId: string, calendarEvent
   return row;
 }
 
-export async function setSuggestionCalendarEventRef(input: { suggestionId: string; calendarEventId: string }) {
+export async function setSuggestionCalendarEventRef(input: {
+  suggestionId: string;
+  calendarEventId: string;
+}) {
   const db = getDb();
   const [row] = await db
     .update(suggestions)
     .set({
       calendarEventId: input.calendarEventId,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
     .where(eq(suggestions.id, input.suggestionId))
     .returning();
@@ -2193,7 +2469,7 @@ export async function clearSuggestionCalendarEventRef(suggestionId: string) {
     .update(suggestions)
     .set({
       calendarEventId: null,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
     .where(eq(suggestions.id, suggestionId))
     .returning();
@@ -2201,7 +2477,19 @@ export async function clearSuggestionCalendarEventRef(suggestionId: string) {
   return row ?? null;
 }
 
-export async function getSuggestionForUser(suggestionId: string, userId: string) {
+export async function getSuggestion(suggestionId: string) {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(suggestions)
+    .where(eq(suggestions.id, suggestionId));
+  return rows[0];
+}
+
+export async function getSuggestionForUser(
+  suggestionId: string,
+  userId: string,
+) {
   const db = getDb();
   const rows = await db
     .select({
@@ -2220,12 +2508,14 @@ export async function getSuggestionForUser(suggestionId: string, userId: string)
       location: events.location,
       createdBy: events.createdBy,
       createdByName: users.name,
-      createdByEmail: users.email
+      createdByEmail: users.email,
     })
     .from(suggestions)
     .innerJoin(events, eq(suggestions.eventId, events.id))
     .innerJoin(users, eq(events.createdBy, users.id))
-    .where(and(eq(suggestions.id, suggestionId), eq(suggestions.userId, userId)))
+    .where(
+      and(eq(suggestions.id, suggestionId), eq(suggestions.userId, userId)),
+    )
     .limit(1);
 
   if (!rows[0]) {
@@ -2241,7 +2531,7 @@ export async function getSuggestionForUser(suggestionId: string, userId: string)
     ...rows[0],
     reason: normalizeSuggestionReason(rows[0].reason),
     decisionReasons: parseDecisionReasons(rows[0].decisionReasons),
-    tags: normalizeTags(tagRows.map((row) => row.tag))
+    tags: normalizeTags(tagRows.map((row) => row.tag)),
   };
 }
 
@@ -2265,7 +2555,7 @@ export async function listSuggestionsForUser(userId: string) {
       endsAt: events.endsAt,
       createdBy: events.createdBy,
       createdByName: users.name,
-      createdByEmail: users.email
+      createdByEmail: users.email,
     })
     .from(suggestions)
     .innerJoin(events, eq(suggestions.eventId, events.id))
@@ -2280,7 +2570,12 @@ export async function listSuggestionsForUser(userId: string) {
   const tags = await db
     .select({ eventId: eventTags.eventId, tag: eventTags.tag })
     .from(eventTags)
-    .where(inArray(eventTags.eventId, rows.map((row) => row.eventId)));
+    .where(
+      inArray(
+        eventTags.eventId,
+        rows.map((row) => row.eventId),
+      ),
+    );
 
   const tagsMap = new Map<string, string[]>();
   for (const tag of tags) {
@@ -2293,13 +2588,16 @@ export async function listSuggestionsForUser(userId: string) {
     ...row,
     reason: normalizeSuggestionReason(row.reason),
     decisionReasons: parseDecisionReasons(row.decisionReasons),
-    tags: normalizeTags(tagsMap.get(row.eventId) ?? [])
+    tags: normalizeTags(tagsMap.get(row.eventId) ?? []),
   }));
 }
 
 export async function getTagPreferenceMap(userId: string) {
   const db = getDb();
-  const rows = await db.select().from(tagPreferences).where(eq(tagPreferences.userId, userId));
+  const rows = await db
+    .select()
+    .from(tagPreferences)
+    .where(eq(tagPreferences.userId, userId));
   const map = new Map<string, { weight: number; votes: number }>();
 
   for (const row of rows) {
@@ -2310,7 +2608,15 @@ export async function getTagPreferenceMap(userId: string) {
 }
 
 function getTimeslotLabel(weekday: number, hour: number) {
-  const weekdays = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+  const weekdays = [
+    "Sonntag",
+    "Montag",
+    "Dienstag",
+    "Mittwoch",
+    "Donnerstag",
+    "Freitag",
+    "Samstag",
+  ];
   const weekdayLabel = weekdays[weekday] ?? `Tag ${weekday}`;
   return `${weekdayLabel} ${String(hour).padStart(2, "0")}:00`;
 }
@@ -2319,12 +2625,15 @@ function getPersonLabel(userId: string, userLabels: Map<string, string>) {
   return userLabels.get(userId) ?? `Person ${userId.slice(0, 8)}`;
 }
 
-function getPreferenceCriterionLabel(tag: string, userLabels: Map<string, string>) {
+function getPreferenceCriterionLabel(
+  tag: string,
+  userLabels: Map<string, string>,
+) {
   if (tag.startsWith("person:")) {
     const userId = tag.slice("person:".length);
     return {
       key: tag,
-      label: `Person: ${getPersonLabel(userId, userLabels)}`
+      label: `Person: ${getPersonLabel(userId, userLabels)}`,
     };
   }
 
@@ -2336,7 +2645,7 @@ function getPreferenceCriterionLabel(tag: string, userLabels: Map<string, string
     if (Number.isInteger(weekday) && Number.isInteger(hour)) {
       return {
         key: tag,
-        label: `Zeitfenster: ${getTimeslotLabel(weekday, hour)}`
+        label: `Zeitfenster: ${getTimeslotLabel(weekday, hour)}`,
       };
     }
   }
@@ -2345,24 +2654,26 @@ function getPreferenceCriterionLabel(tag: string, userLabels: Map<string, string
     const location = tag.slice("location:".length).replace(/-/g, " ");
     return {
       key: tag,
-      label: `Ort: ${location || "Unbekannt"}`
+      label: `Ort: ${location || "Unbekannt"}`,
     };
   }
 
   if (tag.startsWith("#")) {
     return {
       key: tag,
-      label: `Aktivität: ${tag}`
+      label: `Aktivität: ${tag}`,
     };
   }
 
   return {
     key: tag,
-    label: `Signal: ${tag}`
+    label: `Signal: ${tag}`,
   };
 }
 
-export async function getSuggestionLearningSummary(userId: string): Promise<SuggestionLearningSummary> {
+export async function getSuggestionLearningSummary(
+  userId: string,
+): Promise<SuggestionLearningSummary> {
   const db = getDb();
   const [settings, preferenceRows] = await Promise.all([
     getUserSuggestionSettings(userId),
@@ -2370,24 +2681,24 @@ export async function getSuggestionLearningSummary(userId: string): Promise<Sugg
       .select({
         tag: tagPreferences.tag,
         weight: tagPreferences.weight,
-        votes: tagPreferences.votes
+        votes: tagPreferences.votes,
       })
       .from(tagPreferences)
-      .where(eq(tagPreferences.userId, userId))
+      .where(eq(tagPreferences.userId, userId)),
   ]);
 
   const personIds = normalizeStringList([
     ...settings.blockedCreatorIds,
     ...preferenceRows
       .filter((row) => row.tag.startsWith("person:"))
-      .map((row) => row.tag.slice("person:".length))
+      .map((row) => row.tag.slice("person:".length)),
   ]);
   const personRows = personIds.length
     ? await db
         .select({
           id: users.id,
           name: users.name,
-          email: users.email
+          email: users.email,
         })
         .from(users)
         .where(inArray(users.id, personIds))
@@ -2403,7 +2714,7 @@ export async function getSuggestionLearningSummary(userId: string): Promise<Sugg
       key: criterion.key,
       label: criterion.label,
       weight: Number(row.weight.toFixed(2)),
-      votes: row.votes
+      votes: row.votes,
     };
   });
 
@@ -2421,9 +2732,9 @@ export async function getSuggestionLearningSummary(userId: string): Promise<Sugg
     negativeCriteria,
     blockedPeople: settings.blockedCreatorIds.map((id) => ({
       id,
-      label: getPersonLabel(id, personLabelMap)
+      label: getPersonLabel(id, personLabelMap),
     })),
-    blockedActivityTags: settings.blockedActivityTags
+    blockedActivityTags: settings.blockedActivityTags,
   };
 }
 
@@ -2435,14 +2746,21 @@ export async function applyDecisionFeedback(input: {
   note?: string | null;
 }) {
   const db = getDb();
-  const suggestion = await getSuggestionForUser(input.suggestionId, input.userId);
+  const suggestion = await getSuggestionForUser(
+    input.suggestionId,
+    input.userId,
+  );
 
   if (!suggestion) {
     throw new Error("Suggestion nicht gefunden");
   }
 
-  const reasons = input.decision === "declined" ? normalizeDecisionReasons(input.reasons) : [];
-  const note = input.decision === "declined" ? normalizeDecisionNote(input.note) : null;
+  const reasons =
+    input.decision === "declined"
+      ? normalizeDecisionReasons(input.reasons)
+      : [];
+  const note =
+    input.decision === "declined" ? normalizeDecisionNote(input.note) : null;
 
   await db.transaction(async (tx) => {
     await tx
@@ -2451,12 +2769,21 @@ export async function applyDecisionFeedback(input: {
         status: input.decision,
         decisionReasons: serializeDecisionReasons(reasons),
         decisionNote: note,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
-      .where(and(eq(suggestions.id, input.suggestionId), eq(suggestions.userId, input.userId)));
+      .where(
+        and(
+          eq(suggestions.id, input.suggestionId),
+          eq(suggestions.userId, input.userId),
+        ),
+      );
 
-    const isConditionalDecline = input.decision === "declined" && reasons.length === 1 && reasons[0] === "would_if_changed";
-    const delta = input.decision === "accepted" ? 1.1 : isConditionalDecline ? -0.1 : -0.5;
+    const isConditionalDecline =
+      input.decision === "declined" &&
+      reasons.length === 1 &&
+      reasons[0] === "would_if_changed";
+    const delta =
+      input.decision === "accepted" ? 1.1 : isConditionalDecline ? -0.1 : -0.5;
 
     for (const tag of suggestion.tags) {
       await tx
@@ -2466,22 +2793,22 @@ export async function applyDecisionFeedback(input: {
           tag,
           weight: delta,
           votes: 1,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .onConflictDoUpdate({
           target: [tagPreferences.userId, tagPreferences.tag],
           set: {
             weight: sql`${tagPreferences.weight} + ${delta}`,
             votes: sql`${tagPreferences.votes} + 1`,
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         });
     }
 
     if (input.decision === "accepted") {
       const contextTags = [
         createPersonPreferenceTag(suggestion.createdBy),
-        createTimeslotPreferenceTag(suggestion.startsAt)
+        createTimeslotPreferenceTag(suggestion.startsAt),
       ] as string[];
       const locationTag = createLocationPreferenceTag(suggestion.location);
       if (locationTag) {
@@ -2496,15 +2823,15 @@ export async function applyDecisionFeedback(input: {
             tag: contextTag,
             weight: 0.45,
             votes: 1,
-            updatedAt: new Date()
+            updatedAt: new Date(),
           })
           .onConflictDoUpdate({
             target: [tagPreferences.userId, tagPreferences.tag],
             set: {
               weight: sql`${tagPreferences.weight} + ${0.45}`,
               votes: sql`${tagPreferences.votes} + 1`,
-              updatedAt: new Date()
-            }
+              updatedAt: new Date(),
+            },
           });
       }
 
@@ -2521,15 +2848,15 @@ export async function applyDecisionFeedback(input: {
           tag: createPersonPreferenceTag(suggestion.createdBy),
           weight: -1.2,
           votes: 1,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .onConflictDoUpdate({
           target: [tagPreferences.userId, tagPreferences.tag],
           set: {
             weight: sql`${tagPreferences.weight} + ${-1.2}`,
             votes: sql`${tagPreferences.votes} + 1`,
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         });
     }
 
@@ -2542,15 +2869,15 @@ export async function applyDecisionFeedback(input: {
             tag,
             weight: -1,
             votes: 1,
-            updatedAt: new Date()
+            updatedAt: new Date(),
           })
           .onConflictDoUpdate({
             target: [tagPreferences.userId, tagPreferences.tag],
             set: {
               weight: sql`${tagPreferences.weight} + ${-1}`,
               votes: sql`${tagPreferences.votes} + 1`,
-              updatedAt: new Date()
-            }
+              updatedAt: new Date(),
+            },
           });
       }
     }
@@ -2563,15 +2890,15 @@ export async function applyDecisionFeedback(input: {
           tag: createTimeslotPreferenceTag(suggestion.startsAt),
           weight: -0.9,
           votes: 1,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .onConflictDoUpdate({
           target: [tagPreferences.userId, tagPreferences.tag],
           set: {
             weight: sql`${tagPreferences.weight} + ${-0.9}`,
             votes: sql`${tagPreferences.votes} + 1`,
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         });
     }
 
@@ -2583,35 +2910,43 @@ export async function applyDecisionFeedback(input: {
           tag: locationTag,
           weight: -1,
           votes: 1,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .onConflictDoUpdate({
           target: [tagPreferences.userId, tagPreferences.tag],
           set: {
             weight: sql`${tagPreferences.weight} + ${-1}`,
             votes: sql`${tagPreferences.votes} + 1`,
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         });
     }
 
-    if (reasons.includes("not_with_this_person") || reasons.includes("not_this_activity")) {
+    if (
+      reasons.includes("not_with_this_person") ||
+      reasons.includes("not_this_activity")
+    ) {
       const [settings] = await tx
         .select({
           blockedCreatorIds: userSettings.blockedCreatorIds,
-          blockedActivityTags: userSettings.blockedActivityTags
+          blockedActivityTags: userSettings.blockedActivityTags,
         })
         .from(userSettings)
         .where(eq(userSettings.userId, input.userId))
         .limit(1);
 
       const blockedCreatorIds = parseStringList(settings?.blockedCreatorIds);
-      const blockedActivityTags = parseBlockedActivityTags(settings?.blockedActivityTags);
+      const blockedActivityTags = parseBlockedActivityTags(
+        settings?.blockedActivityTags,
+      );
       const nextBlockedCreatorIds = reasons.includes("not_with_this_person")
         ? normalizeStringList([...blockedCreatorIds, suggestion.createdBy])
         : blockedCreatorIds;
       const nextBlockedActivityTags = reasons.includes("not_this_activity")
-        ? normalizeBlockedActivityTags([...blockedActivityTags, ...suggestion.tags])
+        ? normalizeBlockedActivityTags([
+            ...blockedActivityTags,
+            ...suggestion.tags,
+          ])
         : blockedActivityTags;
 
       await tx
@@ -2624,18 +2959,22 @@ export async function applyDecisionFeedback(input: {
           shareEmailInSourceInvites: true,
           matchingCalendarIds: "",
           blockedCreatorIds: serializeStringList(nextBlockedCreatorIds),
-          blockedActivityTags: serializeBlockedActivityTags(nextBlockedActivityTags),
+          blockedActivityTags: serializeBlockedActivityTags(
+            nextBlockedActivityTags,
+          ),
           suggestionLimitPerDay: 4,
           suggestionLimitPerWeek: 16,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .onConflictDoUpdate({
           target: [userSettings.userId],
           set: {
             blockedCreatorIds: serializeStringList(nextBlockedCreatorIds),
-            blockedActivityTags: serializeBlockedActivityTags(nextBlockedActivityTags),
-            updatedAt: new Date()
-          }
+            blockedActivityTags: serializeBlockedActivityTags(
+              nextBlockedActivityTags,
+            ),
+            updatedAt: new Date(),
+          },
         });
     }
   });
