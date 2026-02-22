@@ -270,24 +270,6 @@ export function SuggestionsPage({
               >
                 Matching starten
               </button>
-              <a
-                href="/events"
-                className="rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700"
-              >
-                Zu Events
-              </a>
-              <a
-                href="/groups"
-                className="rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700"
-              >
-                Zu Gruppen
-              </a>
-              <a
-                href="/api/auth/signout?callbackUrl=/"
-                className="rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700"
-              >
-                Abmelden
-              </a>
             </div>
           </div>
         </header>

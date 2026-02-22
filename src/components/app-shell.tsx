@@ -61,7 +61,7 @@ export function AppShell({ user, children }: AppShellProps) {
             <img
               src="/icon.svg"
               alt=""
-              className="h-6 w-6 rounded-md border border-slate-200 bg-white p-0.5"
+              className="h-6 w-6"
               aria-hidden="true"
             />
             <span>Realite</span>

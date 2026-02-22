@@ -317,12 +317,6 @@ export function Dashboard({
                 {showEventForm ? "Event schließen" : "Neues Event"}
               </button>
               <a
-                href="/groups"
-                className="rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700"
-              >
-                Zu Gruppen
-              </a>
-              <a
                 href="/suggestions"
                 className="rounded-lg bg-teal-700 px-4 py-2 text-center text-sm font-semibold text-white"
               >

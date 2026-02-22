@@ -107,3 +107,7 @@ body {
     transform: none;
   }
 }
+
+button  {
+  cursor: pointer;
+}
