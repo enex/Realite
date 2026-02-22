@@ -46,14 +46,17 @@ Dann Werte in `.env.local` setzen:
 - `BETTER_AUTH_URL=http://localhost:3000`
 - `NEXT_PUBLIC_POSTHOG_KEY` (Projekt-API-Key aus PostHog)
 - `NEXT_PUBLIC_POSTHOG_HOST` (z. B. `https://eu.i.posthog.com` oder `https://us.i.posthog.com`)
+- `POSTHOG_API_KEY` (derselbe Projekt-API-Key, für serverseitige Logs an PostHog; optional)
+- `POSTHOG_HOST` (z. B. `https://eu.i.posthog.com`; optional, Standard: EU)
 
-## 3.1) PostHog: Analytics, Session Replay und Feature Flags
+## 3.1) PostHog: Analytics, Session Replay, Feature Flags und Logs
 
 Die App initialisiert PostHog clientseitig über `instrumentation-client.ts`.
 
 - Analytics und Session Replay laufen nach erfolgreicher Initialisierung automatisch.
 - Eingeloggte Nutzer werden über ihre E-Mail identifiziert.
 - Feature Flags können in Komponenten über `useRealiteFeatureFlag(...)` genutzt werden.
+- **Serverseitige Logs (OpenTelemetry):** Wenn `POSTHOG_API_KEY` gesetzt ist, werden Logs aus API Routes/Server Code per OTLP an PostHog gesendet. In Route Handlern nach dem Loggen `flushPostHogLogs()` aufrufen (am besten in `after()` von `next/server`), siehe `src/lib/posthog/server-logger.ts`.
 
 ## 4) Migrationen
 
