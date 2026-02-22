@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
+import { EventInviteSection } from "@/src/components/event-invite-section";
 import { SharedEventContent } from "@/src/components/shared-event-content";
 import { SuggestionDecisionPanel } from "@/src/components/suggestion-decision-panel";
 import { getEventShareCopy, getPublicEventSharePreviewByShortId } from "@/src/lib/event-share";
@@ -96,6 +97,14 @@ export default async function EventShortcutPage({
         sourceProvider={event.sourceProvider}
         sourceEventId={event.sourceEventId}
       />
+
+      {event.createdBy === user.id &&
+        event.sourceProvider === "google" &&
+        event.sourceEventId && (
+          <section className="mt-4">
+            <EventInviteSection eventId={event.id} />
+          </section>
+        )}
 
       {suggestionForFlow ? (
         <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">

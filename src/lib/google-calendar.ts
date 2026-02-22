@@ -757,6 +757,113 @@ export async function insertGroupMeetingIntoCalendar(input: {
   return null;
 }
 
+/** Returns attendee emails of the Google Calendar source event, or null if not accessible. */
+export async function getSourceEventAttendees(input: {
+  ownerUserId: string;
+  sourceEventId: string;
+}): Promise<string[] | null> {
+  const sourceRef = parseGoogleSourceEventId(input.sourceEventId);
+  if (!sourceRef) {
+    return null;
+  }
+
+  const token = await getGoogleAccessToken(input.ownerUserId);
+  if (!token) {
+    return null;
+  }
+
+  const url =
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(sourceRef.calendarId)}` +
+    `/events/${encodeURIComponent(sourceRef.eventId)}`;
+
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (!response.ok) {
+    if (response.status === 403 || response.status === 404) {
+      return null;
+    }
+    return null;
+  }
+
+  const event = (await response.json()) as CalendarApiEvent;
+  const attendees = event.attendees ?? [];
+  return attendees
+    .map((a) => a.email?.trim().toLowerCase())
+    .filter((email): email is string => Boolean(email));
+}
+
+/** Adds an attendee by email to the Google Calendar source event. Sends invite via Google. */
+export async function addAttendeeToSourceEvent(input: {
+  ownerUserId: string;
+  sourceEventId: string;
+  attendeeEmail: string;
+}): Promise<boolean> {
+  const email = input.attendeeEmail.trim().toLowerCase();
+  if (!email) {
+    return false;
+  }
+
+  const sourceRef = parseGoogleSourceEventId(input.sourceEventId);
+  if (!sourceRef) {
+    return false;
+  }
+
+  const token = await getGoogleAccessToken(input.ownerUserId);
+  if (!token) {
+    return false;
+  }
+
+  const sourceEventUrl =
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(sourceRef.calendarId)}` +
+    `/events/${encodeURIComponent(sourceRef.eventId)}`;
+
+  const sourceEventResponse = await fetch(sourceEventUrl, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (!sourceEventResponse.ok) {
+    if (sourceEventResponse.status === 403 || sourceEventResponse.status === 404) {
+      return false;
+    }
+    const details = await readGoogleError(sourceEventResponse);
+    throw new Error(
+      `Source-Event konnte nicht geladen werden (${sourceEventResponse.status})${details ? `: ${details}` : ""}`
+    );
+  }
+
+  const sourceEvent = (await sourceEventResponse.json()) as CalendarApiEvent;
+  const attendees = sourceEvent.attendees ?? [];
+  const alreadyInvited = attendees.some((a) => a.email?.trim().toLowerCase() === email);
+  if (alreadyInvited) {
+    return true;
+  }
+
+  const patchResponse = await fetch(`${sourceEventUrl}?sendUpdates=all`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      attendees: [...attendees, { email, responseStatus: "needsAction" as const }]
+    })
+  });
+
+  if (!patchResponse.ok) {
+    if (patchResponse.status === 403 || patchResponse.status === 404) {
+      return false;
+    }
+    const details = await readGoogleError(patchResponse);
+    throw new Error(
+      `Einladung konnte nicht gesendet werden (${patchResponse.status})${details ? `: ${details}` : ""}`
+    );
+  }
+
+  return true;
+}
+
 export async function insertSuggestionAsSourceInvite(input: {
   suggestionId: string;
   targetUserId: string;

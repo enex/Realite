@@ -149,6 +149,13 @@ Der automatisch von Realite ergänzte Kalender-Zusatz (`Realite-Link (automatisc
 Wenn der Termin aus deinem Google Kalender stammt und du der Ersteller bist, findest du oben rechts einen **Bearbeiten**-Button mit Stift-Symbol.  
 Damit springst du direkt zum Original-Termin in Google Kalender.
 
+**Jemanden einladen:** Wenn du der Ersteller eines Events aus dem Google Kalender bist, erscheint auf der Eventseite und – falls du dort landest – auch auf der zugehörigen Suggestionseite der Bereich **Jemanden einladen**. Dort kannst du:
+
+- bis zu drei Personen aus deinen Realite-Kontakten (Gruppen/Kontakte) mit einem Klick vorschlagen und einladen,
+- oder eine beliebige E-Mail-Adresse bzw. einen Namen eingeben: Realite schlägt passende Kontakte vor oder du lädst direkt per E-Mail ein.
+
+Eingeladene Personen werden im zugehörigen Google-Kalender-Termin als Teilnehmer:innen ergänzt. Sie erhalten die Einladung per E-Mail von Google Kalender und können so den Termin sehen und zu-/absagen. Es werden nur Personen angezeigt, die noch nicht eingeladen wurden.
+
 Wenn ein Ort hinterlegt ist, zeigt Realite zusätzlich:
 
 - Distanz von deinem aktuellen Standort (wenn Standortfreigabe aktiv ist)

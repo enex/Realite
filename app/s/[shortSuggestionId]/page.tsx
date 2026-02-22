@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
+import { EventInviteSection } from "@/src/components/event-invite-section";
 import { SharedEventContent } from "@/src/components/shared-event-content";
 import { SuggestionDecisionPanel } from "@/src/components/suggestion-decision-panel";
 import { getAuthSession } from "@/src/lib/auth";
@@ -127,6 +128,14 @@ export default async function SuggestionShortcutPage({
           creatorName={suggestion.createdByName ?? suggestion.createdByEmail}
         />
       </div>
+
+      {suggestion.createdBy === user.id &&
+        suggestion.sourceProvider === "google" &&
+        suggestion.sourceEventId && (
+          <section className="mt-4">
+            <EventInviteSection eventId={suggestion.eventId} />
+          </section>
+        )}
 
       <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <p className="text-sm text-slate-600">Warum wurde dir das vorgeschlagen?</p>

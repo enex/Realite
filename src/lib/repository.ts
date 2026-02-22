@@ -2509,6 +2509,8 @@ export async function getSuggestionForUser(
       createdBy: events.createdBy,
       createdByName: users.name,
       createdByEmail: users.email,
+      sourceProvider: events.sourceProvider,
+      sourceEventId: events.sourceEventId,
     })
     .from(suggestions)
     .innerJoin(events, eq(suggestions.eventId, events.id))
