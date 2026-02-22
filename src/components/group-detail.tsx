@@ -50,6 +50,7 @@ type DashboardPayload = {
   sync: {
     warning: string | null;
     contactsWarning: string | null;
+    revalidating: boolean;
   };
   groups: Group[];
   events: EventItem[];
@@ -58,11 +59,27 @@ type DashboardPayload = {
 const emptyPayload: DashboardPayload = {
   sync: {
     warning: null,
-    contactsWarning: null
+    contactsWarning: null,
+    revalidating: false
   },
   groups: [],
   events: []
 };
+
+function buildGoogleContactsGroupUrl(syncReference: string | null) {
+  if (!syncReference) {
+    return "https://contacts.google.com/";
+  }
+
+  if (syncReference === "contactGroups/myContacts") {
+    return "https://contacts.google.com/";
+  }
+
+  const prefix = "contactGroups/";
+  const groupId = syncReference.startsWith(prefix) ? syncReference.slice(prefix.length) : syncReference;
+
+  return `https://contacts.google.com/label/${encodeURIComponent(groupId)}`;
+}
 
 export function GroupDetail({
   groupId,
@@ -82,16 +99,8 @@ export function GroupDetail({
   const [memberEmail, setMemberEmail] = useState("");
   const [hashtagsInput, setHashtagsInput] = useState("");
   const [inviteLink, setInviteLink] = useState<string | null>(null);
-
-  const [eventForm, setEventForm] = useState({
-    title: "",
-    description: "",
-    location: "",
-    startsAt: "",
-    endsAt: "",
-    visibility: "group" as "public" | "group",
-    tags: "#kontakte"
-  });
+  const [showActions, setShowActions] = useState(false);
+  const [manualSyncBusy, setManualSyncBusy] = useState(false);
   const normalizedUserEmail = userEmail.trim().toLowerCase();
 
   const group = useMemo(() => data.groups.find((entry) => entry.id === groupId) ?? null, [data.groups, groupId]);
@@ -103,6 +112,7 @@ export function GroupDetail({
         .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()),
     [data.events, groupId]
   );
+  const syncInProgress = manualSyncBusy || data.sync.revalidating;
 
   useEffect(() => {
     if (group) {
@@ -119,9 +129,12 @@ export function GroupDetail({
     return list.length ? list : ["#alle"];
   }
 
-  async function loadData() {
-    setLoading(true);
-    setError(null);
+  async function loadData(options?: { silent?: boolean }) {
+    const silent = options?.silent ?? false;
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
 
     try {
       const response = await fetch("/api/dashboard", { cache: "no-store" });
@@ -132,16 +145,60 @@ export function GroupDetail({
       }
 
       setData(payload);
+      return payload;
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Unbekannter Fehler");
+      return null;
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }
 
   useEffect(() => {
     void loadData();
   }, [groupId]);
+
+  useEffect(() => {
+    if (!data.sync.revalidating) {
+      setManualSyncBusy(false);
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void loadData({ silent: true });
+    }, 2500);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [data.sync.revalidating]);
+
+  async function triggerManualSync() {
+    if (!group || group.syncProvider !== "google_contacts" || manualSyncBusy || data.sync.revalidating) {
+      return;
+    }
+
+    setManualSyncBusy(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/dashboard", { method: "POST" });
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Synchronisierung konnte nicht gestartet werden");
+      }
+
+      const refreshed = await loadData({ silent: true });
+      if (!refreshed?.sync.revalidating) {
+        setManualSyncBusy(false);
+      }
+    } catch (syncError) {
+      setManualSyncBusy(false);
+      setError(syncError instanceof Error ? syncError.message : "Unbekannter Fehler");
+    }
+  }
 
   async function createInvite() {
     setBusy(true);
@@ -224,54 +281,6 @@ export function GroupDetail({
     }
   }
 
-  async function createEvent(event: React.FormEvent) {
-    event.preventDefault();
-
-    setBusy(true);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: eventForm.title,
-          description: eventForm.description,
-          location: eventForm.location,
-          startsAt: new Date(eventForm.startsAt).toISOString(),
-          endsAt: new Date(eventForm.endsAt).toISOString(),
-          visibility: eventForm.visibility,
-          groupId,
-          tags: eventForm.tags
-            .split(",")
-            .map((tag) => tag.trim())
-            .filter(Boolean)
-        })
-      });
-
-      const payload = (await response.json()) as { error?: string };
-      if (!response.ok) {
-        throw new Error(payload.error ?? "Event konnte nicht erstellt werden");
-      }
-
-      setEventForm({
-        title: "",
-        description: "",
-        location: "",
-        startsAt: "",
-        endsAt: "",
-        visibility: "group",
-        tags: "#kontakte"
-      });
-
-      await loadData();
-    } catch (createError) {
-      setError(createError instanceof Error ? createError.message : "Unbekannter Fehler");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function toggleGroupHidden() {
     if (!group || !group.syncProvider) {
       return;
@@ -342,30 +351,6 @@ export function GroupDetail({
       }}
     >
       <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-start gap-3">
-              <UserAvatar name={userName} email={userEmail} image={userImage} size="lg" />
-              <div>
-                <p className="text-sm text-slate-500">Gruppe verwalten</p>
-                <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{group?.name ?? "Gruppe"}</h1>
-                <p className="text-xs text-slate-500">{userName}</p>
-              </div>
-            </div>
-            <div className="flex w-full flex-wrap gap-2 sm:w-auto">
-              <a href="/groups" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
-                Zur Gruppenliste
-              </a>
-              <a
-                href="/settings"
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
-              >
-                Profil
-              </a>
-            </div>
-          </div>
-        </header>
-
       {error ? (
         <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       ) : null}
@@ -399,6 +384,28 @@ export function GroupDetail({
                       Google Kontakte Sync
                     </span>
                   ) : null}
+                  {group.syncProvider === "google_contacts" && group.syncEnabled ? (
+                    <button
+                      type="button"
+                      onClick={triggerManualSync}
+                      disabled={syncInProgress}
+                      title="Kontakte jetzt synchronisieren"
+                      aria-label="Kontakte jetzt synchronisieren"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-teal-300 text-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        className={`h-4 w-4 ${syncInProgress ? "animate-spin" : ""}`}
+                        aria-hidden="true"
+                      >
+                        <path d="M20 12a8 8 0 1 1-2.34-5.66" />
+                        <path d="M20 4v6h-6" />
+                      </svg>
+                    </button>
+                  ) : null}
                   {group.isHidden ? (
                     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
                       Versteckt
@@ -410,8 +417,9 @@ export function GroupDetail({
                 </p>
                 {group.description ? <p className="mt-1 text-sm text-slate-600">{group.description}</p> : null}
               </div>
-              <div className="flex flex-wrap gap-2">
-                {group.hashtags.map((tag) => (
+              <div className="flex flex-col items-start gap-2 sm:items-end">
+                <div className="flex flex-wrap gap-2 sm:justify-end">
+                  {group.hashtags.map((tag) => (
                     <span
                       key={tag}
                       className="max-w-full break-all rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700"
@@ -420,10 +428,91 @@ export function GroupDetail({
                     </span>
                   ))}
                 </div>
+                <div className="flex flex-wrap gap-2 sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setShowActions((state) => !state)}
+                    aria-expanded={showActions}
+                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+                  >
+                    {showActions ? "Aktionen ausblenden" : "Aktionen"}
+                  </button>
+                  <a href="/groups" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
+                    Zur Gruppenliste
+                  </a>
+                </div>
               </div>
+            </div>
+
+            {showActions ? (
+              <div className="mt-4 border-t border-slate-200 pt-4">
+                <div>
+                  <button
+                    onClick={createInvite}
+                    disabled={busy}
+                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 disabled:opacity-50"
+                  >
+                    Invite-Link erstellen
+                  </button>
+                  {inviteLink ? <p className="mt-2 break-all text-xs text-teal-700">{inviteLink}</p> : null}
+                </div>
+
+                {group.syncProvider === "google_contacts" ? (
+                  <div className="mt-4">
+                    <a
+                      href={buildGoogleContactsGroupUrl(group.syncReference)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex rounded-lg border border-teal-300 px-4 py-2 text-sm font-semibold text-teal-700"
+                    >
+                      In Google Kontakte bearbeiten
+                    </a>
+                  </div>
+                ) : null}
+
+                {group.role === "owner" ? (
+                  <div className="mt-4">
+                    {group.syncProvider ? (
+                      <button
+                        onClick={toggleGroupHidden}
+                        disabled={busy}
+                        className="rounded-lg border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-700 disabled:opacity-50"
+                      >
+                        {group.isHidden ? "Gruppe einblenden" : "Gruppe verstecken"}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={deleteCurrentGroup}
+                        disabled={busy}
+                        className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-50"
+                      >
+                        Gruppe löschen
+                      </button>
+                    )}
+                  </div>
+                ) : null}
+
+                <form onSubmit={saveHashtags} className="mt-4 space-y-2">
+                  <label className="text-sm font-medium text-slate-700">Hashtags bearbeiten</label>
+                  <input
+                    value={hashtagsInput}
+                    onChange={(event) => setHashtagsInput(event.target.value)}
+                    placeholder="#kontakte, #dating"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                  <button
+                    type="submit"
+                    disabled={busy}
+                    className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                  >
+                    Speichern
+                  </button>
+                </form>
+              </div>
+            ) : null}
           </section>
 
-          <section className="mt-6 grid gap-6 lg:grid-cols-2">
+          <section className="mt-6">
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-slate-900">Mitglieder & Kontakte</h2>
               <p className="mt-1 text-sm text-slate-600">Alle bekannten Kontakte in dieser Gruppe.</p>
@@ -473,116 +562,6 @@ export function GroupDetail({
                 ))}
               </div>
             </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-900">Aktionen</h2>
-
-              <div className="mt-4">
-                <button
-                  onClick={createInvite}
-                  disabled={busy}
-                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 disabled:opacity-50"
-                >
-                  Invite-Link erstellen
-                </button>
-                {inviteLink ? <p className="mt-2 break-all text-xs text-teal-700">{inviteLink}</p> : null}
-              </div>
-
-              {group.role === "owner" ? (
-                <div className="mt-4">
-                  {group.syncProvider ? (
-                    <button
-                      onClick={toggleGroupHidden}
-                      disabled={busy}
-                      className="rounded-lg border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-700 disabled:opacity-50"
-                    >
-                      {group.isHidden ? "Gruppe einblenden" : "Gruppe verstecken"}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={deleteCurrentGroup}
-                      disabled={busy}
-                      className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-50"
-                    >
-                      Gruppe löschen
-                    </button>
-                  )}
-                </div>
-              ) : null}
-
-              <form onSubmit={saveHashtags} className="mt-4 space-y-2">
-                <label className="text-sm font-medium text-slate-700">Hashtags bearbeiten</label>
-                <input
-                  value={hashtagsInput}
-                  onChange={(event) => setHashtagsInput(event.target.value)}
-                  placeholder="#kontakte, #dating"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                />
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                >
-                  Speichern
-                </button>
-              </form>
-            </div>
-          </section>
-
-          <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">Event in dieser Gruppe erstellen</h2>
-            <form onSubmit={createEvent} className="mt-4 grid gap-3">
-              <input
-                value={eventForm.title}
-                onChange={(event) => setEventForm((state) => ({ ...state, title: event.target.value }))}
-                placeholder="Titel"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                required
-              />
-              <div className="grid gap-3 sm:grid-cols-2">
-                <input
-                  type="datetime-local"
-                  value={eventForm.startsAt}
-                  onChange={(event) => setEventForm((state) => ({ ...state, startsAt: event.target.value }))}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  required
-                />
-                <input
-                  type="datetime-local"
-                  value={eventForm.endsAt}
-                  onChange={(event) => setEventForm((state) => ({ ...state, endsAt: event.target.value }))}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  required
-                />
-              </div>
-              <input
-                value={eventForm.tags}
-                onChange={(event) => setEventForm((state) => ({ ...state, tags: event.target.value }))}
-                placeholder="#kontakte"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              />
-              <p className="text-xs text-slate-500">
-                `#date` erfordert ein freigeschaltetes Dating-Profil und kann nicht mit `#alle` oder `#kontakte` kombiniert
-                werden.
-              </p>
-              <select
-                value={eventForm.visibility}
-                onChange={(event) =>
-                  setEventForm((state) => ({ ...state, visibility: event.target.value as "public" | "group" }))
-                }
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                <option value="group">Nur Gruppe</option>
-                <option value="public">Öffentlich</option>
-              </select>
-              <button
-                type="submit"
-                disabled={busy}
-                className="w-fit rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-              >
-                Event speichern
-              </button>
-            </form>
           </section>
 
           <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

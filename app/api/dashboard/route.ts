@@ -97,3 +97,26 @@ export async function GET() {
     }))
   });
 }
+
+export async function POST() {
+  const user = await requireAppUser();
+  if (!user) {
+    return NextResponse.json({ error: "Nicht eingeloggt" }, { status: 401 });
+  }
+
+  triggerDashboardBackgroundSync(user.id, { force: true });
+  const syncState = getDashboardSyncSnapshot(user.id);
+
+  return NextResponse.json({
+    ok: true,
+    sync: {
+      warning: syncState.warning,
+      stats: syncState.stats,
+      contactsWarning: syncState.contactsWarning,
+      contactsStats: syncState.contactsStats,
+      revalidating: syncState.revalidating,
+      lastTriggeredAt: syncState.lastTriggeredAt,
+      lastCompletedAt: syncState.lastCompletedAt
+    }
+  });
+}

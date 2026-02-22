@@ -78,6 +78,20 @@ In **Profil & Einstellungen** unter **Vorschlags-Einstellungen**:
 
 Realite priorisiert dann die bestbewerteten passenden Optionen innerhalb dieser Limits.
 
+## Wie lösche ich meinen Account?
+
+In **Profil & Einstellungen** findest du unten den Bereich **Account löschen**.
+
+Ablauf:
+
+- auf **Account endgültig löschen** klicken
+- den Bestätigungsdialog akzeptieren
+
+Danach entfernt Realite:
+
+- von Realite erstellte Kalendereinträge aus deinem Kalender
+- dein Profil und zugehörige Daten aus der Datenbank
+
 ## Was bedeuten die neuen kurzen Links (`/s/...` und `/e/...`)?
 
 - `/s/<shortUUID>` öffnet die Seite zur Zusage/Absage für neue Vorschläge.

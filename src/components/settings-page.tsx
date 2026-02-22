@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AppShell } from "@/src/components/app-shell";
 import { UserAvatar } from "@/src/components/user-avatar";
+import { AccountDeleteCard } from "@/src/components/settings/account-delete-card";
 import { DatingSettingsCard } from "@/src/components/settings/dating-settings-card";
 import { SuggestionLearningCard } from "@/src/components/settings/suggestion-learning-card";
 import { SuggestionSettingsCard, type SuggestionSettingsForm } from "@/src/components/settings/suggestion-settings-card";
@@ -75,7 +76,9 @@ export function SettingsPage({
   const [data, setData] = useState<SettingsPayload>(emptySettings);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [suggestionForm, setSuggestionForm] = useState<SuggestionSettingsForm>(emptySettings.settings);
 
   const dating = useDatingSettings();
@@ -137,6 +140,35 @@ export function SettingsPage({
   async function saveDatingSettings(event: React.FormEvent) {
     event.preventDefault();
     await dating.save();
+  }
+
+  async function deleteAccount() {
+    const confirmed = window.confirm(
+      "Möchtest du deinen Account wirklich endgültig löschen? Dabei entfernt Realite auch alle von Realite angelegten Kalendereinträge."
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setDeleteBusy(true);
+    setDeleteError(null);
+
+    try {
+      const response = await fetch("/api/settings/account", {
+        method: "DELETE"
+      });
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Account konnte nicht gelöscht werden");
+      }
+
+      window.location.href = "/";
+    } catch (accountDeleteError) {
+      setDeleteError(accountDeleteError instanceof Error ? accountDeleteError.message : "Unbekannter Fehler");
+    } finally {
+      setDeleteBusy(false);
+    }
   }
 
   return (
@@ -209,6 +241,8 @@ export function SettingsPage({
           onFormChange={dating.setForm}
           onSubmit={saveDatingSettings}
         />
+
+        <AccountDeleteCard busy={deleteBusy} error={deleteError} onDelete={deleteAccount} />
       </main>
     </AppShell>
   );

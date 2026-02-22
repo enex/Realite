@@ -17,9 +17,11 @@ In der Gruppenansicht kannst du:
 
 - neue Gruppen anlegen
 - Personen per E-Mail hinzufügen
-- Einladungslink teilen
-- Hashtags ändern
-- Events direkt in der Gruppe erstellen
+- Einladungslink teilen (über **Aktionen** in der oberen Gruppen-Karte)
+- Hashtags ändern (über **Aktionen** in der oberen Gruppen-Karte)
+- Gruppen als Besitzer löschen oder synchronisierte Gruppen ein-/ausblenden (über **Aktionen**)
+- synchronisierte Google-Kontaktgruppen direkt in Google Kontakte öffnen und dort bearbeiten (über **Aktionen**)
+- bei synchronisierten Google-Kontaktgruppen über das Sync-Symbol eine manuelle Synchronisierung starten
 
 ## Smarte Gruppe `#date`
 

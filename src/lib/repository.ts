@@ -381,6 +381,23 @@ export async function getUserById(userId: string) {
   return user ?? null;
 }
 
+export async function deleteUserById(userId: string) {
+  const db = getDb();
+  const [deleted] = await db
+    .delete(users)
+    .where(eq(users.id, userId))
+    .returning({ id: users.id });
+
+  return deleted ?? null;
+}
+
+export async function deleteGroupContactsByEmail(email: string) {
+  const db = getDb();
+  const normalizedEmail = normalizeEmail(email);
+
+  await db.delete(groupContacts).where(sql`lower(${groupContacts.email}) = ${normalizedEmail}`);
+}
+
 export async function upsertGoogleConnection(input: {
   userId: string;
   accessToken: string;
@@ -2065,6 +2082,20 @@ export async function listSuggestionStatesForUser(userId: string) {
     .where(eq(suggestions.userId, userId));
 
   return rows;
+}
+
+export async function listSuggestionCalendarRefsForUser(userId: string) {
+  const db = getDb();
+  const rows = await db
+    .select({
+      calendarEventId: suggestions.calendarEventId
+    })
+    .from(suggestions)
+    .where(eq(suggestions.userId, userId));
+
+  return rows
+    .map((row) => row.calendarEventId?.trim() ?? "")
+    .filter((calendarEventId): calendarEventId is string => Boolean(calendarEventId));
 }
 
 export async function getAutoInsertedSuggestionCountForUser(userId: string) {

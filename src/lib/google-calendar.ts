@@ -1100,6 +1100,9 @@ export async function removeSuggestionCalendarEvent(input: {
     )
   );
 
+  let sawNotFound = false;
+  let sawForbidden = false;
+
   for (const calendarId of candidateCalendars) {
     const response = await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(parsed.eventId)}`,
@@ -1115,9 +1118,19 @@ export async function removeSuggestionCalendarEvent(input: {
       return true;
     }
 
-    if (response.status === 404 || response.status === 403) {
+    if (response.status === 404) {
+      sawNotFound = true;
       continue;
     }
+
+    if (response.status === 403) {
+      sawForbidden = true;
+      continue;
+    }
+  }
+
+  if (sawNotFound && !sawForbidden) {
+    return true;
   }
 
   return false;
