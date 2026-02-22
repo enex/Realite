@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
 import { UserAvatar } from "@/src/components/user-avatar";
+import { captureProductEvent } from "@/src/lib/posthog/capture";
 
 type GroupContact = {
   groupId: string;
@@ -167,9 +168,26 @@ export function GroupsPage({
         })
       });
 
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as {
+        error?: string;
+        group?: {
+          id: string;
+          visibility: "public" | "private";
+          hashtags: string[];
+          syncProvider: string | null;
+        };
+      };
       if (!response.ok) {
         throw new Error(payload.error ?? "Gruppe konnte nicht erstellt werden");
+      }
+
+      if (payload.group) {
+        captureProductEvent("group_created", {
+          group_id: payload.group.id,
+          visibility: payload.group.visibility,
+          hashtag_count: payload.group.hashtags.length,
+          sync_provider: payload.group.syncProvider ?? "none"
+        });
       }
 
       setGroupForm({ name: "", description: "", hashtags: "#alle", visibility: "private" });

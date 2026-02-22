@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
 import { UserAvatar } from "@/src/components/user-avatar";
+import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
 type Suggestion = {
@@ -186,7 +187,11 @@ export function SuggestionsPage({
     }
   }
 
-  async function decideSuggestion(suggestionId: string, decision: "accepted" | "declined") {
+  async function decideSuggestion(
+    suggestionId: string,
+    decision: "accepted" | "declined",
+    source: "suggestions_page" | "query_auto" = "suggestions_page"
+  ) {
     setBusy(true);
     setError(null);
 
@@ -200,6 +205,13 @@ export function SuggestionsPage({
       const payload = (await response.json()) as { error?: string };
       if (!response.ok) {
         throw new Error(payload.error ?? "Feedback konnte nicht gespeichert werden");
+      }
+
+      if (decision === "accepted") {
+        captureProductEvent("suggestion_accepted", {
+          suggestion_id: suggestionId,
+          source
+        });
       }
 
       await loadData({ silent: true });
@@ -228,7 +240,7 @@ export function SuggestionsPage({
     const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}`;
     window.history.replaceState(null, "", nextUrl);
 
-    void decideSuggestion(selectedSuggestionId, queryDecision);
+    void decideSuggestion(selectedSuggestionId, queryDecision, "query_auto");
   }, [autoDecisionHandled, busy, data.suggestions, loading, queryDecision, searchParams, selectedSuggestionId]);
 
   return (

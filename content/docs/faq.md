@@ -182,6 +182,19 @@ Realite fasst mehrere E-Mail-Adressen derselben Kontaktperson zu einem Eintrag z
 - der Kontakt wird nur einmal gezählt
 - die E-Mail-Adressen werden kommagetrennt dargestellt
 
+## Nutzt Realite Analytics, Session Replay und Feature Flags?
+
+Ja. Realite nutzt PostHog für:
+
+- Produkt-Analytics (z. B. welche Bereiche häufig genutzt werden)
+- Session Replay zur Fehleranalyse und Verbesserung der Bedienung
+- Feature Flags, um neue Funktionen kontrolliert auszurollen
+
+Wichtig:
+
+- Realite respektiert die Browser-Einstellung `Do Not Track`.
+- Details zur Datenverarbeitung findest du unter **Datenschutz**.
+
 ## Wo finde ich Datenschutz, AGB und Impressum?
 
 Die rechtlichen Seiten findest du jederzeit im Footer:

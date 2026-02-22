@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/components/app-shell";
 import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
 import { UserAvatar } from "@/src/components/user-avatar";
+import { captureProductEvent } from "@/src/lib/posthog/capture";
+import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
 type Group = {
@@ -161,6 +163,7 @@ export function Dashboard({
   const profileName = data.me.name ?? userName;
   const profileEmail = data.me.email || userEmail;
   const profileImage = data.me.image ?? userImage;
+  const smartMeetingsEnabled = useRealiteFeatureFlag("smart-meetings", true);
 
   async function loadData(options?: { silent?: boolean }) {
     const silent = options?.silent ?? false;
@@ -236,9 +239,28 @@ export function Dashboard({
         })
       });
 
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as {
+        error?: string;
+        event?: {
+          id: string;
+          visibility: "public" | "group";
+          groupId: string | null;
+          tags: string[];
+          startsAt: string;
+          endsAt: string;
+        };
+      };
       if (!response.ok) {
         throw new Error(payload.error ?? "Event konnte nicht erstellt werden");
+      }
+
+      if (payload.event) {
+        captureProductEvent("event_created", {
+          event_id: payload.event.id,
+          visibility: payload.event.visibility,
+          has_group: Boolean(payload.event.groupId),
+          tag_count: payload.event.tags.length
+        });
       }
 
       setEventForm({
@@ -416,14 +438,16 @@ export function Dashboard({
           </form>
         ) : null}
 
-        <SmartMeetingsCard
-          groups={visibleGroups}
-          smartMeetings={data.smartMeetings}
-          onCreated={async () => {
-            await loadData({ silent: true });
-          }}
-          onError={(message) => setError(message)}
-        />
+        {smartMeetingsEnabled ? (
+          <SmartMeetingsCard
+            groups={visibleGroups}
+            smartMeetings={data.smartMeetings}
+            onCreated={async () => {
+              await loadData({ silent: true });
+            }}
+            onError={(message) => setError(message)}
+          />
+        ) : null}
 
         <section id="events" className="mt-8 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">Alle sichtbaren Events</h2>

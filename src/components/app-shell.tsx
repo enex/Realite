@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import posthog from "posthog-js";
 
 import { UserAvatar } from "@/src/components/user-avatar";
 
@@ -41,6 +43,15 @@ function isItemActive(pathname: string, href: string) {
 
 export function AppShell({ user, children }: AppShellProps) {
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (!user.email) return;
+
+    posthog.identify(user.email, {
+      email: user.email,
+      name: user.name
+    });
+  }, [user.email, user.name]);
 
   return (
     <div className="min-h-screen">

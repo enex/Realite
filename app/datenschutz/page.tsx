@@ -13,7 +13,7 @@ export default function DatenschutzPage() {
       label="Rechtliches"
       title="Datenschutzerklärung"
       summary="Diese Datenschutzhinweise erklären, welche personenbezogenen Daten bei der Nutzung von Realite verarbeitet werden."
-      updatedAt="21. Februar 2026"
+      updatedAt="22. Februar 2026"
     >
       <section>
         <h2>1. Verantwortlicher</h2>
@@ -34,6 +34,7 @@ export default function DatenschutzPage() {
           <li>Kontaktdaten aus Google Contacts, wenn die Kontakte-Synchronisierung aktiv ist</li>
           <li>Inhalte, die du in Realite anlegst (Gruppen, Events, Tags, Vorschlags-Feedback)</li>
           <li>Technische Protokolldaten zur Stabilität und Sicherheit der App</li>
+          <li>Nutzungsdaten für Produktanalyse, Feature Flags und Session Replay (PostHog)</li>
         </ul>
       </section>
 
@@ -43,6 +44,7 @@ export default function DatenschutzPage() {
           <li>Bereitstellung von Login, Kontoverwaltung und personalisierten Funktionen</li>
           <li>Abgleich von Verfügbarkeit und passenden Event-Vorschlägen</li>
           <li>Pflege deiner Gruppen, Kontakte und Einladungen innerhalb von Realite</li>
+          <li>Produktverbesserung durch Analyse von Nutzungsmustern und Fehlerbildern</li>
           <li>Missbrauchserkennung, Fehleranalyse und Betriebssicherheit</li>
         </ul>
       </section>
@@ -69,7 +71,8 @@ export default function DatenschutzPage() {
         <h2>6. Empfänger und Auftragsverarbeitung</h2>
         <p>
           Daten werden nur an Dienstleister weitergegeben, die für den Betrieb notwendig sind (z. B. Hosting, Datenbank,
-          Authentifizierung, Google APIs). Eine Nutzung zu Werbezwecken durch uns findet nicht statt.
+          Authentifizierung, Google APIs, PostHog für Analytics/Feature Flags/Session Replay). Eine Nutzung zu
+          Werbezwecken durch uns findet nicht statt.
         </p>
       </section>
 

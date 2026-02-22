@@ -44,6 +44,16 @@ Dann Werte in `.env.local` setzen:
 - `GOOGLE_CLIENT_SECRET`
 - `BETTER_AUTH_SECRET`
 - `BETTER_AUTH_URL=http://localhost:3000`
+- `NEXT_PUBLIC_POSTHOG_KEY` (Projekt-API-Key aus PostHog)
+- `NEXT_PUBLIC_POSTHOG_HOST` (z. B. `https://eu.i.posthog.com` oder `https://us.i.posthog.com`)
+
+## 3.1) PostHog: Analytics, Session Replay und Feature Flags
+
+Die App initialisiert PostHog clientseitig über `instrumentation-client.ts`.
+
+- Analytics und Session Replay laufen nach erfolgreicher Initialisierung automatisch.
+- Eingeloggte Nutzer werden über ihre E-Mail identifiziert.
+- Feature Flags können in Komponenten über `useRealiteFeatureFlag(...)` genutzt werden.
 
 ## 4) Migrationen
 

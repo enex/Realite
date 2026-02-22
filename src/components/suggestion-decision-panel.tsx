@@ -7,6 +7,7 @@ import {
   DECLINE_REASON_VALUES,
   type DeclineReason
 } from "@/src/lib/suggestion-feedback";
+import { captureProductEvent } from "@/src/lib/posthog/capture";
 
 type SuggestionDecisionPanelProps = {
   suggestionId: string;
@@ -66,6 +67,13 @@ export function SuggestionDecisionPanel(props: SuggestionDecisionPanelProps) {
       const payload = (await response.json()) as { error?: string };
       if (!response.ok) {
         throw new Error(payload.error ?? "Entscheidung konnte nicht gespeichert werden");
+      }
+
+      if (decision === "accepted") {
+        captureProductEvent("suggestion_accepted", {
+          suggestion_id: props.suggestionId,
+          source: "decision_panel"
+        });
       }
 
       setStatus(decision);
