@@ -10,9 +10,9 @@ Ein Event besteht aus:
 - Sichtbarkeit
 - Hashtags
 
-## Smart Meetings (automatische Terminfindung)
+## Smart Treffen (automatische Terminfindung)
 
-Mit **Smart Meetings** sucht Realite automatisch den besten Zeitpunkt für eine Gruppe und lädt die Teilnehmer direkt ein.
+Mit **Smart Treffen** sucht Realite automatisch den besten Zeitpunkt für eine Gruppe und lädt die Teilnehmer direkt ein.
 
 Du legst fest:
 
@@ -36,9 +36,9 @@ Lernen über Zeit:
 - Absagen und fehlende Antworten senken die künftige Priorität.
 - Dadurch werden spätere Vorschläge pro Gruppe robuster.
 
-## Smart Meeting per Titel-Shortcut bei normalen Events
+## Smart Treffen per Titel-Shortcut bei normalen Events
 
-Du kannst normale Event-Erstellung mit Shortcuts im Titel direkt an Smart Meetings übergeben.
+Du kannst normale Event-Erstellung mit Shortcuts im Titel direkt an Smart Treffen übergeben.
 
 Beispiele:
 

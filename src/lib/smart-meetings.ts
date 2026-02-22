@@ -625,7 +625,7 @@ async function insertRunForPlan(input: {
   if (!calendarEventId) {
     await deleteEventsByIds([event.id]);
     throw new SmartMeetingValidationError(
-      "Smart-Meeting benötigt einen verbundenen Google Kalender mit Schreibrechten."
+      "Smart-Treffen benötigt einen verbundenen Google Kalender mit Schreibrechten."
     );
   }
 

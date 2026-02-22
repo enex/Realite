@@ -738,7 +738,7 @@ export async function insertGroupMeetingIntoCalendar(input: {
       }
 
       throw new Error(
-        `Smart-Meeting konnte nicht im Kalender erstellt werden (${response.status})${details ? `: ${details}` : ""}`
+        `Smart-Treffen konnte nicht im Kalender erstellt werden (${response.status})${details ? `: ${details}` : ""}`
       );
     }
 
@@ -748,7 +748,7 @@ export async function insertGroupMeetingIntoCalendar(input: {
 
   if (lastFailure) {
     throw new Error(
-      `Smart-Meeting konnte nicht im Kalender erstellt werden (${lastFailure.status})${
+      `Smart-Treffen konnte nicht im Kalender erstellt werden (${lastFailure.status})${
         lastFailure.details ? `: ${lastFailure.details}` : ""
       }`
     );

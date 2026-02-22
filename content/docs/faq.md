@@ -8,7 +8,7 @@ Mit Google Kalender erstellst du einen Termin und lädst konkret bestimmte Leute
 - **Echte Verfügbarkeit**: Realite liest deinen Kalender. Termine mit **Beschäftigt** blockieren Zeitfenster; nur freie Slots werden für Vorschläge genutzt. Beim klassischen Einladen weiß der Kalender nicht, ob die anderen überhaupt können.
 - **Zentraler Zusage-/Absage-Flow**: Zu- und Absage laufen über Realite. Absage-Gründe (keine Zeit, nicht diese Aktivität, nicht mit dieser Person) verbessern künftige Vorschläge und Blocklisten. Bei einer einfachen Kalender-Einladung verschwinden Absagen im Postfach und werden nicht genutzt.
 - **Gruppen und Sichtbarkeit**: Du steuerst, wer ein Event überhaupt sieht (öffentlich vs. nur eine Gruppe). So bleiben private Runden privat und thematische Kreise getrennt – ohne für jede Runde manuell die gleichen Leute einzuladen.
-- **Smart Meetings (optional)**: Mindestteilnehmer, Fristen und automatische Neuversuche. Realite kann den Termin entfernen und einen neuen vorschlagen, wenn bis zur Frist zu wenige zusagen – das geht mit reinem Kalender-Einladen nicht.
+- **Smart Treffen (optional)**: Mindestteilnehmer, Fristen und automatische Neuversuche. Realite kann den Termin entfernen und einen neuen vorschlagen, wenn bis zur Frist zu wenige zusagen – das geht mit reinem Kalender-Einladen nicht.
 
 Kurz: Google Kalender bleibt deine Quelle für Termine und Verfügbarkeit. Realite nutzt das und übernimmt das **Finden passender Termine**, **zielgerichtetes Anzeigen** und **gelernte Zusage-/Absage-Logik**, damit du weniger planen und mehr treffen kannst.
 
@@ -94,9 +94,9 @@ In **Profil & Einstellungen** unter **Vorschlags-Einstellungen**:
 
 Realite priorisiert dann die bestbewerteten passenden Optionen innerhalb dieser Limits.
 
-## Wie nutze ich Smart Meetings schnell aus der normalen Event-Erstellung?
+## Wie nutze ich Smart Treffen schnell aus der normalen Event-Erstellung?
 
-Du kannst Smart-Meeting-Parameter direkt in den Titel schreiben.
+Du kannst Smart-Treffen-Parameter direkt in den Titel schreiben.
 
 Beispiel:
 
@@ -112,9 +112,9 @@ Wichtige Shortcuts:
 
 Hinweis:
 
-- Für Smart-Meeting-Shortcuts muss eine Gruppe ausgewählt sein.
+- Für Smart-Treffen-Shortcuts muss eine Gruppe ausgewählt sein.
 
-## Warum wurde mein Smart Meeting automatisch entfernt?
+## Warum wurde mein Smart Treffen automatisch entfernt?
 
 Realite entfernt den aktiven Termin automatisch, wenn:
 

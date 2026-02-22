@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    const message = error instanceof Error ? error.message : "Smart-Meeting konnte nicht erstellt werden";
+    const message = error instanceof Error ? error.message : "Smart-Treffen konnte nicht erstellt werden";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

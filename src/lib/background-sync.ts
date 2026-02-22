@@ -101,7 +101,7 @@ export function triggerDashboardBackgroundSync(userId: string, options?: { force
     try {
       smartStats = await syncSmartMeetingsForUser(userId);
     } catch (error) {
-      smartWarning = error instanceof Error ? error.message : "Smart-Meeting-Sync fehlgeschlagen";
+      smartWarning = error instanceof Error ? error.message : "Smart-Treffen-Sync fehlgeschlagen";
     }
 
     state.warning = warning;

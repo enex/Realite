@@ -126,7 +126,7 @@ export function SmartMeetingsCard({
       const payload = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        throw new Error(payload.error ?? "Smart-Meeting konnte nicht erstellt werden");
+        throw new Error(payload.error ?? "Smart-Treffen konnte nicht erstellt werden");
       }
 
       setForm((state) => ({
@@ -137,7 +137,7 @@ export function SmartMeetingsCard({
       setExpanded(false);
       await onCreated();
     } catch (error) {
-      onError(error instanceof Error ? error.message : "Smart-Meeting konnte nicht erstellt werden");
+      onError(error instanceof Error ? error.message : "Smart-Treffen konnte nicht erstellt werden");
     } finally {
       setBusy(false);
     }
@@ -147,7 +147,7 @@ export function SmartMeetingsCard({
     <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Smart Meetings</h2>
+          <h2 className="text-lg font-semibold text-slate-900">Smart Treffen</h2>
           <p className="mt-1 text-sm text-slate-600">
             Realite sucht den besten Zeitpunkt in deinem Fenster, lädt die Gruppe ein und prüft die Mindestzusagen.
           </p>
@@ -156,7 +156,7 @@ export function SmartMeetingsCard({
           onClick={() => setExpanded((current) => !current)}
           className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
         >
-          {expanded ? "Planer schließen" : "Smart Meeting planen"}
+          {expanded ? "Planer schließen" : "Smart Treffen planen"}
         </button>
       </div>
 
@@ -295,17 +295,17 @@ export function SmartMeetingsCard({
             disabled={busy}
             className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
           >
-            Smart Meeting starten
+            Smart Treffen starten
           </button>
           <p className="text-xs text-slate-500">
             Shortcut für normale Events: `!min=3 !frist=24h !fenster=24h` direkt im Titel. Dann wird das Event automatisch als
-            Smart Meeting geplant.
+            Smart Treffen geplant.
           </p>
         </form>
       ) : null}
 
       <div className="mt-4 space-y-2">
-        {smartMeetings.length === 0 ? <p className="text-sm text-slate-500">Noch keine Smart Meetings vorhanden.</p> : null}
+        {smartMeetings.length === 0 ? <p className="text-sm text-slate-500">Noch keine Smart Treffen vorhanden.</p> : null}
         {smartMeetings.map((meeting) => (
           <article key={meeting.id} className="rounded-lg border border-slate-200 p-3">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">

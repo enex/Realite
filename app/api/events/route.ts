@@ -66,7 +66,7 @@ export async function POST(request: Request) {
     if (shortcuts.enabled) {
       if (!parsed.data.groupId) {
         return NextResponse.json(
-          { error: "Smart-Meeting-Shortcut benötigt eine ausgewählte Gruppe." },
+          { error: "Smart-Treffen-Shortcut benötigt eine ausgewählte Gruppe." },
           { status: 400 }
         );
       }

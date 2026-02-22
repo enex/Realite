@@ -348,7 +348,7 @@ export function Dashboard({
         ) : null}
         {data.sync.smartWarning ? (
           <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-            Smart-Meeting Warnung: {data.sync.smartWarning}
+            Smart-Treffen-Warnung: {data.sync.smartWarning}
           </div>
         ) : null}
         {data.sync.revalidating ? (
@@ -398,7 +398,7 @@ export function Dashboard({
                 </p>
               ) : null}
               <p className="text-xs text-slate-500">
-                Smart-Meeting Shortcut im Titel: `!min=3 !frist=24h !fenster=24h` (setzt Mindestzusagen, Frist und Suchfenster).
+                Smart-Treffen-Shortcut im Titel: `!min=3 !frist=24h !fenster=24h` (setzt Mindestzusagen, Frist und Suchfenster).
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <select
