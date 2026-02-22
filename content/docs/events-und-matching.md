@@ -10,6 +10,51 @@ Ein Event besteht aus:
 - Sichtbarkeit
 - Hashtags
 
+## Smart Meetings (automatische Terminfindung)
+
+Mit **Smart Meetings** sucht Realite automatisch den besten Zeitpunkt für eine Gruppe und lädt die Teilnehmer direkt ein.
+
+Du legst fest:
+
+- welche Gruppe eingeladen wird
+- wie viele Zusagen mindestens nötig sind
+- in welchem Suchfenster Realite Zeiten prüfen soll
+- wie lange auf Zusagen gewartet wird
+- wie viele neue Vorschläge Realite maximal versuchen soll
+
+So läuft es:
+
+1. Realite bewertet mögliche Zeitfenster im Suchbereich.
+2. Dabei werden Verfügbarkeiten, bisherige Interessen-Signale und frühere Zu-/Absagen der Teilnehmer berücksichtigt.
+3. Der beste Termin wird in deinen Kalender eingetragen und die Gruppe wird eingeladen.
+4. Wird die Mindestzahl bis zur Frist nicht erreicht (oder alle sagen ab), entfernt Realite den Termin wieder.
+5. Danach erzeugt Realite automatisch einen neuen Vorschlag (bis zum eingestellten Versuchslimit).
+
+Lernen über Zeit:
+
+- Zusagen verbessern die Wahrscheinlichkeit für ähnliche Slots/Teilnehmer.
+- Absagen und fehlende Antworten senken die künftige Priorität.
+- Dadurch werden spätere Vorschläge pro Gruppe robuster.
+
+## Smart Meeting per Titel-Shortcut bei normalen Events
+
+Du kannst normale Event-Erstellung mit Shortcuts im Titel direkt an Smart Meetings übergeben.
+
+Beispiele:
+
+- `Team Dinner !min=4 !frist=24h !fenster=24h`
+- `Padel Runde !min3 !versuche=2`
+
+Bedeutung:
+
+- `!min=4` oder `!min4`: Mindestzusagen
+- `!frist=24h`: Zeit bis zur automatischen Bewertung/Absage
+- `!fenster=24h`: Suchfenster ab dem eingegebenen Startzeitpunkt
+- `!versuche=2`: maximale Anzahl automatischer Neuversuche
+- `!interval=30m`: Slot-Abstand für die Suche
+
+Die Shortcut-Tokens werden nicht als Teil des finalen Termintitels verwendet.
+
 ## Hashtags richtig nutzen
 
 - `#alle`: Event ist allgemein sichtbar

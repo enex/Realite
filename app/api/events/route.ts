@@ -3,6 +3,8 @@ import { z } from "zod";
 
 import { triggerDashboardBackgroundSync } from "@/src/lib/background-sync";
 import { createEvent, listVisibleEventsForUser, RepositoryValidationError } from "@/src/lib/repository";
+import { parseSmartMeetingShortcuts } from "@/src/lib/smart-meeting-shortcuts";
+import { SmartMeetingValidationError, createSmartMeetingPlanWithInitialRun } from "@/src/lib/smart-meetings";
 import { requireAppUser } from "@/src/lib/session";
 
 const createEventSchema = z.object({
@@ -60,6 +62,45 @@ export async function POST(request: Request) {
   }
 
   try {
+    const shortcuts = parseSmartMeetingShortcuts(parsed.data.title);
+    if (shortcuts.enabled) {
+      if (!parsed.data.groupId) {
+        return NextResponse.json(
+          { error: "Smart-Meeting-Shortcut benötigt eine ausgewählte Gruppe." },
+          { status: 400 }
+        );
+      }
+
+      const durationMinutes = Math.max(15, Math.round((endsAt.getTime() - startsAt.getTime()) / 60_000));
+      const searchWindowHours = shortcuts.searchWindowHours ?? 24;
+      const searchWindowEnd = new Date(startsAt.getTime() + searchWindowHours * 60 * 60 * 1000);
+
+      const smartMeeting = await createSmartMeetingPlanWithInitialRun({
+        userId: user.id,
+        groupId: parsed.data.groupId,
+        title: shortcuts.cleanedTitle || parsed.data.title,
+        description: parsed.data.description,
+        location: parsed.data.location,
+        tags: parsed.data.tags,
+        durationMinutes,
+        minAcceptedParticipants: shortcuts.minAcceptedParticipants ?? 2,
+        responseWindowHours: shortcuts.responseWindowHours ?? 24,
+        searchWindowStart: startsAt,
+        searchWindowEnd,
+        slotIntervalMinutes: shortcuts.slotIntervalMinutes ?? 30,
+        maxAttempts: shortcuts.maxAttempts ?? 3
+      });
+
+      return NextResponse.json({
+        smartMeeting: {
+          ...smartMeeting,
+          startsAt: smartMeeting.startsAt.toISOString(),
+          endsAt: smartMeeting.endsAt.toISOString()
+        },
+        mode: "smart_meeting_shortcut"
+      });
+    }
+
     const event = await createEvent({
       userId: user.id,
       title: parsed.data.title,
@@ -74,7 +115,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ event });
   } catch (error) {
-    if (error instanceof RepositoryValidationError) {
+    if (error instanceof RepositoryValidationError || error instanceof SmartMeetingValidationError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 

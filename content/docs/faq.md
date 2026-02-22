@@ -78,6 +78,35 @@ In **Profil & Einstellungen** unter **Vorschlags-Einstellungen**:
 
 Realite priorisiert dann die bestbewerteten passenden Optionen innerhalb dieser Limits.
 
+## Wie nutze ich Smart Meetings schnell aus der normalen Event-Erstellung?
+
+Du kannst Smart-Meeting-Parameter direkt in den Titel schreiben.
+
+Beispiel:
+
+- `Projekt-Checkin !min=3 !frist=24h !fenster=24h`
+
+Wichtige Shortcuts:
+
+- `!min=3` oder `!min3`: benötigte Mindestzusagen
+- `!frist=24h`: Frist für Zusagen
+- `!fenster=24h`: Suchfenster für Terminfindung
+- `!versuche=3`: maximale automatische Neuversuche
+- `!interval=30m`: Abstand der geprüften Zeitslots
+
+Hinweis:
+
+- Für Smart-Meeting-Shortcuts muss eine Gruppe ausgewählt sein.
+
+## Warum wurde mein Smart Meeting automatisch entfernt?
+
+Realite entfernt den aktiven Termin automatisch, wenn:
+
+- bis zur gesetzten Frist die Mindestteilnehmerzahl nicht erreicht wurde oder
+- alle eingeladenen Teilnehmer abgesagt haben.
+
+Danach erstellt Realite automatisch einen neuen Vorschlag, solange noch Versuche verfügbar sind.
+
 ## Wie lösche ich meinen Account?
 
 In **Profil & Einstellungen** findest du unten den Bereich **Account löschen**.

@@ -29,6 +29,23 @@ export const suggestionStatusEnum = pgEnum("suggestion_status", [
   "accepted",
   "declined",
 ]);
+export const smartMeetingPlanStatusEnum = pgEnum("smart_meeting_plan_status", [
+  "active",
+  "secured",
+  "exhausted",
+  "paused",
+]);
+export const smartMeetingRunStatusEnum = pgEnum("smart_meeting_run_status", [
+  "pending",
+  "secured",
+  "expired",
+  "cancelled",
+]);
+export const smartMeetingResponseEnum = pgEnum("smart_meeting_response", [
+  "accepted",
+  "declined",
+  "no_response",
+]);
 
 export const users = pgTable(
   "users",
@@ -281,4 +298,102 @@ export const tagPreferences = pgTable(
       .notNull(),
   },
   (table) => [uniqueIndex().on(table.userId, table.tag)],
+);
+
+export const smartMeetingPlans = pgTable(
+  "smart_meeting_plans",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    createdBy: uuid("created_by")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    description: text("description"),
+    location: text("location"),
+    tags: text("tags").notNull().default(""),
+    durationMinutes: integer("duration_minutes").notNull(),
+    minAcceptedParticipants: integer("min_accepted_participants").notNull(),
+    responseWindowHours: integer("response_window_hours").notNull().default(24),
+    slotIntervalMinutes: integer("slot_interval_minutes").notNull().default(30),
+    maxAttempts: integer("max_attempts").notNull().default(3),
+    searchWindowStart: timestamp("search_window_start", { withTimezone: true }).notNull(),
+    searchWindowEnd: timestamp("search_window_end", { withTimezone: true }).notNull(),
+    status: smartMeetingPlanStatusEnum("status").notNull().default("active"),
+    latestRunId: uuid("latest_run_id"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index().on(table.createdBy), index().on(table.groupId), index().on(table.status)],
+);
+
+export const smartMeetingRuns = pgTable(
+  "smart_meeting_runs",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    planId: uuid("plan_id")
+      .notNull()
+      .references(() => smartMeetingPlans.id, { onDelete: "cascade" }),
+    attempt: integer("attempt").notNull(),
+    eventId: uuid("event_id").references(() => events.id, { onDelete: "set null" }),
+    startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+    endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+    responseDeadlineAt: timestamp("response_deadline_at", { withTimezone: true }).notNull(),
+    calendarEventId: text("calendar_event_id"),
+    invitedEmails: text("invited_emails").notNull().default(""),
+    participantCount: integer("participant_count").notNull().default(0),
+    acceptedCount: integer("accepted_count").notNull().default(0),
+    declinedCount: integer("declined_count").notNull().default(0),
+    pendingCount: integer("pending_count").notNull().default(0),
+    status: smartMeetingRunStatusEnum("status").notNull().default("pending"),
+    statusReason: text("status_reason"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex().on(table.planId, table.attempt),
+    index().on(table.planId),
+    index().on(table.status),
+    index().on(table.responseDeadlineAt),
+  ],
+);
+
+export const smartMeetingMemberStats = pgTable(
+  "smart_meeting_member_stats",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    ownerUserId: uuid("owner_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    registeredUserId: uuid("registered_user_id").references(() => users.id, { onDelete: "set null" }),
+    acceptCount: integer("accept_count").notNull().default(0),
+    declineCount: integer("decline_count").notNull().default(0),
+    noResponseCount: integer("no_response_count").notNull().default(0),
+    lastResponse: smartMeetingResponseEnum("last_response"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex().on(table.ownerUserId, table.groupId, table.email),
+    index().on(table.ownerUserId, table.groupId),
+    index().on(table.registeredUserId),
+  ],
 );

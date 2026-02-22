@@ -1,5 +1,6 @@
 import { syncPublicEventsFromGoogleCalendar } from "@/src/lib/google-calendar";
 import { syncGoogleContactsToGroups } from "@/src/lib/google-contacts";
+import { type SmartMeetingSyncStats, syncSmartMeetingsForUser } from "@/src/lib/smart-meetings";
 
 type SyncState = {
   running: boolean;
@@ -9,6 +10,8 @@ type SyncState = {
   stats: { synced: number; scanned: number } | null;
   contactsWarning: string | null;
   contactsStats: { syncedGroups: number; syncedMembers: number; scannedContacts: number } | null;
+  smartWarning: string | null;
+  smartStats: SmartMeetingSyncStats | null;
   inFlight: Promise<void> | null;
 };
 
@@ -20,6 +23,8 @@ type SyncSnapshot = {
   stats: { synced: number; scanned: number } | null;
   contactsWarning: string | null;
   contactsStats: { syncedGroups: number; syncedMembers: number; scannedContacts: number } | null;
+  smartWarning: string | null;
+  smartStats: SmartMeetingSyncStats | null;
 };
 
 const DASHBOARD_SYNC_INTERVAL_MS = 90_000;
@@ -39,6 +44,8 @@ function getOrCreateSyncState(userId: string): SyncState {
     stats: null,
     contactsWarning: null,
     contactsStats: null,
+    smartWarning: null,
+    smartStats: null,
     inFlight: null
   };
 
@@ -76,6 +83,8 @@ export function triggerDashboardBackgroundSync(userId: string, options?: { force
     let stats: { synced: number; scanned: number } | null = null;
     let contactsWarning: string | null = null;
     let contactsStats: { syncedGroups: number; syncedMembers: number; scannedContacts: number } | null = null;
+    let smartWarning: string | null = null;
+    let smartStats: SmartMeetingSyncStats | null = null;
 
     try {
       stats = await syncPublicEventsFromGoogleCalendar(userId);
@@ -89,10 +98,18 @@ export function triggerDashboardBackgroundSync(userId: string, options?: { force
       contactsWarning = error instanceof Error ? error.message : "Kontakte-Sync fehlgeschlagen";
     }
 
+    try {
+      smartStats = await syncSmartMeetingsForUser(userId);
+    } catch (error) {
+      smartWarning = error instanceof Error ? error.message : "Smart-Meeting-Sync fehlgeschlagen";
+    }
+
     state.warning = warning;
     state.stats = stats;
     state.contactsWarning = contactsWarning;
     state.contactsStats = contactsStats;
+    state.smartWarning = smartWarning;
+    state.smartStats = smartStats;
     state.lastCompletedAt = Date.now();
   })()
     .finally(() => {
@@ -111,6 +128,8 @@ export function getDashboardSyncSnapshot(userId: string): SyncSnapshot {
     warning: state.warning,
     stats: state.stats,
     contactsWarning: state.contactsWarning,
-    contactsStats: state.contactsStats
+    contactsStats: state.contactsStats,
+    smartWarning: state.smartWarning,
+    smartStats: state.smartStats
   };
 }

@@ -74,10 +74,10 @@ export function AppShell({ user, children }: AppShellProps) {
 
           <Link
             href="/settings"
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2.5 py-1.5 transition hover:border-teal-200 hover:bg-teal-50"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white pr-2.5 transition hover:border-teal-200 hover:bg-teal-50"
           >
-            <UserAvatar name={user.name} email={user.email} image={user.image ?? null} size="sm" />
-            <span className="hidden max-w-[11rem] truncate text-sm font-medium text-slate-700 sm:block">
+            <UserAvatar name={user.name} email={user.email} image={user.image ?? null} size="sm" className="-m-px" />
+            <span className="hidden max-w-44 truncate text-sm font-medium text-slate-700 sm:block">
               Mein Profil
             </span>
           </Link>

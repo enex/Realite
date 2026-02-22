@@ -9,6 +9,7 @@ import {
   listSuggestionsForUser,
   listVisibleEventsForUser
 } from "@/src/lib/repository";
+import { listSmartMeetingsForUser } from "@/src/lib/smart-meetings";
 import { requireAppUser } from "@/src/lib/session";
 
 export async function GET() {
@@ -20,13 +21,14 @@ export async function GET() {
   triggerDashboardBackgroundSync(user.id);
   const syncState = getDashboardSyncSnapshot(user.id);
 
-  const [groups, events, suggestions, connection, groupContacts, dating] = await Promise.all([
+  const [groups, events, suggestions, connection, groupContacts, dating, smartMeetings] = await Promise.all([
     listGroupsForUser(user.id),
     listVisibleEventsForUser(user.id),
     listSuggestionsForUser(user.id),
     getGoogleConnection(user.id),
     listGroupContactsForUser(user.id),
-    getDateHashtagStatus(user.id)
+    getDateHashtagStatus(user.id),
+    listSmartMeetingsForUser(user.id)
   ]);
   const ownEmail = user.email.trim().toLowerCase();
 
@@ -67,6 +69,8 @@ export async function GET() {
       stats: syncState.stats,
       contactsWarning: syncState.contactsWarning,
       contactsStats: syncState.contactsStats,
+      smartWarning: syncState.smartWarning,
+      smartStats: syncState.smartStats,
       revalidating: syncState.revalidating,
       lastTriggeredAt: syncState.lastTriggeredAt,
       lastCompletedAt: syncState.lastCompletedAt
@@ -94,6 +98,21 @@ export async function GET() {
       startsAt: suggestion.startsAt.toISOString(),
       endsAt: suggestion.endsAt.toISOString(),
       createdAt: suggestion.createdAt.toISOString()
+    })),
+    smartMeetings: smartMeetings.map((meeting) => ({
+      ...meeting,
+      searchWindowStart: meeting.searchWindowStart.toISOString(),
+      searchWindowEnd: meeting.searchWindowEnd.toISOString(),
+      createdAt: meeting.createdAt.toISOString(),
+      updatedAt: meeting.updatedAt.toISOString(),
+      latestRun: meeting.latestRun
+        ? {
+            ...meeting.latestRun,
+            startsAt: meeting.latestRun.startsAt.toISOString(),
+            endsAt: meeting.latestRun.endsAt.toISOString(),
+            responseDeadlineAt: meeting.latestRun.responseDeadlineAt.toISOString()
+          }
+        : null
     }))
   });
 }
@@ -114,6 +133,8 @@ export async function POST() {
       stats: syncState.stats,
       contactsWarning: syncState.contactsWarning,
       contactsStats: syncState.contactsStats,
+      smartWarning: syncState.smartWarning,
+      smartStats: syncState.smartStats,
       revalidating: syncState.revalidating,
       lastTriggeredAt: syncState.lastTriggeredAt,
       lastCompletedAt: syncState.lastCompletedAt

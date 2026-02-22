@@ -21,6 +21,11 @@ type BusyWindow = {
   end: string;
 };
 
+export type CalendarAttendeeResponse = {
+  email: string;
+  responseStatus: "accepted" | "declined" | "tentative" | "needsAction" | "unknown";
+};
+
 export type WritableGoogleCalendar = {
   id: string;
   summary: string;
@@ -260,6 +265,16 @@ function parseCalendarEventRef(eventRef: string) {
     calendarId: eventRef.split("::")[0] || null,
     eventId: eventRef.split("::").slice(1).join("::")
   };
+}
+
+function normalizeAttendeeEmails(emails: string[]) {
+  return Array.from(
+    new Set(
+      emails
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean)
+    )
+  );
 }
 
 function filterConfiguredCalendarIds(allCalendarIds: string[], configuredIds: string[]) {
@@ -649,6 +664,99 @@ export async function insertSuggestionIntoCalendar(input: {
   return null;
 }
 
+export async function insertGroupMeetingIntoCalendar(input: {
+  userId: string;
+  eventId: string;
+  title: string;
+  description?: string | null;
+  location?: string | null;
+  startsAt: Date;
+  endsAt: Date;
+  attendeeEmails: string[];
+  calendarId?: string;
+}) {
+  const token = await getGoogleAccessToken(input.userId);
+  if (!token) {
+    return null;
+  }
+
+  const preferredCalendarId = input.calendarId?.trim() || "primary";
+  const candidateCalendars = Array.from(new Set([preferredCalendarId, "primary"]));
+  const attendees = normalizeAttendeeEmails(input.attendeeEmails).map((email) => ({
+    email,
+    responseStatus: "needsAction" as const
+  }));
+  const eventUrl = buildRealiteEventUrl(input.eventId);
+  const payload = {
+    summary: buildRealiteCalendarSummary({
+      title: input.title,
+      type: "event" as const
+    }),
+    description: buildRealiteCalendarMetadata({
+      description: sanitizeRealiteCalendarDescription(input.description),
+      url: eventUrl,
+      type: "event"
+    }),
+    location: input.location ?? undefined,
+    start: {
+      dateTime: input.startsAt.toISOString()
+    },
+    end: {
+      dateTime: input.endsAt.toISOString()
+    },
+    attendees,
+    transparency: "opaque",
+    iCalUID: `realite-group-${input.userId}-${input.eventId}@realite.app`,
+    extendedProperties: {
+      private: {
+        realiteEventId: input.eventId,
+        realiteManagedType: "smart_meeting"
+      }
+    }
+  };
+
+  let lastFailure: { status: number; details: string | null } | null = null;
+
+  for (const calendarId of candidateCalendars) {
+    const response = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?sendUpdates=all`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    if (!response.ok) {
+      const details = await readGoogleError(response);
+      lastFailure = { status: response.status, details };
+      if (response.status === 403 || response.status === 404) {
+        continue;
+      }
+
+      throw new Error(
+        `Smart-Meeting konnte nicht im Kalender erstellt werden (${response.status})${details ? `: ${details}` : ""}`
+      );
+    }
+
+    const responsePayload = (await response.json()) as { id?: string };
+    return responsePayload.id ? `${calendarId}::${responsePayload.id}` : null;
+  }
+
+  if (lastFailure) {
+    throw new Error(
+      `Smart-Meeting konnte nicht im Kalender erstellt werden (${lastFailure.status})${
+        lastFailure.details ? `: ${lastFailure.details}` : ""
+      }`
+    );
+  }
+
+  return null;
+}
+
 export async function insertSuggestionAsSourceInvite(input: {
   suggestionId: string;
   targetUserId: string;
@@ -1012,6 +1120,92 @@ export async function ensureSuggestionNonBusyInCalendar(input: {
   }
 
   return false;
+}
+
+export async function getCalendarAttendeeResponses(input: {
+  userId: string;
+  calendarEventRef: string;
+  attendeeEmails: string[];
+}): Promise<CalendarAttendeeResponse[]> {
+  const eventRef = input.calendarEventRef.trim();
+  if (!eventRef) {
+    return [] as CalendarAttendeeResponse[];
+  }
+
+  const token = await getGoogleAccessToken(input.userId);
+  if (!token) {
+    return [] as CalendarAttendeeResponse[];
+  }
+
+  const parsed = parseCalendarEventRef(eventRef);
+  if (!parsed.eventId) {
+    return [] as CalendarAttendeeResponse[];
+  }
+
+  const normalizedEmails = normalizeAttendeeEmails(input.attendeeEmails);
+  if (!normalizedEmails.length) {
+    return [] as CalendarAttendeeResponse[];
+  }
+
+  const candidateCalendars = Array.from(
+    new Set(
+      [parsed.calendarId, "primary"]
+        .map((value) => value?.trim() || null)
+        .filter((value): value is string => Boolean(value))
+    )
+  );
+
+  for (const calendarId of candidateCalendars) {
+    const response = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(parsed.eventId)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 403 || response.status === 404 || response.status === 410) {
+        continue;
+      }
+
+      const details = await readGoogleError(response);
+      throw new Error(
+        `Attendee-Status konnte nicht geladen werden (${response.status})${details ? `: ${details}` : ""}`
+      );
+    }
+
+    const payload = (await response.json()) as CalendarApiEvent;
+    const attendeeStatusByEmail = new Map<string, CalendarAttendeeResponse["responseStatus"]>();
+
+    for (const attendee of payload.attendees ?? []) {
+      const email = attendee.email?.trim().toLowerCase();
+      if (!email) {
+        continue;
+      }
+
+      const rawStatus = attendee.responseStatus?.trim() ?? "";
+      const responseStatus: CalendarAttendeeResponse["responseStatus"] =
+        rawStatus === "accepted" ||
+        rawStatus === "declined" ||
+        rawStatus === "tentative" ||
+        rawStatus === "needsAction"
+          ? (rawStatus as CalendarAttendeeResponse["responseStatus"])
+          : "unknown";
+      attendeeStatusByEmail.set(email, responseStatus);
+    }
+
+    return normalizedEmails.map((email) => ({
+      email,
+      responseStatus: attendeeStatusByEmail.get(email) ?? "needsAction"
+    }));
+  }
+
+  return normalizedEmails.map((email) => ({
+    email,
+    responseStatus: "unknown"
+  }));
 }
 
 async function removeSourceInviteAttendee(input: SourceInviteRef) {

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
+import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
@@ -27,6 +28,34 @@ type Suggestion = {
   status: "pending" | "calendar_inserted" | "accepted" | "declined";
 };
 
+type SmartMeeting = {
+  id: string;
+  title: string;
+  groupId: string;
+  groupName: string;
+  status: "active" | "secured" | "exhausted" | "paused";
+  tags: string[];
+  minAcceptedParticipants: number;
+  responseWindowHours: number;
+  maxAttempts: number;
+  searchWindowStart: string;
+  searchWindowEnd: string;
+  updatedAt: string;
+  latestRun: {
+    id: string;
+    attempt: number;
+    startsAt: string;
+    endsAt: string;
+    responseDeadlineAt: string;
+    status: "pending" | "secured" | "expired" | "cancelled";
+    participantCount: number;
+    acceptedCount: number;
+    declinedCount: number;
+    pendingCount: number;
+    statusReason: string | null;
+  } | null;
+};
+
 type DashboardPayload = {
   me: {
     email: string;
@@ -42,6 +71,14 @@ type DashboardPayload = {
       scanned: number;
     } | null;
     contactsWarning: string | null;
+    smartWarning: string | null;
+    smartStats: {
+      checked: number;
+      secured: number;
+      expired: number;
+      rescheduled: number;
+      exhausted: number;
+    } | null;
     revalidating: boolean;
   };
   dating: {
@@ -52,6 +89,7 @@ type DashboardPayload = {
   groups: Group[];
   events: EventItem[];
   suggestions: Suggestion[];
+  smartMeetings: SmartMeeting[];
 };
 
 const emptyPayload: DashboardPayload = {
@@ -66,6 +104,8 @@ const emptyPayload: DashboardPayload = {
     warning: null,
     stats: null,
     contactsWarning: null,
+    smartWarning: null,
+    smartStats: null,
     revalidating: false
   },
   dating: {
@@ -75,7 +115,8 @@ const emptyPayload: DashboardPayload = {
   },
   groups: [],
   events: [],
-  suggestions: []
+  suggestions: [],
+  smartMeetings: []
 };
 
 export function Dashboard({
@@ -288,6 +329,11 @@ export function Dashboard({
             Kontakte-Sync Warnung: {data.sync.contactsWarning}
           </div>
         ) : null}
+        {data.sync.smartWarning ? (
+          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            Smart-Meeting Warnung: {data.sync.smartWarning}
+          </div>
+        ) : null}
         {data.sync.revalidating ? (
           <div className="mt-4 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-700">
             Aktualisierung im Hintergrund läuft. Neue Kalender- und Kontaktdaten erscheinen automatisch.
@@ -332,6 +378,9 @@ export function Dashboard({
                 Für `#date` brauchst du ein freigeschaltetes Dating-Profil in den Profileinstellungen. `#date` kann nicht mit
                 `#alle` oder `#kontakte` kombiniert werden.
               </p>
+              <p className="text-xs text-slate-500">
+                Smart-Meeting Shortcut im Titel: `!min=3 !frist=24h !fenster=24h` (setzt Mindestzusagen, Frist und Suchfenster).
+              </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <select
                   value={eventForm.visibility}
@@ -366,6 +415,15 @@ export function Dashboard({
             </button>
           </form>
         ) : null}
+
+        <SmartMeetingsCard
+          groups={visibleGroups}
+          smartMeetings={data.smartMeetings}
+          onCreated={async () => {
+            await loadData({ silent: true });
+          }}
+          onError={(message) => setError(message)}
+        />
 
         <section id="events" className="mt-8 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">Alle sichtbaren Events</h2>
