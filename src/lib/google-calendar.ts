@@ -1,4 +1,8 @@
 import {
+  deleteCalendarWatchChannelById,
+  deleteCalendarWatchChannelsByUserId,
+  insertCalendarWatchChannel,
+  listCalendarWatchChannelsByUserId,
   deleteEventsByIds,
   ensureAlleGroupForUser,
   getGoogleConnection,
@@ -1755,4 +1759,148 @@ export async function listWritableCalendars(userId: string) {
 
   const calendars = await listCalendarsByAccessRole(token, "writer");
   return calendars as WritableGoogleCalendar[];
+}
+
+/** TTL for push channel: 6 days (Google max is 7); renew before expiry. */
+const CALENDAR_WATCH_TTL_MS = 6 * 24 * 60 * 60 * 1000;
+const CALENDAR_WATCH_RENEW_BEFORE_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Register a Google Calendar push channel for a calendar. On change, Google POSTs to our webhook.
+ */
+export async function registerCalendarWatch(
+  userId: string,
+  calendarId: string
+): Promise<{ channelId: string; resourceId: string; expirationMs: number } | null> {
+  const token = await getGoogleAccessToken(userId);
+  if (!token) {
+    return null;
+  }
+
+  const baseUrl = getRealiteBaseUrl();
+  const webhookUrl = `${baseUrl}/api/webhooks/google-calendar`;
+  const channelId = crypto.randomUUID();
+
+  const response = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/watch`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: channelId,
+        type: "web_hook",
+        address: webhookUrl,
+        expiration: Date.now() + CALENDAR_WATCH_TTL_MS,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const details = await readGoogleError(response);
+    console.error(
+      `Calendar watch registration failed for user ${userId} calendar ${calendarId}: ${response.status}`,
+      details ?? ""
+    );
+    return null;
+  }
+
+  const payload = (await response.json()) as {
+    id?: string;
+    resourceId?: string;
+    expiration?: number;
+  };
+
+  const resourceId = payload.resourceId ?? "";
+  const expirationMs = typeof payload.expiration === "number" ? payload.expiration : Date.now() + CALENDAR_WATCH_TTL_MS;
+
+  await insertCalendarWatchChannel({
+    userId,
+    calendarId,
+    channelId,
+    resourceId,
+    expirationMs,
+  });
+
+  return { channelId, resourceId, expirationMs };
+}
+
+/**
+ * Stop a calendar push channel (e.g. when user disconnects or calendar is removed).
+ */
+export async function stopCalendarWatch(
+  userId: string,
+  channelId: string,
+  resourceId: string
+): Promise<boolean> {
+  const token = await getGoogleAccessToken(userId);
+  if (!token) {
+    return false;
+  }
+
+  const response = await fetch("https://www.googleapis.com/calendar/v3/channels/stop", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ id: channelId, resourceId }),
+  });
+
+  if (!response.ok) {
+    const details = await readGoogleError(response);
+    console.error(`Calendar watch stop failed for channel ${channelId}:`, response.status, details ?? "");
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Ensure push channels exist for all of the user's configured calendars; remove watches for
+ * calendars no longer configured; renew channels that expire soon.
+ */
+export async function ensureCalendarWatchesForUser(userId: string): Promise<void> {
+  const token = await getGoogleAccessToken(userId);
+  if (!token) {
+    await deleteCalendarWatchChannelsByUserId(userId);
+    return;
+  }
+
+  const [allCalendarIds, settings, existingChannels] = await Promise.all([
+    listReadableCalendarIds(token),
+    getUserSuggestionSettings(userId),
+    listCalendarWatchChannelsByUserId(userId),
+  ]);
+
+  const targetCalendarIds = filterConfiguredCalendarIds(allCalendarIds, settings.matchingCalendarIds);
+  const now = Date.now();
+  const renewThreshold = now + CALENDAR_WATCH_RENEW_BEFORE_MS;
+
+  const byCalendar = new Map(existingChannels.map((c) => [c.calendarId, c]));
+
+  for (const row of existingChannels) {
+    if (!targetCalendarIds.includes(row.calendarId)) {
+      const stopped = await stopCalendarWatch(userId, row.channelId, row.resourceId);
+      if (stopped) {
+        await deleteCalendarWatchChannelById(row.id);
+      }
+    }
+  }
+
+  for (const calendarId of targetCalendarIds) {
+    const existing = byCalendar.get(calendarId);
+    const expiresSoon = existing ? existing.expirationMs < renewThreshold : true;
+
+    if (!existing || expiresSoon) {
+      if (existing) {
+        await stopCalendarWatch(userId, existing.channelId, existing.resourceId);
+        await deleteCalendarWatchChannelById(existing.id);
+      }
+
+      await registerCalendarWatch(userId, calendarId);
+    }
+  }
 }

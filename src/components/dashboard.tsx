@@ -59,6 +59,8 @@ type SmartMeeting = {
   } | null;
 };
 
+type AcceptedUser = { name: string | null; email: string };
+
 type DashboardPayload = {
   me: {
     email: string;
@@ -93,6 +95,7 @@ type DashboardPayload = {
   events: EventItem[];
   suggestions: Suggestion[];
   smartMeetings: SmartMeeting[];
+  acceptedByEventId?: Record<string, AcceptedUser[]>;
 };
 
 const emptyPayload: DashboardPayload = {
@@ -455,37 +458,45 @@ export function Dashboard({
                 Noch keine Events vorhanden. Lege ein Event an oder öffne <a href="/groups" className="text-teal-700 underline">Gruppen</a>.
               </p>
             ) : null}
-            {visibleEvents.map((event) => (
-              <article
-                key={event.id}
-                className="rounded-md border border-slate-200 p-3"
-                style={
-                  event.color
-                    ? { borderLeftWidth: "4px", borderLeftColor: event.color }
-                    : undefined
-                }
-              >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <a
-                      href={`/e/${shortenUUID(event.id)}`}
-                      className="break-words text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
-                    >
-                      {event.title.replace(/#[^\s]+/gi, "").trim()}
-                    </a>
-                    <p className="text-xs text-slate-500">
-                      {new Date(event.startsAt).toLocaleString("de-DE")} - {new Date(event.endsAt).toLocaleTimeString("de-DE")} ·{" "}
-                      {event.tags.join(" · ")}
-                    </p>
+            {visibleEvents.map((event) => {
+              const accepted = data.acceptedByEventId?.[event.id] ?? [];
+              return (
+                <article
+                  key={event.id}
+                  className="rounded-md border border-slate-200 p-3"
+                  style={
+                    event.color
+                      ? { borderLeftWidth: "4px", borderLeftColor: event.color }
+                      : undefined
+                  }
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <a
+                        href={`/e/${shortenUUID(event.id)}`}
+                        className="break-words text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
+                      >
+                        {event.title.replace(/#[^\s]+/gi, "").trim()}
+                      </a>
+                      <p className="text-xs text-slate-500">
+                        {new Date(event.startsAt).toLocaleString("de-DE")} - {new Date(event.endsAt).toLocaleTimeString("de-DE")} ·{" "}
+                        {event.tags.join(" · ")}
+                      </p>
+                      {accepted.length > 0 && (
+                        <p className="mt-1 text-xs text-teal-700">
+                          Zugesagt: {accepted.map((u) => u.name ?? u.email).join(", ")}
+                        </p>
+                      )}
+                    </div>
+                    {acceptedEventIds.has(event.id) && (
+                      <span className="shrink-0 rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-semibold text-teal-800">
+                        Du hast zugesagt
+                      </span>
+                    )}
                   </div>
-                  {acceptedEventIds.has(event.id) && (
-                    <span className="shrink-0 rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-semibold text-teal-800">
-                      Du hast zugesagt
-                    </span>
-                  )}
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         </section>
       </main>

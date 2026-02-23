@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { listReadableCalendars, listWritableCalendars } from "@/src/lib/google-calendar";
+import { ensureCalendarWatchesForUser, listReadableCalendars, listWritableCalendars } from "@/src/lib/google-calendar";
 import {
   getAutoInsertedSuggestionCountForUser,
   getGoogleConnection,
@@ -173,6 +173,10 @@ export async function PATCH(request: Request) {
     blockedActivityTags: normalizedBlockedActivityTags,
     suggestionLimitPerDay: parsed.data.suggestionLimitPerDay,
     suggestionLimitPerWeek: parsed.data.suggestionLimitPerWeek
+  });
+
+  ensureCalendarWatchesForUser(user.id).catch((err) => {
+    console.error("Calendar watch ensure failed after settings save", user.id, err);
   });
 
   const [autoInsertedSuggestionCount, criteria] = await Promise.all([

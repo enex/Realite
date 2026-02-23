@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 
 import { getDashboardSyncSnapshot, triggerDashboardBackgroundSync } from "@/src/lib/background-sync";
+import { ensureCalendarWatchesForUser } from "@/src/lib/google-calendar";
 import {
+  getAcceptedUsersForEventIds,
   getDateHashtagStatus,
   getGoogleConnection,
   listGroupContactsForUser,
@@ -19,6 +21,9 @@ export async function GET() {
   }
 
   triggerDashboardBackgroundSync(user.id);
+  ensureCalendarWatchesForUser(user.id).catch((err) => {
+    console.error("Calendar watch ensure failed for user", user.id, err);
+  });
   const syncState = getDashboardSyncSnapshot(user.id);
 
   const [groups, events, suggestions, connection, groupContacts, dating, smartMeetings] = await Promise.all([
@@ -30,6 +35,13 @@ export async function GET() {
     getDateHashtagStatus(user.id),
     listSmartMeetingsForUser(user.id)
   ]);
+
+  const acceptedByEventId = await getAcceptedUsersForEventIds(events.map((e) => e.id));
+  const acceptedByEventIdJson: Record<string, { name: string | null; email: string }[]> = {};
+  for (const [eventId, list] of acceptedByEventId) {
+    acceptedByEventIdJson[eventId] = list;
+  }
+
   const ownEmail = user.email.trim().toLowerCase();
 
   const groupEventCounts = new Map<string, number>();
@@ -99,6 +111,7 @@ export async function GET() {
       endsAt: suggestion.endsAt.toISOString(),
       createdAt: suggestion.createdAt.toISOString()
     })),
+    acceptedByEventId: acceptedByEventIdJson,
     smartMeetings: smartMeetings.map((meeting) => ({
       ...meeting,
       searchWindowStart: meeting.searchWindowStart.toISOString(),

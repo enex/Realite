@@ -127,6 +127,20 @@
       "when": 1771838425245,
       "tag": "0017_pink_kitty_pryde",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1771865269552,
+      "tag": "0018_odd_johnny_blaze",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1771876767388,
+      "tag": "0019_nasty_the_professor",
+      "breakpoints": true
     }
   ]
 }

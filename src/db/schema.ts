@@ -1,4 +1,5 @@
 import {
+  bigint,
   boolean,
   index,
   integer,
@@ -258,6 +259,24 @@ export const eventTags = pgTable(
   (table) => [uniqueIndex().on(table.eventId, table.tag)],
 );
 
+export const eventComments = pgTable(
+  "event_comments",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index().on(table.eventId), index().on(table.createdAt)],
+);
+
 export const suggestions = pgTable(
   "suggestions",
   {
@@ -396,5 +415,28 @@ export const smartMeetingMemberStats = pgTable(
     uniqueIndex().on(table.ownerUserId, table.groupId, table.email),
     index().on(table.ownerUserId, table.groupId),
     index().on(table.registeredUserId),
+  ],
+);
+
+/** Google Calendar push notification channels; used to sync calendar → Realite on change. */
+export const calendarWatchChannels = pgTable(
+  "calendar_watch_channels",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    calendarId: text("calendar_id").notNull(),
+    channelId: text("channel_id").notNull(),
+    resourceId: text("resource_id").notNull(),
+    expirationMs: bigint("expiration_ms", { mode: "number" }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex().on(table.channelId),
+    index().on(table.userId),
+    index().on(table.expirationMs),
   ],
 );

@@ -25,6 +25,8 @@ type Suggestion = {
   color: string | null;
 };
 
+type AcceptedUser = { name: string | null; email: string };
+
 type SuggestionsPayload = {
   me: {
     email: string;
@@ -36,6 +38,7 @@ type SuggestionsPayload = {
     revalidating: boolean;
   };
   suggestions: Suggestion[];
+  acceptedByEventId?: Record<string, AcceptedUser[]>;
 };
 
 const emptyPayload: SuggestionsPayload = {
@@ -326,6 +329,14 @@ export function SuggestionsPage({
                         {suggestion.status === "accepted" && (
                           <p className="mt-1 text-xs font-medium text-teal-700">Du hast zugesagt.</p>
                         )}
+                        {(() => {
+                          const accepted = data.acceptedByEventId?.[suggestion.eventId] ?? [];
+                          return accepted.length > 0 ? (
+                            <p className="mt-1 text-xs text-teal-700">
+                              Zugesagt: {accepted.map((u) => u.name ?? u.email).join(", ")}
+                            </p>
+                          ) : null;
+                        })()}
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         {suggestion.calendarEventId ? (

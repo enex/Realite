@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
+import { EventComments } from "@/src/components/event-comments";
 import { EventInviteSection } from "@/src/components/event-invite-section";
 import { SharedEventContent } from "@/src/components/shared-event-content";
 import { SuggestionDecisionPanel } from "@/src/components/suggestion-decision-panel";
 import { getEventShareCopy, getPublicEventSharePreviewByShortId } from "@/src/lib/event-share";
-import { getSuggestionForEventForUser, getVisibleEventForUserById } from "@/src/lib/repository";
+import {
+  getAcceptedUsersForEventIds,
+  getSuggestionForEventForUser,
+  getVisibleEventForUserById
+} from "@/src/lib/repository";
 import { enlargeUUID, shortenUUID } from "@/src/lib/utils/short-uuid";
 import { requireAppUser } from "@/src/lib/session";
 
@@ -64,15 +69,17 @@ export default async function EventShortcutPage({
     redirect(`/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
-  const [event, suggestion] = await Promise.all([
+  const [event, suggestion, acceptedByEventId] = await Promise.all([
     getVisibleEventForUserById({ userId: user.id, eventId }),
-    getSuggestionForEventForUser({ userId: user.id, eventId })
+    getSuggestionForEventForUser({ userId: user.id, eventId }),
+    getAcceptedUsersForEventIds([eventId])
   ]);
 
   if (!event) {
     notFound();
   }
 
+  const acceptedBy = acceptedByEventId.get(eventId) ?? [];
   const suggestionForFlow = suggestion && event.createdBy !== user.id ? suggestion : null;
 
   return (
@@ -97,6 +104,15 @@ export default async function EventShortcutPage({
         sourceProvider={event.sourceProvider}
         sourceEventId={event.sourceEventId}
       />
+
+      {acceptedBy.length > 0 && (
+        <section className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm font-semibold text-slate-900">Zusagen</p>
+          <p className="mt-1 text-sm text-slate-700">
+            Zugesagt: {acceptedBy.map((u) => u.name ?? u.email).join(", ")}
+          </p>
+        </section>
+      )}
 
       {event.createdBy === user.id &&
         event.sourceProvider === "google" &&
@@ -136,6 +152,8 @@ export default async function EventShortcutPage({
           </a>
         </section>
       ) : null}
+
+      <EventComments eventId={event.id} />
     </main>
   );
 }

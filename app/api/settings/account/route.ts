@@ -5,12 +5,14 @@ import { NextResponse } from "next/server";
 import { authUser } from "@/src/db/auth-schema";
 import { getDb } from "@/src/db/client";
 import { getAuth, getAuthSession } from "@/src/lib/auth";
-import { removeSuggestionCalendarEvent } from "@/src/lib/google-calendar";
+import { removeSuggestionCalendarEvent, stopCalendarWatch } from "@/src/lib/google-calendar";
 import {
+  deleteCalendarWatchChannelsByUserId,
   deleteGroupContactsByEmail,
   deleteUserById,
   getUserByEmail,
   getUserSuggestionSettings,
+  listCalendarWatchChannelsByUserId,
   listSuggestionCalendarRefsForUser
 } from "@/src/lib/repository";
 
@@ -64,6 +66,16 @@ export async function DELETE(request: Request) {
           { status: 409 }
         );
       }
+
+      const watchChannels = await listCalendarWatchChannelsByUserId(user.id);
+      for (const ch of watchChannels) {
+        try {
+          await stopCalendarWatch(user.id, ch.channelId, ch.resourceId);
+        } catch (err) {
+          console.error("Calendar watch stop failed before account delete", ch.channelId, err);
+        }
+      }
+      await deleteCalendarWatchChannelsByUserId(user.id);
     }
 
     const auth = getAuth();

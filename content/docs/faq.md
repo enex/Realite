@@ -12,6 +12,10 @@ Mit Google Kalender erstellst du einen Termin und lädst konkret bestimmte Leute
 
 Kurz: Google Kalender bleibt deine Quelle für Termine und Verfügbarkeit. Realite nutzt das und übernimmt das **Finden passender Termine**, **zielgerichtetes Anzeigen** und **gelernte Zusage-/Absage-Logik**, damit du weniger planen und mehr treffen kannst.
 
+## Werden Kalenderänderungen sofort in Realite übernommen?
+
+Realite nutzt Google-Kalender-Webhooks: Sobald sich in deinen ausgewählten Kalendern etwas ändert (Termin anlegen, ändern, löschen), meldet Google das an Realite und der Sync läuft automatisch. Du musst nicht mehr manuell synchronisieren oder auf den nächsten Dashboard-Besuch warten. Die Webhooks werden beim Öffnen des Dashboards und beim Speichern der Kalender-Einstellungen eingerichtet.
+
 ## Ich sehe meine Kalender-Events nicht
 
 Prüfe bitte:

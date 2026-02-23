@@ -42,8 +42,9 @@ export const loggerProvider =
         processors: []
       });
 
-export function register() {
+export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     logs.setGlobalLoggerProvider(loggerProvider);
+    await import("./instrumentation.node");
   }
 }

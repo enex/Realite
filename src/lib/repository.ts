@@ -1,9 +1,11 @@
-import { and, desc, eq, gt, inArray, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, or, sql } from "drizzle-orm";
 
 import { getDb } from "@/src/db/client";
 import {
   calendarConnections,
+  calendarWatchChannels,
   datingProfiles,
+  eventComments,
   eventTags,
   events,
   groupContacts,
@@ -512,6 +514,62 @@ export async function getGoogleConnection(userId: string) {
     .limit(1);
 
   return connection ?? null;
+}
+
+export async function insertCalendarWatchChannel(input: {
+  userId: string;
+  calendarId: string;
+  channelId: string;
+  resourceId: string;
+  expirationMs: number;
+}) {
+  const db = getDb();
+  await db.insert(calendarWatchChannels).values({
+    userId: input.userId,
+    calendarId: input.calendarId,
+    channelId: input.channelId,
+    resourceId: input.resourceId,
+    expirationMs: input.expirationMs,
+  });
+}
+
+export async function getUserIdByCalendarChannelId(channelId: string): Promise<string | null> {
+  const db = getDb();
+  const [row] = await db
+    .select({ userId: calendarWatchChannels.userId })
+    .from(calendarWatchChannels)
+    .where(eq(calendarWatchChannels.channelId, channelId))
+    .limit(1);
+  return row?.userId ?? null;
+}
+
+export async function listCalendarWatchChannelsByUserId(userId: string) {
+  const db = getDb();
+  return db
+    .select({
+      id: calendarWatchChannels.id,
+      calendarId: calendarWatchChannels.calendarId,
+      channelId: calendarWatchChannels.channelId,
+      resourceId: calendarWatchChannels.resourceId,
+      expirationMs: calendarWatchChannels.expirationMs,
+    })
+    .from(calendarWatchChannels)
+    .where(eq(calendarWatchChannels.userId, userId));
+}
+
+export async function deleteCalendarWatchChannelById(id: string) {
+  const db = getDb();
+  await db.delete(calendarWatchChannels).where(eq(calendarWatchChannels.id, id));
+}
+
+export async function deleteCalendarWatchChannelsByUserId(userId: string) {
+  const db = getDb();
+  await db.delete(calendarWatchChannels).where(eq(calendarWatchChannels.userId, userId));
+}
+
+export async function deleteCalendarWatchChannelByChannelId(channelId: string) {
+  const db = getDb();
+  await db.delete(calendarWatchChannels).where(eq(calendarWatchChannels.channelId, channelId));
 }
 
 export async function ensureUserSuggestionSettings(userId: string) {
@@ -2078,6 +2136,113 @@ export async function getVisibleEventForUserById(input: {
   }
 
   return event;
+}
+
+/** Für gegebene Event-IDs: Nutzer:innen, die dem Event (über Suggestion) zugesagt haben. */
+export async function getAcceptedUsersForEventIds(
+  eventIds: string[],
+): Promise<Map<string, { name: string | null; email: string }[]>> {
+  if (eventIds.length === 0) {
+    return new Map();
+  }
+  const db = getDb();
+  const rows = await db
+    .select({
+      eventId: suggestions.eventId,
+      name: users.name,
+      email: users.email,
+    })
+    .from(suggestions)
+    .innerJoin(users, eq(suggestions.userId, users.id))
+    .where(
+      and(
+        inArray(suggestions.eventId, eventIds),
+        eq(suggestions.status, "accepted" as const),
+      ),
+    );
+  const byEvent = new Map<string, { name: string | null; email: string }[]>();
+  for (const row of rows) {
+    const list = byEvent.get(row.eventId) ?? [];
+    list.push({ name: row.name, email: row.email });
+    byEvent.set(row.eventId, list);
+  }
+  return byEvent;
+}
+
+export type EventCommentRow = {
+  id: string;
+  eventId: string;
+  userId: string;
+  body: string;
+  createdAt: Date;
+  authorName: string | null;
+  authorEmail: string;
+};
+
+export async function listEventComments(eventId: string): Promise<EventCommentRow[]> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: eventComments.id,
+      eventId: eventComments.eventId,
+      userId: eventComments.userId,
+      body: eventComments.body,
+      createdAt: eventComments.createdAt,
+      authorName: users.name,
+      authorEmail: users.email,
+    })
+    .from(eventComments)
+    .innerJoin(users, eq(eventComments.userId, users.id))
+    .where(eq(eventComments.eventId, eventId))
+    .orderBy(asc(eventComments.createdAt));
+
+  return rows.map((r) => ({
+    id: r.id,
+    eventId: r.eventId,
+    userId: r.userId,
+    body: r.body,
+    createdAt: r.createdAt,
+    authorName: r.authorName,
+    authorEmail: r.authorEmail,
+  }));
+}
+
+export async function createEventComment(input: {
+  eventId: string;
+  userId: string;
+  body: string;
+}): Promise<EventCommentRow> {
+  const db = getDb();
+  const [row] = await db
+    .insert(eventComments)
+    .values({
+      eventId: input.eventId,
+      userId: input.userId,
+      body: input.body.trim(),
+    })
+    .returning({
+      id: eventComments.id,
+      eventId: eventComments.eventId,
+      userId: eventComments.userId,
+      body: eventComments.body,
+      createdAt: eventComments.createdAt,
+    });
+
+  if (!row) {
+    throw new RepositoryValidationError("Kommentar konnte nicht erstellt werden");
+  }
+
+  const [author] = await db
+    .select({ name: users.name, email: users.email })
+    .from(users)
+    .where(eq(users.id, input.userId))
+    .limit(1);
+
+  return {
+    ...row,
+    authorName: author?.name ?? null,
+    authorEmail: author?.email ?? "",
+  };
 }
 
 export async function getSuggestionForEventForUser(input: {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
+import { EventComments } from "@/src/components/event-comments";
 import { EventInviteSection } from "@/src/components/event-invite-section";
 import { SharedEventContent } from "@/src/components/shared-event-content";
 import { SuggestionDecisionPanel } from "@/src/components/suggestion-decision-panel";
@@ -160,6 +161,8 @@ export default async function SuggestionShortcutPage({
         <p className="text-sm text-slate-600">Warum wurde dir das vorgeschlagen?</p>
         <p className="mt-2 text-sm text-slate-800">{suggestion.reason}</p>
       </section>
+
+      <EventComments eventId={suggestion.eventId} />
     </main>
   );
 }

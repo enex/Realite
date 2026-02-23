@@ -110,6 +110,8 @@ Wichtig für korrektes Matching:
 - Du musst die Verfügbarkeits-Eigenschaft deiner Termine im Kalender setzen und pflegen (z. B. **Beschäftigt** oder **Frei/Verfügbar**).
 - Realite nutzt diese Eigenschaft direkt, um zu entscheiden, ob ein Zeitfenster als verfügbar gilt.
 
+**Kalender und Realite bleiben synchron:** Realite nutzt Google-Kalender-Benachrichtigungen (Webhooks). Änderungen in deinen ausgewählten Kalendern (neue, geänderte oder gelöschte Termine) werden möglichst direkt in Realite übernommen. Beim Öffnen des Dashboards und beim Speichern der Kalender-Einstellungen werden die Benachrichtigungen eingerichtet bzw. erneuert. So bleiben Events und Verfügbarkeit in Realite aktuell, ohne dass du manuell synchronisieren musst.
+
 Kalenderlinks in Realite:
 
 - Neue Vorschläge im Kalender enthalten einen Link `realite.app/s/<shortUUID>` zur direkten Zu-/Absage.
@@ -159,12 +161,20 @@ Damit springst du direkt zum Original-Termin in Google Kalender.
 
 Eingeladene Personen werden im zugehörigen Google-Kalender-Termin als Teilnehmer:innen ergänzt. Sie erhalten die Einladung per E-Mail von Google Kalender und können so den Termin sehen und zu-/absagen. Es werden nur Personen angezeigt, die noch nicht eingeladen wurden.
 
-**Zusagen:** Im Bereich **Jemanden einladen** siehst du als Event-Ersteller, wer bereits zugesagt, abgesagt oder noch nicht geantwortet hat. Wenn du selbst eingeladen bist, wird dir angezeigt, ob du zugesagt hast. Auf der Eventliste (Dashboard) und bei Vorschlägen steht bei Terminen, denen du zugesagt hast, der Hinweis **Du hast zugesagt**.
+**Zusagen:** Wer einem Event in Realite zugesagt hat, ist direkt sichtbar: auf der **Eventseite** (Block „Zusagen“ mit Namen), in der **Event-Übersicht** (Dashboard) und in der **Vorschlags-Übersicht** unter jedem Termin. So siehst du auf einen Blick, wer dabei ist. Als Event-Ersteller siehst du im Bereich **Jemanden einladen** zusätzlich die Antworten aus dem Google-Kalender (zugesagt, abgesagt, ausstehend). Bei Terminen, denen du selbst zugesagt hast, erscheint der Hinweis **Du hast zugesagt**.
 
 Wenn ein Ort hinterlegt ist, zeigt Realite zusätzlich:
 
 - Distanz von deinem aktuellen Standort (wenn Standortfreigabe aktiv ist)
 - einen Link **Route planen / navigieren** für direkte Navigation
+
+**Kommentare:** Unter jedem Event (auf der Eventseite und auf der Vorschlagsseite zum gleichen Event) findest du einen Bereich **Kommentare**. Alle, die Zugriff auf das Event haben, können dort:
+
+- Fragen stellen und beantworten
+- vor, während und nach dem Termin miteinander schreiben
+- sich zu Ort, Ablauf oder sonstigen Details austauschen
+
+Die Kommentare sind an das Event gebunden: Ob du die Eventseite (`/e/...`) oder die Vorschlagsseite (`/s/...`) öffnest – es ist dieselbe Unterhaltung.
 
 ## Profilseiten von Nutzern
 
