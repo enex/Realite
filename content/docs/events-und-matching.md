@@ -9,6 +9,7 @@ Ein Event besteht aus:
 - optionalem Ort
 - Sichtbarkeit
 - Hashtags
+- optionaler Farbe (z. B. zur schnellen Zuordnung; wird bei Events und Vorschlägen als farbiger Rand angezeigt)
 
 ## Smart Treffen (automatische Terminfindung)
 
@@ -127,6 +128,8 @@ Wenn für dich zu einem Event bereits eine Suggestion existiert und du nicht der
 
 Event- und Vorschlagslisten in Realite verlinken direkt auf diese Seiten, damit du von jeder Übersicht sofort entscheiden kannst.
 
+**Vorschläge mit Kalendertermin:** Wenn zu einem Vorschlag bei dir bereits ein Termin im Kalender angelegt wurde (z. B. durch Zusage oder automatische Übernahme), findest du auf der Vorschlagsseite und auf der Vorschlags-Detailseite einen Link **Im Kalender bearbeiten** bzw. **Event im Kalender bearbeiten**. Damit öffnest du den zugehörigen Termin in Google Kalender zur Bearbeitung.
+
 ## Event-Detailseite
 
 Auf der Eventseite (`/e/<shortUUID>`) siehst du jetzt alle wichtigen Event-Informationen gesammelt:
@@ -155,6 +158,8 @@ Damit springst du direkt zum Original-Termin in Google Kalender.
 - oder eine beliebige E-Mail-Adresse bzw. einen Namen eingeben: Realite schlägt passende Kontakte vor oder du lädst direkt per E-Mail ein.
 
 Eingeladene Personen werden im zugehörigen Google-Kalender-Termin als Teilnehmer:innen ergänzt. Sie erhalten die Einladung per E-Mail von Google Kalender und können so den Termin sehen und zu-/absagen. Es werden nur Personen angezeigt, die noch nicht eingeladen wurden.
+
+**Zusagen:** Im Bereich **Jemanden einladen** siehst du als Event-Ersteller, wer bereits zugesagt, abgesagt oder noch nicht geantwortet hat. Wenn du selbst eingeladen bist, wird dir angezeigt, ob du zugesagt hast. Auf der Eventliste (Dashboard) und bei Vorschlägen steht bei Terminen, denen du zugesagt hast, der Hinweis **Du hast zugesagt**.
 
 Wenn ein Ort hinterlegt ist, zeigt Realite zusätzlich:
 

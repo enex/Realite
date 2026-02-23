@@ -102,12 +102,15 @@ export default async function EventShortcutPage({
         event.sourceProvider === "google" &&
         event.sourceEventId && (
           <section className="mt-4">
-            <EventInviteSection eventId={event.id} />
+            <EventInviteSection eventId={event.id} currentUserEmail={user.email} />
           </section>
         )}
 
       {suggestionForFlow ? (
         <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          {suggestionForFlow.status === "accepted" && (
+            <p className="mb-4 text-sm font-medium text-teal-700">Du hast diesem Termin zugesagt.</p>
+          )}
           <SuggestionDecisionPanel
             suggestionId={suggestionForFlow.id}
             initialStatus={suggestionForFlow.status}

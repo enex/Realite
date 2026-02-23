@@ -119,6 +119,25 @@ export default async function SuggestionShortcutPage({
         createdByEmail={suggestion.createdByEmail}
       />
 
+      {suggestion.status === "accepted" && (
+        <p className="mt-4 text-sm font-medium text-teal-700">Du hast diesem Termin zugesagt.</p>
+      )}
+      {suggestion.calendarEventId && (
+        <p className="mt-4">
+          <a
+            href={`/api/suggestions/${encodeURIComponent(suggestion.id)}/calendar-link`}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:border-slate-400"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-none stroke-current" strokeWidth="2">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+            </svg>
+            Event im Kalender bearbeiten
+          </a>
+        </p>
+      )}
       <div className="mt-4">
         <SuggestionDecisionPanel
           suggestionId={suggestion.id}
@@ -133,7 +152,7 @@ export default async function SuggestionShortcutPage({
         suggestion.sourceProvider === "google" &&
         suggestion.sourceEventId && (
           <section className="mt-4">
-            <EventInviteSection eventId={suggestion.eventId} />
+            <EventInviteSection eventId={suggestion.eventId} currentUserEmail={user.email} />
           </section>
         )}
 

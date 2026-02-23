@@ -23,6 +23,7 @@ type EventItem = {
   groupName: string | null;
   tags: string[];
   visibility: "public" | "group" | "smart_date";
+  color: string | null;
 };
 
 type Suggestion = {
@@ -144,10 +145,20 @@ export function Dashboard({
     endsAt: "",
     visibility: "public" as "public" | "group",
     groupId: "",
-    tags: "#kontakte"
+    tags: "#kontakte",
+    color: "" as string
   });
 
   const visibleGroups = useMemo(() => data.groups.filter((group) => !group.isHidden), [data.groups]);
+  const acceptedEventIds = useMemo(
+    () =>
+      new Set(
+        data.suggestions
+          .filter((s) => s.status === "accepted")
+          .map((s) => s.eventId)
+      ),
+    [data.suggestions]
+  );
   const visibleEvents = useMemo(() => {
     const pendingSuggestionEventIds = new Set(
       data.suggestions
@@ -236,7 +247,8 @@ export function Dashboard({
           tags: eventForm.tags
             .split(",")
             .map((tag) => tag.trim())
-            .filter(Boolean)
+            .filter(Boolean),
+          color: eventForm.color && eventForm.color.trim() ? eventForm.color.trim() : null
         })
       });
 
@@ -272,7 +284,8 @@ export function Dashboard({
         endsAt: "",
         visibility: "public",
         groupId: "",
-        tags: "#kontakte"
+        tags: "#kontakte",
+        color: ""
       });
       setShowEventForm(false);
       await loadData({ silent: true });
@@ -310,26 +323,13 @@ export function Dashboard({
                 ) : null}
               </div>
             </div>
-            <div className="grid w-full gap-2 sm:grid-cols-2 lg:w-auto lg:min-w-80">
-              <button
-                onClick={() => setShowEventForm((current) => !current)}
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
-              >
-                {showEventForm ? "Event schließen" : "Neues Event"}
-              </button>
-              <a
-                href="/suggestions"
-                className="rounded-lg bg-teal-700 px-4 py-2 text-center text-sm font-semibold text-white"
-              >
-                Zu Vorschlägen
-              </a>
-              <a
-                href="/api/auth/signout?callbackUrl=/"
-                className="rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700"
-              >
-                Abmelden
-              </a>
-            </div>
+            <button
+              onClick={() => setShowEventForm((current) => !current)}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            >
+              {showEventForm ? "Event schließen" : "Neues Event"}
+            </button>
+
           </div>
         </header>
 
@@ -456,17 +456,34 @@ export function Dashboard({
               </p>
             ) : null}
             {visibleEvents.map((event) => (
-              <article key={event.id} className="rounded-md border border-slate-200 p-3">
-                <a
-                  href={`/e/${shortenUUID(event.id)}`}
-                  className="break-words text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
-                >
-                  {event.title.replace(/#[^\s]+/gi, "").trim()}
-                </a>
-                <p className="text-xs text-slate-500">
-                  {new Date(event.startsAt).toLocaleString("de-DE")} - {new Date(event.endsAt).toLocaleTimeString("de-DE")} ·{" "}
-                  {event.tags.join(" · ")}
-                </p>
+              <article
+                key={event.id}
+                className="rounded-md border border-slate-200 p-3"
+                style={
+                  event.color
+                    ? { borderLeftWidth: "4px", borderLeftColor: event.color }
+                    : undefined
+                }
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <a
+                      href={`/e/${shortenUUID(event.id)}`}
+                      className="break-words text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
+                    >
+                      {event.title.replace(/#[^\s]+/gi, "").trim()}
+                    </a>
+                    <p className="text-xs text-slate-500">
+                      {new Date(event.startsAt).toLocaleString("de-DE")} - {new Date(event.endsAt).toLocaleTimeString("de-DE")} ·{" "}
+                      {event.tags.join(" · ")}
+                    </p>
+                  </div>
+                  {acceptedEventIds.has(event.id) && (
+                    <span className="shrink-0 rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-semibold text-teal-800">
+                      Du hast zugesagt
+                    </span>
+                  )}
+                </div>
               </article>
             ))}
           </div>

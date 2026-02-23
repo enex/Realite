@@ -8,19 +8,78 @@ type ContactCandidate = {
   image: string | null;
 };
 
+type AttendeeResponse = {
+  email: string;
+  responseStatus: "accepted" | "declined" | "tentative" | "needsAction" | "unknown";
+};
+
 type InviteData = {
   alreadyInvitedEmails: string[];
+  attendeeResponses?: AttendeeResponse[];
   suggestedContacts: ContactCandidate[];
   candidates?: ContactCandidate[];
 };
 
 type EventInviteSectionProps = {
   eventId: string;
+  /** Wenn gesetzt, wird „Du hast zugesagt“ angezeigt, falls diese E-Mail zugesagt hat. */
+  currentUserEmail?: string | null;
 };
 
 const SEARCH_DEBOUNCE_MS = 250;
 
-export function EventInviteSection({ eventId }: EventInviteSectionProps) {
+function AttendeeResponsesSummary({
+  responses,
+  currentUserEmail
+}: {
+  responses: AttendeeResponse[];
+  currentUserEmail?: string | null;
+}) {
+  const accepted = responses.filter((r) => r.responseStatus === "accepted");
+  const declined = responses.filter((r) => r.responseStatus === "declined");
+  const pending = responses.filter(
+    (r) =>
+      r.responseStatus === "needsAction" ||
+      r.responseStatus === "tentative" ||
+      r.responseStatus === "unknown"
+  );
+  const currentUserNorm = currentUserEmail?.trim().toLowerCase() ?? "";
+  const myStatus = currentUserNorm
+    ? responses.find((r) => r.email === currentUserNorm)?.responseStatus
+    : undefined;
+
+  return (
+    <div className="mt-4 space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <p className="text-sm font-semibold text-slate-900">Zusagen</p>
+      {myStatus === "accepted" && (
+        <p className="text-sm font-medium text-teal-700">Du hast zugesagt.</p>
+      )}
+      {myStatus === "declined" && (
+        <p className="text-sm text-slate-600">Du hast abgesagt.</p>
+      )}
+      {myStatus && myStatus !== "accepted" && myStatus !== "declined" && (
+        <p className="text-sm text-slate-600">Deine Antwort steht noch aus.</p>
+      )}
+      {accepted.length > 0 && (
+        <p className="text-xs text-slate-600">
+          Zugesagt: {accepted.map((r) => r.email).join(", ")}
+        </p>
+      )}
+      {declined.length > 0 && (
+        <p className="text-xs text-slate-500">
+          Abgesagt: {declined.map((r) => r.email).join(", ")}
+        </p>
+      )}
+      {pending.length > 0 && (
+        <p className="text-xs text-slate-500">
+          Ausstehend: {pending.map((r) => r.email).join(", ")}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function EventInviteSection({ eventId, currentUserEmail }: EventInviteSectionProps) {
   const [inviteData, setInviteData] = useState<InviteData | null>(null);
   const [loading, setLoading] = useState(true);
   const [inviteError, setInviteError] = useState<string | null>(null);
@@ -304,6 +363,13 @@ export function EventInviteSection({ eventId }: EventInviteSectionProps) {
         <p className="mt-3 text-xs text-slate-500">
           Bereits eingeladen: {inviteData.alreadyInvitedEmails.length} Person(en)
         </p>
+      )}
+
+      {inviteData.attendeeResponses && inviteData.attendeeResponses.length > 0 && (
+        <AttendeeResponsesSummary
+          responses={inviteData.attendeeResponses}
+          currentUserEmail={currentUserEmail}
+        />
       )}
     </section>
   );

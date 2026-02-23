@@ -222,20 +222,12 @@ export function GroupsPage({
                 <p className="mt-2 text-sm text-slate-600">Hier legst du neue Gruppen an und verwaltest bestehende Gruppen.</p>
               </div>
             </div>
-            <div className="grid w-full gap-2 sm:grid-cols-2 lg:w-auto lg:min-w-80">
-              <button
-                onClick={() => setShowGroupForm((current) => !current)}
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
-              >
-                {showGroupForm ? "Formular schließen" : "Neue Gruppe"}
-              </button>
-              <a
-                href="/events"
-                className="rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700"
-              >
-                Zu Events
-              </a>
-            </div>
+            <button
+              onClick={() => setShowGroupForm((current) => !current)}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            >
+              {showGroupForm ? "Formular schließen" : "Neue Gruppe"}
+            </button>
           </div>
         </header>
 

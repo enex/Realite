@@ -232,6 +232,7 @@ export const events = pgTable(
     }),
     sourceProvider: text("source_provider"),
     sourceEventId: text("source_event_id"),
+    color: text("color"),
     createdBy: uuid("created_by")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),

@@ -12,6 +12,7 @@ type Suggestion = {
   id: string;
   eventId: string;
   status: "pending" | "calendar_inserted" | "accepted" | "declined";
+  calendarEventId: string | null;
   score: number;
   reason: string;
   title: string;
@@ -21,6 +22,7 @@ type Suggestion = {
   createdBy: string;
   createdByName: string | null;
   createdByEmail: string;
+  color: string | null;
 };
 
 type SuggestionsPayload = {
@@ -262,15 +264,13 @@ export function SuggestionsPage({
                 <p className="text-xs text-slate-500">{profileEmail}</p>
               </div>
             </div>
-            <div className="grid w-full gap-2 sm:grid-cols-2 lg:w-auto lg:min-w-80">
-              <button
-                onClick={runSuggestions}
-                disabled={busy}
-                className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-              >
-                Matching starten
-              </button>
-            </div>
+            <button
+              onClick={runSuggestions}
+              disabled={busy}
+              className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              Matching starten
+            </button>
           </div>
         </header>
 
@@ -301,6 +301,11 @@ export function SuggestionsPage({
                     key={suggestion.id}
                     id={`suggestion-${suggestion.id}`}
                     className={`rounded-lg border p-3 ${selectedSuggestionId === suggestion.id ? "border-teal-400 bg-teal-50" : "border-slate-200"}`}
+                    style={
+                      suggestion.color && selectedSuggestionId !== suggestion.id
+                        ? { borderLeftWidth: "4px", borderLeftColor: suggestion.color }
+                        : undefined
+                    }
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
@@ -318,8 +323,25 @@ export function SuggestionsPage({
                           </a>
                         </p>
                         <p className="text-xs text-slate-500">Score {suggestion.score.toFixed(2)} · Status {suggestion.status}</p>
+                        {suggestion.status === "accepted" && (
+                          <p className="mt-1 text-xs font-medium text-teal-700">Du hast zugesagt.</p>
+                        )}
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {suggestion.calendarEventId ? (
+                          <a
+                            href={`/api/suggestions/${encodeURIComponent(suggestion.id)}/calendar-link`}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-400"
+                          >
+                            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="2">
+                              <path d="M12 20h9" />
+                              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                            </svg>
+                            Im Kalender bearbeiten
+                          </a>
+                        ) : null}
                         <a
                           href={`/s/${shortenUUID(suggestion.id)}`}
                           className="rounded-md border border-teal-200 px-3 py-1 text-xs font-semibold text-teal-700"

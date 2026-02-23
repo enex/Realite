@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import {
   addAttendeeToSourceEvent,
+  getCalendarAttendeeResponses,
   getSourceEventAttendees
 } from "@/src/lib/google-calendar";
 import {
@@ -78,6 +79,24 @@ export async function GET(
       sourceEventId: event.sourceEventId!
     })) ?? [];
 
+  const calendarEventRef =
+    (() => {
+      const sep = event.sourceEventId!.trim().lastIndexOf(":");
+      if (sep <= 0 || sep >= event.sourceEventId!.trim().length - 1) return null;
+      const cal = event.sourceEventId!.trim().slice(0, sep);
+      const eid = event.sourceEventId!.trim().slice(sep + 1);
+      return `${cal}::${eid}`;
+    })();
+
+  const attendeeResponses =
+    calendarEventRef && alreadyInvited.length > 0
+      ? await getCalendarAttendeeResponses({
+          userId: event.createdBy,
+          calendarEventRef,
+          attendeeEmails: alreadyInvited
+        })
+      : [];
+
   const allContacts = await listGroupContactsForUser(user.id);
   const uniqueContacts = uniqueContactsForInvite(
     allContacts,
@@ -114,6 +133,7 @@ export async function GET(
 
   return NextResponse.json({
     alreadyInvitedEmails: alreadyInvited,
+    attendeeResponses,
     suggestedContacts,
     ...(q !== undefined && q !== null ? { candidates } : {}),
   });

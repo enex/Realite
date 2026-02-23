@@ -1437,6 +1437,62 @@ export async function removeSuggestionCalendarEvent(input: {
   return false;
 }
 
+/** Returns Google Calendar web URL for an event (calendarId::eventId). For redirects. */
+export async function getCalendarEventWebUrl(input: {
+  userId: string;
+  calendarEventRef: string;
+}): Promise<string> {
+  const parsed = parseCalendarEventRef(input.calendarEventRef.trim());
+  if (!parsed.calendarId || !parsed.eventId) {
+    return "https://www.google.com/calendar";
+  }
+
+  const fallbackUrl = buildGoogleCalendarEventFallbackUrl(parsed.calendarId, parsed.eventId);
+  const token = await getGoogleAccessToken(input.userId);
+  if (!token) {
+    return fallbackUrl;
+  }
+
+  try {
+    const response = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(parsed.calendarId)}/events/${encodeURIComponent(parsed.eventId)}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store"
+      }
+    );
+    if (!response.ok) {
+      return fallbackUrl;
+    }
+    const payload = (await response.json()) as { htmlLink?: string };
+    const url = payload.htmlLink?.trim();
+    if (url && isGoogleCalendarUrl(url)) {
+      return url;
+    }
+    return fallbackUrl;
+  } catch {
+    return fallbackUrl;
+  }
+}
+
+function buildGoogleCalendarEventFallbackUrl(calendarId: string, eventId: string) {
+  const encoded = Buffer.from(`${eventId} ${calendarId}`, "utf8")
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+  return `https://www.google.com/calendar/event?${new URLSearchParams({ eid: encoded }).toString()}`;
+}
+
+function isGoogleCalendarUrl(value: string) {
+  try {
+    const u = new URL(value);
+    return u.hostname === "calendar.google.com" || (u.hostname === "www.google.com" && u.pathname.startsWith("/calendar"));
+  } catch {
+    return false;
+  }
+}
+
 export async function syncPublicEventsFromGoogleCalendar(userId: string) {
   const token = await getGoogleAccessToken(userId);
   if (!token) {

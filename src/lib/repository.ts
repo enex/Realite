@@ -96,6 +96,7 @@ export type VisibleEvent = {
   createdBy: string;
   sourceProvider: string | null;
   sourceEventId: string | null;
+  color: string | null;
   tags: string[];
 };
 
@@ -108,6 +109,7 @@ export type PublicEventSharePreview = {
   endsAt: Date;
   createdByName: string | null;
   createdByEmail: string | null;
+  color: string | null;
 };
 
 export type GroupContact = {
@@ -131,6 +133,7 @@ export type UserProfileEvent = {
   endsAt: Date;
   visibility: EventVisibility;
   groupName: string | null;
+  color: string | null;
   tags: string[];
   matchStatus: SuggestionStatus | null;
 };
@@ -1659,6 +1662,7 @@ export async function createEvent(input: {
   visibility: EventVisibility;
   groupId?: string | null;
   tags: string[];
+  color?: string | null;
 }) {
   const db = getDb();
   const normalizedTags = normalizeTags(input.tags);
@@ -1736,6 +1740,7 @@ export async function createEvent(input: {
         endsAt: input.endsAt,
         visibility: finalVisibility,
         groupId: finalGroupId,
+        color: input.color ?? null,
         createdBy: input.userId,
       })
       .returning();
@@ -1893,6 +1898,7 @@ export async function listVisibleEventsForUser(userId: string) {
       groupName: groups.name,
       sourceProvider: events.sourceProvider,
       sourceEventId: events.sourceEventId,
+      color: events.color,
     })
     .from(events)
     .leftJoin(groups, eq(events.groupId, groups.id))
@@ -1977,6 +1983,7 @@ export async function getPublicEventSharePreviewById(
       endsAt: events.endsAt,
       createdByName: users.name,
       createdByEmail: users.email,
+      color: events.color,
     })
     .from(events)
     .innerJoin(users, eq(events.createdBy, users.id))
@@ -2032,6 +2039,7 @@ export async function getVisibleEventForUserById(input: {
       createdByEmail: users.email,
       sourceProvider: events.sourceProvider,
       sourceEventId: events.sourceEventId,
+      color: events.color,
     })
     .from(events)
     .leftJoin(groups, eq(events.groupId, groups.id))
@@ -2190,6 +2198,7 @@ async function listPublicAlleEventsForUser(userId: string) {
       groupName: groups.name,
       sourceProvider: events.sourceProvider,
       sourceEventId: events.sourceEventId,
+      color: events.color,
     })
     .from(events)
     .leftJoin(groups, eq(events.groupId, groups.id))
@@ -2249,6 +2258,7 @@ function mapVisibleEventToUserProfileEvent(
     endsAt: event.endsAt,
     visibility: event.visibility,
     groupName: event.groupName,
+    color: event.color,
     tags: event.tags,
     matchStatus,
   };
@@ -2511,6 +2521,7 @@ export async function getSuggestionForUser(
       createdByEmail: users.email,
       sourceProvider: events.sourceProvider,
       sourceEventId: events.sourceEventId,
+      color: events.color,
     })
     .from(suggestions)
     .innerJoin(events, eq(suggestions.eventId, events.id))
@@ -2558,6 +2569,7 @@ export async function listSuggestionsForUser(userId: string) {
       createdBy: events.createdBy,
       createdByName: users.name,
       createdByEmail: users.email,
+      color: events.color,
     })
     .from(suggestions)
     .innerJoin(events, eq(suggestions.eventId, events.id))

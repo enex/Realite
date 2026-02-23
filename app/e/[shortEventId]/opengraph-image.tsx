@@ -10,7 +10,7 @@ import {
 } from "@/src/lib/event-share";
 import { notFound } from "next/navigation";
 import { enlargeUUID } from "@/src/lib/utils/short-uuid";
-import { getSuggestion, getSuggestionForUser } from "@/src/lib/repository";
+import { getSuggestion } from "@/src/lib/repository";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

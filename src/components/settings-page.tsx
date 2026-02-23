@@ -197,17 +197,6 @@ export function SettingsPage({
                 </p>
               </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <a href="/events" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
-                Zu Events
-              </a>
-              <a
-                href="/api/auth/signout?callbackUrl=/"
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
-              >
-                Abmelden
-              </a>
-            </div>
           </div>
         </header>
 

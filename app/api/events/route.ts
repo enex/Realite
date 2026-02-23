@@ -15,7 +15,8 @@ const createEventSchema = z.object({
   endsAt: z.string().datetime(),
   visibility: z.enum(["public", "group"]).default("public"),
   groupId: z.string().uuid().optional().nullable(),
-  tags: z.array(z.string()).default([])
+  tags: z.array(z.string()).default([]),
+  color: z.string().max(30).optional().nullable(),
 });
 
 function serializeEvent(event: Awaited<ReturnType<typeof listVisibleEventsForUser>>[number], isAvailable: boolean) {
@@ -110,7 +111,8 @@ export async function POST(request: Request) {
       endsAt,
       visibility: parsed.data.visibility,
       groupId: parsed.data.groupId,
-      tags: parsed.data.tags
+      tags: parsed.data.tags,
+      color: parsed.data.color ?? null,
     });
 
     return NextResponse.json({ event });
