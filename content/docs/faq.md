@@ -148,6 +148,8 @@ Danach entfernt Realite:
 
 Diese Links findest du in von Realite angelegten Kalendereinträgen. Bei aus Google importierten Events ergänzt Realite den `/e/...`-Link in der Google-Beschreibung automatisch und ignoriert diesen Zusatztext beim erneuten Import in Realite.
 
+**Event-Link ohne Login:** Öffentliche Event-Links (`/e/...`) kannst du auch ohne Anmeldung öffnen. Zum Ansehen reicht der Link; für Zusagen, Absagen oder Kommentare musst du dich einmal mit Google anmelden.
+
 ## Warum sehe ich beim Teilen manchmal noch eine alte Link-Vorschau?
 
 Viele Messenger und soziale Netzwerke speichern Vorschauen (Titel, Beschreibung, Bild) für eine URL für einige Zeit im Cache.

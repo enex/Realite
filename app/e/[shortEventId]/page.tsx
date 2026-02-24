@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import { EventComments } from "@/src/components/event-comments";
 import { EventInviteSection } from "@/src/components/event-invite-section";
@@ -64,9 +65,50 @@ export default async function EventShortcutPage({
   }
 
   const user = await requireAppUser();
+
   if (!user) {
-    const callbackUrl = `/e/${encodeURIComponent(shortEventId)}`;
-    redirect(`/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+    const preview = await getPublicEventSharePreviewByShortId(shortEventId);
+    if (!preview) {
+      notFound();
+    }
+    const signInUrl = `/api/auth/signin/google?callbackUrl=${encodeURIComponent(`/e/${encodeURIComponent(shortEventId)}`)}`;
+    return (
+      <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm">
+          <Link href="/" className="font-semibold text-teal-700 hover:text-teal-800">
+            ← Realite
+          </Link>
+        </div>
+
+        <SharedEventContent
+          title={preview.title.replace(/#[^\s]+/gi, "").trim()}
+          startsAtIso={preview.startsAt.toISOString()}
+          endsAtIso={preview.endsAt.toISOString()}
+          description={preview.description}
+          location={preview.location}
+          createdByName={preview.createdByName}
+          createdByEmail={preview.createdByEmail}
+        />
+
+        <section className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <p className="text-sm font-medium text-slate-700">
+            Melde dich an, um zuzusagen, abzusagen oder zu kommentieren.
+          </p>
+          <Link
+            href={signInUrl}
+            className="mt-3 inline-flex rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800"
+          >
+            Mit Google anmelden
+          </Link>
+        </section>
+
+        <EventComments
+          eventId={preview.id}
+          allowGuestView
+          signInCallbackPath={`/e/${shortEventId}`}
+        />
+      </main>
+    );
   }
 
   const [event, suggestion, acceptedByEventId] = await Promise.all([
@@ -85,9 +127,9 @@ export default async function EventShortcutPage({
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm">
-        <a href="/" className="font-semibold text-teal-700 hover:text-teal-800">
+        <Link href="/" className="font-semibold text-teal-700 hover:text-teal-800">
           ← Zum Dashboard
-        </a>
+        </Link>
       </div>
 
       <SharedEventContent
@@ -144,12 +186,12 @@ export default async function EventShortcutPage({
           <p className="text-sm text-slate-700">
             Für dieses Event gibt es einen persönlichen Vorschlag mit Status <strong>{suggestion.status}</strong>.
           </p>
-          <a
+          <Link
             href={`/s/${shortenUUID(suggestion.id)}`}
             className="mt-3 inline-flex rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white"
           >
             Zur Suggestion-Antwortseite
-          </a>
+          </Link>
         </section>
       ) : null}
 

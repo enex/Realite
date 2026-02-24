@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { notFound } from "next/navigation";
 
 import {
   EVENT_SHARE_FALLBACK_DESCRIPTION,
@@ -8,10 +9,10 @@ import {
   getEventShareCopy,
   getPublicEventSharePreviewByShortId
 } from "@/src/lib/event-share";
-import { notFound } from "next/navigation";
+import { getPublicEventSharePreviewById, getSuggestion } from "@/src/lib/repository";
 import { enlargeUUID } from "@/src/lib/utils/short-uuid";
-import { getSuggestion } from "@/src/lib/repository";
 
+/** Öffentlich abrufbar ohne Anmeldung – nur getPublicEventSharePreview*, keine Session. */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const alt = "Event auf Realite";
@@ -70,15 +71,17 @@ export default async function EventOgImage({
   if (!shortEventId && !shortSuggestionId) {
     notFound();
   }
+  let preview = null;
   if (shortSuggestionId) {
     const suggestionId = enlargeUUID(shortSuggestionId);
     const suggestion = await getSuggestion(suggestionId);
     if (!suggestion) {
       notFound();
     }
-    shortEventId = suggestion.eventId;
+    preview = await getPublicEventSharePreviewById(suggestion.eventId);
+  } else {
+    preview = await getPublicEventSharePreviewByShortId(shortEventId!);
   }
-  const preview = await getPublicEventSharePreviewByShortId(shortEventId!);
   const copy = getEventShareCopy(preview);
   const schedule = preview ? formatEventShareSchedule(preview) : EVENT_SHARE_FALLBACK_DESCRIPTION;
   const owner = preview ? formatEventShareOwner(preview) : "";

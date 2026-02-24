@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 type Comment = {
@@ -14,6 +15,10 @@ type Comment = {
 
 type EventCommentsProps = {
   eventId: string;
+  /** Wenn true, dürfen Gäste Kommentare lesen; Schreiben erfordert Anmeldung (Form ausgeblendet, CTA angezeigt). */
+  allowGuestView?: boolean;
+  /** Bei allowGuestView: Pfad für callbackUrl nach der Anmeldung (z. B. /e/xyz). */
+  signInCallbackPath?: string;
 };
 
 function formatCommentDate(iso: string): string {
@@ -26,7 +31,11 @@ function formatCommentDate(iso: string): string {
   });
 }
 
-export function EventComments({ eventId }: EventCommentsProps) {
+export function EventComments({
+  eventId,
+  allowGuestView = false,
+  signInCallbackPath = "/",
+}: EventCommentsProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -125,36 +134,48 @@ export function EventComments({ eventId }: EventCommentsProps) {
         </ul>
       )}
 
-      <form onSubmit={handleSubmit} className="mt-4">
-        <label htmlFor="event-comment-body" className="sr-only">
-          Neuer Kommentar
-        </label>
-        <textarea
-          id="event-comment-body"
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="Frage stellen, antworten, mitreden…"
-          rows={3}
-          maxLength={2000}
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-          disabled={submitting}
-        />
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xs text-slate-500">
-            {body.length}/2000 Zeichen
-          </span>
-          <button
-            type="submit"
-            disabled={!body.trim() || submitting}
-            className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-50"
+      {allowGuestView ? (
+        <p className="mt-4 text-sm text-slate-600">
+          <Link
+            href={`/api/auth/signin/google?callbackUrl=${encodeURIComponent(signInCallbackPath)}`}
+            className="font-medium text-teal-700 hover:text-teal-800"
           >
-            {submitting ? "Wird gesendet…" : "Kommentar senden"}
-          </button>
-        </div>
-        {submitError ? (
-          <p className="mt-2 text-sm text-red-600">{submitError}</p>
-        ) : null}
-      </form>
+            Melde dich an
+          </Link>
+          , um zu kommentieren.
+        </p>
+      ) : (
+        <form onSubmit={handleSubmit} className="mt-4">
+          <label htmlFor="event-comment-body" className="sr-only">
+            Neuer Kommentar
+          </label>
+          <textarea
+            id="event-comment-body"
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="Frage stellen, antworten, mitreden…"
+            rows={3}
+            maxLength={2000}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            disabled={submitting}
+          />
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs text-slate-500">
+              {body.length}/2000 Zeichen
+            </span>
+            <button
+              type="submit"
+              disabled={!body.trim() || submitting}
+              className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-50"
+            >
+              {submitting ? "Wird gesendet…" : "Kommentar senden"}
+            </button>
+          </div>
+          {submitError ? (
+            <p className="mt-2 text-sm text-red-600">{submitError}</p>
+          ) : null}
+        </form>
+      )}
     </section>
   );
 }

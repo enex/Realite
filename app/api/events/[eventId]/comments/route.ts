@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import {
   createEventComment,
+  getPublicEventSharePreviewById,
   getVisibleEventForUserById,
   listEventComments
 } from "@/src/lib/repository";
@@ -21,15 +22,19 @@ export async function GET(
   _request: Request,
   context: { params: Promise<{ eventId: string }> }
 ) {
-  const user = await requireAppUser();
-  if (!user) {
-    return NextResponse.json({ error: "Nicht eingeloggt" }, { status: 401 });
-  }
-
   const { eventId } = await context.params;
-  const event = await getVisibleEventForUserById({ userId: user.id, eventId });
-  if (!event) {
-    return NextResponse.json({ error: "Event nicht gefunden" }, { status: 404 });
+  const user = await requireAppUser();
+
+  if (user) {
+    const event = await getVisibleEventForUserById({ userId: user.id, eventId });
+    if (!event) {
+      return NextResponse.json({ error: "Event nicht gefunden" }, { status: 404 });
+    }
+  } else {
+    const publicPreview = await getPublicEventSharePreviewById(eventId);
+    if (!publicPreview) {
+      return NextResponse.json({ error: "Event nicht gefunden" }, { status: 404 });
+    }
   }
 
   const comments = await listEventComments(eventId);
