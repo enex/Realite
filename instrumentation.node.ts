@@ -66,9 +66,39 @@ provider.register({
 registerInstrumentations({
   tracerProvider: provider,
   instrumentations: [
-    new HttpInstrumentation(),
+    new HttpInstrumentation({
+      // Track externe HTTP-Calls (inkl. fetch() basierte Calls zu Google APIs etc.)
+      ignoreIncomingRequestHook: (req) => {
+        // Ignoriere Health-Checks und ähnliche interne Calls
+        const url = "url" in req ? req.url || "" : "";
+        return url.includes("/api/health") || url.includes("/_next");
+      },
+      // Erweiterte Attribute für externe Calls
+      requestHook: (span, request) => {
+        // Extrahiere URL aus verschiedenen Request-Typen
+        let url = "";
+        if ("url" in request && typeof request.url === "string") {
+          url = request.url;
+        } else if ("path" in request && typeof request.path === "string") {
+          url = request.path;
+        } else if ("getHeader" in request) {
+          // Für ClientRequest: verwende host + path
+          const host = request.getHeader("host") || "";
+          const path = "path" in request ? request.path : "";
+          url = `${host}${path}`;
+        }
+
+        if (url.includes("googleapis.com")) {
+          span.setAttribute("external.api", "google");
+        }
+      },
+    }),
+    // PgInstrumentation für pg-Paket (falls verwendet, z.B. für Migrations)
     new PgInstrumentation({
       enhancedDatabaseReporting: process.env.NODE_ENV !== "production",
     }),
   ],
 });
+
+// Hinweis: Drizzle ORM mit postgres.js wird über @kubiks/otel-drizzle
+// in src/db/client.ts instrumentiert, nicht hier.
