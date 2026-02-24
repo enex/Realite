@@ -62,14 +62,16 @@ export async function requireAppUser() {
     image: session.user.image
   });
 
-  await ensureAlleGroupForUser(user.id);
-  await ensureKontakteGroupForUser(user.id);
-  await ensureUserDatingProfile(user.id);
-  await ensureUserSuggestionSettings(user.id);
-  await syncGoogleConnectionFromAuthAccount({
-    authUserId: session.user.id,
-    appUserId: user.id
-  });
+  await Promise.all([
+    ensureAlleGroupForUser(user.id),
+    ensureKontakteGroupForUser(user.id),
+    ensureUserDatingProfile(user.id),
+    ensureUserSuggestionSettings(user.id),
+    syncGoogleConnectionFromAuthAccount({
+      authUserId: session.user.id,
+      appUserId: user.id
+    })
+  ]);
 
   return user;
 }
