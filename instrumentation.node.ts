@@ -62,11 +62,13 @@ provider.register({
   contextManager,
 });
 
-// DB-Client einmalig initialisieren, damit @kubiks/otel-drizzle den gesetzten
-// TracerProvider nutzt (Reihenfolge ist kritisch für Query-Spans).
+// DB-Client einmalig initialisieren und Pool mit einer Query „warmen“, damit
+// die erste echte Request (z. B. auth_session SELECT) nicht 300–600 ms für
+// TCP/TLS/PostgreSQL-Connection-Aufbau zahlt. @kubiks/otel-drizzle nutzt den
+// zuvor gesetzten TracerProvider (Reihenfolge ist kritisch für Query-Spans).
 if (process.env.DATABASE_URL) {
   import("./src/db/client")
-    .then((m) => m.getDb())
+    .then((m) => m.warmupDb())
     .catch(() => {});
 }
 

@@ -1,8 +1,19 @@
+import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { instrumentDrizzleClient } from "@kubiks/otel-drizzle";
 
 let dbInstance: ReturnType<typeof drizzle> | null = null;
+
+/**
+ * Führt eine minimale Query aus, um die erste DB-Verbindung aufzubauen.
+ * Sollte beim Prozessstart (z. B. in instrumentation.node.ts) aufgerufen werden,
+ * damit die erste echte Request nicht 300–600 ms für den Connection-Aufbau zahlt.
+ */
+export async function warmupDb(): Promise<void> {
+  const db = getDb();
+  await db.execute(sql`SELECT 1`);
+}
 
 export function getDb() {
   if (dbInstance) {
