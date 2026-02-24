@@ -1,3 +1,4 @@
+import { fetchOgImageFromText } from "@/src/lib/link-preview";
 import {
   deleteCalendarWatchChannelById,
   deleteCalendarWatchChannelsByUserId,
@@ -10,6 +11,7 @@ import {
   getUserById,
   listExternalSourceEventsForUser,
   listSuggestionCalendarRefsByEventIds,
+  updateEventImageUrls,
   updateGoogleConnectionTokens,
   upsertExternalPublicEvent
 } from "@/src/lib/repository";
@@ -1623,6 +1625,14 @@ export async function syncPublicEventsFromGoogleCalendar(userId: string) {
             `Realite-Link für Google-Event ${sourceEventId} konnte nicht ergänzt werden`,
             error instanceof Error ? error.message : error
           );
+        }
+
+        if (importedDescription?.trim()) {
+          void fetchOgImageFromText(importedDescription).then((url) => {
+            if (url) {
+              return updateEventImageUrls(importedEvent.id, { linkPreviewImageUrl: url });
+            }
+          });
         }
 
         synced += 1;

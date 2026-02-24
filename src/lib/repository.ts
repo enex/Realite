@@ -33,6 +33,10 @@ import {
   type DatingProfile,
 } from "@/src/lib/dating";
 import {
+  type EventCategory,
+  inferEventCategory,
+} from "@/src/lib/event-categories";
+import {
   type DeclineReason,
   createLocationPreferenceTag,
   createPersonPreferenceTag,
@@ -99,6 +103,9 @@ export type VisibleEvent = {
   sourceProvider: string | null;
   sourceEventId: string | null;
   color: string | null;
+  category: EventCategory;
+  placeImageUrl: string | null;
+  linkPreviewImageUrl: string | null;
   tags: string[];
 };
 
@@ -112,6 +119,8 @@ export type PublicEventSharePreview = {
   createdByName: string | null;
   createdByEmail: string | null;
   color: string | null;
+  placeImageUrl: string | null;
+  linkPreviewImageUrl: string | null;
 };
 
 export type GroupContact = {
@@ -136,6 +145,8 @@ export type UserProfileEvent = {
   visibility: EventVisibility;
   groupName: string | null;
   color: string | null;
+  placeImageUrl: string | null;
+  linkPreviewImageUrl: string | null;
   tags: string[];
   matchStatus: SuggestionStatus | null;
 };
@@ -1721,6 +1732,7 @@ export async function createEvent(input: {
   groupId?: string | null;
   tags: string[];
   color?: string | null;
+  category?: EventCategory | null;
 }) {
   const db = getDb();
   const normalizedTags = normalizeTags(input.tags);
@@ -1787,6 +1799,13 @@ export async function createEvent(input: {
       ? (alleGroup?.id ?? null)
       : (input.groupId ?? null);
 
+  const category: EventCategory =
+    input.category ?? inferEventCategory({
+      title: input.title,
+      description: input.description,
+      tags: finalTags,
+    });
+
   return db.transaction(async (tx) => {
     const [event] = await tx
       .insert(events)
@@ -1799,6 +1818,7 @@ export async function createEvent(input: {
         visibility: finalVisibility,
         groupId: finalGroupId,
         color: input.color ?? null,
+        category,
         createdBy: input.userId,
       })
       .returning();
@@ -1830,6 +1850,11 @@ export async function upsertExternalPublicEvent(input: {
 }) {
   const db = getDb();
   const normalizedTags = normalizeTags([...input.tags, "#alle"]);
+  const category = inferEventCategory({
+    title: input.title,
+    description: input.description ?? undefined,
+    tags: normalizedTags,
+  });
 
   return db.transaction(async (tx) => {
     const [event] = await tx
@@ -1844,6 +1869,7 @@ export async function upsertExternalPublicEvent(input: {
         groupId: input.groupId ?? null,
         sourceProvider: input.sourceProvider,
         sourceEventId: input.sourceEventId,
+        category,
         createdBy: input.userId,
       })
       .onConflictDoUpdate({
@@ -1856,6 +1882,7 @@ export async function upsertExternalPublicEvent(input: {
           endsAt: input.endsAt,
           visibility: "public",
           groupId: input.groupId ?? null,
+          category,
         },
       })
       .returning();
@@ -1924,6 +1951,18 @@ export async function deleteEventsByIds(eventIds: string[]) {
   return eventIds.length;
 }
 
+export async function updateEventImageUrls(
+  eventId: string,
+  input: { placeImageUrl?: string | null; linkPreviewImageUrl?: string | null },
+) {
+  const db = getDb();
+  const updates: Partial<{ placeImageUrl: string | null; linkPreviewImageUrl: string | null }> = {};
+  if (input.placeImageUrl !== undefined) updates.placeImageUrl = input.placeImageUrl;
+  if (input.linkPreviewImageUrl !== undefined) updates.linkPreviewImageUrl = input.linkPreviewImageUrl;
+  if (Object.keys(updates).length === 0) return;
+  await db.update(events).set(updates).where(eq(events.id, eventId));
+}
+
 export async function listVisibleEventsForUser(userId: string) {
   const db = getDb();
   const memberships = await db
@@ -1957,6 +1996,9 @@ export async function listVisibleEventsForUser(userId: string) {
       sourceProvider: events.sourceProvider,
       sourceEventId: events.sourceEventId,
       color: events.color,
+      category: events.category,
+      placeImageUrl: events.placeImageUrl,
+      linkPreviewImageUrl: events.linkPreviewImageUrl,
     })
     .from(events)
     .leftJoin(groups, eq(events.groupId, groups.id))
@@ -2042,6 +2084,8 @@ export async function getPublicEventSharePreviewById(
       createdByName: users.name,
       createdByEmail: users.email,
       color: events.color,
+      placeImageUrl: events.placeImageUrl,
+      linkPreviewImageUrl: events.linkPreviewImageUrl,
     })
     .from(events)
     .innerJoin(users, eq(events.createdBy, users.id))
@@ -2098,6 +2142,8 @@ export async function getVisibleEventForUserById(input: {
       sourceProvider: events.sourceProvider,
       sourceEventId: events.sourceEventId,
       color: events.color,
+      placeImageUrl: events.placeImageUrl,
+      linkPreviewImageUrl: events.linkPreviewImageUrl,
     })
     .from(events)
     .leftJoin(groups, eq(events.groupId, groups.id))
@@ -2304,6 +2350,8 @@ export async function listPublicAlleEvents(limit = 20) {
       groupName: groups.name,
       sourceProvider: events.sourceProvider,
       sourceEventId: events.sourceEventId,
+      placeImageUrl: events.placeImageUrl,
+      linkPreviewImageUrl: events.linkPreviewImageUrl,
     })
     .from(events)
     .leftJoin(groups, eq(events.groupId, groups.id))
@@ -2364,6 +2412,8 @@ async function listPublicAlleEventsForUser(userId: string) {
       sourceProvider: events.sourceProvider,
       sourceEventId: events.sourceEventId,
       color: events.color,
+      placeImageUrl: events.placeImageUrl,
+      linkPreviewImageUrl: events.linkPreviewImageUrl,
     })
     .from(events)
     .leftJoin(groups, eq(events.groupId, groups.id))
@@ -2424,6 +2474,8 @@ function mapVisibleEventToUserProfileEvent(
     visibility: event.visibility,
     groupName: event.groupName,
     color: event.color,
+    placeImageUrl: event.placeImageUrl,
+    linkPreviewImageUrl: event.linkPreviewImageUrl,
     tags: event.tags,
     matchStatus,
   };

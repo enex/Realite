@@ -86,6 +86,8 @@ export default async function EventShortcutPage({
           endsAtIso={preview.endsAt.toISOString()}
           description={preview.description}
           location={preview.location}
+          placeImageUrl={preview.placeImageUrl}
+          linkPreviewImageUrl={preview.linkPreviewImageUrl}
           createdByName={preview.createdByName}
           createdByEmail={preview.createdByEmail}
         />
@@ -138,6 +140,8 @@ export default async function EventShortcutPage({
         endsAtIso={event.endsAt.toISOString()}
         description={event.description}
         location={event.location}
+        placeImageUrl={event.placeImageUrl}
+        linkPreviewImageUrl={event.linkPreviewImageUrl}
         groupName={event.groupName}
         createdByShortId={shortenUUID(event.createdBy)}
         createdByName={event.createdByName}

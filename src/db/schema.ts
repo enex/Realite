@@ -23,6 +23,17 @@ export const eventVisibilityEnum = pgEnum("event_visibility", [
   "group",
   "smart_date",
 ]);
+/** Kategorie für die Anzeige im Kalender (Google-Calendar-Style). */
+export const eventCategoryEnum = pgEnum("event_category", [
+  "default",
+  "meeting",
+  "work",
+  "personal",
+  "sport",
+  "social",
+  "birthday",
+  "date",
+]);
 export const datingGenderEnum = pgEnum("dating_gender", ["woman", "man", "non_binary"]);
 export const suggestionStatusEnum = pgEnum("suggestion_status", [
   "pending",
@@ -234,6 +245,11 @@ export const events = pgTable(
     sourceProvider: text("source_provider"),
     sourceEventId: text("source_event_id"),
     color: text("color"),
+    category: eventCategoryEnum("category").notNull().default("default"),
+    /** Bild des Ortes (z. B. von Places-API oder manuell). */
+    placeImageUrl: text("place_image_url"),
+    /** OG-/Preview-Bild vom ersten Link in der Beschreibung. */
+    linkPreviewImageUrl: text("link_preview_image_url"),
     createdBy: uuid("created_by")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),

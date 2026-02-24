@@ -5,6 +5,13 @@ import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/components/app-shell";
 import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
 import { UserAvatar } from "@/src/components/user-avatar";
+import {
+  CATEGORY_COLORS,
+  CATEGORY_LABELS,
+  EVENT_CATEGORY_VALUES,
+  type EventCategory,
+  inferEventCategory,
+} from "@/src/lib/event-categories";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
@@ -24,6 +31,9 @@ type EventItem = {
   tags: string[];
   visibility: "public" | "group" | "smart_date";
   color: string | null;
+  category: EventCategory;
+  placeImageUrl: string | null;
+  linkPreviewImageUrl: string | null;
 };
 
 type Suggestion = {
@@ -38,6 +48,10 @@ type SmartMeeting = {
   groupName: string;
   status: "active" | "secured" | "exhausted" | "paused";
   tags: string[];
+  description?: string | null;
+  location?: string | null;
+  durationMinutes?: number;
+  slotIntervalMinutes?: number;
   minAcceptedParticipants: number;
   responseWindowHours: number;
   maxAttempts: number;
@@ -149,7 +163,8 @@ export function Dashboard({
     visibility: "public" as "public" | "group",
     groupId: "",
     tags: "#kontakte",
-    color: "" as string
+    color: "" as string,
+    category: "default" as EventCategory,
   });
 
   const visibleGroups = useMemo(() => data.groups.filter((group) => !group.isHidden), [data.groups]);
@@ -173,6 +188,20 @@ export function Dashboard({
       .filter((event) => !pendingSuggestionEventIds.has(event.id))
       .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
   }, [data.events, data.suggestions]);
+
+  /** Events nach Kategorie gruppiert (Reihenfolge wie Google Kalender: Kategorien mit Farben). */
+  const eventsByCategory = useMemo(() => {
+    const map = new Map<EventCategory, typeof visibleEvents>();
+    for (const cat of EVENT_CATEGORY_VALUES) {
+      map.set(cat, []);
+    }
+    for (const event of visibleEvents) {
+      const cat = event.category ?? "default";
+      const list = map.get(cat) ?? map.get("default")!;
+      list.push(event);
+    }
+    return Array.from(map.entries()).filter(([, list]) => list.length > 0);
+  }, [visibleEvents]);
 
   const profileName = data.me.name ?? userName;
   const profileEmail = data.me.email || userEmail;
@@ -208,6 +237,21 @@ export function Dashboard({
   useEffect(() => {
     void loadData();
   }, []);
+
+  // Kategorie aus Titel, Tags und Beschreibung vorschlagen (nutzer kann sie im Formular anpassen)
+  useEffect(() => {
+    if (!showEventForm) return;
+    const tags = eventForm.tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    const suggested = inferEventCategory({
+      title: eventForm.title,
+      description: eventForm.description,
+      tags,
+    });
+    setEventForm((state) => ({ ...state, category: suggested }));
+  }, [showEventForm, eventForm.title, eventForm.tags, eventForm.description]);
 
   useEffect(() => {
     if (!data.sync.revalidating) {
@@ -251,7 +295,8 @@ export function Dashboard({
             .split(",")
             .map((tag) => tag.trim())
             .filter(Boolean),
-          color: eventForm.color && eventForm.color.trim() ? eventForm.color.trim() : null
+          color: eventForm.color && eventForm.color.trim() ? eventForm.color.trim() : null,
+          category: eventForm.category,
         })
       });
 
@@ -288,7 +333,8 @@ export function Dashboard({
         visibility: "public",
         groupId: "",
         tags: "#kontakte",
-        color: ""
+        color: "",
+        category: "default",
       });
       setShowEventForm(false);
       await loadData({ silent: true });
@@ -427,6 +473,28 @@ export function Dashboard({
                   ))}
                 </select>
               </div>
+              <div>
+                <label htmlFor="event-category" className="mb-1 block text-xs font-medium text-slate-600">
+                  Kategorie (für Kalenderansicht)
+                </label>
+                <select
+                  id="event-category"
+                  value={eventForm.category}
+                  onChange={(event) =>
+                    setEventForm((state) => ({ ...state, category: event.target.value as EventCategory }))
+                  }
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                >
+                  {EVENT_CATEGORY_VALUES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {CATEGORY_LABELS[cat]}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-slate-500">
+                  Wird aus Titel und Tags erkannt; du kannst sie hier anpassen.
+                </p>
+              </div>
             </div>
             <button
               type="submit"
@@ -451,52 +519,83 @@ export function Dashboard({
 
         <section id="events" className="mt-8 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">Alle sichtbaren Events</h2>
-          <p className="mt-1 text-sm text-slate-600">Deine öffentlichen und Gruppen-Events in zeitlicher Reihenfolge.</p>
-          <div className="mt-4 space-y-2">
+          <p className="mt-1 text-sm text-slate-600">Deine Events nach Kategorie, in zeitlicher Reihenfolge.</p>
+          <div className="mt-4 space-y-6">
             {visibleEvents.length === 0 ? (
               <p className="text-sm text-slate-500">
                 Noch keine Events vorhanden. Lege ein Event an oder öffne <a href="/groups" className="text-teal-700 underline">Gruppen</a>.
               </p>
             ) : null}
-            {visibleEvents.map((event) => {
-              const accepted = data.acceptedByEventId?.[event.id] ?? [];
-              return (
-                <article
-                  key={event.id}
-                  className="rounded-md border border-slate-200 p-3"
-                  style={
-                    event.color
-                      ? { borderLeftWidth: "4px", borderLeftColor: event.color }
-                      : undefined
-                  }
+            {eventsByCategory.map(([category, events]) => (
+              <div key={category}>
+                <div
+                  className="mb-2 flex items-center gap-2 border-b border-slate-200 pb-1.5"
+                  style={{ borderBottomColor: CATEGORY_COLORS[category] }}
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <a
-                        href={`/e/${shortenUUID(event.id)}`}
-                        className="break-words text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
+                  <span
+                    className="inline-block h-3 w-1 shrink-0 rounded-full"
+                    style={{ backgroundColor: CATEGORY_COLORS[category] }}
+                    aria-hidden
+                  />
+                  <h3 className="text-sm font-semibold text-slate-700">{CATEGORY_LABELS[category]}</h3>
+                  <span className="text-xs text-slate-500">({events.length})</span>
+                </div>
+                <div className="space-y-2">
+                  {events.map((event) => {
+                    const accepted = data.acceptedByEventId?.[event.id] ?? [];
+                    const coverUrl = event.placeImageUrl ?? event.linkPreviewImageUrl ?? null;
+                    const borderColor = event.color ?? CATEGORY_COLORS[event.category ?? "default"];
+                    return (
+                      <article
+                        key={event.id}
+                        className="overflow-hidden rounded-md border border-slate-200"
+                        style={{ borderLeftWidth: "4px", borderLeftColor: borderColor }}
                       >
-                        {event.title.replace(/#[^\s]+/gi, "").trim()}
-                      </a>
-                      <p className="text-xs text-slate-500">
-                        {new Date(event.startsAt).toLocaleString("de-DE")} - {new Date(event.endsAt).toLocaleTimeString("de-DE")} ·{" "}
-                        {event.tags.join(" · ")}
-                      </p>
-                      {accepted.length > 0 && (
-                        <p className="mt-1 text-xs text-teal-700">
-                          Zugesagt: {accepted.map((u) => u.name ?? u.email).join(", ")}
-                        </p>
-                      )}
-                    </div>
-                    {acceptedEventIds.has(event.id) && (
-                      <span className="shrink-0 rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-semibold text-teal-800">
-                        Du hast zugesagt
-                      </span>
-                    )}
-                  </div>
-                </article>
-              );
-            })}
+                        <div className="flex">
+                          {coverUrl ? (
+                            <a
+                              href={`/e/${shortenUUID(event.id)}`}
+                              className="relative h-20 w-24 shrink-0 bg-slate-100 sm:h-24 sm:w-28"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={coverUrl}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            </a>
+                          ) : null}
+                          <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-2 p-3">
+                            <div>
+                              <a
+                                href={`/e/${shortenUUID(event.id)}`}
+                                className="break-words text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
+                              >
+                                {event.title.replace(/#[^\s]+/gi, "").trim()}
+                              </a>
+                              <p className="text-xs text-slate-500">
+                                {new Date(event.startsAt).toLocaleString("de-DE")} - {new Date(event.endsAt).toLocaleTimeString("de-DE")} ·{" "}
+                                {event.tags.join(" · ")}
+                              </p>
+                              {accepted.length > 0 && (
+                                <p className="mt-1 text-xs text-teal-700">
+                                  Zugesagt: {accepted.map((u) => u.name ?? u.email).join(", ")}
+                                </p>
+                              )}
+                            </div>
+                            {acceptedEventIds.has(event.id) && (
+                              <span className="shrink-0 rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-semibold text-teal-800">
+                                Du hast zugesagt
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </section>
       </main>

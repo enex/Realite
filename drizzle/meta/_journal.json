@@ -141,6 +141,20 @@
       "when": 1771876767388,
       "tag": "0019_nasty_the_professor",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1771930272175,
+      "tag": "0020_dark_blacklash",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1771930367493,
+      "tag": "0021_salty_hawkeye",
+      "breakpoints": true
     }
   ]
 }

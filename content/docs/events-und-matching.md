@@ -10,10 +10,19 @@ Ein Event besteht aus:
 - Sichtbarkeit
 - Hashtags
 - optionaler Farbe (z. B. zur schnellen Zuordnung; wird bei Events und Vorschlägen als farbiger Rand angezeigt)
+- **Kategorie** (z. B. Besprechung, Sport, Privat, Geburtstag) – für die Kalenderansicht
+
+**Kategorien:** Events werden auf dem Dashboard nach Kategorie gruppiert angezeigt (ähnlich wie in Google Kalender). Beim Anlegen schlägt Realite eine Kategorie anhand von Titel, Beschreibung und Tags vor; du kannst sie im Formular anpassen. Verfügbare Kategorien sind u. a. Sonstiges, Besprechung, Arbeit, Privat, Sport, Soziales, Geburtstag, Verabredung.
+
+**Bilder:** Events können ein Vorschaubild anzeigen. Realite nutzt dafür:
+- **Ort:** Ein optionales Bild des Ortes (z. B. Venue-Foto), sofern hinterlegt.
+- **Link-Preview:** Enthält die Beschreibung einen Link, wird automatisch das Vorschaubild (og:image) dieser Seite ermittelt und als Event-Bild genutzt.
+
+Das Bild erscheint auf der Event-Detailseite, in Event-Listen (Dashboard, Gruppen, Profil, Startseite) und lockert die Ansicht auf. Wenn weder Ortsbild noch Link-Preview verfügbar sind, wird nur Text angezeigt.
 
 ## Smart Treffen (automatische Terminfindung)
 
-Mit **Smart Treffen** sucht Realite automatisch den besten Zeitpunkt für eine Gruppe und lädt die Teilnehmer direkt ein.
+Mit **Smart Treffen** sucht Realite automatisch den besten Zeitpunkt für eine Gruppe und lädt die Teilnehmer direkt ein. Bestehende Smart Treffen kannst du im Dashboard bei „Smart Treffen“ über **Bearbeiten** anpassen (Titel, Gruppe, Suchfenster, Mindestzusagen usw.).
 
 Du legst fest:
 
@@ -138,6 +147,7 @@ Event- und Vorschlagslisten in Realite verlinken direkt auf diese Seiten, damit 
 
 Auf der Eventseite (`/e/<shortUUID>`) siehst du jetzt alle wichtigen Event-Informationen gesammelt:
 
+- optional ein Vorschaubild oben (Ort oder Link-Preview aus der Beschreibung)
 - Titel und Termin
 - Ort
 - Beschreibung

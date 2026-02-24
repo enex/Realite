@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { triggerDashboardBackgroundSync } from "@/src/lib/background-sync";
-import { createEvent, listVisibleEventsForUser, RepositoryValidationError } from "@/src/lib/repository";
+import { EVENT_CATEGORY_VALUES, type EventCategory } from "@/src/lib/event-categories";
+import { fetchOgImageFromText } from "@/src/lib/link-preview";
+import { createEvent, listVisibleEventsForUser, RepositoryValidationError, updateEventImageUrls } from "@/src/lib/repository";
 import { parseSmartMeetingShortcuts } from "@/src/lib/smart-meeting-shortcuts";
 import { SmartMeetingValidationError, createSmartMeetingPlanWithInitialRun } from "@/src/lib/smart-meetings";
 import { requireAppUser } from "@/src/lib/session";
@@ -17,6 +19,7 @@ const createEventSchema = z.object({
   groupId: z.string().uuid().optional().nullable(),
   tags: z.array(z.string()).default([]),
   color: z.string().max(30).optional().nullable(),
+  category: z.enum(EVENT_CATEGORY_VALUES as unknown as [string, ...string[]]).optional().nullable(),
 });
 
 function serializeEvent(event: Awaited<ReturnType<typeof listVisibleEventsForUser>>[number], isAvailable: boolean) {
@@ -113,7 +116,14 @@ export async function POST(request: Request) {
       groupId: parsed.data.groupId,
       tags: parsed.data.tags,
       color: parsed.data.color ?? null,
+      category: (parsed.data.category as EventCategory | undefined) ?? null,
     });
+
+    if (parsed.data.description?.trim()) {
+      void fetchOgImageFromText(parsed.data.description).then((url) => {
+        if (url) return updateEventImageUrls(event.id, { linkPreviewImageUrl: url });
+      });
+    }
 
     return NextResponse.json({ event });
   } catch (error) {

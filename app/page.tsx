@@ -137,17 +137,32 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
             : "Gerade wird das nächste Event vorbereitet. Starte jetzt und setze den ersten Impuls."}
         </p>
         <div className="mt-5 space-y-3">
-          {publicAlleEvents.slice(0, 3).map((event) => (
-            <article key={event.id} className="rounded-xl border border-white/15 bg-slate-900/70 p-4 sm:rounded-2xl">
-              <a href={`/e/${shortenUUID(event.id)}`} className="break-words font-semibold text-white hover:text-teal-200">
-                {event.title.replace(/#[^\s]+/gi, "").trim()}
-              </a>
-              <p className="mt-1 text-xs text-slate-300">
-                {new Date(event.startsAt).toLocaleString("de-DE")} bis{" "}
-                {new Date(event.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
-              </p>
-            </article>
-          ))}
+          {publicAlleEvents.slice(0, 3).map((event) => {
+            const coverUrl = event.placeImageUrl ?? event.linkPreviewImageUrl ?? null;
+            return (
+              <article key={event.id} className="overflow-hidden rounded-xl border border-white/15 bg-slate-900/70 sm:rounded-2xl">
+                {coverUrl ? (
+                  <a href={`/e/${shortenUUID(event.id)}`} className="block h-24 w-full sm:h-28">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={coverUrl}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  </a>
+                ) : null}
+                <div className="p-4">
+                  <a href={`/e/${shortenUUID(event.id)}`} className="break-words font-semibold text-white hover:text-teal-200">
+                    {event.title.replace(/#[^\s]+/gi, "").trim()}
+                  </a>
+                  <p className="mt-1 text-xs text-slate-300">
+                    {new Date(event.startsAt).toLocaleString("de-DE")} bis{" "}
+                    {new Date(event.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+              </article>
+            );
+          })}
           {publicAlleEvents.length === 0 ? (
             <article className="rounded-2xl border border-dashed border-white/20 bg-slate-900/50 p-4 text-sm text-slate-300">
               Noch keine öffentlichen Events vorhanden.

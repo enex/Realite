@@ -55,6 +55,21 @@ export type CreateSmartMeetingInput = {
   maxAttempts?: number;
 };
 
+export type UpdateSmartMeetingInput = {
+  title?: string;
+  description?: string;
+  location?: string;
+  groupId?: string;
+  tags?: string[];
+  durationMinutes?: number;
+  minAcceptedParticipants?: number;
+  responseWindowHours?: number;
+  searchWindowStart?: Date;
+  searchWindowEnd?: Date;
+  slotIntervalMinutes?: number;
+  maxAttempts?: number;
+};
+
 export type SmartMeetingSummary = {
   id: string;
   title: string;
@@ -62,6 +77,10 @@ export type SmartMeetingSummary = {
   groupName: string;
   status: "active" | "secured" | "exhausted" | "paused";
   tags: string[];
+  description: string | null;
+  location: string | null;
+  durationMinutes: number;
+  slotIntervalMinutes: number;
   minAcceptedParticipants: number;
   responseWindowHours: number;
   maxAttempts: number;
@@ -962,6 +981,82 @@ export async function createSmartMeetingPlanWithInitialRun(input: CreateSmartMee
   }
 }
 
+export async function updateSmartMeetingPlan(
+  planId: string,
+  userId: string,
+  input: UpdateSmartMeetingInput
+): Promise<void> {
+  const existing = await listPlanById(planId);
+  if (!existing) {
+    throw new SmartMeetingValidationError("Smart-Treffen nicht gefunden.");
+  }
+  if (existing.createdBy !== userId) {
+    throw new SmartMeetingValidationError("Keine Berechtigung, dieses Smart-Treffen zu bearbeiten.");
+  }
+
+  const title = input.title !== undefined ? input.title.trim() : existing.title;
+  if (!title) {
+    throw new SmartMeetingValidationError("Titel fehlt.");
+  }
+
+  const groupId = input.groupId ?? existing.groupId;
+  const allowed = await isGroupMember(groupId, userId);
+  if (!allowed) {
+    throw new SmartMeetingValidationError("Keine Berechtigung für diese Gruppe.");
+  }
+
+  const searchWindowStart = input.searchWindowStart ?? existing.searchWindowStart;
+  const searchWindowEnd = input.searchWindowEnd ?? existing.searchWindowEnd;
+  if (searchWindowEnd <= searchWindowStart) {
+    throw new SmartMeetingValidationError("Das Suchfenster ist ungültig.");
+  }
+
+  const durationMinutes = clampInt(
+    input.durationMinutes ?? existing.durationMinutes,
+    15,
+    24 * 60
+  );
+  const minAcceptedParticipants = clampInt(
+    input.minAcceptedParticipants ?? existing.minAcceptedParticipants,
+    1,
+    50
+  );
+  const responseWindowHours = clampInt(
+    input.responseWindowHours ?? existing.responseWindowHours,
+    1,
+    14 * 24
+  );
+  const slotIntervalMinutes = clampInt(
+    input.slotIntervalMinutes ?? existing.slotIntervalMinutes,
+    15,
+    180
+  );
+  const maxAttempts = clampInt(input.maxAttempts ?? existing.maxAttempts, 1, 10);
+
+  const db = getDb();
+  await db
+    .update(smartMeetingPlans)
+    .set({
+      title,
+      description: input.description !== undefined ? (input.description?.trim() || null) : existing.description,
+      location: input.location !== undefined ? (input.location?.trim() || null) : existing.location,
+      groupId,
+      tags:
+        input.tags !== undefined
+          ? serializeStringList(normalizeTags(input.tags))
+          : existing.tags,
+      durationMinutes,
+      minAcceptedParticipants,
+      responseWindowHours,
+      slotIntervalMinutes,
+      maxAttempts,
+      searchWindowStart,
+      searchWindowEnd,
+      updatedAt: new Date()
+    })
+    .where(eq(smartMeetingPlans.id, planId));
+}
+
 export async function syncSmartMeetingsForUser(userId: string): Promise<SmartMeetingSyncStats> {
   const db = getDb();
   const stats: SmartMeetingSyncStats = {
@@ -1189,6 +1284,10 @@ export async function listSmartMeetingsForUser(userId: string): Promise<SmartMee
       groupName: groups.name,
       status: smartMeetingPlans.status,
       tags: smartMeetingPlans.tags,
+      description: smartMeetingPlans.description,
+      location: smartMeetingPlans.location,
+      durationMinutes: smartMeetingPlans.durationMinutes,
+      slotIntervalMinutes: smartMeetingPlans.slotIntervalMinutes,
       minAcceptedParticipants: smartMeetingPlans.minAcceptedParticipants,
       responseWindowHours: smartMeetingPlans.responseWindowHours,
       maxAttempts: smartMeetingPlans.maxAttempts,
@@ -1238,6 +1337,10 @@ export async function listSmartMeetingsForUser(userId: string): Promise<SmartMee
       groupName: row.groupName,
       status: row.status,
       tags: normalizeTags(parseStringList(row.tags)),
+      description: row.description,
+      location: row.location,
+      durationMinutes: row.durationMinutes,
+      slotIntervalMinutes: row.slotIntervalMinutes,
       minAcceptedParticipants: row.minAcceptedParticipants,
       responseWindowHours: row.responseWindowHours,
       maxAttempts: row.maxAttempts,

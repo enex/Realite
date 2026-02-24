@@ -1,0 +1,2 @@
+CREATE TYPE "public"."event_category" AS ENUM('default', 'meeting', 'work', 'personal', 'sport', 'social', 'birthday', 'date');--> statement-breakpoint
+ALTER TABLE "events" ADD COLUMN "category" "event_category" DEFAULT 'default' NOT NULL;

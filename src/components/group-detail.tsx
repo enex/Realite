@@ -45,6 +45,8 @@ type EventItem = {
   groupName: string | null;
   tags: string[];
   isAvailable: boolean;
+  placeImageUrl: string | null;
+  linkPreviewImageUrl: string | null;
 };
 
 type DashboardPayload = {
@@ -572,20 +574,33 @@ export function GroupDetail({
               {groupEvents.length === 0 ? (
                 <p className="text-sm text-slate-500">Keine Events in dieser Gruppe.</p>
               ) : null}
-              {groupEvents.map((event) => (
-                <article key={event.id} className="rounded-md border border-slate-200 p-3">
-                  <a
-                    href={`/e/${shortenUUID(event.id)}`}
-                    className="break-words text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
-                  >
-                    {event.title}
-                  </a>
-                  <p className="text-xs text-slate-500">
-                    {new Date(event.startsAt).toLocaleString("de-DE")} - {new Date(event.endsAt).toLocaleTimeString("de-DE")}
-                  </p>
-                  {event.tags.length ? <p className="mt-1 text-xs text-slate-600">{event.tags.join(" · ")}</p> : null}
-                </article>
-              ))}
+              {groupEvents.map((event) => {
+                const coverUrl = event.placeImageUrl ?? event.linkPreviewImageUrl ?? null;
+                return (
+                  <article key={event.id} className="overflow-hidden rounded-md border border-slate-200">
+                    <div className="flex">
+                      {coverUrl ? (
+                        <a href={`/e/${shortenUUID(event.id)}`} className="h-16 w-20 shrink-0 bg-slate-100 sm:h-20 sm:w-24">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+                        </a>
+                      ) : null}
+                      <div className="min-w-0 flex-1 p-3">
+                        <a
+                          href={`/e/${shortenUUID(event.id)}`}
+                          className="break-words text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
+                        >
+                          {event.title}
+                        </a>
+                        <p className="text-xs text-slate-500">
+                          {new Date(event.startsAt).toLocaleString("de-DE")} - {new Date(event.endsAt).toLocaleTimeString("de-DE")}
+                        </p>
+                        {event.tags.length ? <p className="mt-1 text-xs text-slate-600">{event.tags.join(" · ")}</p> : null}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </section>
         </>

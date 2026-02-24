@@ -8,6 +8,10 @@ type SharedEventContentProps = {
   endsAtIso: string;
   description?: string | null;
   location?: string | null;
+  /** Bild des Ortes (z. B. Venue). */
+  placeImageUrl?: string | null;
+  /** Link-Preview-Bild aus der Beschreibung. */
+  linkPreviewImageUrl?: string | null;
   groupName?: string | null;
   createdByShortId?: string | null;
   createdByName?: string | null;
@@ -30,6 +34,29 @@ function buildGoogleCalendarEditUrl(sourceProvider?: string | null, sourceEventI
   return `/api/events/source-link?${params.toString()}`;
 }
 
+function EventCoverImage({
+  placeImageUrl,
+  linkPreviewImageUrl,
+}: {
+  placeImageUrl?: string | null;
+  linkPreviewImageUrl?: string | null;
+}) {
+  const coverUrl = placeImageUrl ?? linkPreviewImageUrl ?? null;
+  if (!coverUrl) return null;
+
+  return (
+    <div className="-mx-5 -mt-5 mb-4 overflow-hidden rounded-t-2xl sm:-mx-6 sm:-mt-6">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={coverUrl}
+        alt=""
+        className="h-44 w-full object-cover sm:h-52"
+        sizes="(max-width: 640px) 100vw, 672px"
+      />
+    </div>
+  );
+}
+
 export function SharedEventContent(props: SharedEventContentProps) {
   const startsAt = new Date(props.startsAtIso);
   const endsAt = new Date(props.endsAtIso);
@@ -42,6 +69,10 @@ export function SharedEventContent(props: SharedEventContentProps) {
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <EventCoverImage
+        placeImageUrl={props.placeImageUrl}
+        linkPreviewImageUrl={props.linkPreviewImageUrl}
+      />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{props.title}</h1>

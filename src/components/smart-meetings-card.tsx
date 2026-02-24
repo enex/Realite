@@ -15,6 +15,10 @@ type SmartMeeting = {
   groupName: string;
   status: "active" | "secured" | "exhausted" | "paused";
   tags: string[];
+  description?: string | null;
+  location?: string | null;
+  durationMinutes?: number;
+  slotIntervalMinutes?: number;
   minAcceptedParticipants: number;
   responseWindowHours: number;
   maxAttempts: number;
@@ -81,6 +85,7 @@ export function SmartMeetingsCard({
   onError: (message: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const now = useMemo(() => new Date(), []);
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({
@@ -98,46 +103,85 @@ export function SmartMeetingsCard({
 
   const visibleGroups = useMemo(() => groups.filter((group) => !group.isHidden), [groups]);
 
-  async function createSmartMeeting(event: React.FormEvent) {
+  function startEditing(meeting: SmartMeeting) {
+    setForm({
+      title: meeting.title,
+      groupId: meeting.groupId,
+      tags: meeting.tags.join(", "),
+      durationMinutes: meeting.durationMinutes ?? 90,
+      minAcceptedParticipants: meeting.minAcceptedParticipants,
+      responseWindowHours: meeting.responseWindowHours,
+      slotIntervalMinutes: meeting.slotIntervalMinutes ?? 30,
+      maxAttempts: meeting.maxAttempts,
+      searchWindowStart: toDatetimeLocalValue(new Date(meeting.searchWindowStart)),
+      searchWindowEnd: toDatetimeLocalValue(new Date(meeting.searchWindowEnd))
+    });
+    setEditingId(meeting.id);
+    setExpanded(true);
+  }
+
+  function cancelEditing() {
+    setEditingId(null);
+    setExpanded(false);
+  }
+
+  async function submitSmartMeeting(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
 
+    const payload = {
+      title: form.title,
+      groupId: form.groupId,
+      tags: form.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+      durationMinutes: form.durationMinutes,
+      minAcceptedParticipants: form.minAcceptedParticipants,
+      responseWindowHours: form.responseWindowHours,
+      slotIntervalMinutes: form.slotIntervalMinutes,
+      maxAttempts: form.maxAttempts,
+      searchWindowStart: new Date(form.searchWindowStart).toISOString(),
+      searchWindowEnd: new Date(form.searchWindowEnd).toISOString()
+    };
+
     try {
-      const response = await fetch("/api/smart-meetings", {
-        method: "POST",
+      const url = editingId ? `/api/smart-meetings/${editingId}` : "/api/smart-meetings";
+      const response = await fetch(url, {
+        method: editingId ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: form.title,
-          groupId: form.groupId,
-          tags: form.tags
-            .split(",")
-            .map((tag) => tag.trim())
-            .filter(Boolean),
-          durationMinutes: form.durationMinutes,
-          minAcceptedParticipants: form.minAcceptedParticipants,
-          responseWindowHours: form.responseWindowHours,
-          slotIntervalMinutes: form.slotIntervalMinutes,
-          maxAttempts: form.maxAttempts,
-          searchWindowStart: new Date(form.searchWindowStart).toISOString(),
-          searchWindowEnd: new Date(form.searchWindowEnd).toISOString()
-        })
+        body: JSON.stringify(payload)
       });
 
-      const payload = (await response.json()) as { error?: string };
+      const data = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        throw new Error(payload.error ?? "Smart-Treffen konnte nicht erstellt werden");
+        throw new Error(
+          data.error ??
+            (editingId ? "Smart-Treffen konnte nicht gespeichert werden" : "Smart-Treffen konnte nicht erstellt werden")
+        );
       }
 
-      setForm((state) => ({
-        ...state,
-        title: "",
-        tags: ""
-      }));
-      setExpanded(false);
+      if (editingId) {
+        setEditingId(null);
+        setExpanded(false);
+      } else {
+        setForm((state) => ({
+          ...state,
+          title: "",
+          tags: ""
+        }));
+        setExpanded(false);
+      }
       await onCreated();
     } catch (error) {
-      onError(error instanceof Error ? error.message : "Smart-Treffen konnte nicht erstellt werden");
+      onError(
+        error instanceof Error
+          ? error.message
+          : editingId
+            ? "Smart-Treffen konnte nicht gespeichert werden"
+            : "Smart-Treffen konnte nicht erstellt werden"
+      );
     } finally {
       setBusy(false);
     }
@@ -161,7 +205,7 @@ export function SmartMeetingsCard({
       </div>
 
       {expanded ? (
-        <form onSubmit={createSmartMeeting} className="mt-4 grid gap-3 rounded-lg border border-slate-200 p-4">
+        <form onSubmit={submitSmartMeeting} className="mt-4 grid gap-3 rounded-lg border border-slate-200 p-4">
           <input
             value={form.title}
             onChange={(event) => setForm((state) => ({ ...state, title: event.target.value }))}
@@ -290,13 +334,24 @@ export function SmartMeetingsCard({
               />
             </label>
           </div>
-          <button
-            type="submit"
-            disabled={busy}
-            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          >
-            Smart Treffen starten
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="submit"
+              disabled={busy}
+              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {editingId ? "Speichern" : "Smart Treffen starten"}
+            </button>
+            {editingId ? (
+              <button
+                type="button"
+                onClick={cancelEditing}
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+              >
+                Abbrechen
+              </button>
+            ) : null}
+          </div>
           <p className="text-xs text-slate-500">
             Shortcut für normale Events: `!min=3 !frist=24h !fenster=24h` direkt im Titel. Dann wird das Event automatisch als
             Smart Treffen geplant.
@@ -310,7 +365,16 @@ export function SmartMeetingsCard({
           <article key={meeting.id} className="rounded-lg border border-slate-200 p-3">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm font-semibold text-slate-900">{meeting.title}</p>
-              <p className="text-xs text-slate-500">Status: {statusLabel(meeting.status)}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-xs text-slate-500">Status: {statusLabel(meeting.status)}</p>
+                <button
+                  type="button"
+                  onClick={() => startEditing(meeting)}
+                  className="rounded border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Bearbeiten
+                </button>
+              </div>
             </div>
             <p className="mt-1 text-xs text-slate-500">
               Gruppe {meeting.groupName} · Min {meeting.minAcceptedParticipants} Zusagen · Frist {meeting.responseWindowHours}h
