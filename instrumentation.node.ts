@@ -7,7 +7,6 @@ import { trace } from "@opentelemetry/api";
 import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
-import { PgInstrumentation } from "@opentelemetry/instrumentation-pg";
 import { registerInstrumentations } from "@opentelemetry/instrumentation";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import {
@@ -63,6 +62,14 @@ provider.register({
   contextManager,
 });
 
+// DB-Client einmalig initialisieren, damit @kubiks/otel-drizzle den gesetzten
+// TracerProvider nutzt (Reihenfolge ist kritisch für Query-Spans).
+if (process.env.DATABASE_URL) {
+  import("./src/db/client")
+    .then((m) => m.getDb())
+    .catch(() => {});
+}
+
 registerInstrumentations({
   tracerProvider: provider,
   instrumentations: [
@@ -93,12 +100,7 @@ registerInstrumentations({
         }
       },
     }),
-    // PgInstrumentation für pg-Paket (falls verwendet, z.B. für Migrations)
-    new PgInstrumentation({
-      enhancedDatabaseReporting: process.env.NODE_ENV !== "production",
-    }),
   ],
 });
 
-// Hinweis: Drizzle ORM mit postgres.js wird über @kubiks/otel-drizzle
-// in src/db/client.ts instrumentiert, nicht hier.
+// Datenbank: Nur @kubiks/otel-drizzle in src/db/client.ts (Drizzle + postgres.js).

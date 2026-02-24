@@ -23,7 +23,6 @@
     "@opentelemetry/instrumentation": "^0.212.0",
     "@opentelemetry/instrumentation-http": "^0.212.0",
     "@kubiks/otel-drizzle": "^2.1.0",
-    "@opentelemetry/instrumentation-pg": "^0.64.0",
     "@opentelemetry/resources": "^2.5.1",
     "@opentelemetry/sdk-logs": "^0.212.0",
     "@opentelemetry/sdk-trace-base": "^2.5.1",
