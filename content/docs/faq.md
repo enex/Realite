@@ -217,6 +217,16 @@ Wichtig:
 - Realite respektiert die Browser-Einstellung `Do Not Track`.
 - Details zur Datenverarbeitung findest du unter **Datenschutz**.
 
+## Kann ich Realite als App installieren?
+
+Ja. Realite ist als PWA (Progressive Web App) nutzbar:
+
+- **Android / Chrome (Desktop oder Handy):** Beim Besuch von Realite kannst du einen Hinweis „App installieren“ sehen. Du kannst auch im Browser-Menü (⋮) **App installieren** bzw. **Zum Startbildschirm hinzufügen** wählen.
+- **iOS / Safari:** In Safari **Teilen** tippen und **Zum Home-Bildschirm** wählen. Realite erscheint dann wie eine App und kann aus dem Home-Bildschirm geöffnet werden.
+- **Edge / andere Browser:** Über das Menü nach **App installieren** oder **An Startmenü anheften** suchen.
+
+Nach der Installation öffnest du Realite wie eine normale App; Login und Nutzung bleiben gleich. Ohne Internetverbindung zeigt Realite eine Offline-Seite an.
+
 ## Wo finde ich Datenschutz, AGB und Impressum?
 
 Die rechtlichen Seiten findest du jederzeit im Footer:

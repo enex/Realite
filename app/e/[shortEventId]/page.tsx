@@ -96,12 +96,12 @@ export default async function EventShortcutPage({
           <p className="text-sm font-medium text-slate-700">
             Melde dich an, um zuzusagen, abzusagen oder zu kommentieren.
           </p>
-          <Link
+          <a
             href={signInUrl}
             className="mt-3 inline-flex rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800"
           >
             Mit Google anmelden
-          </Link>
+          </a>
         </section>
 
         <EventComments

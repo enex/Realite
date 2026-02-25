@@ -2350,6 +2350,7 @@ export async function listPublicAlleEvents(limit = 20) {
       groupName: groups.name,
       sourceProvider: events.sourceProvider,
       sourceEventId: events.sourceEventId,
+      category: events.category,
       placeImageUrl: events.placeImageUrl,
       linkPreviewImageUrl: events.linkPreviewImageUrl,
     })
@@ -2412,6 +2413,7 @@ async function listPublicAlleEventsForUser(userId: string) {
       sourceProvider: events.sourceProvider,
       sourceEventId: events.sourceEventId,
       color: events.color,
+      category: events.category,
       placeImageUrl: events.placeImageUrl,
       linkPreviewImageUrl: events.linkPreviewImageUrl,
     })

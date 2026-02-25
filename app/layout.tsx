@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 
+import { PwaInstallBanner } from "@/src/components/pwa-install-banner";
 import { SiteFooter } from "@/src/components/site-footer";
 
 import "./globals.css";
@@ -50,6 +51,14 @@ export const metadata: Metadata = {
     images: [DEFAULT_OG_IMAGE_PATH]
   },
   manifest: "/site.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Realite"
+  },
+  formatDetection: {
+    telephone: false
+  },
   icons: {
     icon: [
       { url: "/favicon.png", type: "image/png", sizes: "48x48" },
@@ -73,6 +82,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="flex min-h-screen flex-col">
           <div className="flex-1">{children}</div>
           <SiteFooter />
+          <PwaInstallBanner />
         </div>
       </body>
     </html>

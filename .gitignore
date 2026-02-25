@@ -7,3 +7,7 @@ data/*.db
 data/*.sqlite
 tsconfig.tsbuildinfo
 .DS_Store
+
+# Serwist (generated at build)
+public/sw*
+public/swe-worker*
