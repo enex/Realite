@@ -4,6 +4,8 @@
 
 Öffne Realite und klicke auf **„Jetzt kostenlos anmelden“** oder **„Kostenlos mit Google starten“**.
 
+Auf der Startseite siehst du direkt **„Was du bei Realite tun kannst“**: offene Events entdecken, eigenes Event anlegen, Gruppen nutzen & Leute einladen, Vorschläge bekommen. Alle Optionen führen dich nach dem Login in die passende Ansicht.
+
 ## 2. Zugriff erlauben
 
 Bestätige den Zugriff auf Kalender und Kontakte, damit Realite dir passende Events anzeigen kann.
@@ -15,9 +17,9 @@ Hinweis:
 
 ## 3. Gruppen ansehen
 
-Nach dem Login landest du in **Events**.
+Nach dem Login landest du in **Events**. Oben siehst du deinen **Überblick** und darunter direkt **„Nächste Schritte“** mit vier Vorschlägen: Event anlegen, Vorschläge, Gruppen & Einladen, Alle Events. So siehst du sofort, welche Optionen es gibt. Wenn Events noch keine Zusagen haben, erscheint ein Hinweis zum Einladen.
 
-- Öffne **Gruppen** in der Navigation.
+- Öffne **Gruppen** (bzw. **Gruppen & Einladen** in der Navigation).
 - Lege dort über **Neue Gruppe** eine Gruppe an.
 - Tippe auf eine Gruppe, um Details zu öffnen.
 - Dort kannst du Mitglieder einladen und Hashtags anpassen.

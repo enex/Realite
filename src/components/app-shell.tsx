@@ -18,7 +18,7 @@ type AppShellProps = {
 
 const DESKTOP_ITEMS = [
   { href: "/events", label: "Events" },
-  { href: "/groups", label: "Gruppen" },
+  { href: "/groups", label: "Gruppen & Einladen" },
   { href: "/suggestions", label: "Vorschläge" },
 ];
 
@@ -26,7 +26,7 @@ const MOBILE_ITEMS = [
   { href: "/events", label: "Events" },
   { href: "/groups", label: "Gruppen" },
   { href: "/suggestions", label: "Vorschläge" },
-  { href: "/settings", label: "Profil" }
+  { href: "/settings", label: "Profil" },
 ];
 
 function isItemActive(pathname: string, href: string) {
@@ -57,7 +57,7 @@ export function AppShell({ user, children }: AppShellProps) {
     <div className="min-h-screen">
       <header className="sticky top-0 z-40 border-b border-slate-200/90 bg-white/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          <a href="/events" className="inline-flex items-center gap-2 text-lg font-bold tracking-tight text-slate-900">
+          <a href="/events" className="inline-flex items-center gap-2 text-lg font-bold tracking-tight text-slate-900" title="Zur Übersicht">
             <img
               src="/icon.svg"
               alt=""
@@ -65,6 +65,7 @@ export function AppShell({ user, children }: AppShellProps) {
               aria-hidden="true"
             />
             <span>Realite</span>
+            <span className="hidden text-sm font-normal text-slate-500 sm:inline">– Aktivitäten & Einladen</span>
           </a>
 
           <nav className="hidden items-center gap-1 md:flex" aria-label="Hauptnavigation">

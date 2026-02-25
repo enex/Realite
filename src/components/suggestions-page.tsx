@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
+import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
@@ -146,8 +147,14 @@ export function SuggestionsPage({
 
   useEffect(() => {
     if (!data.sync.revalidating) {
+      toast.dismiss(REVALIDATING_TOAST_ID);
       return;
     }
+
+    toast.loading("Aktualisierung im Hintergrund läuft. Neue Vorschläge erscheinen automatisch.", {
+      id: REVALIDATING_TOAST_ID,
+      duration: Number.POSITIVE_INFINITY,
+    });
 
     const intervalId = window.setInterval(() => {
       void loadData({ silent: true });
@@ -264,6 +271,7 @@ export function SuggestionsPage({
               <div>
                 <p className="text-sm text-slate-500">Vorschläge</p>
                 <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Meine Vorschläge</h1>
+                <p className="mt-0.5 text-sm text-slate-600">Aktivitäten, die zu dir passen – sag zu oder lehne ab.</p>
                 <p className="text-xs text-slate-500">{profileEmail}</p>
               </div>
             </div>
@@ -283,11 +291,6 @@ export function SuggestionsPage({
         {data.sync.warning ? (
           <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
             Kalender-Sync Warnung: {data.sync.warning}
-          </div>
-        ) : null}
-        {data.sync.revalidating ? (
-          <div className="mt-4 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-700">
-            Aktualisierung im Hintergrund läuft. Neue Vorschläge erscheinen automatisch.
           </div>
         ) : null}
         {loading && data.suggestions.length === 0 ? <p className="mt-6 text-slate-600">Lade Vorschläge...</p> : null}

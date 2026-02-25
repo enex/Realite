@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 
 import { PwaInstallBanner } from "@/src/components/pwa-install-banner";
 import { SiteFooter } from "@/src/components/site-footer";
+import { Toaster } from "@/src/components/toaster";
 
 import "./globals.css";
 
@@ -83,6 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="flex-1">{children}</div>
           <SiteFooter />
           <PwaInstallBanner />
+          <Toaster />
         </div>
       </body>
     </html>

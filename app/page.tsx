@@ -34,6 +34,7 @@ export default async function HomePage({
         <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-5 sm:px-6 sm:pb-24 sm:pt-7 lg:px-8 lg:pb-28 lg:pt-8">
           <LandingHeader signInHref={signInHref} />
           <HeroSection signInHref={signInHref} publicAlleEvents={publicAlleEvents} />
+          <WhatYouCanDoSection signInHref={signInHref} />
           <PeopleIntentSection />
           <LandingDatingGate>
             <DatingSpotlightSection />
@@ -170,6 +171,72 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
           ) : null}
         </div>
       </aside>
+    </section>
+  );
+}
+
+const WHAT_YOU_CAN_DO_OPTIONS = [
+  {
+    title: "Offene Events entdecken",
+    text: "Sieh, was andere gerade anbieten – Kaffee, Sport, Spaziergang. Ein Klick und du siehst Details.",
+    cta: "Events ansehen",
+    href: "#",
+    useSignIn: true
+  },
+  {
+    title: "Eigenes Event anlegen",
+    text: "Du bestimmst Zeit, Ort und ob es für alle oder nur deine Gruppe sichtbar ist.",
+    cta: "Event erstellen",
+    href: "#",
+    useSignIn: true
+  },
+  {
+    title: "Gruppen nutzen & Leute einladen",
+    text: "Erstelle Gruppen (z. B. Freundeskreis, Sport), lade Leute ein und teile Events nur mit ihnen.",
+    cta: "Gruppen verwalten",
+    href: "#",
+    useSignIn: true
+  },
+  {
+    title: "Vorschläge bekommen",
+    text: "Realite schlägt dir passende Termine vor – basierend auf Kalender und Interessen. Du sagst zu oder ab.",
+    cta: "Zu Vorschlägen",
+    href: "#",
+    useSignIn: true
+  }
+] as const;
+
+function WhatYouCanDoSection({ signInHref }: { signInHref: string }) {
+  return (
+    <section className="mt-12 sm:mt-14 lg:mt-16" aria-labelledby="was-du-tun-kannst">
+      <div className="realite-reveal" style={{ animationDelay: "260ms" }}>
+        <h2 id="was-du-tun-kannst" className="text-2xl font-black text-white sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+          Was du bei Realite tun kannst
+        </h2>
+        <p className="mt-3 max-w-2xl text-base leading-7 text-slate-200 sm:text-lg">
+          Klare Optionen, kein Rätselraten. So nutzt du die App von Anfang an.
+        </p>
+      </div>
+      <div className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5">
+        {WHAT_YOU_CAN_DO_OPTIONS.map((option, index) => (
+          <article
+            key={option.title}
+            className="realite-reveal flex flex-col rounded-2xl border border-teal-700/50 bg-teal-800/70 p-4 shadow-lg shadow-black/20 sm:rounded-3xl sm:p-5"
+            style={{ animationDelay: `${320 + index * 80}ms` }}
+          >
+            <h3 className="text-lg font-bold text-white [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+              {option.title}
+            </h3>
+            <p className="mt-2 flex-1 text-sm leading-6 text-slate-200">{option.text}</p>
+            <a
+              href={option.useSignIn ? signInHref : option.href}
+              className="mt-4 inline-flex w-fit items-center justify-center rounded-xl bg-white/15 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/25"
+            >
+              {option.cta}
+            </a>
+          </article>
+        ))}
+      </div>
     </section>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
 import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
+import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
 import { UserAvatar } from "@/src/components/user-avatar";
 import {
   CATEGORY_COLORS,
@@ -255,8 +256,14 @@ export function Dashboard({
 
   useEffect(() => {
     if (!data.sync.revalidating) {
+      toast.dismiss(REVALIDATING_TOAST_ID);
       return;
     }
+
+    toast.loading("Aktualisierung im Hintergrund läuft. Neue Kalender- und Kontaktdaten erscheinen automatisch.", {
+      id: REVALIDATING_TOAST_ID,
+      duration: Number.POSITIVE_INFINITY,
+    });
 
     const intervalId = window.setInterval(() => {
       void loadData({ silent: true });
@@ -345,6 +352,9 @@ export function Dashboard({
     }
   }
 
+  const pendingCount = data.suggestions.filter((s) => s.status === "pending" || s.status === "calendar_inserted").length;
+  const eventsWithoutAccepted = visibleEvents.filter((e) => (data.acceptedByEventId?.[e.id] ?? []).length === 0);
+
   return (
     <AppShell
       user={{
@@ -354,33 +364,126 @@ export function Dashboard({
       }}
     >
       <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex items-start gap-3">
-              <UserAvatar name={profileName} email={profileEmail} image={profileImage} size="lg" />
-              <div>
-                <p className="text-sm text-slate-500">Events</p>
-                <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Meine Events</h1>
-                <p className="text-xs text-slate-500">{profileEmail}</p>
-                <p className="mt-2 text-sm text-slate-600">
-                  Kalenderstatus: {data.me.calendarConnected ? "Google Kalender verbunden" : "Nicht verbunden"}
-                </p>
-                {data.sync.stats ? (
-                  <p className="mt-1 text-xs text-slate-500">
-                    Letzter Sync: {data.sync.stats.synced} übernommen aus {data.sync.stats.scanned} Kalender-Events.
-                  </p>
-                ) : null}
-              </div>
+        {/* Einladender Hero-Streifen: Was du tun kannst */}
+        <section
+          className="relative isolate overflow-hidden rounded-2xl bg-gradient-to-br from-teal-700 via-teal-800 to-teal-900 px-5 py-6 text-white shadow-lg sm:rounded-3xl sm:px-6 sm:py-7"
+          aria-label="Deine Möglichkeiten bei Realite"
+        >
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_60%_at_60%_0%,rgba(77,129,114,0.4),transparent)]" />
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-teal-200 sm:text-sm">Dein Überblick</p>
+              <h1 className="mt-1 text-xl font-bold tracking-tight text-white sm:text-2xl">
+                Viele Möglichkeiten – hier passiert was
+              </h1>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-teal-100 sm:text-base">
+                Events anlegen, Leute einladen, Vorschläge nutzen: So füllst du deine Aktivitäten mit den richtigen Menschen.
+              </p>
             </div>
-            <button
-              onClick={() => setShowEventForm((current) => !current)}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
-            >
-              {showEventForm ? "Event schließen" : "Neues Event"}
-            </button>
+            <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col sm:gap-2">
+              <button
+                onClick={() => setShowEventForm((current) => !current)}
+                className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-teal-900 shadow-md transition hover:bg-teal-50 active:bg-teal-100"
+              >
+                {showEventForm ? "Formular schließen" : "Neues Event anlegen"}
+              </button>
+              <a
+                href="/suggestions"
+                className="inline-flex items-center justify-center rounded-xl border border-white/35 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15"
+              >
+                Vorschläge
+                {pendingCount > 0 ? (
+                  <span className="ml-2 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-teal-900">
+                    {pendingCount}
+                  </span>
+                ) : null}
+              </a>
+              <a
+                href="/groups"
+                className="inline-flex items-center justify-center rounded-xl border border-white/25 px-4 py-2.5 text-sm font-medium text-white/95 transition hover:bg-white/10"
+              >
+                Gruppen & Einladen
+              </a>
+            </div>
+          </div>
+        </section>
 
+        {/* Kurz-Status: Kalender (kompakt) */}
+        <header className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200/80 bg-white/80 px-4 py-3 shadow-sm backdrop-blur sm:gap-4">
+          <div className="flex items-center gap-3">
+            <UserAvatar name={profileName} email={profileEmail} image={profileImage} size="sm" />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-slate-800">{profileName || profileEmail}</p>
+              <p className="text-xs text-slate-500">
+                {data.me.calendarConnected ? "Kalender verbunden" : "Kalender verbinden"}
+                {data.sync.stats ? ` · ${data.sync.stats.synced} Events` : ""}
+              </p>
+            </div>
           </div>
         </header>
+
+        {/* Direkte Vorschläge: Was du als Nächstes tun kannst */}
+        <section className="mt-4" aria-label="Was du als Nächstes tun kannst">
+          <h2 className="sr-only">Nächste Schritte</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <button
+              type="button"
+              onClick={() => setShowEventForm((v) => !v)}
+              className="flex flex-col items-start rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-teal-200 hover:bg-teal-50/50"
+            >
+              <span className="text-sm font-semibold text-slate-900">Event anlegen</span>
+              <span className="mt-0.5 text-xs text-slate-500">Neuen Termin erstellen und sichtbar machen</span>
+            </button>
+            <a
+              href="/suggestions"
+              className="flex flex-col items-start rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-teal-200 hover:bg-teal-50/50"
+            >
+              <span className="text-sm font-semibold text-slate-900">
+                Vorschläge
+                {pendingCount > 0 ? (
+                  <span className="ml-1.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800">
+                    {pendingCount}
+                  </span>
+                ) : null}
+              </span>
+              <span className="mt-0.5 text-xs text-slate-500">Passende Termine prüfen und zusagen</span>
+            </a>
+            <a
+              href="/groups"
+              className="flex flex-col items-start rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-teal-200 hover:bg-teal-50/50"
+            >
+              <span className="text-sm font-semibold text-slate-900">Gruppen & Einladen</span>
+              <span className="mt-0.5 text-xs text-slate-500">
+                {visibleGroups.length === 0 ? "Erste Gruppe anlegen und Leute einladen" : "Mitglieder verwalten, Events teilen"}
+              </span>
+            </a>
+            <a
+              href="/events#events"
+              className="flex flex-col items-start rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-teal-200 hover:bg-teal-50/50"
+            >
+              <span className="text-sm font-semibold text-slate-900">Alle Events</span>
+              <span className="mt-0.5 text-xs text-slate-500">Deine Termine nach Kategorie ansehen</span>
+            </a>
+          </div>
+        </section>
+
+        {/* Nudge: Events ohne Zusagen – Leute einladen */}
+        {eventsWithoutAccepted.length > 0 && !showEventForm ? (
+          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-amber-200/80 bg-amber-50/90 px-4 py-3 sm:gap-4">
+            <p className="text-sm font-medium text-amber-900">
+              <span className="font-semibold">{eventsWithoutAccepted.length}</span> Event{eventsWithoutAccepted.length === 1 ? "" : "s"} warten noch auf Zusagen.
+            </p>
+            <p className="text-xs text-amber-800">
+              Teile den Event-Link mit deiner Gruppe oder schick Einladungen – so wird’s voll.
+            </p>
+            <a
+              href="/groups"
+              className="shrink-0 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-amber-600"
+            >
+              Gruppen & Einladen
+            </a>
+          </div>
+        ) : null}
 
         {error ? (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
@@ -398,11 +501,6 @@ export function Dashboard({
         {data.sync.smartWarning ? (
           <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
             Smart-Treffen-Warnung: {data.sync.smartWarning}
-          </div>
-        ) : null}
-        {data.sync.revalidating ? (
-          <div className="mt-4 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-700">
-            Aktualisierung im Hintergrund läuft. Neue Kalender- und Kontaktdaten erscheinen automatisch.
           </div>
         ) : null}
         {loading && data.events.length === 0 ? <p className="mt-6 text-slate-600">Lade Daten...</p> : null}
@@ -518,13 +616,25 @@ export function Dashboard({
         ) : null}
 
         <section id="events" className="mt-8 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Alle sichtbaren Events</h2>
-          <p className="mt-1 text-sm text-slate-600">Deine Events nach Kategorie, in zeitlicher Reihenfolge.</p>
+          <h2 className="text-lg font-semibold text-slate-900">Deine Events</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Hier siehst du alle sichtbaren Events – leg neue an, lade Leute ein und nutze Vorschläge für mehr Teilnahme.
+          </p>
           <div className="mt-4 space-y-6">
             {visibleEvents.length === 0 ? (
-              <p className="text-sm text-slate-500">
-                Noch keine Events vorhanden. Lege ein Event an oder öffne <a href="/groups" className="text-teal-700 underline">Gruppen</a>.
-              </p>
+              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/80 p-5 text-center">
+                <p className="text-sm font-medium text-slate-700">Noch keine Events? Los geht’s.</p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Lege ein Event an oder tritt <a href="/groups" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">Gruppen</a> bei – dann siehst du gemeinsame Aktivitäten und kannst Leute einladen.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowEventForm(true)}
+                  className="mt-3 rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
+                >
+                  Erstes Event anlegen
+                </button>
+              </div>
             ) : null}
             {eventsByCategory.map(([category, events]) => (
               <div key={category}>
