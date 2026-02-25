@@ -1,12 +1,12 @@
 "use client";
 
+import { List, Sparkle } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
 import { EventImage } from "@/src/components/event-image";
 import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
 import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
-import { UserAvatar } from "@/src/components/user-avatar";
 import {
   CATEGORY_COLORS,
   CATEGORY_LABELS,
@@ -39,8 +39,14 @@ type EventItem = {
 };
 
 type Suggestion = {
+  id: string;
   eventId: string;
   status: "pending" | "calendar_inserted" | "accepted" | "declined";
+  title: string;
+  startsAt: string;
+  endsAt: string;
+  tags?: string[];
+  createdByName?: string | null;
 };
 
 type SmartMeeting = {
@@ -155,6 +161,7 @@ export function Dashboard({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showEventForm, setShowEventForm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [eventForm, setEventForm] = useState({
     title: "",
@@ -204,6 +211,76 @@ export function Dashboard({
     }
     return Array.from(map.entries()).filter(([, list]) => list.length > 0);
   }, [visibleEvents]);
+
+  /** Vorschläge (pending/calendar_inserted) + Events pro Tag – Fokus: Was geht? Wer ist dabei? */
+  const pendingSuggestions = useMemo(
+    () =>
+      data.suggestions.filter(
+        (s) => s.status === "pending" || s.status === "calendar_inserted"
+      ) as (Suggestion & { title: string; startsAt: string; endsAt: string })[],
+    [data.suggestions]
+  );
+  const pendingSuggestionEventIds = useMemo(
+    () => new Set(pendingSuggestions.map((s) => s.eventId)),
+    [pendingSuggestions]
+  );
+  type DayItem =
+    | { type: "suggestion"; id: string; eventId: string; title: string; startsAt: string; endsAt: string; suggestionId: string; createdByName?: string | null }
+    | { type: "event"; id: string; eventId: string; title: string; startsAt: string; endsAt: string; event: EventItem };
+  const itemsByDay = useMemo(() => {
+    const itemList: DayItem[] = [];
+    for (const s of pendingSuggestions) {
+      itemList.push({
+        type: "suggestion",
+        id: s.eventId,
+        eventId: s.eventId,
+        title: s.title,
+        startsAt: s.startsAt,
+        endsAt: s.endsAt,
+        suggestionId: s.id,
+        createdByName: s.createdByName
+      });
+    }
+    for (const event of visibleEvents) {
+      if (pendingSuggestionEventIds.has(event.id)) continue;
+      itemList.push({
+        type: "event",
+        id: event.id,
+        eventId: event.id,
+        title: event.title.replace(/#[^\s]+/gi, "").trim(),
+        startsAt: event.startsAt,
+        endsAt: event.endsAt,
+        event
+      });
+    }
+    itemList.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+    const byDay = new Map<string, { dayLabel: string; date: Date; items: DayItem[] }>();
+    for (const item of itemList) {
+      const d = new Date(item.startsAt);
+      const dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      const existing = byDay.get(dayKey);
+      const dayLabel = d.toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long" });
+      if (existing) {
+        existing.items.push(item);
+      } else {
+        byDay.set(dayKey, { dayLabel, date: d, items: [item] });
+      }
+    }
+    return Array.from(byDay.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([dayKey, value]) => ({ dayKey, ...value }));
+  }, [pendingSuggestions, pendingSuggestionEventIds, visibleEvents]);
+
+  const filteredItemsByDay = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return itemsByDay;
+    return itemsByDay
+      .map((day) => ({
+        ...day,
+        items: day.items.filter((item) => item.title.toLowerCase().includes(q)),
+      }))
+      .filter((day) => day.items.length > 0);
+  }, [itemsByDay, searchQuery]);
 
   const profileName = data.me.name ?? userName;
   const profileEmail = data.me.email || userEmail;
@@ -364,108 +441,229 @@ export function Dashboard({
         image: profileImage
       }}
     >
-      <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        {/* Einladender Hero-Streifen: Was du tun kannst */}
+      <main className="mx-auto w-full max-w-6xl px-4 py-4 sm:py-6 sm:px-6 lg:px-8">
+        {/* Mobile: Events zuerst. Desktop: Hero + Kontext. */}
         <section
-          className="relative isolate overflow-hidden rounded-2xl bg-gradient-to-br from-teal-700 via-teal-800 to-teal-900 px-5 py-6 text-white shadow-lg sm:rounded-3xl sm:px-6 sm:py-7"
-          aria-label="Deine Möglichkeiten bei Realite"
+          className="relative isolate overflow-hidden rounded-2xl bg-gradient-to-br from-teal-700 via-teal-800 to-teal-900 px-4 py-4 text-white shadow-lg md:rounded-3xl md:px-6 md:py-7"
+          aria-label="Was kannst du heute machen?"
         >
           <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_60%_at_60%_0%,rgba(77,129,114,0.4),transparent)]" />
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-teal-200 sm:text-sm">Dein Überblick</p>
-              <h1 className="mt-1 text-xl font-bold tracking-tight text-white sm:text-2xl">
-                Viele Möglichkeiten – hier passiert was
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="min-w-0">
+              <h1 className="text-lg font-bold tracking-tight text-white md:mt-1 md:text-2xl">
+                Was geht heute?
               </h1>
-              <p className="mt-2 max-w-xl text-sm leading-relaxed text-teal-100 sm:text-base">
-                Events anlegen, Leute einladen, Vorschläge nutzen: So füllst du deine Aktivitäten mit den richtigen Menschen.
+              <p className="mt-1 hidden text-sm text-teal-100 md:block md:max-w-xl md:text-base">
+                Coole Aktivitäten entdecken, bei was dabei sein oder selbst was starten.
               </p>
             </div>
-            <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col sm:gap-2">
-              <button
-                onClick={() => setShowEventForm((current) => !current)}
-                className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-teal-900 shadow-md transition hover:bg-teal-50 active:bg-teal-100"
-              >
-                {showEventForm ? "Formular schließen" : "Neues Event anlegen"}
-              </button>
+            <div className="flex flex-wrap gap-2">
               <a
                 href="/suggestions"
-                className="inline-flex items-center justify-center rounded-xl border border-white/35 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15"
+                className="inline-flex items-center justify-center rounded-xl bg-white px-3 py-2 text-sm font-bold text-teal-900 shadow-md transition hover:bg-teal-50 active:bg-teal-100"
               >
                 Vorschläge
                 {pendingCount > 0 ? (
-                  <span className="ml-2 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-teal-900">
+                  <span className="ml-1.5 rounded-full bg-amber-400 px-1.5 py-0.5 text-xs font-bold text-teal-900">
                     {pendingCount}
                   </span>
                 ) : null}
               </a>
-              <a
-                href="/groups"
-                className="inline-flex items-center justify-center rounded-xl border border-white/25 px-4 py-2.5 text-sm font-medium text-white/95 transition hover:bg-white/10"
+              <button
+                type="button"
+                onClick={() => setShowEventForm((v) => !v)}
+                className="inline-flex items-center justify-center rounded-xl border border-white/35 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
               >
-                Gruppen & Einladen
-              </a>
+                {showEventForm ? "Schließen" : "Event starten"}
+              </button>
             </div>
           </div>
         </section>
 
-        {/* Kurz-Status: Kalender (kompakt) */}
-        <header className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200/80 bg-white/80 px-4 py-3 shadow-sm backdrop-blur sm:gap-4">
-          <div className="flex items-center gap-3">
-            <UserAvatar name={profileName} email={profileEmail} image={profileImage} size="sm" />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-slate-800">{profileName || profileEmail}</p>
-              <p className="text-xs text-slate-500">
-                {data.me.calendarConnected ? "Kalender verbunden" : "Kalender verbinden"}
-                {data.sync.stats ? ` · ${data.sync.stats.synced} Events` : ""}
-              </p>
+        {/* Was geht? Nach Tag – Fokus auf Events, „Wer ist dabei“ klar */}
+        <section className="mt-5 md:mt-6" aria-label="Was geht? Nach Tag">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-base font-bold text-slate-900 md:text-lg">Nach Tag</h2>
+            <div className="flex items-center gap-1">
+              <input
+                type="search"
+                placeholder="Suchen…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-24 rounded-full border border-slate-200 bg-slate-50/80 py-1.5 pl-3 pr-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-teal-300 focus:outline-none focus:ring-1 focus:ring-teal-300 md:w-32"
+                aria-label="Events und Vorschläge durchsuchen"
+              />
+              <a
+                href="/suggestions"
+                className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                title="Vorschläge"
+              >
+                {pendingCount > 0 ? (
+                  <span className="relative inline-flex">
+                    <Sparkle className="h-5 w-5 md:h-4 md:w-4" weight="duotone" />
+                    <span className="absolute -right-1 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white">
+                      {pendingCount}
+                    </span>
+                  </span>
+                ) : (
+                  <Sparkle className="h-5 w-5 md:h-4 md:w-4" weight="regular" />
+                )}
+              </a>
+              <a
+                href="/events#events"
+                className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                title="Alle Events"
+              >
+                <List className="h-5 w-5 md:h-4 md:w-4" weight="regular" />
+              </a>
             </div>
           </div>
-        </header>
-
-        {/* Direkte Vorschläge: Was du als Nächstes tun kannst */}
-        <section className="mt-4" aria-label="Was du als Nächstes tun kannst">
-          <h2 className="sr-only">Nächste Schritte</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <button
-              type="button"
-              onClick={() => setShowEventForm((v) => !v)}
-              className="flex flex-col items-start rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-teal-200 hover:bg-teal-50/50"
-            >
-              <span className="text-sm font-semibold text-slate-900">Event anlegen</span>
-              <span className="mt-0.5 text-xs text-slate-500">Neuen Termin erstellen und sichtbar machen</span>
-            </button>
-            <a
-              href="/suggestions"
-              className="flex flex-col items-start rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-teal-200 hover:bg-teal-50/50"
-            >
-              <span className="text-sm font-semibold text-slate-900">
-                Vorschläge
-                {pendingCount > 0 ? (
-                  <span className="ml-1.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800">
-                    {pendingCount}
-                  </span>
-                ) : null}
-              </span>
-              <span className="mt-0.5 text-xs text-slate-500">Passende Termine prüfen und zusagen</span>
-            </a>
-            <a
-              href="/groups"
-              className="flex flex-col items-start rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-teal-200 hover:bg-teal-50/50"
-            >
-              <span className="text-sm font-semibold text-slate-900">Gruppen & Einladen</span>
-              <span className="mt-0.5 text-xs text-slate-500">
-                {visibleGroups.length === 0 ? "Erste Gruppe anlegen und Leute einladen" : "Mitglieder verwalten, Events teilen"}
-              </span>
-            </a>
-            <a
-              href="/events#events"
-              className="flex flex-col items-start rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-teal-200 hover:bg-teal-50/50"
-            >
-              <span className="text-sm font-semibold text-slate-900">Alle Events</span>
-              <span className="mt-0.5 text-xs text-slate-500">Deine Termine nach Kategorie ansehen</span>
-            </a>
-          </div>
+          {filteredItemsByDay.length === 0 && !loading ? (
+            <div className="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/80 p-6 text-center">
+              {searchQuery.trim() ? (
+                <>
+                  <p className="text-sm font-medium text-slate-700">Keine Treffer für „{searchQuery.trim()}“</p>
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="mt-3 text-sm font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800"
+                  >
+                    Suche zurücksetzen
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-slate-700">Noch nichts geplant?</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Schau unter <a href="/suggestions" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">Vorschläge</a> oder starte ein eigenes Event.
+                  </p>
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                    <a
+                      href="/suggestions"
+                      className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
+                    >
+                      Vorschläge
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setShowEventForm(true)}
+                      className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Event starten
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="mt-4 space-y-8">
+              {filteredItemsByDay.map(({ dayKey, dayLabel, date: dayDate, items }) => {
+                const isToday = (() => {
+                  const t = new Date();
+                  return dayDate.getDate() === t.getDate() && dayDate.getMonth() === t.getMonth() && dayDate.getFullYear() === t.getFullYear();
+                })();
+                return (
+                  <div key={dayKey}>
+                    <h3 className="mb-3 text-base font-semibold text-slate-800">
+                      {isToday ? "Heute" : dayLabel}
+                      <span className="ml-2 text-sm font-normal text-slate-500">({items.length})</span>
+                    </h3>
+                    <ul className="space-y-3">
+                      {items.map((item) => {
+                        const accepted = data.acceptedByEventId?.[item.eventId] ?? [];
+                        const isAccepted = acceptedEventIds.has(item.eventId);
+                        if (item.type === "suggestion") {
+                          return (
+                            <li key={`suggestion-${item.suggestionId}`}>
+                              <a
+                                href={`/suggestions?suggestion=${item.suggestionId}`}
+                                className="flex flex-col gap-1 rounded-xl border border-amber-200 bg-amber-50/80 p-4 text-left transition hover:border-amber-300 hover:bg-amber-50"
+                              >
+                                <span className="inline-flex w-fit items-center rounded-md bg-amber-200/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
+                                  Vorschlag
+                                </span>
+                                <span className="font-medium text-slate-900">{item.title}</span>
+                                <p className="text-xs text-slate-500">
+                                  {new Date(item.startsAt).toLocaleString("de-DE", {
+                                    weekday: "short",
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    hour: "2-digit",
+                                    minute: "2-digit"
+                                  })}{" "}
+                                  –{" "}
+                                  {new Date(item.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                                  {item.createdByName ? ` · von ${item.createdByName}` : ""}
+                                </p>
+                                <div className="mt-2 rounded-lg bg-white/60 py-2 pr-2">
+                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-800/80">
+                                    Wer ist dabei?
+                                  </p>
+                                  {accepted.length > 0 ? (
+                                    <p className="mt-0.5 text-sm font-medium text-slate-800">
+                                      {accepted.map((u) => u.name ?? u.email).join(", ")}
+                                    </p>
+                                  ) : (
+                                    <p className="mt-0.5 text-sm text-slate-600">Noch niemand – du könntest der erste sein</p>
+                                  )}
+                                </div>
+                              </a>
+                            </li>
+                          );
+                        }
+                        const coverUrl = item.event.placeImageUrl ?? item.event.linkPreviewImageUrl ?? null;
+                        const borderColor = item.event.color ?? CATEGORY_COLORS[item.event.category ?? "default"];
+                        return (
+                          <li key={`event-${item.eventId}`}>
+                            <a
+                              href={`/e/${shortenUUID(item.eventId)}`}
+                              className="flex gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left transition hover:border-teal-200 hover:bg-teal-50/30"
+                              style={{ borderLeftWidth: "4px", borderLeftColor: borderColor }}
+                            >
+                              {coverUrl ? (
+                                <span className="relative h-20 w-24 shrink-0 overflow-hidden rounded-lg bg-slate-100 sm:h-20 sm:w-28">
+                                  <EventImage src={coverUrl} className="h-full w-full object-cover" />
+                                </span>
+                              ) : null}
+                              <div className="min-w-0 flex-1">
+                                <span className="font-semibold text-slate-900">{item.title}</span>
+                                <p className="mt-0.5 text-xs text-slate-500">
+                                  {new Date(item.startsAt).toLocaleString("de-DE", {
+                                    weekday: "short",
+                                    hour: "2-digit",
+                                    minute: "2-digit"
+                                  })}{" "}
+                                  –{" "}
+                                  {new Date(item.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                                </p>
+                                <div className="mt-2">
+                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                                    Wer ist dabei?
+                                  </p>
+                                  {accepted.length > 0 ? (
+                                    <p className="mt-0.5 text-sm font-medium text-slate-800">
+                                      {accepted.map((u) => u.name ?? u.email).join(", ")}
+                                    </p>
+                                  ) : (
+                                    <p className="mt-0.5 text-sm text-slate-500">Noch niemand zugesagt</p>
+                                  )}
+                                </div>
+                              </div>
+                              {isAccepted ? (
+                                <span className="shrink-0 self-center rounded-full bg-teal-100 px-2 py-1 text-[11px] font-semibold text-teal-800">
+                                  Du dabei
+                                </span>
+                              ) : null}
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         {/* Nudge: Events ohne Zusagen – Leute einladen */}
@@ -617,9 +815,9 @@ export function Dashboard({
         ) : null}
 
         <section id="events" className="mt-8 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Deine Events</h2>
+          <h2 className="text-lg font-semibold text-slate-900">Was gibt’s? Deine Events & Aktivitäten</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Hier siehst du alle sichtbaren Events – leg neue an, lade Leute ein und nutze Vorschläge für mehr Teilnahme.
+            Alle sichtbaren Erlebnisse und Termine – dabei sein, Leute einladen oder selbst was starten.
           </p>
           <div className="mt-4 space-y-6">
             {visibleEvents.length === 0 ? (

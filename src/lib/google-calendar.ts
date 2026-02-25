@@ -1789,6 +1789,16 @@ export async function registerCalendarWatch(
 
   const baseUrl = getRealiteBaseUrl();
   const webhookUrl = `${baseUrl}/api/webhooks/google-calendar`;
+  // Google requires HTTPS for webhook callbacks; skip registration on localhost
+  try {
+    const parsed = new URL(webhookUrl);
+    if (parsed.protocol !== "https:") {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+
   const channelId = crypto.randomUUID();
 
   const response = await fetch(

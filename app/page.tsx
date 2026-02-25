@@ -89,14 +89,14 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
     <section className="mt-8 grid items-start gap-10 sm:mt-12 sm:gap-12 lg:mt-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
       <div className="realite-reveal min-w-0" style={{ animationDelay: "140ms" }}>
         <p className="realite-float inline-flex rounded-full border border-teal-400/40 bg-teal-700/50 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-teal-100 sm:px-4 sm:text-xs sm:tracking-[0.16em]">
-          Reale Treffen statt endloser Feeds
+          Das Social Life, das du immer haben wolltest
         </p>
         <h1 className="mt-6 max-w-2xl text-[2rem] font-black leading-[1.15] tracking-tight text-white sm:mt-8 sm:text-5xl sm:leading-[1.1] lg:text-6xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
-          Finde Menschen, die wirklich zu deinem Alltag passen.
+          Keine Einsamkeit. Coole Erlebnisse teilen. Tiefe Verbindungen – statt alleine Netflix.
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-slate-200 sm:mt-5 sm:text-lg sm:leading-8">
-          Echte Gesichter, echte Orte. Egal ob neue Leute kennenlernen, Kontakte wiederbeleben oder einfach wieder mehr
-          rausgehen – Realite macht aus deiner Zeit und deinen Interessen konkrete Treffen.
+          Mit deinem Freundeskreis, neuen Leuten oder wiederbelebten Kontakten: Realite bringt dich raus und macht aus
+          deiner freien Zeit echte Momente – Kaffee, Sport, Spaziergang, was auch immer du brauchst.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:mt-9 sm:flex-row sm:flex-wrap sm:items-center">
           <a
@@ -113,8 +113,9 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
           </a>
         </div>
         <div className="mt-8 flex flex-wrap gap-2 text-xs font-medium text-slate-300 sm:mt-9">
+          <span className="rounded-lg border border-white/20 bg-teal-800/60 px-3 py-1.5">Friend Circle</span>
           <span className="rounded-lg border border-white/20 bg-teal-800/60 px-3 py-1.5">Neue Leute</span>
-          <span className="rounded-lg border border-white/20 bg-teal-800/60 px-3 py-1.5">Reconnecten</span>
+          <span className="rounded-lg border border-white/20 bg-teal-800/60 px-3 py-1.5">Echte Erlebnisse</span>
           <LandingDatingBadge />
         </div>
       </div>
@@ -173,30 +174,30 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
 
 const WHAT_YOU_CAN_DO_OPTIONS = [
   {
-    title: "Offene Events entdecken",
-    text: "Sieh, was andere gerade anbieten – Kaffee, Sport, Spaziergang. Ein Klick und du siehst Details.",
+    title: "Was gibt’s heute Abend? Entdecken.",
+    text: "Sieh, was gerade los ist – Kaffee, Sport, Spaziergang. Ein Klick und du bist dabei statt alleine zu Hause.",
     cta: "Events ansehen",
     href: "#",
     useSignIn: true
   },
   {
-    title: "Eigenes Event anlegen",
-    text: "Du bestimmst Zeit, Ort und ob es für alle oder nur deine Gruppe sichtbar ist.",
+    title: "Passende Vorschläge für dich",
+    text: "Realite schlägt dir Termine vor, die zu deiner Zeit und deinen Interessen passen. Du sagst zu und machst was draus.",
+    cta: "Zu Vorschlägen",
+    href: "#",
+    useSignIn: true
+  },
+  {
+    title: "Eigenes Erlebnis starten",
+    text: "Du bestimmst Zeit, Ort und ob es für alle oder nur deinen Freundeskreis sichtbar ist.",
     cta: "Event erstellen",
     href: "#",
     useSignIn: true
   },
   {
-    title: "Gruppen nutzen & Leute einladen",
-    text: "Erstelle Gruppen (z. B. Freundeskreis, Sport), lade Leute ein und teile Events nur mit ihnen.",
+    title: "Gruppen & Leute einladen",
+    text: "Freundeskreis, Sport, neue Leute – Gruppen anlegen, einladen und Erlebnisse mit den Richtigen teilen.",
     cta: "Gruppen verwalten",
-    href: "#",
-    useSignIn: true
-  },
-  {
-    title: "Vorschläge bekommen",
-    text: "Realite schlägt dir passende Termine vor – basierend auf Kalender und Interessen. Du sagst zu oder ab.",
-    cta: "Zu Vorschlägen",
     href: "#",
     useSignIn: true
   }
@@ -207,10 +208,10 @@ function WhatYouCanDoSection({ signInHref }: { signInHref: string }) {
     <section className="mt-12 sm:mt-14 lg:mt-16" aria-labelledby="was-du-tun-kannst">
       <div className="realite-reveal" style={{ animationDelay: "260ms" }}>
         <h2 id="was-du-tun-kannst" className="text-2xl font-black text-white sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
-          Was du bei Realite tun kannst
+          Erlebnisse, Aktivitäten, Menschen
         </h2>
         <p className="mt-3 max-w-2xl text-base leading-7 text-slate-200 sm:text-lg">
-          Klare Optionen, kein Rätselraten. So nutzt du die App von Anfang an.
+          Was kannst du heute noch machen? Hier steht es – nicht App-Verwaltung, sondern echte Optionen für deinen Abend.
         </p>
       </div>
       <div className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5">
@@ -240,19 +241,19 @@ function WhatYouCanDoSection({ signInHref }: { signInHref: string }) {
 const INTENT_CARDS = [
   {
     title: "Neue Leute kennenlernen",
-    text: "Finde Menschen mit ähnlichen Interessen in deiner Nähe.",
+    text: "Finde Menschen mit ähnlichen Interessen – echte Begegnungen statt Einsamkeit.",
     image: "/landing/new-people.svg",
     imageAlt: "Illustration für neue Bekanntschaften"
   },
   {
-    title: "Reconnecten",
-    text: "Reaktiviere lose Kontakte und komm wieder ins gemeinsame Tun.",
+    title: "Reconnecten & Freundeskreis",
+    text: "Lose Kontakte wiederbeleben, deinen Circle pflegen – gemeinsam was erleben.",
     image: "/landing/reconnect.svg",
     imageAlt: "Illustration für das Wiederverbinden mit Kontakten"
   },
   {
-    title: "Einfach was starten",
-    text: "Sport, Spaziergang, Kaffee oder Lernen: du gibst den Impuls.",
+    title: "Coole Erlebnisse teilen",
+    text: "Sport, Spaziergang, Kaffee: du startest was und andere machen mit.",
     image: "/landing/start-anything.svg",
     imageAlt: "Illustration für spontane gemeinsame Aktivitäten"
   }
@@ -263,11 +264,11 @@ function PeopleIntentSection() {
     <section className="mt-14 sm:mt-16 lg:mt-20">
       <div className="realite-reveal" style={{ animationDelay: "300ms" }}>
         <h2 className="text-2xl font-black text-white sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
-          Für jeden Startpunkt.
+          Freundeskreis, neue Leute, tiefe Verbindungen.
         </h2>
         <p className="mt-3 max-w-3xl text-base leading-7 text-slate-200 sm:text-lg">
-          Du musst nicht wissen, wonach du exakt suchst. Fang einfach mit dem an, was sich für dich jetzt richtig
-          anfühlt.
+          Ob du deinen Circle stärken willst, neue Menschen kennenlernen oder einfach weniger alleine sein – Realite
+          unterstützt dich genau da, wo du stehst.
         </p>
       </div>
       <div className="mt-6 grid gap-5 sm:mt-8 sm:gap-6 md:grid-cols-3">
@@ -367,10 +368,11 @@ function HowItWorksSection({ signInHref }: { signInHref: string }) {
         style={{ animationDelay: "1220ms" }}
       >
         <h2 className="text-xl font-black text-white sm:text-2xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
-          Kein weiterer Feed. Ein klarer Startpunkt für echte Verbindung.
+          Dein Social Life – mit Erlebnissen und Menschen, nicht mit Admin und Feeds.
         </h2>
         <p className="mt-4 max-w-3xl text-base leading-7 text-teal-100 sm:text-lg">
-          Du bekommst konkrete Vorschläge, entscheidest schnell und triffst Menschen im echten Leben.
+          Was kannst du heute Abend machen? Realite zeigt dir konkrete Optionen, du sagst zu und triffst echte Menschen
+          – keine Einsamkeit, keine endlosen Scrolls.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <a

@@ -1,5 +1,6 @@
 "use client";
 
+import { CalendarBlank, Sparkle, Users } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
@@ -23,10 +24,9 @@ const DESKTOP_ITEMS = [
 ];
 
 const MOBILE_ITEMS = [
-  { href: "/events", label: "Events" },
-  { href: "/groups", label: "Gruppen" },
-  { href: "/suggestions", label: "Vorschläge" },
-  { href: "/settings", label: "Profil" },
+  { href: "/events", label: "Events", Icon: CalendarBlank },
+  { href: "/groups", label: "Gruppen", Icon: Users },
+  { href: "/suggestions", label: "Vorschläge", Icon: Sparkle },
 ];
 
 function isItemActive(pathname: string, href: string) {
@@ -65,7 +65,7 @@ export function AppShell({ user, children }: AppShellProps) {
               aria-hidden="true"
             />
             <span>Realite</span>
-            <span className="hidden text-sm font-normal text-slate-500 sm:inline">– Aktivitäten & Einladen</span>
+            <span className="hidden text-sm font-normal text-slate-500 sm:inline">– Erlebnisse & Menschen</span>
           </a>
 
           <nav className="hidden items-center gap-1 md:flex" aria-label="Hauptnavigation">
@@ -96,23 +96,27 @@ export function AppShell({ user, children }: AppShellProps) {
         </div>
       </header>
 
-      <div className="pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-0">{children}</div>
+      <div className="pb-[calc(env(safe-area-inset-bottom)+4.5rem)] md:pb-0">{children}</div>
 
+      {/* Mobile: iOS 26-style floating bubble nav (3 Tabs, Profil nur oben) */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-2 py-2 backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 md:hidden"
         aria-label="Mobile Navigation"
       >
-        <div className="mx-auto grid w-full max-w-md grid-cols-4 gap-1">
+        <div className="flex rounded-full border border-slate-200/80 bg-white/90 px-1 py-1 shadow-lg shadow-slate-200/50 backdrop-blur-xl">
           {MOBILE_ITEMS.map((item) => {
             const active = isItemActive(pathname, item.href);
+            const Icon = item.Icon;
             return (
               <a
                 key={item.href}
                 href={item.href}
-                className={`rounded-md px-2 py-2 text-center text-xs font-semibold ${active ? "bg-teal-100 text-teal-800" : "text-slate-700"
-                  }`}
+                className={`flex flex-col items-center justify-center rounded-full px-4 py-2.5 transition sm:px-5 ${active ? "bg-teal-100 text-teal-700" : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"}`}
+                aria-current={active ? "page" : undefined}
+                title={item.label}
               >
-                {item.label}
+                <Icon size={22} weight={active ? "fill" : "regular"} aria-hidden />
+                <span className="mt-0.5 hidden text-[10px] font-medium sm:block">{item.label}</span>
               </a>
             );
           })}

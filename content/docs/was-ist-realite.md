@@ -1,14 +1,12 @@
 # Was ist Realite?
 
-Realite hilft dir, leichter passende Aktivitäten mit anderen zu finden.
+Realite ermöglicht dir das Social Life, das du immer haben wolltest: mit deinem Freundeskreis, neuen Leuten oder wiederbelebten Kontakten. Keine Einsamkeit – coole Erlebnisse teilen und tiefe Verbindungen eingehen, statt alleine zu Hause zu bleiben.
 
-Du verbindest Realite mit deinem Kalender und bekommst Vorschläge, die zu dir und deiner freien Zeit passen.
+Du verbindest Realite mit deinem Kalender und bekommst konkrete Vorschläge: Was kannst du heute Abend noch machen? Die App stellt Erlebnisse, Aktivitäten und Menschen in den Vordergrund – nicht Verwaltung, sondern echte Optionen für deine Zeit.
 
 ## Mission
 
-Realite bringt Menschen raus aus der digitalen Isolation und schafft echte, sinnstiftende Verbindungen im echten Leben.
-
-Technologie dient hier nicht als Ersatz für Nähe, sondern als Werkzeug, um reale Treffen einfacher zu machen.
+Realite bringt Menschen raus aus der digitalen Isolation und schafft echte, sinnstiftende Verbindungen im echten Leben. Technologie dient hier nicht als Ersatz für Nähe, sondern als Werkzeug, um reale Treffen und gemeinsame Erlebnisse einfacher zu machen.
 
 ## Startseite im Überblick
 
@@ -29,12 +27,12 @@ Auf der Landingpage bekommst du vor dem Login direkt:
 
 ## Für wen ist Realite?
 
-Für alle, die weniger planen und mehr machen wollen:
+Für alle, die das Social Life leben wollen, das sie sich wünschen:
 
-- Freundeskreis
-- neue Kontakte
-- gemeinsame Hobbys
-- spontane Aktivitäten
+- **Freundeskreis** – mit deinem Circle etwas unternehmen
+- **Neue Leute** – echte Begegnungen statt Einsamkeit
+- **Tiefe Verbindungen** – reconnecten und gemeinsam erleben
+- **Coole Erlebnisse teilen** – Sport, Kaffee, Spaziergang, was auch immer; nicht alleine Netflix
 
 ## Wichtige Begriffe
 
