@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { AppShell } from "@/src/components/app-shell";
+import { EventImage } from "@/src/components/event-image";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { getUserProfileOverview, type UserProfileEvent, type UserProfileVisibility } from "@/src/lib/repository";
 import { requireAppUser } from "@/src/lib/session";
@@ -66,9 +67,8 @@ function ProfileEventList({ mode, events }: ProfileEventListProps) {
           <article key={event.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
             <div className="flex">
               {coverUrl ? (
-                <a href={`/e/${shortenUUID(event.id)}`} className="relative h-20 w-24 shrink-0 bg-slate-100 sm:h-24 sm:w-28">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+                <a href={`/e/${shortenUUID(event.id)}`} className="relative block h-20 w-24 shrink-0 bg-slate-100 sm:h-24 sm:w-28">
+                  <EventImage src={coverUrl} className="h-full w-full object-cover" />
                 </a>
               ) : null}
               <div className="min-w-0 flex-1 p-4">

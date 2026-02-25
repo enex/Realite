@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/components/app-shell";
+import { EventImage } from "@/src/components/event-image";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
@@ -580,9 +581,8 @@ export function GroupDetail({
                   <article key={event.id} className="overflow-hidden rounded-md border border-slate-200">
                     <div className="flex">
                       {coverUrl ? (
-                        <a href={`/e/${shortenUUID(event.id)}`} className="h-16 w-20 shrink-0 bg-slate-100 sm:h-20 sm:w-24">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+                        <a href={`/e/${shortenUUID(event.id)}`} className="block h-16 w-20 shrink-0 bg-slate-100 sm:h-20 sm:w-24">
+                          <EventImage src={coverUrl} className="h-full w-full object-cover" />
                         </a>
                       ) : null}
                       <div className="min-w-0 flex-1 p-3">

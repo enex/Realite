@@ -1,3 +1,6 @@
+"use client";
+
+import { EventImage } from "@/src/components/event-image";
 import { EventLocationDetails } from "@/src/components/event-location-details";
 import { stripRealiteCalendarMetadata } from "@/src/lib/realite-calendar-links";
 import { sanitizeBasicHtml } from "@/src/lib/sanitize-basic-html";
@@ -46,10 +49,8 @@ function EventCoverImage({
 
   return (
     <div className="-mx-5 -mt-5 mb-4 overflow-hidden rounded-t-2xl sm:-mx-6 sm:-mt-6">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <EventImage
         src={coverUrl}
-        alt=""
         className="h-44 w-full object-cover sm:h-52"
         sizes="(max-width: 640px) 100vw, 672px"
       />

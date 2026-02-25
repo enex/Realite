@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
+import { EventImage } from "@/src/components/event-image";
 import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
 import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
 import { UserAvatar } from "@/src/components/user-avatar";
@@ -662,19 +663,17 @@ export function Dashboard({
                         style={{ borderLeftWidth: "4px", borderLeftColor: borderColor }}
                       >
                         <div className="flex">
-                          {coverUrl ? (
-                            <a
-                              href={`/e/${shortenUUID(event.id)}`}
-                              className="relative h-20 w-24 shrink-0 bg-slate-100 sm:h-24 sm:w-28"
-                            >
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={coverUrl}
-                                alt=""
-                                className="h-full w-full object-cover"
-                              />
-                            </a>
-                          ) : null}
+                    {coverUrl ? (
+                      <a
+                        href={`/e/${shortenUUID(event.id)}`}
+                        className="relative block h-20 w-24 shrink-0 bg-slate-100 sm:h-24 sm:w-28"
+                      >
+                        <EventImage
+                          src={coverUrl}
+                          className="h-full w-full object-cover"
+                        />
+                      </a>
+                    ) : null}
                           <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-2 p-3">
                             <div>
                               <a

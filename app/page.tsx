@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { EventImage } from "@/src/components/event-image";
 import { LandingDatingBadge, LandingDatingGate } from "@/src/components/landing-dating-gate";
 import { getAuthSession } from "@/src/lib/auth";
 import { listPublicAlleEvents } from "@/src/lib/repository";
@@ -144,12 +145,7 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
               <article key={event.id} className="overflow-hidden rounded-xl border border-teal-700/50 bg-teal-900/80 sm:rounded-2xl">
                 {coverUrl ? (
                   <a href={`/e/${shortenUUID(event.id)}`} className="block h-24 w-full sm:h-28">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={coverUrl}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
+                    <EventImage src={coverUrl} className="h-full w-full object-cover" />
                   </a>
                 ) : null}
                 <div className="p-4">

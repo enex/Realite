@@ -1,6 +1,7 @@
 /**
  * Liest die erste URL aus einem Text (z. B. Event-Beschreibung) und ermittelt
  * das Open-Graph-Bild (og:image) für Link-Previews.
+ * Nur URLs, die beim Abruf ein gültiges Bild liefern und nicht auf der Blocklist stehen, werden zurückgegeben.
  */
 
 const URL_REGEX =
@@ -13,6 +14,12 @@ const OG_IMAGE_PATTERNS = [
 
 const FETCH_TIMEOUT_MS = 6000;
 const MAX_BODY_LENGTH = 400_000;
+const IMAGE_VALIDATE_TIMEOUT_MS = 5000;
+
+/** Hosts, die og:image-URLs liefern, aber direkten Abruf blockieren (z. B. 403). */
+const BLOCKED_IMAGE_HOSTS = new Set([
+  "lookaside.fbsbx.com", // Meta CDN nur für Crawler, kein direkter Zugriff
+]);
 
 function extractFirstUrl(text: string): string | null {
   if (!text || typeof text !== "string") {
@@ -58,6 +65,39 @@ function resolveOgImageUrl(html: string, pageUrl: string): string | null {
   return null;
 }
 
+function isBlockedImageHost(imageUrl: string): boolean {
+  try {
+    const host = new URL(imageUrl).hostname.toLowerCase();
+    return BLOCKED_IMAGE_HOSTS.has(host);
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * Prüft per HEAD, ob die URL ein abrufbares Bild liefert (Status 200, Content-Type image/*).
+ */
+async function validateImageUrl(imageUrl: string): Promise<boolean> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), IMAGE_VALIDATE_TIMEOUT_MS);
+  try {
+    const res = await fetch(imageUrl, {
+      method: "HEAD",
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Realite/1.0 (Link preview; +https://realite.app)",
+      },
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return false;
+    const ct = res.headers.get("content-type")?.toLowerCase().trim() ?? "";
+    return ct.startsWith("image/");
+  } catch {
+    clearTimeout(timeout);
+    return false;
+  }
+}
+
 /**
  * Holt das og:image der ersten in `text` vorkommenden URL.
  * Timeout und Größenlimit werden angewendet; bei Fehlern wird null zurückgegeben.
@@ -90,10 +130,16 @@ export async function fetchOgImageFromText(
       return null;
     }
     const html = await res.text();
-    if (html.length > MAX_BODY_LENGTH) {
-      return resolveOgImageUrl(html.slice(0, MAX_BODY_LENGTH), url);
-    }
-    return resolveOgImageUrl(html, url);
+    const imageUrl =
+      html.length > MAX_BODY_LENGTH
+        ? resolveOgImageUrl(html.slice(0, MAX_BODY_LENGTH), url)
+        : resolveOgImageUrl(html, url);
+
+    if (!imageUrl) return null;
+    if (isBlockedImageHost(imageUrl)) return null;
+    if (!(await validateImageUrl(imageUrl))) return null;
+
+    return imageUrl;
   } catch {
     clearTimeout(timeout);
     return null;
