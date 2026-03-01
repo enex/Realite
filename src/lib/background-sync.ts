@@ -1,6 +1,16 @@
-import { syncPublicEventsFromGoogleCalendar } from "@/src/lib/google-calendar";
-import { syncGoogleContactsToGroups } from "@/src/lib/google-contacts";
-import { type SmartMeetingSyncStats, syncSmartMeetingsForUser } from "@/src/lib/smart-meetings";
+import {
+  googleCalendarProvider,
+  type CalendarProvider,
+} from "@/src/lib/google-calendar";
+import {
+  syncGoogleContactsToGroups,
+  type ContactsSyncStats,
+} from "@/src/lib/google-contacts";
+import {
+  syncSmartMeetingsForUser,
+  type SmartMeetingSyncStats,
+} from "@/src/lib/smart-meetings";
+import { systemNow, type NowFn } from "@/src/lib/time";
 
 type SyncState = {
   running: boolean;
@@ -9,7 +19,7 @@ type SyncState = {
   warning: string | null;
   stats: { synced: number; scanned: number } | null;
   contactsWarning: string | null;
-  contactsStats: { syncedGroups: number; syncedMembers: number; scannedContacts: number } | null;
+  contactsStats: ContactsSyncStats | null;
   smartWarning: string | null;
   smartStats: SmartMeetingSyncStats | null;
   inFlight: Promise<void> | null;
@@ -22,38 +32,25 @@ type SyncSnapshot = {
   warning: string | null;
   stats: { synced: number; scanned: number } | null;
   contactsWarning: string | null;
-  contactsStats: { syncedGroups: number; syncedMembers: number; scannedContacts: number } | null;
+  contactsStats: ContactsSyncStats | null;
   smartWarning: string | null;
   smartStats: SmartMeetingSyncStats | null;
 };
 
+type DashboardBackgroundSyncDependencies = {
+  calendar: Pick<CalendarProvider, "syncPublicEvents">;
+  syncContacts(userId: string): Promise<ContactsSyncStats>;
+  syncSmartMeetings(userId: string): Promise<SmartMeetingSyncStats>;
+  now: NowFn;
+};
+
 const DASHBOARD_SYNC_INTERVAL_MS = 90_000;
-const syncByUserId = new Map<string, SyncState>();
 
-function getOrCreateSyncState(userId: string): SyncState {
-  const existing = syncByUserId.get(userId);
-  if (existing) {
-    return existing;
-  }
-
-  const created: SyncState = {
-    running: false,
-    lastTriggeredAt: null,
-    lastCompletedAt: null,
-    warning: null,
-    stats: null,
-    contactsWarning: null,
-    contactsStats: null,
-    smartWarning: null,
-    smartStats: null,
-    inFlight: null
-  };
-
-  syncByUserId.set(userId, created);
-  return created;
-}
-
-function shouldStartSync(state: SyncState, force: boolean) {
+function shouldStartSync(
+  state: SyncState,
+  force: boolean,
+  nowTimestamp: number,
+) {
   if (force) {
     return !state.running;
   }
@@ -66,70 +63,147 @@ function shouldStartSync(state: SyncState, force: boolean) {
     return true;
   }
 
-  return Date.now() - state.lastTriggeredAt >= DASHBOARD_SYNC_INTERVAL_MS;
+  return nowTimestamp - state.lastTriggeredAt >= DASHBOARD_SYNC_INTERVAL_MS;
 }
 
-export function triggerDashboardBackgroundSync(userId: string, options?: { force?: boolean }) {
-  const state = getOrCreateSyncState(userId);
-  if (!shouldStartSync(state, options?.force ?? false)) {
-    return;
+export function createDashboardBackgroundSyncService(
+  dependencies: DashboardBackgroundSyncDependencies,
+) {
+  const syncByUserId = new Map<string, SyncState>();
+
+  function getOrCreateSyncState(userId: string): SyncState {
+    const existing = syncByUserId.get(userId);
+    if (existing) {
+      return existing;
+    }
+
+    const created: SyncState = {
+      running: false,
+      lastTriggeredAt: null,
+      lastCompletedAt: null,
+      warning: null,
+      stats: null,
+      contactsWarning: null,
+      contactsStats: null,
+      smartWarning: null,
+      smartStats: null,
+      inFlight: null,
+    };
+
+    syncByUserId.set(userId, created);
+    return created;
   }
 
-  state.running = true;
-  state.lastTriggeredAt = Date.now();
-
-  state.inFlight = (async () => {
-    let warning: string | null = null;
-    let stats: { synced: number; scanned: number } | null = null;
-    let contactsWarning: string | null = null;
-    let contactsStats: { syncedGroups: number; syncedMembers: number; scannedContacts: number } | null = null;
-    let smartWarning: string | null = null;
-    let smartStats: SmartMeetingSyncStats | null = null;
-
-    try {
-      stats = await syncPublicEventsFromGoogleCalendar(userId);
-    } catch (error) {
-      warning = error instanceof Error ? error.message : "Kalender-Sync fehlgeschlagen";
+  function triggerDashboardBackgroundSync(
+    userId: string,
+    options?: { force?: boolean },
+  ) {
+    const state = getOrCreateSyncState(userId);
+    const nowTimestamp = dependencies.now().getTime();
+    if (!shouldStartSync(state, options?.force ?? false, nowTimestamp)) {
+      return;
     }
 
-    try {
-      contactsStats = await syncGoogleContactsToGroups(userId);
-    } catch (error) {
-      contactsWarning = error instanceof Error ? error.message : "Kontakte-Sync fehlgeschlagen";
-    }
+    state.running = true;
+    state.lastTriggeredAt = nowTimestamp;
 
-    try {
-      smartStats = await syncSmartMeetingsForUser(userId);
-    } catch (error) {
-      smartWarning = error instanceof Error ? error.message : "Smart-Treffen-Sync fehlgeschlagen";
-    }
+    state.inFlight = (async () => {
+      let warning: string | null = null;
+      let stats: { synced: number; scanned: number } | null = null;
+      let contactsWarning: string | null = null;
+      let contactsStats: ContactsSyncStats | null = null;
+      let smartWarning: string | null = null;
+      let smartStats: SmartMeetingSyncStats | null = null;
 
-    state.warning = warning;
-    state.stats = stats;
-    state.contactsWarning = contactsWarning;
-    state.contactsStats = contactsStats;
-    state.smartWarning = smartWarning;
-    state.smartStats = smartStats;
-    state.lastCompletedAt = Date.now();
-  })()
-    .finally(() => {
+      try {
+        stats = await dependencies.calendar.syncPublicEvents(userId);
+      } catch (error) {
+        warning =
+          error instanceof Error
+            ? error.message
+            : "Kalender-Sync fehlgeschlagen";
+      }
+
+      try {
+        contactsStats = await dependencies.syncContacts(userId);
+      } catch (error) {
+        contactsWarning =
+          error instanceof Error
+            ? error.message
+            : "Kontakte-Sync fehlgeschlagen";
+      }
+
+      try {
+        smartStats = await dependencies.syncSmartMeetings(userId);
+      } catch (error) {
+        smartWarning =
+          error instanceof Error
+            ? error.message
+            : "Smart-Treffen-Sync fehlgeschlagen";
+      }
+
+      state.warning = warning;
+      state.stats = stats;
+      state.contactsWarning = contactsWarning;
+      state.contactsStats = contactsStats;
+      state.smartWarning = smartWarning;
+      state.smartStats = smartStats;
+      state.lastCompletedAt = dependencies.now().getTime();
+    })().finally(() => {
       state.running = false;
       state.inFlight = null;
     });
-}
+  }
 
-export function getDashboardSyncSnapshot(userId: string): SyncSnapshot {
-  const state = getOrCreateSyncState(userId);
+  function getDashboardSyncSnapshot(userId: string): SyncSnapshot {
+    const state = getOrCreateSyncState(userId);
+
+    return {
+      revalidating: state.running,
+      lastTriggeredAt: state.lastTriggeredAt
+        ? new Date(state.lastTriggeredAt).toISOString()
+        : null,
+      lastCompletedAt: state.lastCompletedAt
+        ? new Date(state.lastCompletedAt).toISOString()
+        : null,
+      warning: state.warning,
+      stats: state.stats,
+      contactsWarning: state.contactsWarning,
+      contactsStats: state.contactsStats,
+      smartWarning: state.smartWarning,
+      smartStats: state.smartStats,
+    };
+  }
+
+  async function waitForIdle(userId: string) {
+    const state = getOrCreateSyncState(userId);
+    await state.inFlight;
+  }
 
   return {
-    revalidating: state.running,
-    lastTriggeredAt: state.lastTriggeredAt ? new Date(state.lastTriggeredAt).toISOString() : null,
-    lastCompletedAt: state.lastCompletedAt ? new Date(state.lastCompletedAt).toISOString() : null,
-    warning: state.warning,
-    stats: state.stats,
-    contactsWarning: state.contactsWarning,
-    contactsStats: state.contactsStats,
-    smartWarning: state.smartWarning,
-    smartStats: state.smartStats
+    triggerDashboardBackgroundSync,
+    getDashboardSyncSnapshot,
+    waitForIdle,
   };
+}
+
+const defaultBackgroundSyncService = createDashboardBackgroundSyncService({
+  calendar: googleCalendarProvider,
+  syncContacts: syncGoogleContactsToGroups,
+  syncSmartMeetings: syncSmartMeetingsForUser,
+  now: systemNow,
+});
+
+export function triggerDashboardBackgroundSync(
+  userId: string,
+  options?: { force?: boolean },
+) {
+  return defaultBackgroundSyncService.triggerDashboardBackgroundSync(
+    userId,
+    options,
+  );
+}
+
+export function getDashboardSyncSnapshot(userId: string) {
+  return defaultBackgroundSyncService.getDashboardSyncSnapshot(userId);
 }

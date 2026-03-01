@@ -22,10 +22,38 @@ import {
 } from "@/src/lib/realite-calendar-links";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
-type BusyWindow = {
+export type BusyWindow = {
   start: string;
   end: string;
 };
+
+export interface CalendarProvider {
+  getBusyWindows(input: { userId: string; timeMin: Date; timeMax: Date }): Promise<BusyWindow[] | null>;
+  insertSuggestionIntoCalendar(input: {
+    userId: string;
+    suggestionId: string;
+    eventId: string;
+    title: string;
+    description?: string | null;
+    location?: string | null;
+    startsAt: Date;
+    endsAt: Date;
+    calendarId: string;
+    blockedCalendarIds?: string[];
+    linkType?: RealiteCalendarLinkType;
+  }): Promise<string | null>;
+  ensureSuggestionNonBusyInCalendar(input: {
+    userId: string;
+    calendarEventRef: string;
+    eventId: string;
+  }): Promise<boolean>;
+  removeSuggestionCalendarEvent(input: {
+    userId: string;
+    calendarEventRef: string;
+    preferredCalendarId?: string | null;
+  }): Promise<boolean>;
+  syncPublicEvents(userId: string): Promise<{ synced: number; scanned: number }>;
+}
 
 export type CalendarAttendeeResponse = {
   email: string;
@@ -1924,3 +1952,11 @@ export async function ensureCalendarWatchesForUser(userId: string): Promise<void
     }
   }
 }
+
+export const googleCalendarProvider: CalendarProvider = {
+  getBusyWindows,
+  insertSuggestionIntoCalendar,
+  ensureSuggestionNonBusyInCalendar,
+  removeSuggestionCalendarEvent,
+  syncPublicEvents: syncPublicEventsFromGoogleCalendar
+};
