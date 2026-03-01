@@ -381,6 +381,586 @@ export async function getGoogleAccessToken(userId: string) {
   return refreshAccessToken(userId, connection.refreshToken);
 }
 
+type GoogleCalendarWriteServiceDeps = {
+  fetchFn: typeof fetch;
+  getAccessToken(userId: string): Promise<string | null>;
+  getUserById(userId: string): Promise<{ email: string | null } | null>;
+};
+
+type InsertSuggestionIntoCalendarInput = {
+  userId: string;
+  suggestionId: string;
+  eventId: string;
+  title: string;
+  description?: string | null;
+  location?: string | null;
+  startsAt: Date;
+  endsAt: Date;
+  calendarId?: string;
+  blockedCalendarIds?: string[];
+  linkType?: RealiteCalendarLinkType;
+};
+
+type InsertGroupMeetingIntoCalendarInput = {
+  userId: string;
+  eventId: string;
+  title: string;
+  description?: string | null;
+  location?: string | null;
+  startsAt: Date;
+  endsAt: Date;
+  attendeeEmails: string[];
+  calendarId?: string;
+};
+
+type GetSourceEventAttendeesInput = {
+  ownerUserId: string;
+  sourceEventId: string;
+};
+
+type AddAttendeeToSourceEventInput = {
+  ownerUserId: string;
+  sourceEventId: string;
+  attendeeEmail: string;
+};
+
+type InsertSuggestionAsSourceInviteInput = {
+  suggestionId: string;
+  targetUserId: string;
+  sourceOwnerUserId: string;
+  sourceEventId: string;
+};
+
+type GetCalendarAttendeeResponsesInput = {
+  userId: string;
+  calendarEventRef: string;
+  attendeeEmails: string[];
+};
+
+export function createGoogleCalendarWriteService(
+  deps: GoogleCalendarWriteServiceDeps
+) {
+  return {
+    async insertSuggestionIntoCalendar(input: InsertSuggestionIntoCalendarInput) {
+      const token = await deps.getAccessToken(input.userId);
+      if (!token) {
+        return null;
+      }
+
+      const preferredCalendarId = input.calendarId?.trim() || "primary";
+      const blockedCalendarIds = new Set(
+        (input.blockedCalendarIds ?? []).map((id) => id.trim()).filter(Boolean)
+      );
+      const candidateCalendars = Array.from(
+        new Set([preferredCalendarId, "primary"].filter((id) => id && !blockedCalendarIds.has(id)))
+      );
+
+      if (!candidateCalendars.length) {
+        return null;
+      }
+
+      const eventUrl = buildRealiteEventUrl(input.eventId);
+      const suggestionUrl = buildRealiteSuggestionUrl(input.suggestionId);
+      const linkType = input.linkType ?? "suggestion";
+      const shortcutUrl = linkType === "event" ? eventUrl : suggestionUrl;
+      const eventPayload = {
+        summary: buildRealiteCalendarSummary({
+          title: input.title,
+          type: linkType
+        }),
+        description: buildRealiteCalendarMetadata({
+          description: sanitizeRealiteCalendarDescription(input.description),
+          url: shortcutUrl,
+          type: linkType
+        }),
+        location: input.location ?? undefined,
+        start: {
+          dateTime: input.startsAt.toISOString()
+        },
+        end: {
+          dateTime: input.endsAt.toISOString()
+        },
+        transparency: "transparent",
+        iCalUID: `realite-${input.userId}-${input.eventId}@realite.app`,
+        extendedProperties: {
+          private: {
+            realiteSuggestionId: input.suggestionId,
+            realiteEventId: input.eventId
+          }
+        }
+      };
+
+      async function createInCalendar(targetCalendarId: string) {
+        return deps.fetchFn(
+          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(targetCalendarId)}/events?sendUpdates=none`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(eventPayload)
+          }
+        );
+      }
+
+      async function findExistingInCalendar(targetCalendarId: string) {
+        async function queryIds(property: string, value: string) {
+          const params = new URLSearchParams({
+            privateExtendedProperty: `${property}=${value}`,
+            maxResults: "10",
+            showDeleted: "false"
+          });
+
+          const response = await deps.fetchFn(
+            `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(targetCalendarId)}/events?${params.toString()}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
+          );
+
+          if (!response.ok) {
+            return [] as string[];
+          }
+
+          const payload = (await response.json()) as {
+            items?: Array<{ id?: string }>;
+          };
+
+          return (payload.items ?? []).map((item) => item.id).filter((id): id is string => Boolean(id));
+        }
+
+        const ids = Array.from(
+          new Set([
+            ...(await queryIds("realiteEventId", input.eventId)),
+            ...(await queryIds("realiteSuggestionId", input.suggestionId))
+          ])
+        );
+
+        if (!ids.length) {
+          return null;
+        }
+
+        const keepId = ids[0];
+
+        for (const duplicateId of ids.slice(1)) {
+          await deps.fetchFn(
+            `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(targetCalendarId)}/events/${encodeURIComponent(duplicateId)}`,
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
+          );
+        }
+
+        return `${targetCalendarId}::${keepId}`;
+      }
+
+      for (const calendarId of candidateCalendars) {
+        const existingInCalendar = await findExistingInCalendar(calendarId);
+        if (existingInCalendar) {
+          return existingInCalendar;
+        }
+      }
+
+      let lastFailure: { status: number; details: string | null } | null = null;
+
+      for (const calendarId of candidateCalendars) {
+        const response = await createInCalendar(calendarId);
+        if (!response.ok) {
+          const details = await readGoogleError(response);
+          lastFailure = { status: response.status, details };
+
+          if (response.status === 403 || response.status === 404) {
+            continue;
+          }
+
+          throw new Error(
+            `Kalendereintrag fehlgeschlagen (${response.status})${details ? `: ${details}` : ""}`
+          );
+        }
+
+        const payload = (await response.json()) as { id?: string };
+        return payload.id ? `${calendarId}::${payload.id}` : null;
+      }
+
+      if (lastFailure) {
+        throw new Error(
+          `Kalendereintrag fehlgeschlagen (${lastFailure.status})${
+            lastFailure.details ? `: ${lastFailure.details}` : ""
+          }`
+        );
+      }
+
+      return null;
+    },
+    async insertGroupMeetingIntoCalendar(input: InsertGroupMeetingIntoCalendarInput) {
+      const token = await deps.getAccessToken(input.userId);
+      if (!token) {
+        return null;
+      }
+
+      const preferredCalendarId = input.calendarId?.trim() || "primary";
+      const candidateCalendars = Array.from(new Set([preferredCalendarId, "primary"]));
+      const attendees = normalizeAttendeeEmails(input.attendeeEmails).map((email) => ({
+        email,
+        responseStatus: "needsAction" as const
+      }));
+      const eventUrl = buildRealiteEventUrl(input.eventId);
+      const payload = {
+        summary: buildRealiteCalendarSummary({
+          title: input.title,
+          type: "event" as const
+        }),
+        description: buildRealiteCalendarMetadata({
+          description: sanitizeRealiteCalendarDescription(input.description),
+          url: eventUrl,
+          type: "event"
+        }),
+        location: input.location ?? undefined,
+        start: {
+          dateTime: input.startsAt.toISOString()
+        },
+        end: {
+          dateTime: input.endsAt.toISOString()
+        },
+        attendees,
+        transparency: "opaque",
+        iCalUID: `realite-group-${input.userId}-${input.eventId}@realite.app`,
+        extendedProperties: {
+          private: {
+            realiteEventId: input.eventId,
+            realiteManagedType: "smart_meeting"
+          }
+        }
+      };
+
+      let lastFailure: { status: number; details: string | null } | null = null;
+
+      for (const calendarId of candidateCalendars) {
+        const response = await deps.fetchFn(
+          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?sendUpdates=all`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          }
+        );
+
+        if (!response.ok) {
+          const details = await readGoogleError(response);
+          lastFailure = { status: response.status, details };
+          if (response.status === 403 || response.status === 404) {
+            continue;
+          }
+
+          throw new Error(
+            `Smart-Treffen konnte nicht im Kalender erstellt werden (${response.status})${details ? `: ${details}` : ""}`
+          );
+        }
+
+        const responsePayload = (await response.json()) as { id?: string };
+        return responsePayload.id ? `${calendarId}::${responsePayload.id}` : null;
+      }
+
+      if (lastFailure) {
+        throw new Error(
+          `Smart-Treffen konnte nicht im Kalender erstellt werden (${lastFailure.status})${
+            lastFailure.details ? `: ${lastFailure.details}` : ""
+          }`
+        );
+      }
+
+      return null;
+    },
+    async getSourceEventAttendees(input: GetSourceEventAttendeesInput) {
+      const sourceRef = parseGoogleSourceEventId(input.sourceEventId);
+      if (!sourceRef) {
+        return null;
+      }
+
+      const token = await deps.getAccessToken(input.ownerUserId);
+      if (!token) {
+        return null;
+      }
+
+      const url =
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(sourceRef.calendarId)}` +
+        `/events/${encodeURIComponent(sourceRef.eventId)}`;
+
+      const response = await deps.fetchFn(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        if (response.status === 403 || response.status === 404) {
+          return null;
+        }
+        return null;
+      }
+
+      const event = (await response.json()) as CalendarApiEvent;
+      return (event.attendees ?? [])
+        .map((attendee) => attendee.email?.trim().toLowerCase())
+        .filter((email): email is string => Boolean(email));
+    },
+    async addAttendeeToSourceEvent(input: AddAttendeeToSourceEventInput) {
+      const email = input.attendeeEmail.trim().toLowerCase();
+      if (!email) {
+        return false;
+      }
+
+      const sourceRef = parseGoogleSourceEventId(input.sourceEventId);
+      if (!sourceRef) {
+        return false;
+      }
+
+      const token = await deps.getAccessToken(input.ownerUserId);
+      if (!token) {
+        return false;
+      }
+
+      const sourceEventUrl =
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(sourceRef.calendarId)}` +
+        `/events/${encodeURIComponent(sourceRef.eventId)}`;
+
+      const sourceEventResponse = await deps.fetchFn(sourceEventUrl, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!sourceEventResponse.ok) {
+        if (sourceEventResponse.status === 403 || sourceEventResponse.status === 404) {
+          return false;
+        }
+        const details = await readGoogleError(sourceEventResponse);
+        throw new Error(
+          `Source-Event konnte nicht geladen werden (${sourceEventResponse.status})${details ? `: ${details}` : ""}`
+        );
+      }
+
+      const sourceEvent = (await sourceEventResponse.json()) as CalendarApiEvent;
+      const attendees = sourceEvent.attendees ?? [];
+      if (attendees.some((attendee) => attendee.email?.trim().toLowerCase() === email)) {
+        return true;
+      }
+
+      const patchResponse = await deps.fetchFn(`${sourceEventUrl}?sendUpdates=all`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          attendees: [...attendees, { email, responseStatus: "needsAction" as const }]
+        })
+      });
+
+      if (!patchResponse.ok) {
+        if (patchResponse.status === 403 || patchResponse.status === 404) {
+          return false;
+        }
+        const details = await readGoogleError(patchResponse);
+        throw new Error(
+          `Einladung konnte nicht gesendet werden (${patchResponse.status})${details ? `: ${details}` : ""}`
+        );
+      }
+
+      return true;
+    },
+    async insertSuggestionAsSourceInvite(input: InsertSuggestionAsSourceInviteInput) {
+      if (input.targetUserId === input.sourceOwnerUserId) {
+        return null;
+      }
+
+      const sourceRef = parseGoogleSourceEventId(input.sourceEventId);
+      if (!sourceRef) {
+        return null;
+      }
+
+      const [sourceOwnerToken, targetUser] = await Promise.all([
+        deps.getAccessToken(input.sourceOwnerUserId),
+        deps.getUserById(input.targetUserId)
+      ]);
+
+      const attendeeEmail = targetUser?.email?.trim().toLowerCase() ?? "";
+      if (!sourceOwnerToken || !attendeeEmail) {
+        return null;
+      }
+
+      const sourceEventUrl =
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(sourceRef.calendarId)}` +
+        `/events/${encodeURIComponent(sourceRef.eventId)}`;
+
+      const sourceEventResponse = await deps.fetchFn(sourceEventUrl, {
+        headers: {
+          Authorization: `Bearer ${sourceOwnerToken}`
+        }
+      });
+
+      if (!sourceEventResponse.ok) {
+        if (sourceEventResponse.status === 403 || sourceEventResponse.status === 404) {
+          return null;
+        }
+
+        const details = await readGoogleError(sourceEventResponse);
+        throw new Error(
+          `Source-Event konnte nicht geladen werden (${sourceEventResponse.status})${
+            details ? `: ${details}` : ""
+          }`
+        );
+      }
+
+      const sourceEvent = (await sourceEventResponse.json()) as CalendarApiEvent;
+      const attendees = sourceEvent.attendees ?? [];
+      const alreadyInvited = attendees.some(
+        (attendee) => attendee.email?.trim().toLowerCase() === attendeeEmail
+      );
+
+      if (alreadyInvited) {
+        return encodeSourceInviteRef({
+          ownerUserId: input.sourceOwnerUserId,
+          calendarId: sourceRef.calendarId,
+          eventId: sourceRef.eventId,
+          attendeeEmail
+        });
+      }
+
+      const patchResponse = await deps.fetchFn(`${sourceEventUrl}?sendUpdates=all`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${sourceOwnerToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          attendees: [...attendees, { email: attendeeEmail, responseStatus: "needsAction" }],
+          extendedProperties: {
+            private: {
+              ...(sourceEvent.extendedProperties?.private ?? {}),
+              realiteSuggestionSourceInvite: input.suggestionId
+            }
+          }
+        })
+      });
+
+      if (!patchResponse.ok) {
+        if (patchResponse.status === 403 || patchResponse.status === 404) {
+          return null;
+        }
+
+        const details = await readGoogleError(patchResponse);
+        throw new Error(
+          `Source-Einladung konnte nicht erstellt werden (${patchResponse.status})${details ? `: ${details}` : ""}`
+        );
+      }
+
+      return encodeSourceInviteRef({
+        ownerUserId: input.sourceOwnerUserId,
+        calendarId: sourceRef.calendarId,
+        eventId: sourceRef.eventId,
+        attendeeEmail
+      });
+    },
+    async getCalendarAttendeeResponses(input: GetCalendarAttendeeResponsesInput): Promise<CalendarAttendeeResponse[]> {
+      const eventRef = input.calendarEventRef.trim();
+      if (!eventRef) {
+        return [] as CalendarAttendeeResponse[];
+      }
+
+      const token = await deps.getAccessToken(input.userId);
+      if (!token) {
+        return [] as CalendarAttendeeResponse[];
+      }
+
+      const parsed = parseCalendarEventRef(eventRef);
+      if (!parsed.eventId) {
+        return [] as CalendarAttendeeResponse[];
+      }
+
+      const normalizedEmails = normalizeAttendeeEmails(input.attendeeEmails);
+      if (!normalizedEmails.length) {
+        return [] as CalendarAttendeeResponse[];
+      }
+
+      const candidateCalendars = Array.from(
+        new Set(
+          [parsed.calendarId, "primary"]
+            .map((value) => value?.trim() || null)
+            .filter((value): value is string => Boolean(value))
+        )
+      );
+
+      for (const calendarId of candidateCalendars) {
+        const response = await deps.fetchFn(
+          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(parsed.eventId)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        if (!response.ok) {
+          if (response.status === 403 || response.status === 404 || response.status === 410) {
+            continue;
+          }
+
+          const details = await readGoogleError(response);
+          throw new Error(
+            `Attendee-Status konnte nicht geladen werden (${response.status})${details ? `: ${details}` : ""}`
+          );
+        }
+
+        const payload = (await response.json()) as CalendarApiEvent;
+        const attendeeStatusByEmail = new Map<string, CalendarAttendeeResponse["responseStatus"]>();
+
+        for (const attendee of payload.attendees ?? []) {
+          const email = attendee.email?.trim().toLowerCase();
+          if (!email) {
+            continue;
+          }
+
+          const rawStatus = attendee.responseStatus?.trim() ?? "";
+          const responseStatus: CalendarAttendeeResponse["responseStatus"] =
+            rawStatus === "accepted" ||
+            rawStatus === "declined" ||
+            rawStatus === "tentative" ||
+            rawStatus === "needsAction"
+              ? (rawStatus as CalendarAttendeeResponse["responseStatus"])
+              : "unknown";
+          attendeeStatusByEmail.set(email, responseStatus);
+        }
+
+        return normalizedEmails.map((email) => ({
+          email,
+          responseStatus: attendeeStatusByEmail.get(email) ?? "needsAction"
+        }));
+      }
+
+      return normalizedEmails.map((email) => ({
+        email,
+        responseStatus: "unknown"
+      }));
+    }
+  };
+}
+
+const defaultGoogleCalendarWriteServiceDeps: GoogleCalendarWriteServiceDeps = {
+  fetchFn: (...args) => fetch(...args),
+  getAccessToken: getGoogleAccessToken,
+  getUserById
+};
+
+const defaultGoogleCalendarWriteService = createGoogleCalendarWriteService(
+  defaultGoogleCalendarWriteServiceDeps
+);
+
 export async function getBusyWindows(input: { userId: string; timeMin: Date; timeMax: Date }) {
   const token = await getGoogleAccessToken(input.userId);
   if (!token) {
@@ -529,472 +1109,24 @@ function mergeBusyWindows(windows: BusyWindow[]) {
   }));
 }
 
-export async function insertSuggestionIntoCalendar(input: {
-  userId: string;
-  suggestionId: string;
-  eventId: string;
-  title: string;
-  description?: string | null;
-  location?: string | null;
-  startsAt: Date;
-  endsAt: Date;
-  calendarId?: string;
-  blockedCalendarIds?: string[];
-  linkType?: RealiteCalendarLinkType;
-}) {
-  const token = await getGoogleAccessToken(input.userId);
-  if (!token) {
-    return null;
-  }
-
-  const preferredCalendarId = input.calendarId?.trim() || "primary";
-  const blockedCalendarIds = new Set(
-    (input.blockedCalendarIds ?? []).map((id) => id.trim()).filter(Boolean)
-  );
-  const candidateCalendars = Array.from(
-    new Set([preferredCalendarId, "primary"].filter((id) => id && !blockedCalendarIds.has(id)))
-  );
-
-  if (!candidateCalendars.length) {
-    return null;
-  }
-
-  const eventUrl = buildRealiteEventUrl(input.eventId);
-  const suggestionUrl = buildRealiteSuggestionUrl(input.suggestionId);
-  const linkType = input.linkType ?? "suggestion";
-  const shortcutUrl = linkType === "event" ? eventUrl : suggestionUrl;
-  const eventPayload = {
-    summary: buildRealiteCalendarSummary({
-      title: input.title,
-      type: linkType
-    }),
-    description: buildRealiteCalendarMetadata({
-      description: sanitizeRealiteCalendarDescription(input.description),
-      url: shortcutUrl,
-      type: linkType
-    }),
-    location: input.location ?? undefined,
-    start: {
-      dateTime: input.startsAt.toISOString()
-    },
-    end: {
-      dateTime: input.endsAt.toISOString()
-    },
-    transparency: "transparent",
-    iCalUID: `realite-${input.userId}-${input.eventId}@realite.app`,
-    extendedProperties: {
-      private: {
-        realiteSuggestionId: input.suggestionId,
-        realiteEventId: input.eventId
-      }
-    }
-  };
-
-  async function createInCalendar(targetCalendarId: string) {
-    return fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(targetCalendarId)}/events?sendUpdates=none`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(eventPayload)
-      }
-    );
-  }
-
-  async function findExistingInCalendar(targetCalendarId: string) {
-    async function queryIds(property: string, value: string) {
-      const params = new URLSearchParams({
-        privateExtendedProperty: `${property}=${value}`,
-        maxResults: "10",
-        showDeleted: "false"
-      });
-
-      const response = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(targetCalendarId)}/events?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      if (!response.ok) {
-        return [] as string[];
-      }
-
-      const payload = (await response.json()) as {
-        items?: Array<{ id?: string }>;
-      };
-
-      return (payload.items ?? []).map((item) => item.id).filter((id): id is string => Boolean(id));
-    }
-
-    const ids = Array.from(
-      new Set([
-        ...(await queryIds("realiteEventId", input.eventId)),
-        ...(await queryIds("realiteSuggestionId", input.suggestionId))
-      ])
-    );
-
-    if (!ids.length) {
-      return null;
-    }
-
-    const keepId = ids[0];
-
-    // Bestehende Alt-Dubletten derselben Suggestion bereinigen.
-    for (const duplicateId of ids.slice(1)) {
-      await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(targetCalendarId)}/events/${encodeURIComponent(duplicateId)}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-    }
-
-    return `${targetCalendarId}::${keepId}`;
-  }
-
-  for (const calendarId of candidateCalendars) {
-    const existingInCalendar = await findExistingInCalendar(calendarId);
-    if (existingInCalendar) {
-      return existingInCalendar;
-    }
-  }
-
-  let lastFailure: { status: number; details: string | null } | null = null;
-
-  for (const calendarId of candidateCalendars) {
-    const response = await createInCalendar(calendarId);
-    if (!response.ok) {
-      const details = await readGoogleError(response);
-      lastFailure = { status: response.status, details };
-
-      if (response.status === 403 || response.status === 404) {
-        continue;
-      }
-
-      throw new Error(`Kalendereintrag fehlgeschlagen (${response.status})${details ? `: ${details}` : ""}`);
-    }
-
-    const payload = (await response.json()) as { id?: string };
-    return payload.id ? `${calendarId}::${payload.id}` : null;
-  }
-
-  if (lastFailure) {
-    throw new Error(
-      `Kalendereintrag fehlgeschlagen (${lastFailure.status})${
-        lastFailure.details ? `: ${lastFailure.details}` : ""
-      }`
-    );
-  }
-
-  return null;
+export async function insertSuggestionIntoCalendar(input: InsertSuggestionIntoCalendarInput) {
+  return defaultGoogleCalendarWriteService.insertSuggestionIntoCalendar(input);
 }
 
-export async function insertGroupMeetingIntoCalendar(input: {
-  userId: string;
-  eventId: string;
-  title: string;
-  description?: string | null;
-  location?: string | null;
-  startsAt: Date;
-  endsAt: Date;
-  attendeeEmails: string[];
-  calendarId?: string;
-}) {
-  const token = await getGoogleAccessToken(input.userId);
-  if (!token) {
-    return null;
-  }
-
-  const preferredCalendarId = input.calendarId?.trim() || "primary";
-  const candidateCalendars = Array.from(new Set([preferredCalendarId, "primary"]));
-  const attendees = normalizeAttendeeEmails(input.attendeeEmails).map((email) => ({
-    email,
-    responseStatus: "needsAction" as const
-  }));
-  const eventUrl = buildRealiteEventUrl(input.eventId);
-  const payload = {
-    summary: buildRealiteCalendarSummary({
-      title: input.title,
-      type: "event" as const
-    }),
-    description: buildRealiteCalendarMetadata({
-      description: sanitizeRealiteCalendarDescription(input.description),
-      url: eventUrl,
-      type: "event"
-    }),
-    location: input.location ?? undefined,
-    start: {
-      dateTime: input.startsAt.toISOString()
-    },
-    end: {
-      dateTime: input.endsAt.toISOString()
-    },
-    attendees,
-    transparency: "opaque",
-    iCalUID: `realite-group-${input.userId}-${input.eventId}@realite.app`,
-    extendedProperties: {
-      private: {
-        realiteEventId: input.eventId,
-        realiteManagedType: "smart_meeting"
-      }
-    }
-  };
-
-  let lastFailure: { status: number; details: string | null } | null = null;
-
-  for (const calendarId of candidateCalendars) {
-    const response = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?sendUpdates=all`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      }
-    );
-
-    if (!response.ok) {
-      const details = await readGoogleError(response);
-      lastFailure = { status: response.status, details };
-      if (response.status === 403 || response.status === 404) {
-        continue;
-      }
-
-      throw new Error(
-        `Smart-Treffen konnte nicht im Kalender erstellt werden (${response.status})${details ? `: ${details}` : ""}`
-      );
-    }
-
-    const responsePayload = (await response.json()) as { id?: string };
-    return responsePayload.id ? `${calendarId}::${responsePayload.id}` : null;
-  }
-
-  if (lastFailure) {
-    throw new Error(
-      `Smart-Treffen konnte nicht im Kalender erstellt werden (${lastFailure.status})${
-        lastFailure.details ? `: ${lastFailure.details}` : ""
-      }`
-    );
-  }
-
-  return null;
+export async function insertGroupMeetingIntoCalendar(input: InsertGroupMeetingIntoCalendarInput) {
+  return defaultGoogleCalendarWriteService.insertGroupMeetingIntoCalendar(input);
 }
 
-/** Returns attendee emails of the Google Calendar source event, or null if not accessible. */
-export async function getSourceEventAttendees(input: {
-  ownerUserId: string;
-  sourceEventId: string;
-}): Promise<string[] | null> {
-  const sourceRef = parseGoogleSourceEventId(input.sourceEventId);
-  if (!sourceRef) {
-    return null;
-  }
-
-  const token = await getGoogleAccessToken(input.ownerUserId);
-  if (!token) {
-    return null;
-  }
-
-  const url =
-    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(sourceRef.calendarId)}` +
-    `/events/${encodeURIComponent(sourceRef.eventId)}`;
-
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-
-  if (!response.ok) {
-    if (response.status === 403 || response.status === 404) {
-      return null;
-    }
-    return null;
-  }
-
-  const event = (await response.json()) as CalendarApiEvent;
-  const attendees = event.attendees ?? [];
-  return attendees
-    .map((a) => a.email?.trim().toLowerCase())
-    .filter((email): email is string => Boolean(email));
+export async function getSourceEventAttendees(input: GetSourceEventAttendeesInput): Promise<string[] | null> {
+  return defaultGoogleCalendarWriteService.getSourceEventAttendees(input);
 }
 
-/** Adds an attendee by email to the Google Calendar source event. Sends invite via Google. */
-export async function addAttendeeToSourceEvent(input: {
-  ownerUserId: string;
-  sourceEventId: string;
-  attendeeEmail: string;
-}): Promise<boolean> {
-  const email = input.attendeeEmail.trim().toLowerCase();
-  if (!email) {
-    return false;
-  }
-
-  const sourceRef = parseGoogleSourceEventId(input.sourceEventId);
-  if (!sourceRef) {
-    return false;
-  }
-
-  const token = await getGoogleAccessToken(input.ownerUserId);
-  if (!token) {
-    return false;
-  }
-
-  const sourceEventUrl =
-    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(sourceRef.calendarId)}` +
-    `/events/${encodeURIComponent(sourceRef.eventId)}`;
-
-  const sourceEventResponse = await fetch(sourceEventUrl, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-
-  if (!sourceEventResponse.ok) {
-    if (sourceEventResponse.status === 403 || sourceEventResponse.status === 404) {
-      return false;
-    }
-    const details = await readGoogleError(sourceEventResponse);
-    throw new Error(
-      `Source-Event konnte nicht geladen werden (${sourceEventResponse.status})${details ? `: ${details}` : ""}`
-    );
-  }
-
-  const sourceEvent = (await sourceEventResponse.json()) as CalendarApiEvent;
-  const attendees = sourceEvent.attendees ?? [];
-  const alreadyInvited = attendees.some((a) => a.email?.trim().toLowerCase() === email);
-  if (alreadyInvited) {
-    return true;
-  }
-
-  const patchResponse = await fetch(`${sourceEventUrl}?sendUpdates=all`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      attendees: [...attendees, { email, responseStatus: "needsAction" as const }]
-    })
-  });
-
-  if (!patchResponse.ok) {
-    if (patchResponse.status === 403 || patchResponse.status === 404) {
-      return false;
-    }
-    const details = await readGoogleError(patchResponse);
-    throw new Error(
-      `Einladung konnte nicht gesendet werden (${patchResponse.status})${details ? `: ${details}` : ""}`
-    );
-  }
-
-  return true;
+export async function addAttendeeToSourceEvent(input: AddAttendeeToSourceEventInput): Promise<boolean> {
+  return defaultGoogleCalendarWriteService.addAttendeeToSourceEvent(input);
 }
 
-export async function insertSuggestionAsSourceInvite(input: {
-  suggestionId: string;
-  targetUserId: string;
-  sourceOwnerUserId: string;
-  sourceEventId: string;
-}) {
-  if (input.targetUserId === input.sourceOwnerUserId) {
-    return null;
-  }
-
-  const sourceRef = parseGoogleSourceEventId(input.sourceEventId);
-  if (!sourceRef) {
-    return null;
-  }
-
-  const [sourceOwnerToken, targetUser] = await Promise.all([
-    getGoogleAccessToken(input.sourceOwnerUserId),
-    getUserById(input.targetUserId)
-  ]);
-
-  const attendeeEmail = targetUser?.email?.trim().toLowerCase() ?? "";
-  if (!sourceOwnerToken || !attendeeEmail) {
-    return null;
-  }
-
-  const sourceEventUrl =
-    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(sourceRef.calendarId)}` +
-    `/events/${encodeURIComponent(sourceRef.eventId)}`;
-
-  const sourceEventResponse = await fetch(sourceEventUrl, {
-    headers: {
-      Authorization: `Bearer ${sourceOwnerToken}`
-    }
-  });
-
-  if (!sourceEventResponse.ok) {
-    if (sourceEventResponse.status === 403 || sourceEventResponse.status === 404) {
-      return null;
-    }
-
-    const details = await readGoogleError(sourceEventResponse);
-    throw new Error(
-      `Source-Event konnte nicht geladen werden (${sourceEventResponse.status})${
-        details ? `: ${details}` : ""
-      }`
-    );
-  }
-
-  const sourceEvent = (await sourceEventResponse.json()) as CalendarApiEvent;
-  const attendees = sourceEvent.attendees ?? [];
-  const alreadyInvited = attendees.some(
-    (attendee) => attendee.email?.trim().toLowerCase() === attendeeEmail
-  );
-
-  if (alreadyInvited) {
-    return encodeSourceInviteRef({
-      ownerUserId: input.sourceOwnerUserId,
-      calendarId: sourceRef.calendarId,
-      eventId: sourceRef.eventId,
-      attendeeEmail
-    });
-  }
-
-  const patchResponse = await fetch(`${sourceEventUrl}?sendUpdates=all`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${sourceOwnerToken}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      attendees: [...attendees, { email: attendeeEmail, responseStatus: "needsAction" }],
-      extendedProperties: {
-        private: {
-          ...(sourceEvent.extendedProperties?.private ?? {}),
-          realiteSuggestionSourceInvite: input.suggestionId
-        }
-      }
-    })
-  });
-
-  if (!patchResponse.ok) {
-    if (patchResponse.status === 403 || patchResponse.status === 404) {
-      return null;
-    }
-
-    const details = await readGoogleError(patchResponse);
-    throw new Error(
-      `Source-Einladung konnte nicht erstellt werden (${patchResponse.status})${details ? `: ${details}` : ""}`
-    );
-  }
-
-  return encodeSourceInviteRef({
-    ownerUserId: input.sourceOwnerUserId,
-    calendarId: sourceRef.calendarId,
-    eventId: sourceRef.eventId,
-    attendeeEmail
-  });
+export async function insertSuggestionAsSourceInvite(input: InsertSuggestionAsSourceInviteInput) {
+  return defaultGoogleCalendarWriteService.insertSuggestionAsSourceInvite(input);
 }
 
 async function updateSourceInviteResponseStatus(
@@ -1263,90 +1395,10 @@ export async function ensureSuggestionNonBusyInCalendar(input: {
   return false;
 }
 
-export async function getCalendarAttendeeResponses(input: {
-  userId: string;
-  calendarEventRef: string;
-  attendeeEmails: string[];
-}): Promise<CalendarAttendeeResponse[]> {
-  const eventRef = input.calendarEventRef.trim();
-  if (!eventRef) {
-    return [] as CalendarAttendeeResponse[];
-  }
-
-  const token = await getGoogleAccessToken(input.userId);
-  if (!token) {
-    return [] as CalendarAttendeeResponse[];
-  }
-
-  const parsed = parseCalendarEventRef(eventRef);
-  if (!parsed.eventId) {
-    return [] as CalendarAttendeeResponse[];
-  }
-
-  const normalizedEmails = normalizeAttendeeEmails(input.attendeeEmails);
-  if (!normalizedEmails.length) {
-    return [] as CalendarAttendeeResponse[];
-  }
-
-  const candidateCalendars = Array.from(
-    new Set(
-      [parsed.calendarId, "primary"]
-        .map((value) => value?.trim() || null)
-        .filter((value): value is string => Boolean(value))
-    )
-  );
-
-  for (const calendarId of candidateCalendars) {
-    const response = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(parsed.eventId)}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
-
-    if (!response.ok) {
-      if (response.status === 403 || response.status === 404 || response.status === 410) {
-        continue;
-      }
-
-      const details = await readGoogleError(response);
-      throw new Error(
-        `Attendee-Status konnte nicht geladen werden (${response.status})${details ? `: ${details}` : ""}`
-      );
-    }
-
-    const payload = (await response.json()) as CalendarApiEvent;
-    const attendeeStatusByEmail = new Map<string, CalendarAttendeeResponse["responseStatus"]>();
-
-    for (const attendee of payload.attendees ?? []) {
-      const email = attendee.email?.trim().toLowerCase();
-      if (!email) {
-        continue;
-      }
-
-      const rawStatus = attendee.responseStatus?.trim() ?? "";
-      const responseStatus: CalendarAttendeeResponse["responseStatus"] =
-        rawStatus === "accepted" ||
-        rawStatus === "declined" ||
-        rawStatus === "tentative" ||
-        rawStatus === "needsAction"
-          ? (rawStatus as CalendarAttendeeResponse["responseStatus"])
-          : "unknown";
-      attendeeStatusByEmail.set(email, responseStatus);
-    }
-
-    return normalizedEmails.map((email) => ({
-      email,
-      responseStatus: attendeeStatusByEmail.get(email) ?? "needsAction"
-    }));
-  }
-
-  return normalizedEmails.map((email) => ({
-    email,
-    responseStatus: "unknown"
-  }));
+export async function getCalendarAttendeeResponses(
+  input: GetCalendarAttendeeResponsesInput
+): Promise<CalendarAttendeeResponse[]> {
+  return defaultGoogleCalendarWriteService.getCalendarAttendeeResponses(input);
 }
 
 async function removeSourceInviteAttendee(input: SourceInviteRef) {

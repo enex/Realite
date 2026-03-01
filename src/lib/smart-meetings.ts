@@ -117,6 +117,8 @@ type Participant = {
   registeredUserId: string | null;
 };
 
+export type SmartMeetingParticipant = Participant;
+
 type PlanRecord = {
   id: string;
   createdBy: string;
@@ -162,6 +164,14 @@ type SlotCandidate = {
   startsAt: Date;
   endsAt: Date;
   expectedAccepted: number;
+};
+
+export type SmartMeetingSlotCandidate = SlotCandidate;
+
+export type SmartMeetingMemberStatsRecord = {
+  acceptCount: number;
+  declineCount: number;
+  noResponseCount: number;
 };
 
 function clampInt(value: number, min: number, max: number) {
@@ -224,6 +234,7 @@ function generateCandidateSlots(input: {
   durationMinutes: number;
   slotIntervalMinutes: number;
   excludedStartTimes: Set<number>;
+  now?: Date;
 }) {
   const slotMs = input.slotIntervalMinutes * 60_000;
   const durationMs = input.durationMinutes * 60_000;
@@ -232,7 +243,7 @@ function generateCandidateSlots(input: {
     return [] as Array<{ startsAt: Date; endsAt: Date }>;
   }
 
-  const nowBuffer = Date.now() + 5 * 60_000;
+  const nowBuffer = (input.now?.getTime() ?? Date.now()) + 5 * 60_000;
   const roundedStartMs = Math.ceil(input.searchWindowStart.getTime() / slotMs) * slotMs;
   let cursorMs = Math.max(roundedStartMs, nowBuffer);
   const latestStartMs = input.searchWindowEnd.getTime() - durationMs;
@@ -513,10 +524,22 @@ function getPredictedAttendanceProbability(input: {
   return Math.min(0.98, Math.max(0.03, weighted));
 }
 
-async function chooseBestSlot(input: {
-  plan: PlanRecord;
-  participants: Participant[];
+export function planBestSmartMeetingSlot(input: {
+  plan: Pick<
+    PlanRecord,
+    | "createdBy"
+    | "tags"
+    | "durationMinutes"
+    | "slotIntervalMinutes"
+    | "searchWindowStart"
+    | "searchWindowEnd"
+  >;
+  participants: SmartMeetingParticipant[];
   excludedStartTimes: Set<number>;
+  preferenceMapByUser: Map<string, Map<string, number>>;
+  statsByEmail: Map<string, SmartMeetingMemberStatsRecord | null>;
+  busyWindowsByEmail: Map<string, Array<{ start: Date; end: Date }> | null>;
+  now?: Date;
 }) {
   const planTags = normalizeTags(parseStringList(input.plan.tags));
   const candidates = generateCandidateSlots({
@@ -524,13 +547,67 @@ async function chooseBestSlot(input: {
     searchWindowEnd: input.plan.searchWindowEnd,
     durationMinutes: input.plan.durationMinutes,
     slotIntervalMinutes: input.plan.slotIntervalMinutes,
-    excludedStartTimes: input.excludedStartTimes
+    excludedStartTimes: input.excludedStartTimes,
+    now: input.now,
   });
 
   if (!candidates.length) {
-    return null as SlotCandidate | null;
+    return null as SmartMeetingSlotCandidate | null;
   }
 
+  let best: SmartMeetingSlotCandidate | null = null;
+
+  for (const candidate of candidates) {
+    let expectedAccepted = 0;
+
+    for (const participant of input.participants) {
+      const availabilityScore = getAvailabilityScore(
+        participant,
+        candidate,
+        input.busyWindowsByEmail,
+      );
+      const affinityScore = getAffinityScore({
+        participant,
+        ownerUserId: input.plan.createdBy,
+        planTags,
+        slotStartsAt: candidate.startsAt,
+        preferenceMapByUser: input.preferenceMapByUser,
+      });
+      const reliabilityScore = computeReliabilityScore(
+        input.statsByEmail.get(participant.email) ?? null,
+      );
+      const predicted = getPredictedAttendanceProbability({
+        availabilityScore,
+        affinityScore,
+        reliabilityScore,
+      });
+      expectedAccepted += predicted;
+    }
+
+    const scored: SmartMeetingSlotCandidate = {
+      startsAt: candidate.startsAt,
+      endsAt: candidate.endsAt,
+      expectedAccepted: Number(expectedAccepted.toFixed(2)),
+    };
+
+    if (
+      !best ||
+      scored.expectedAccepted > best.expectedAccepted ||
+      (scored.expectedAccepted === best.expectedAccepted &&
+        scored.startsAt < best.startsAt)
+    ) {
+      best = scored;
+    }
+  }
+
+  return best;
+}
+
+async function chooseBestSlot(input: {
+  plan: PlanRecord;
+  participants: Participant[];
+  excludedStartTimes: Set<number>;
+}) {
   const registeredUserIds = Array.from(
     new Set(
       input.participants
@@ -549,46 +626,14 @@ async function chooseBestSlot(input: {
     })
   ]);
 
-  let best: SlotCandidate | null = null;
-
-  for (const candidate of candidates) {
-    let expectedAccepted = 0;
-
-    for (const participant of input.participants) {
-      const availabilityScore = getAvailabilityScore(participant, candidate, busyWindowsByEmail);
-      const affinityScore = getAffinityScore({
-        participant,
-        ownerUserId: input.plan.createdBy,
-        planTags,
-        slotStartsAt: candidate.startsAt,
-        preferenceMapByUser
-      });
-      const reliabilityScore = computeReliabilityScore(statsByEmail.get(participant.email) ?? null);
-      const predicted = getPredictedAttendanceProbability({
-        availabilityScore,
-        affinityScore,
-        reliabilityScore
-      });
-      expectedAccepted += predicted;
-    }
-
-    const normalizedExpected = Number(expectedAccepted.toFixed(2));
-    const scored: SlotCandidate = {
-      startsAt: candidate.startsAt,
-      endsAt: candidate.endsAt,
-      expectedAccepted: normalizedExpected
-    };
-
-    if (
-      !best ||
-      scored.expectedAccepted > best.expectedAccepted ||
-      (scored.expectedAccepted === best.expectedAccepted && scored.startsAt < best.startsAt)
-    ) {
-      best = scored;
-    }
-  }
-
-  return best;
+  return planBestSmartMeetingSlot({
+    plan: input.plan,
+    participants: input.participants,
+    excludedStartTimes: input.excludedStartTimes,
+    preferenceMapByUser,
+    statsByEmail,
+    busyWindowsByEmail
+  });
 }
 
 async function updatePlanStatus(input: {

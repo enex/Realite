@@ -94,6 +94,25 @@ Split a component immediately when one or more of these applies:
 - Co-locate private subcomponents and hooks near their feature; extract only when reused.
 - When extracting, keep behavior unchanged and update tests/docs in the same change set when user behavior changes.
 
+## Feature Logic Architecture (Mandatory)
+
+When implementing or changing feature logic on the application/business-logic layer:
+
+- Keep the logic abstract and independent from concrete infrastructure such as Google Calendar, Google Contacts, the database, system time, or other external providers.
+- Define clear interfaces / ports at the logic boundary and inject concrete implementations instead of calling provider-specific code directly from the core logic.
+- Model time as an injected function or dependency when logic depends on `now`, deadlines, expiry, throttling, scheduling, or comparisons against the current time.
+- Prefer in-memory or fake implementations for tests so important scenarios can run without a real database or external calendar/contact provider.
+- Structure the code so underlying providers can be replaced later without rewriting the business logic.
+
+## Logic Testing Requirements
+
+For every non-trivial feature on the logic layer:
+
+- Add unit tests that verify the important behavior and edge cases of the business logic.
+- Test the logic independently of the database and external provider implementations whenever reasonably possible.
+- Cover success paths, relevant failure/edge cases, and time-dependent scenarios where applicable.
+- If a change is intentionally too small to require new tests, state that explicitly in the final summary.
+
 ## Reference Best Practices
 
 Aligned with React official guidance:
