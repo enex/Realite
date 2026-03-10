@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Group = {
   id: string;
@@ -31,7 +31,12 @@ type SmartMeeting = {
     startsAt: string;
     endsAt: string;
     responseDeadlineAt: string;
-    status: "pending" | "secured" | "expired" | "cancelled";
+    status: "awaiting_approval" | "pending" | "secured" | "expired" | "cancelled";
+    invitedEmails: string[];
+    approvalCandidates: Array<{
+      email: string;
+      label: string;
+    }>;
     participantCount: number;
     acceptedCount: number;
     declinedCount: number;
@@ -61,6 +66,9 @@ function statusLabel(status: SmartMeeting["status"]) {
 }
 
 function runStatusLabel(status: NonNullable<SmartMeeting["latestRun"]>["status"]) {
+  if (status === "awaiting_approval") {
+    return "Warten auf deine Freigabe";
+  }
   if (status === "pending") {
     return "Warten auf Zusagen";
   }
@@ -71,6 +79,81 @@ function runStatusLabel(status: NonNullable<SmartMeeting["latestRun"]>["status"]
     return "Abgebrochen";
   }
   return "Abgelaufen";
+}
+
+function arraysEqual(left: string[], right: string[]) {
+  return left.length === right.length && left.every((entry, index) => entry === right[index]);
+}
+
+function SmartMeetingApprovalPanel({
+  meeting,
+  run,
+  selectedEmails,
+  busy,
+  onToggle,
+  onApprove,
+  onReject
+}: {
+  meeting: SmartMeeting;
+  run: NonNullable<SmartMeeting["latestRun"]>;
+  selectedEmails: string[];
+  busy: boolean;
+  onToggle: (email: string) => void;
+  onApprove: () => void;
+  onReject: () => void;
+}) {
+  const selectedSet = new Set(selectedEmails);
+
+  return (
+    <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+      <p className="text-sm font-semibold text-amber-950">Kalendereinladungen erst nach deiner Freigabe</p>
+      <p className="mt-1 text-xs text-amber-800">
+        Prüfe die Liste, entferne Personen bei Bedarf und sende die Einladungen erst danach.
+      </p>
+      <p className="mt-2 text-xs text-amber-900">
+        Ausgewählt: {selectedEmails.length} von {run.approvalCandidates.length} Teilnehmern. Mindestens{" "}
+        {meeting.minAcceptedParticipants} bleiben nötig.
+      </p>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        {run.approvalCandidates.map((candidate) => (
+          <label
+            key={candidate.email}
+            className="flex items-start gap-2 rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm text-slate-700"
+          >
+            <input
+              type="checkbox"
+              checked={selectedSet.has(candidate.email)}
+              onChange={() => onToggle(candidate.email)}
+              disabled={busy}
+              className="mt-0.5"
+            />
+            <span>
+              <span className="block font-medium text-slate-900">{candidate.label}</span>
+              <span className="block text-xs text-slate-500">{candidate.email}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={onApprove}
+          disabled={busy}
+          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+        >
+          Kalendereinladungen senden
+        </button>
+        <button
+          type="button"
+          onClick={onReject}
+          disabled={busy}
+          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 disabled:opacity-50"
+        >
+          Diesen Versand ablehnen
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export function SmartMeetingsCard({
@@ -88,6 +171,8 @@ export function SmartMeetingsCard({
   const [editingId, setEditingId] = useState<string | null>(null);
   const now = useMemo(() => new Date(), []);
   const [busy, setBusy] = useState(false);
+  const [approvalBusyRunId, setApprovalBusyRunId] = useState<string | null>(null);
+  const [approvalSelections, setApprovalSelections] = useState<Record<string, string[]>>({});
   const [form, setForm] = useState({
     title: "",
     groupId: "",
@@ -102,6 +187,34 @@ export function SmartMeetingsCard({
   });
 
   const visibleGroups = useMemo(() => groups.filter((group) => !group.isHidden), [groups]);
+
+  useEffect(() => {
+    setApprovalSelections((current) => {
+      const next: Record<string, string[]> = {};
+
+      for (const meeting of smartMeetings) {
+        const run = meeting.latestRun;
+        if (!run || run.status !== "awaiting_approval") {
+          continue;
+        }
+
+        const candidateEmails = run.approvalCandidates.map((candidate) => candidate.email);
+        const defaultSelection = run.invitedEmails.filter((email) => candidateEmails.includes(email));
+        const hasExistingSelection = Object.prototype.hasOwnProperty.call(current, run.id);
+        const currentSelection = hasExistingSelection ? current[run.id] ?? [] : defaultSelection;
+
+        next[run.id] = currentSelection.filter((email) => candidateEmails.includes(email));
+      }
+
+      const currentKeys = Object.keys(current);
+      const nextKeys = Object.keys(next);
+      const changed =
+        currentKeys.length !== nextKeys.length ||
+        nextKeys.some((key) => !arraysEqual(current[key] ?? [], next[key] ?? []));
+
+      return changed ? next : current;
+    });
+  }, [smartMeetings]);
 
   function startEditing(meeting: SmartMeeting) {
     setForm({
@@ -123,6 +236,22 @@ export function SmartMeetingsCard({
   function cancelEditing() {
     setEditingId(null);
     setExpanded(false);
+  }
+
+  function toggleApprovalSelection(runId: string, email: string) {
+    setApprovalSelections((current) => {
+      const selected = new Set(current[runId] ?? []);
+      if (selected.has(email)) {
+        selected.delete(email);
+      } else {
+        selected.add(email);
+      }
+
+      return {
+        ...current,
+        [runId]: Array.from(selected).sort((left, right) => left.localeCompare(right))
+      };
+    });
   }
 
   async function submitSmartMeeting(event: React.FormEvent) {
@@ -187,13 +316,56 @@ export function SmartMeetingsCard({
     }
   }
 
+  async function submitApprovalAction(
+    meeting: SmartMeeting,
+    action: "approve" | "reject"
+  ) {
+    const run = meeting.latestRun;
+    if (!run || run.status !== "awaiting_approval") {
+      return;
+    }
+
+    setApprovalBusyRunId(run.id);
+
+    try {
+      const response = await fetch(`/api/smart-meetings/${meeting.id}/approval`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          action === "approve"
+            ? {
+                action,
+                runId: run.id,
+                attendeeEmails: approvalSelections[run.id] ?? run.invitedEmails
+              }
+            : {
+                action,
+                runId: run.id
+              }
+        )
+      });
+
+      const data = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(data.error ?? "Smart-Treffen konnte nicht aktualisiert werden");
+      }
+
+      await onCreated();
+    } catch (error) {
+      onError(error instanceof Error ? error.message : "Smart-Treffen konnte nicht aktualisiert werden");
+    } finally {
+      setApprovalBusyRunId(null);
+    }
+  }
+
   return (
     <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">Smart Treffen</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Realite sucht den besten Zeitpunkt in deinem Fenster, lädt die Gruppe ein und prüft die Mindestzusagen.
+            Realite sucht den besten Zeitpunkt in deinem Fenster. Kalendereinladungen gehen erst raus, wenn du die
+            Teilnehmerliste ausdrücklich freigibst.
           </p>
         </div>
         <button
@@ -353,8 +525,8 @@ export function SmartMeetingsCard({
             ) : null}
           </div>
           <p className="text-xs text-slate-500">
-            Shortcut für normale Events: `!min=3 !frist=24h !fenster=24h` direkt im Titel. Dann wird das Event automatisch als
-            Smart Treffen geplant.
+            Shortcut für normale Events: `!min=3 !frist=24h !fenster=24h` direkt im Titel. Danach erscheint ebenfalls erst ein
+            freizugebender Teilnehmer-Vorschlag, bevor Kalendereinladungen gesendet werden.
           </p>
         </form>
       ) : null}
@@ -389,6 +561,17 @@ export function SmartMeetingsCard({
             )}
             {meeting.latestRun?.statusReason ? (
               <p className="mt-1 text-xs text-amber-700">{meeting.latestRun.statusReason}</p>
+            ) : null}
+            {meeting.latestRun?.status === "awaiting_approval" ? (
+              <SmartMeetingApprovalPanel
+                meeting={meeting}
+                run={meeting.latestRun}
+                selectedEmails={approvalSelections[meeting.latestRun.id] ?? meeting.latestRun.invitedEmails}
+                busy={approvalBusyRunId === meeting.latestRun.id}
+                onToggle={(email) => toggleApprovalSelection(meeting.latestRun!.id, email)}
+                onApprove={() => submitApprovalAction(meeting, "approve")}
+                onReject={() => submitApprovalAction(meeting, "reject")}
+              />
             ) : null}
           </article>
         ))}

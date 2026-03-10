@@ -4,6 +4,45 @@
 
 This repository contains the Realite web app. It must always include clear, user-facing documentation under `/docs`.
 
+## Repository Workflows And Commands
+
+Use Bun for package management and local task execution.
+
+### Core Commands
+
+- `bun install` installs dependencies.
+- `bun run dev` starts the local Next.js dev server.
+- `bun run build` creates the production build with `next build --webpack`.
+- `bun run start` runs the production server locally.
+- `bun run lint` runs `next lint`.
+- `bun run typecheck` runs `tsc --noEmit`.
+- `bun run test` runs the Bun test suite.
+- `bun run check` runs the current fast validation gate: typecheck + tests.
+
+### Database Workflow
+
+- `bun run db:generate` generates Drizzle migrations after schema changes.
+- `bun run db:migrate` applies pending migrations.
+- `bun run db:studio` opens Drizzle Studio for local database inspection.
+- When changing `src/db/schema.ts`, include the generated migration artifacts in the same change set.
+
+### Validation Workflow
+
+Before finalizing implementation work, run the smallest command set that proves the change:
+
+1. `bun run typecheck` for TypeScript or API surface changes.
+2. `bun run test` for logic changes covered by Bun tests.
+3. `bun run lint` for UI or app-router changes.
+4. `bun run build` when touching build config, routing, or production-only behavior.
+
+Prefer `bun run check` as the default quick validation pass when it covers the change.
+
+### GitHub Workflow
+
+- `.github/workflows/docker-build.yml` builds the Docker image for pushes to `main` and `develop`, and for tags matching `v*`.
+- Pull requests targeting `main` trigger the same workflow in build mode without pushing the image.
+- Treat Docker build health as part of release readiness when changing runtime dependencies, build inputs, or container behavior.
+
 ## Mandatory Documentation Policy
 
 When implementing any product change, bug fix, or UX flow change, update the docs in the same change set if user behavior is affected.

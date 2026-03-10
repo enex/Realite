@@ -48,6 +48,7 @@ export const smartMeetingPlanStatusEnum = pgEnum("smart_meeting_plan_status", [
   "paused",
 ]);
 export const smartMeetingRunStatusEnum = pgEnum("smart_meeting_run_status", [
+  "awaiting_approval",
   "pending",
   "secured",
   "expired",

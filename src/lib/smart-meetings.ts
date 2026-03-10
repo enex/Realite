@@ -94,12 +94,17 @@ export type SmartMeetingSummary = {
     startsAt: Date;
     endsAt: Date;
     responseDeadlineAt: Date;
-    status: "pending" | "secured" | "expired" | "cancelled";
+    status: "awaiting_approval" | "pending" | "secured" | "expired" | "cancelled";
     participantCount: number;
     acceptedCount: number;
     declinedCount: number;
     pendingCount: number;
     statusReason: string | null;
+    invitedEmails: string[];
+    approvalCandidates: Array<{
+      email: string;
+      label: string;
+    }>;
   } | null;
 };
 
@@ -154,7 +159,7 @@ type RunRecord = {
   acceptedCount: number;
   declinedCount: number;
   pendingCount: number;
-  status: "pending" | "secured" | "expired" | "cancelled";
+  status: "awaiting_approval" | "pending" | "secured" | "expired" | "cancelled";
   statusReason: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -172,6 +177,11 @@ export type SmartMeetingMemberStatsRecord = {
   acceptCount: number;
   declineCount: number;
   noResponseCount: number;
+};
+
+export type SmartMeetingApprovalCandidate = {
+  email: string;
+  label: string;
 };
 
 function clampInt(value: number, min: number, max: number) {
@@ -203,6 +213,50 @@ function parseStringList(value: string | null | undefined) {
   }
 
   return Array.from(new Set(value.split(",").map((entry) => entry.trim()).filter(Boolean)));
+}
+
+function computeResponseDeadline(input: {
+  startsAt: Date;
+  responseWindowHours: number;
+  now?: Date;
+}) {
+  const nowMs = input.now?.getTime() ?? Date.now();
+  const preferredDeadline = nowMs + input.responseWindowHours * 60 * 60 * 1000;
+  const latestUsefulDeadline = input.startsAt.getTime() - 30 * 60 * 1000;
+
+  if (latestUsefulDeadline <= nowMs) {
+    throw new SmartMeetingValidationError(
+      "Der vorgeschlagene Termin liegt zu nah in der Zukunft. Bitte passe das Suchfenster an."
+    );
+  }
+
+  return new Date(Math.max(nowMs + 10 * 60 * 1000, Math.min(preferredDeadline, latestUsefulDeadline)));
+}
+
+export function selectApprovedSmartMeetingAttendees(input: {
+  candidateEmails: string[];
+  selectedEmails: string[];
+  minAcceptedParticipants: number;
+}) {
+  const candidateSet = new Set(input.candidateEmails.map(normalizeEmail).filter(Boolean));
+  const selectedEmails = Array.from(new Set(input.selectedEmails.map(normalizeEmail).filter(Boolean)));
+
+  if (!selectedEmails.length) {
+    throw new SmartMeetingValidationError("Wähle mindestens einen Teilnehmer aus.");
+  }
+
+  const invalidEmails = selectedEmails.filter((email) => !candidateSet.has(email));
+  if (invalidEmails.length > 0) {
+    throw new SmartMeetingValidationError("Die Teilnehmerliste enthält ungültige Einträge.");
+  }
+
+  if (selectedEmails.length < input.minAcceptedParticipants) {
+    throw new SmartMeetingValidationError(
+      `Wähle mindestens ${input.minAcceptedParticipants} Teilnehmer aus, damit die Mindestzusagen erreichbar bleiben.`
+    );
+  }
+
+  return selectedEmails;
 }
 
 function overlaps(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) {
@@ -377,6 +431,35 @@ async function listPlanById(planId: string) {
     })
     .from(smartMeetingPlans)
     .where(eq(smartMeetingPlans.id, planId))
+    .limit(1);
+
+  return rows[0] ?? null;
+}
+
+async function listRunById(runId: string) {
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: smartMeetingRuns.id,
+      planId: smartMeetingRuns.planId,
+      attempt: smartMeetingRuns.attempt,
+      eventId: smartMeetingRuns.eventId,
+      startsAt: smartMeetingRuns.startsAt,
+      endsAt: smartMeetingRuns.endsAt,
+      responseDeadlineAt: smartMeetingRuns.responseDeadlineAt,
+      calendarEventId: smartMeetingRuns.calendarEventId,
+      invitedEmails: smartMeetingRuns.invitedEmails,
+      participantCount: smartMeetingRuns.participantCount,
+      acceptedCount: smartMeetingRuns.acceptedCount,
+      declinedCount: smartMeetingRuns.declinedCount,
+      pendingCount: smartMeetingRuns.pendingCount,
+      status: smartMeetingRuns.status,
+      statusReason: smartMeetingRuns.statusReason,
+      createdAt: smartMeetingRuns.createdAt,
+      updatedAt: smartMeetingRuns.updatedAt
+    })
+    .from(smartMeetingRuns)
+    .where(eq(smartMeetingRuns.id, runId))
     .limit(1);
 
   return rows[0] ?? null;
@@ -659,61 +742,26 @@ async function insertRunForPlan(input: {
   participants: Participant[];
 }) {
   const attendeeEmails = input.participants.map((participant) => participant.email);
-  const normalizedTags = normalizeTags(parseStringList(input.plan.tags));
-
-  const event = await createEvent({
-    userId: input.plan.createdBy,
-    title: input.plan.title,
-    description: input.plan.description ?? undefined,
-    location: input.plan.location ?? undefined,
-    startsAt: input.slot.startsAt,
-    endsAt: input.slot.endsAt,
-    visibility: "group" as EventVisibility,
-    groupId: input.plan.groupId,
-    tags: normalizedTags
-  });
-
-  const settings = await getUserSuggestionSettings(input.plan.createdBy);
-  const calendarEventId = await insertGroupMeetingIntoCalendar({
-    userId: input.plan.createdBy,
-    eventId: event.id,
-    title: input.plan.title,
-    description: input.plan.description,
-    location: input.plan.location,
-    startsAt: input.slot.startsAt,
-    endsAt: input.slot.endsAt,
-    attendeeEmails,
-    calendarId: settings.suggestionCalendarId
-  });
-
-  if (!calendarEventId) {
-    await deleteEventsByIds([event.id]);
-    throw new SmartMeetingValidationError(
-      "Smart-Treffen benötigt einen verbundenen Google Kalender mit Schreibrechten."
-    );
-  }
-
   const db = getDb();
-  const now = Date.now();
-  const preferredDeadline = now + input.plan.responseWindowHours * 60 * 60 * 1000;
-  const latestUsefulDeadline = input.slot.startsAt.getTime() - 30 * 60 * 1000;
-  const deadlineMs = Math.max(now + 10 * 60 * 1000, Math.min(preferredDeadline, latestUsefulDeadline));
+  const responseDeadlineAt = computeResponseDeadline({
+    startsAt: input.slot.startsAt,
+    responseWindowHours: input.plan.responseWindowHours
+  });
   const [run] = await db
     .insert(smartMeetingRuns)
     .values({
       planId: input.plan.id,
       attempt: input.attempt,
-      eventId: event.id,
       startsAt: input.slot.startsAt,
       endsAt: input.slot.endsAt,
-      responseDeadlineAt: new Date(deadlineMs),
-      calendarEventId,
+      responseDeadlineAt,
       invitedEmails: serializeStringList(attendeeEmails),
       participantCount: attendeeEmails.length,
       acceptedCount: 0,
       declinedCount: 0,
-      pendingCount: attendeeEmails.length,
-      status: "pending",
+      pendingCount: 0,
+      status: "awaiting_approval",
+      statusReason: "Wartet auf deine Freigabe vor dem Versand von Kalendereinladungen",
       updatedAt: new Date()
     })
     .returning({
@@ -743,6 +791,77 @@ async function insertRunForPlan(input: {
   });
 
   return run;
+}
+
+async function finalizeApprovedRun(input: {
+  plan: PlanRecord;
+  run: RunRecord;
+  attendeeEmails: string[];
+}) {
+  const normalizedTags = normalizeTags(parseStringList(input.plan.tags));
+  const event = await createEvent({
+    userId: input.plan.createdBy,
+    title: input.plan.title,
+    description: input.plan.description ?? undefined,
+    location: input.plan.location ?? undefined,
+    startsAt: input.run.startsAt,
+    endsAt: input.run.endsAt,
+    visibility: "group" as EventVisibility,
+    groupId: input.plan.groupId,
+    tags: normalizedTags
+  });
+
+  try {
+    const settings = await getUserSuggestionSettings(input.plan.createdBy);
+    const calendarEventId = await insertGroupMeetingIntoCalendar({
+      userId: input.plan.createdBy,
+      eventId: event.id,
+      title: input.plan.title,
+      description: input.plan.description,
+      location: input.plan.location,
+      startsAt: input.run.startsAt,
+      endsAt: input.run.endsAt,
+      attendeeEmails: input.attendeeEmails,
+      calendarId: settings.suggestionCalendarId
+    });
+
+    if (!calendarEventId) {
+      throw new SmartMeetingValidationError(
+        "Smart-Treffen benötigt einen verbundenen Google Kalender mit Schreibrechten."
+      );
+    }
+
+    const responseDeadlineAt = computeResponseDeadline({
+      startsAt: input.run.startsAt,
+      responseWindowHours: input.plan.responseWindowHours
+    });
+
+    const db = getDb();
+    await db
+      .update(smartMeetingRuns)
+      .set({
+        eventId: event.id,
+        calendarEventId,
+        invitedEmails: serializeStringList(input.attendeeEmails),
+        participantCount: input.attendeeEmails.length,
+        acceptedCount: 0,
+        declinedCount: 0,
+        pendingCount: input.attendeeEmails.length,
+        responseDeadlineAt,
+        status: "pending",
+        statusReason: null,
+        updatedAt: new Date()
+      })
+      .where(eq(smartMeetingRuns.id, input.run.id));
+
+    return {
+      eventId: event.id,
+      calendarEventId
+    };
+  } catch (error) {
+    await deleteEventsByIds([event.id]);
+    throw error;
+  }
 }
 
 async function proposeNextRunForPlan(plan: PlanRecord) {
@@ -854,7 +973,7 @@ async function updateRunCounts(input: {
   acceptedCount: number;
   declinedCount: number;
   pendingCount: number;
-  status?: "pending" | "secured" | "expired" | "cancelled";
+  status?: "awaiting_approval" | "pending" | "secured" | "expired" | "cancelled";
   statusReason?: string | null;
 }) {
   const db = getDb();
@@ -1097,9 +1216,104 @@ export async function updateSmartMeetingPlan(
       maxAttempts,
       searchWindowStart,
       searchWindowEnd,
+      status: existing.status === "paused" ? "active" : existing.status,
       updatedAt: new Date()
     })
     .where(eq(smartMeetingPlans.id, planId));
+
+  if (existing.status === "paused") {
+    const refreshed = await listPlanById(planId);
+    if (!refreshed) {
+      throw new SmartMeetingValidationError("Smart-Treffen nicht gefunden.");
+    }
+
+    try {
+      await proposeNextRunForPlan(refreshed);
+    } catch (error) {
+      await db
+        .update(smartMeetingPlans)
+        .set({
+          status: "paused",
+          updatedAt: new Date()
+        })
+        .where(eq(smartMeetingPlans.id, planId));
+      throw error;
+    }
+  }
+}
+
+async function getOwnedPlanAndRun(input: {
+  planId: string;
+  runId: string;
+  userId: string;
+}) {
+  const [plan, run] = await Promise.all([listPlanById(input.planId), listRunById(input.runId)]);
+
+  if (!plan || plan.createdBy !== input.userId) {
+    throw new SmartMeetingValidationError("Keine Berechtigung für dieses Smart-Treffen.");
+  }
+
+  if (!run || run.planId !== plan.id) {
+    throw new SmartMeetingValidationError("Terminversuch nicht gefunden.");
+  }
+
+  return { plan, run };
+}
+
+export async function approveSmartMeetingRun(input: {
+  planId: string;
+  runId: string;
+  userId: string;
+  attendeeEmails: string[];
+}) {
+  const { plan, run } = await getOwnedPlanAndRun(input);
+
+  if (run.status !== "awaiting_approval") {
+    throw new SmartMeetingValidationError("Für diesen Termin gibt es nichts mehr freizugeben.");
+  }
+
+  const participants = await listParticipantsForGroup({
+    ownerUserId: plan.createdBy,
+    groupId: plan.groupId
+  });
+  const attendeeEmails = selectApprovedSmartMeetingAttendees({
+    candidateEmails: participants.map((participant) => participant.email),
+    selectedEmails: input.attendeeEmails,
+    minAcceptedParticipants: plan.minAcceptedParticipants
+  });
+
+  await finalizeApprovedRun({
+    plan,
+    run,
+    attendeeEmails
+  });
+}
+
+export async function rejectSmartMeetingRun(input: {
+  planId: string;
+  runId: string;
+  userId: string;
+}) {
+  const { plan, run } = await getOwnedPlanAndRun(input);
+
+  if (run.status !== "awaiting_approval") {
+    throw new SmartMeetingValidationError("Für diesen Termin gibt es nichts mehr abzulehnen.");
+  }
+
+  await updateRunCounts({
+    runId: run.id,
+    acceptedCount: 0,
+    declinedCount: 0,
+    pendingCount: 0,
+    status: "cancelled",
+    statusReason: "Kalendereinladungen wurden nicht gesendet"
+  });
+
+  await updatePlanStatus({
+    planId: plan.id,
+    status: "paused",
+    latestRunId: run.id
+  });
 }
 
 export async function syncSmartMeetingsForUser(userId: string): Promise<SmartMeetingSyncStats> {
@@ -1361,6 +1575,7 @@ export async function listSmartMeetingsForUser(userId: string): Promise<SmartMee
           endsAt: smartMeetingRuns.endsAt,
           responseDeadlineAt: smartMeetingRuns.responseDeadlineAt,
           status: smartMeetingRuns.status,
+          invitedEmails: smartMeetingRuns.invitedEmails,
           participantCount: smartMeetingRuns.participantCount,
           acceptedCount: smartMeetingRuns.acceptedCount,
           declinedCount: smartMeetingRuns.declinedCount,
@@ -1372,9 +1587,39 @@ export async function listSmartMeetingsForUser(userId: string): Promise<SmartMee
     : [];
 
   const runById = new Map(runRows.map((run) => [run.id, run]));
+  const approvalCandidatesByRunId = new Map<string, SmartMeetingApprovalCandidate[]>();
+
+  await Promise.all(
+    rows.map(async (row) => {
+      if (!row.latestRunId) {
+        return;
+      }
+
+      const latestRun = runById.get(row.latestRunId);
+      if (!latestRun || latestRun.status !== "awaiting_approval") {
+        return;
+      }
+
+      const participants = await listParticipantsForGroup({
+        ownerUserId: userId,
+        groupId: row.groupId
+      });
+
+      approvalCandidatesByRunId.set(
+        latestRun.id,
+        participants.map((participant) => ({
+          email: participant.email,
+          label: participant.label
+        }))
+      );
+    })
+  );
 
   return rows.map((row) => {
     const latestRun = row.latestRunId ? runById.get(row.latestRunId) ?? null : null;
+    const invitedEmails = latestRun
+      ? parseStringList(latestRun.invitedEmails).map(normalizeEmail).filter(Boolean)
+      : [];
     return {
       id: row.id,
       title: row.title,
@@ -1401,6 +1646,8 @@ export async function listSmartMeetingsForUser(userId: string): Promise<SmartMee
             endsAt: latestRun.endsAt,
             responseDeadlineAt: latestRun.responseDeadlineAt,
             status: latestRun.status,
+            invitedEmails,
+            approvalCandidates: approvalCandidatesByRunId.get(latestRun.id) ?? [],
             participantCount: latestRun.participantCount,
             acceptedCount: latestRun.acceptedCount,
             declinedCount: latestRun.declinedCount,

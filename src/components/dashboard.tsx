@@ -72,7 +72,12 @@ type SmartMeeting = {
     startsAt: string;
     endsAt: string;
     responseDeadlineAt: string;
-    status: "pending" | "secured" | "expired" | "cancelled";
+    status: "awaiting_approval" | "pending" | "secured" | "expired" | "cancelled";
+    invitedEmails: string[];
+    approvalCandidates: Array<{
+      email: string;
+      label: string;
+    }>;
     participantCount: number;
     acceptedCount: number;
     declinedCount: number;

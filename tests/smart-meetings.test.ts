@@ -2,8 +2,10 @@ import { describe, expect, test } from "bun:test";
 
 import {
   planBestSmartMeetingSlot,
+  selectApprovedSmartMeetingAttendees,
   type SmartMeetingMemberStatsRecord,
   type SmartMeetingParticipant,
+  SmartMeetingValidationError,
 } from "@/src/lib/smart-meetings";
 
 function createParticipant(
@@ -15,6 +17,15 @@ function createParticipant(
     label: email,
     registeredUserId,
   };
+}
+
+function expectValidationError(fn: () => void) {
+  try {
+    fn();
+    throw new Error("Expected SmartMeetingValidationError");
+  } catch (error) {
+    expect(error instanceof SmartMeetingValidationError).toBe(true);
+  }
 }
 
 describe("smart meeting scheduling", () => {
@@ -96,5 +107,35 @@ describe("smart meeting scheduling", () => {
     });
 
     expect(best?.startsAt.toISOString()).toBe("2026-03-04T10:00:00.000Z");
+  });
+
+  test("keeps only approved attendees from the selectable candidate list", () => {
+    const selected = selectApprovedSmartMeetingAttendees({
+      candidateEmails: ["alice@example.com", "bob@example.com", "carol@example.com"],
+      selectedEmails: [" Bob@example.com ", "alice@example.com", "bob@example.com"],
+      minAcceptedParticipants: 2
+    });
+
+    expect(selected).toEqual(["bob@example.com", "alice@example.com"]);
+  });
+
+  test("rejects attendee lists that fall below the required minimum", () => {
+    expectValidationError(() =>
+      selectApprovedSmartMeetingAttendees({
+        candidateEmails: ["alice@example.com", "bob@example.com", "carol@example.com"],
+        selectedEmails: ["alice@example.com"],
+        minAcceptedParticipants: 2
+      })
+    );
+  });
+
+  test("rejects attendee lists with unknown emails", () => {
+    expectValidationError(() =>
+      selectApprovedSmartMeetingAttendees({
+        candidateEmails: ["alice@example.com", "bob@example.com"],
+        selectedEmails: ["alice@example.com", "mallory@example.com"],
+        minAcceptedParticipants: 1
+      })
+    );
   });
 });

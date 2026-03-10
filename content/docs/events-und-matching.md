@@ -22,7 +22,7 @@ Das Bild erscheint auf der Event-Detailseite, in Event-Listen (Dashboard, Gruppe
 
 ## Smart Treffen (automatische Terminfindung)
 
-Mit **Smart Treffen** sucht Realite automatisch den besten Zeitpunkt für eine Gruppe und lädt die Teilnehmer direkt ein. Bestehende Smart Treffen kannst du im Dashboard bei „Smart Treffen“ über **Bearbeiten** anpassen (Titel, Gruppe, Suchfenster, Mindestzusagen usw.).
+Mit **Smart Treffen** sucht Realite automatisch den besten Zeitpunkt für eine Gruppe. Kalendereinladungen werden aber **nicht automatisch verschickt**: Vor jedem Versand prüfst du die vorgeschlagene Teilnehmerliste ausdrücklich selbst und gibst sie frei, passt sie an oder lehnst den Versand komplett ab. Bestehende Smart Treffen kannst du im Dashboard bei „Smart Treffen“ über **Bearbeiten** anpassen (Titel, Gruppe, Suchfenster, Mindestzusagen usw.).
 
 Du legst fest:
 
@@ -36,9 +36,12 @@ So läuft es:
 
 1. Realite bewertet mögliche Zeitfenster im Suchbereich.
 2. Dabei werden Verfügbarkeiten, bisherige Interessen-Signale und frühere Zu-/Absagen der Teilnehmer berücksichtigt.
-3. Der beste Termin wird in deinen Kalender eingetragen und die Gruppe wird eingeladen.
-4. Wird die Mindestzahl bis zur Frist nicht erreicht (oder alle sagen ab), entfernt Realite den Termin wieder.
-5. Danach erzeugt Realite automatisch einen neuen Vorschlag (bis zum eingestellten Versuchslimit).
+3. Der beste Termin erscheint zuerst als Vorschlag im Bereich **Smart Treffen** auf deinem Dashboard.
+4. Dort siehst du die Teilnehmerliste und kannst einzelne Personen vor dem Versand abwählen.
+5. Erst wenn du **Kalendereinladungen senden** auswählst, trägt Realite den Termin in deinen Kalender ein und verschickt Google-Kalendereinladungen.
+6. Wenn du den Versand ablehnst, werden keine Kalendereinladungen verschickt.
+7. Wird die Mindestzahl bis zur Frist nicht erreicht (oder alle sagen ab), entfernt Realite den Termin wieder.
+8. Danach erzeugt Realite automatisch einen neuen Vorschlag. Auch dieser wartet wieder auf deine ausdrückliche Freigabe, bevor Einladungen verschickt werden.
 
 Lernen über Zeit:
 
@@ -64,6 +67,8 @@ Bedeutung:
 - `!interval=30m`: Slot-Abstand für die Suche
 
 Die Shortcut-Tokens werden nicht als Teil des finalen Termintitels verwendet.
+
+Wichtig: Auch bei einem per Shortcut angelegten Smart Treffen werden Kalendereinladungen erst nach deiner ausdrücklichen Freigabe im Dashboard verschickt.
 
 ## Hashtags richtig nutzen
 
