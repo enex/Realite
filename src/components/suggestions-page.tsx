@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -7,6 +8,7 @@ import { AppShell } from "@/src/components/app-shell";
 import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
+import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
 type Suggestion = {
@@ -65,10 +67,21 @@ export function SuggestionsPage({
   userImage: string | null;
 }) {
   const searchParams = useSearchParams();
-  const [data, setData] = useState<SuggestionsPayload>(emptyPayload);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const {
+    data: queryData,
+    isPending: loading,
+    error: queryError,
+  } = useQuery({
+    queryKey: DASHBOARD_QUERY_KEY,
+    queryFn: () => fetchDashboard() as Promise<SuggestionsPayload>,
+    refetchInterval: (query) =>
+      query.state.data?.sync?.revalidating ? 2_500 : 45_000,
+  });
+  const data = queryData ?? emptyPayload;
+
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [autoDecisionHandled, setAutoDecisionHandled] = useState(false);
 
   const suggestionsByDay = useMemo(() => {
@@ -116,52 +129,17 @@ export function SuggestionsPage({
   const profileEmail = data.me.email || userEmail;
   const profileImage = data.me.image ?? userImage;
 
-  async function loadData(options?: { silent?: boolean }) {
-    const silent = options?.silent ?? false;
-    if (!silent) {
-      setLoading(true);
-      setError(null);
-    }
-
-    try {
-      const response = await fetch("/api/dashboard", { cache: "no-store" });
-      const payload = (await response.json()) as SuggestionsPayload & { error?: string };
-
-      if (!response.ok) {
-        throw new Error(payload.error ?? "Vorschläge konnten nicht geladen werden");
-      }
-
-      setData(payload);
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Unbekannter Fehler");
-    } finally {
-      if (!silent) {
-        setLoading(false);
-      }
-    }
-  }
-
-  useEffect(() => {
-    void loadData();
-  }, []);
-
   useEffect(() => {
     if (!data.sync.revalidating) {
       toast.dismiss(REVALIDATING_TOAST_ID);
       return;
     }
-
     toast.loading("Aktualisierung im Hintergrund läuft. Neue Vorschläge erscheinen automatisch.", {
       id: REVALIDATING_TOAST_ID,
       duration: Number.POSITIVE_INFINITY,
     });
-
-    const intervalId = window.setInterval(() => {
-      void loadData({ silent: true });
-    }, 2500);
-
     return () => {
-      window.clearInterval(intervalId);
+      toast.dismiss(REVALIDATING_TOAST_ID);
     };
   }, [data.sync.revalidating]);
 
@@ -182,7 +160,7 @@ export function SuggestionsPage({
 
   async function runSuggestions() {
     setBusy(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
       const response = await fetch("/api/suggestions/run", { method: "POST" });
@@ -191,9 +169,9 @@ export function SuggestionsPage({
         throw new Error(payload.error ?? "Matching fehlgeschlagen");
       }
 
-      await loadData({ silent: true });
+      await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
     } catch (runError) {
-      setError(runError instanceof Error ? runError.message : "Unbekannter Fehler");
+      setSubmitError(runError instanceof Error ? runError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -205,7 +183,7 @@ export function SuggestionsPage({
     source: "suggestions_page" | "query_auto" = "suggestions_page"
   ) {
     setBusy(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
       const response = await fetch(`/api/suggestions/${suggestionId}/decision`, {
@@ -226,9 +204,9 @@ export function SuggestionsPage({
         });
       }
 
-      await loadData({ silent: true });
+      await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
     } catch (decisionError) {
-      setError(decisionError instanceof Error ? decisionError.message : "Unbekannter Fehler");
+      setSubmitError(decisionError instanceof Error ? decisionError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -285,8 +263,10 @@ export function SuggestionsPage({
           </div>
         </header>
 
-        {error ? (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        {(queryError || submitError) ? (
+          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {submitError ?? (queryError instanceof Error ? queryError.message : String(queryError))}
+          </div>
         ) : null}
         {data.sync.warning ? (
           <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">

@@ -1,7 +1,8 @@
 "use client";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 
 type Comment = {
   id: string;
@@ -31,39 +32,34 @@ function formatCommentDate(iso: string): string {
   });
 }
 
+async function fetchEventComments(eventId: string): Promise<Comment[]> {
+  const res = await fetch(`/api/events/${encodeURIComponent(eventId)}/comments`);
+  if (!res.ok) {
+    const data = (await res.json()) as { error?: string };
+    throw new Error(data.error ?? "Kommentare konnten nicht geladen werden");
+  }
+  const data = (await res.json()) as { comments: Comment[] };
+  return data.comments;
+}
+
 export function EventComments({
   eventId,
   allowGuestView = false,
   signInCallbackPath = "/",
 }: EventCommentsProps) {
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const {
+    data: comments = [],
+    isPending: loading,
+    error: queryError,
+  } = useQuery({
+    queryKey: ["events", eventId, "comments"],
+    queryFn: () => fetchEventComments(eventId),
+  });
+
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const fetchComments = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/events/${encodeURIComponent(eventId)}/comments`);
-      if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
-        throw new Error(data.error ?? "Kommentare konnten nicht geladen werden");
-      }
-      const data = (await res.json()) as { comments: Comment[] };
-      setComments(data.comments);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Laden fehlgeschlagen");
-    } finally {
-      setLoading(false);
-    }
-  }, [eventId]);
-
-  useEffect(() => {
-    fetchComments();
-  }, [fetchComments]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -83,7 +79,9 @@ export function EventComments({
         throw new Error(data.error ?? "Kommentar konnte nicht gespeichert werden");
       }
       if (data.comment) {
-        setComments((prev) => [...prev, data.comment!]);
+        queryClient.setQueryData<Comment[]>(["events", eventId, "comments"], (prev) =>
+          prev ? [...prev, data.comment!] : [data.comment!]
+        );
       }
       setBody("");
     } catch (e) {
@@ -102,8 +100,8 @@ export function EventComments({
 
       {loading ? (
         <p className="mt-4 text-sm text-slate-500">Kommentare werden geladen…</p>
-      ) : error ? (
-        <p className="mt-4 text-sm text-red-600">{error}</p>
+      ) : queryError ? (
+        <p className="mt-4 text-sm text-red-600">{queryError instanceof Error ? queryError.message : "Laden fehlgeschlagen"}</p>
       ) : (
         <ul className="mt-4 space-y-4" aria-label="Kommentare">
           {comments.length === 0 ? (

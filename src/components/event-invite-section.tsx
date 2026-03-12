@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type ContactCandidate = {
@@ -79,9 +80,19 @@ function AttendeeResponsesSummary({
   );
 }
 
+async function fetchInviteData(eventId: string): Promise<InviteData | null> {
+  const res = await fetch(`/api/events/${encodeURIComponent(eventId)}/invite`);
+  if (!res.ok) return null;
+  return (await res.json()) as InviteData;
+}
+
 export function EventInviteSection({ eventId, currentUserEmail }: EventInviteSectionProps) {
-  const [inviteData, setInviteData] = useState<InviteData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: inviteData, isPending: loading } = useQuery({
+    queryKey: ["events", eventId, "invite"],
+    queryFn: () => fetchInviteData(eventId),
+  });
+
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [invitingEmail, setInvitingEmail] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -91,21 +102,6 @@ export function EventInviteSection({ eventId, currentUserEmail }: EventInviteSec
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const fetchInviteData = useCallback(async () => {
-    const res = await fetch(`/api/events/${encodeURIComponent(eventId)}/invite`);
-    if (!res.ok) {
-      setInviteData(null);
-      return;
-    }
-    const data = (await res.json()) as InviteData;
-    setInviteData(data);
-  }, [eventId]);
-
-  useEffect(() => {
-    setLoading(true);
-    fetchInviteData().finally(() => setLoading(false));
-  }, [fetchInviteData]);
 
   useEffect(() => {
     if (debounceRef.current) {
@@ -171,17 +167,7 @@ export function EventInviteSection({ eventId, currentUserEmail }: EventInviteSec
         if (!res.ok) {
           throw new Error(payload.error ?? "Einladung fehlgeschlagen");
         }
-        setInviteData((prev) =>
-          prev
-            ? {
-                ...prev,
-                alreadyInvitedEmails: [...prev.alreadyInvitedEmails, norm],
-                suggestedContacts: prev.suggestedContacts.filter(
-                  (c) => c.email !== norm
-                ),
-              }
-            : null
-        );
+        queryClient.invalidateQueries({ queryKey: ["events", eventId, "invite"] });
         setSearchQuery("");
         setCandidates([]);
         setOpen(false);
@@ -191,7 +177,7 @@ export function EventInviteSection({ eventId, currentUserEmail }: EventInviteSec
         setInvitingEmail(null);
       }
     },
-    [eventId, inviteData?.alreadyInvitedEmails]
+    [eventId, inviteData?.alreadyInvitedEmails, queryClient]
   );
 
   const displayList = searchQuery.trim() ? candidates : inviteData?.suggestedContacts ?? [];
@@ -236,7 +222,7 @@ export function EventInviteSection({ eventId, currentUserEmail }: EventInviteSec
     }
   };
 
-  if (loading || !inviteData) {
+  if (loading || inviteData == null) {
     return null;
   }
 

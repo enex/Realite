@@ -1,9 +1,11 @@
 "use client";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/components/app-shell";
 import { EventImage } from "@/src/components/event-image";
 import { UserAvatar } from "@/src/components/user-avatar";
+import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
@@ -96,10 +98,21 @@ export function GroupDetail({
   userEmail: string;
   userImage: string | null;
 }) {
-  const [data, setData] = useState<DashboardPayload>(emptyPayload);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const {
+    data: queryData,
+    isPending: loading,
+    error: queryError,
+  } = useQuery({
+    queryKey: DASHBOARD_QUERY_KEY,
+    queryFn: () => fetchDashboard() as Promise<DashboardPayload>,
+    refetchInterval: (query) =>
+      query.state.data?.sync?.revalidating ? 2_500 : 45_000,
+  });
+  const data = queryData ?? emptyPayload;
+
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [memberEmail, setMemberEmail] = useState("");
   const [hashtagsInput, setHashtagsInput] = useState("");
   const [inviteLink, setInviteLink] = useState<string | null>(null);
@@ -125,6 +138,12 @@ export function GroupDetail({
     }
   }, [group]);
 
+  useEffect(() => {
+    if (!data.sync.revalidating) {
+      setManualSyncBusy(false);
+    }
+  }, [data.sync.revalidating]);
+
   function parseHashtagList(value: string) {
     const list = value
       .split(",")
@@ -134,59 +153,13 @@ export function GroupDetail({
     return list.length ? list : ["#alle"];
   }
 
-  async function loadData(options?: { silent?: boolean }) {
-    const silent = options?.silent ?? false;
-    if (!silent) {
-      setLoading(true);
-      setError(null);
-    }
-
-    try {
-      const response = await fetch("/api/dashboard", { cache: "no-store" });
-      const payload = (await response.json()) as DashboardPayload & { error?: string };
-
-      if (!response.ok) {
-        throw new Error(payload.error ?? "Gruppendetails konnten nicht geladen werden");
-      }
-
-      setData(payload);
-      return payload;
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Unbekannter Fehler");
-      return null;
-    } finally {
-      if (!silent) {
-        setLoading(false);
-      }
-    }
-  }
-
-  useEffect(() => {
-    void loadData();
-  }, [groupId]);
-
-  useEffect(() => {
-    if (!data.sync.revalidating) {
-      setManualSyncBusy(false);
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      void loadData({ silent: true });
-    }, 2500);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [data.sync.revalidating]);
-
   async function triggerManualSync() {
     if (!group || group.syncProvider !== "google_contacts" || manualSyncBusy || data.sync.revalidating) {
       return;
     }
 
     setManualSyncBusy(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
       const response = await fetch("/api/dashboard", { method: "POST" });
@@ -194,20 +167,16 @@ export function GroupDetail({
       if (!response.ok) {
         throw new Error(payload.error ?? "Synchronisierung konnte nicht gestartet werden");
       }
-
-      const refreshed = await loadData({ silent: true });
-      if (!refreshed?.sync.revalidating) {
-        setManualSyncBusy(false);
-      }
+      await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
     } catch (syncError) {
       setManualSyncBusy(false);
-      setError(syncError instanceof Error ? syncError.message : "Unbekannter Fehler");
+      setSubmitError(syncError instanceof Error ? syncError.message : "Unbekannter Fehler");
     }
   }
 
   async function createInvite() {
     setBusy(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
       const response = await fetch(`/api/groups/${groupId}/invite-link`, { method: "POST" });
@@ -219,7 +188,7 @@ export function GroupDetail({
 
       setInviteLink(payload.inviteUrl);
     } catch (inviteError) {
-      setError(inviteError instanceof Error ? inviteError.message : "Unbekannter Fehler");
+      setSubmitError(inviteError instanceof Error ? inviteError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -233,7 +202,7 @@ export function GroupDetail({
     }
 
     setBusy(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
       const response = await fetch(`/api/groups/${groupId}/members`, {
@@ -248,13 +217,12 @@ export function GroupDetail({
       }
 
       setMemberEmail("");
-      await loadData();
-
+      await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
       if (payload.warning) {
-        setError(payload.warning);
+        setSubmitError(payload.warning);
       }
     } catch (memberError) {
-      setError(memberError instanceof Error ? memberError.message : "Unbekannter Fehler");
+      setSubmitError(memberError instanceof Error ? memberError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -264,7 +232,7 @@ export function GroupDetail({
     event.preventDefault();
 
     setBusy(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
       const response = await fetch(`/api/groups/${groupId}`, {
@@ -278,9 +246,9 @@ export function GroupDetail({
         throw new Error(payload.error ?? "Hashtags konnten nicht aktualisiert werden");
       }
 
-      await loadData();
+      await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
     } catch (updateError) {
-      setError(updateError instanceof Error ? updateError.message : "Unbekannter Fehler");
+      setSubmitError(updateError instanceof Error ? updateError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -292,7 +260,7 @@ export function GroupDetail({
     }
 
     setBusy(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
       const response = await fetch(`/api/groups/${groupId}`, {
@@ -306,9 +274,9 @@ export function GroupDetail({
         throw new Error(payload.error ?? "Gruppe konnte nicht umgeschaltet werden");
       }
 
-      await loadData();
+      await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
     } catch (toggleError) {
-      setError(toggleError instanceof Error ? toggleError.message : "Unbekannter Fehler");
+      setSubmitError(toggleError instanceof Error ? toggleError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -327,7 +295,7 @@ export function GroupDetail({
     }
 
     setBusy(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
       const response = await fetch(`/api/groups/${groupId}`, {
@@ -341,7 +309,7 @@ export function GroupDetail({
 
       window.location.href = "/groups";
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : "Unbekannter Fehler");
+      setSubmitError(deleteError instanceof Error ? deleteError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -356,8 +324,10 @@ export function GroupDetail({
       }}
     >
       <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
-      {error ? (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+      {(queryError || submitError) ? (
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {submitError ?? (queryError instanceof Error ? queryError.message : String(queryError))}
+        </div>
       ) : null}
       {data.sync.warning ? (
         <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">

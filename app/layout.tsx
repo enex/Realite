@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 
 import { PwaInstallBanner } from "@/src/components/pwa-install-banner";
+import { Providers } from "@/src/components/providers";
 import { SiteFooter } from "@/src/components/site-footer";
 import { Toaster } from "@/src/components/toaster";
 
@@ -80,12 +81,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="de">
       <body className="min-h-screen bg-slate-100 text-slate-900">
+        <Providers>
         <div className="flex min-h-screen flex-col">
           <div className="flex-1">{children}</div>
           <SiteFooter />
           <PwaInstallBanner />
           <Toaster />
         </div>
+        </Providers>
       </body>
     </html>
   );

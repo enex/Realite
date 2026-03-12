@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { List, Sparkle } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -7,6 +8,7 @@ import { AppShell } from "@/src/components/app-shell";
 import { EventImage } from "@/src/components/event-image";
 import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
 import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
+import { DASHBOARD_QUERY_KEY, fetchDashboard as fetchDashboardApi } from "@/src/lib/dashboard-query";
 import {
   CATEGORY_COLORS,
   CATEGORY_LABELS,
@@ -125,6 +127,10 @@ type DashboardPayload = {
   acceptedByEventId?: Record<string, AcceptedUser[]>;
 };
 
+async function fetchDashboard(): Promise<DashboardPayload> {
+  return fetchDashboardApi() as Promise<DashboardPayload>;
+}
+
 const emptyPayload: DashboardPayload = {
   me: {
     email: "",
@@ -161,10 +167,21 @@ export function Dashboard({
   userEmail: string;
   userImage: string | null;
 }) {
-  const [data, setData] = useState<DashboardPayload>(emptyPayload);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const {
+    data: queryData,
+    isPending: loading,
+    error: queryError,
+  } = useQuery({
+    queryKey: DASHBOARD_QUERY_KEY,
+    queryFn: fetchDashboard,
+    refetchInterval: (query) =>
+      query.state.data?.sync?.revalidating ? 2_500 : 45_000,
+  });
+  const data = queryData ?? emptyPayload;
+
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [showEventForm, setShowEventForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -293,35 +310,6 @@ export function Dashboard({
   const smartMeetingsEnabled = useRealiteFeatureFlag("smart-meetings", true);
   const datingModeEnabled = useRealiteFeatureFlag("dating-mode", false);
 
-  async function loadData(options?: { silent?: boolean }) {
-    const silent = options?.silent ?? false;
-    if (!silent) {
-      setLoading(true);
-      setError(null);
-    }
-
-    try {
-      const response = await fetch("/api/dashboard", { cache: "no-store" });
-      const payload = (await response.json()) as DashboardPayload & { error?: string };
-
-      if (!response.ok) {
-        throw new Error(payload.error ?? "Events konnten nicht geladen werden");
-      }
-
-      setData(payload);
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Unbekannter Fehler");
-    } finally {
-      if (!silent) {
-        setLoading(false);
-      }
-    }
-  }
-
-  useEffect(() => {
-    void loadData();
-  }, []);
-
   // Kategorie aus Titel, Tags und Beschreibung vorschlagen (nutzer kann sie im Formular anpassen)
   useEffect(() => {
     if (!showEventForm) return;
@@ -342,35 +330,19 @@ export function Dashboard({
       toast.dismiss(REVALIDATING_TOAST_ID);
       return;
     }
-
     toast.loading("Aktualisierung im Hintergrund läuft. Neue Kalender- und Kontaktdaten erscheinen automatisch.", {
       id: REVALIDATING_TOAST_ID,
       duration: Number.POSITIVE_INFINITY,
     });
-
-    const intervalId = window.setInterval(() => {
-      void loadData({ silent: true });
-    }, 2500);
-
     return () => {
-      window.clearInterval(intervalId);
+      toast.dismiss(REVALIDATING_TOAST_ID);
     };
   }, [data.sync.revalidating]);
-
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      void loadData({ silent: true });
-    }, 45_000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, []);
 
   async function createEvent(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
       const response = await fetch("/api/events", {
@@ -427,9 +399,9 @@ export function Dashboard({
         category: "default",
       });
       setShowEventForm(false);
-      await loadData({ silent: true });
-    } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Unbekannter Fehler");
+      await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -689,8 +661,10 @@ export function Dashboard({
           </div>
         ) : null}
 
-        {error ? (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        {(queryError || submitError) ? (
+          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {submitError ?? (queryError instanceof Error ? queryError.message : String(queryError))}
+          </div>
         ) : null}
         {data.sync.warning ? (
           <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
@@ -812,10 +786,8 @@ export function Dashboard({
           <SmartMeetingsCard
             groups={visibleGroups}
             smartMeetings={data.smartMeetings}
-            onCreated={async () => {
-              await loadData({ silent: true });
-            }}
-            onError={(message) => setError(message)}
+            onCreated={() => queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY })}
+            onError={(message) => setSubmitError(message)}
           />
         ) : null}
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/src/components/app-shell";
 import { UserAvatar } from "@/src/components/user-avatar";
@@ -65,6 +66,17 @@ const emptySettings: SettingsPayload = {
   calendarConnected: false
 };
 
+const SETTINGS_QUERY_KEY = ["settings"] as const;
+
+async function fetchSettings(): Promise<SettingsPayload> {
+  const response = await fetch("/api/settings", { cache: "no-store" });
+  const payload = (await response.json()) as SettingsPayload;
+  if (!response.ok) {
+    throw new Error(payload.error ?? "Einstellungen konnten nicht geladen werden");
+  }
+  return payload;
+}
+
 export function SettingsPage({
   userName,
   userEmail,
@@ -74,46 +86,36 @@ export function SettingsPage({
   userEmail: string;
   userImage: string | null;
 }) {
-  const [data, setData] = useState<SettingsPayload>(emptySettings);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const {
+    data: queryData,
+    isPending: loading,
+    error: queryError,
+  } = useQuery({
+    queryKey: SETTINGS_QUERY_KEY,
+    queryFn: fetchSettings,
+  });
+  const data = queryData ?? emptySettings;
+
   const [busy, setBusy] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [suggestionForm, setSuggestionForm] = useState<SuggestionSettingsForm>(emptySettings.settings);
 
   const dating = useDatingSettings();
   const datingModeEnabled = useRealiteFeatureFlag("dating-mode", false);
 
-  async function loadSuggestionSettings() {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/settings", { cache: "no-store" });
-      const payload = (await response.json()) as SettingsPayload;
-
-      if (!response.ok) {
-        throw new Error(payload.error ?? "Einstellungen konnten nicht geladen werden");
-      }
-
-      setData(payload);
-      setSuggestionForm(payload.settings);
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Unbekannter Fehler");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    void loadSuggestionSettings();
-  }, []);
+    if (queryData?.settings) {
+      setSuggestionForm(queryData.settings);
+    }
+  }, [queryData?.settings]);
 
   async function saveSuggestionSettings(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
       const response = await fetch("/api/settings", {
@@ -127,13 +129,12 @@ export function SettingsPage({
         throw new Error(payload.error ?? "Einstellungen konnten nicht gespeichert werden");
       }
 
-      setData((current) => ({
-        ...current,
-        ...payload
-      }));
+      queryClient.setQueryData(SETTINGS_QUERY_KEY, (prev: SettingsPayload | undefined) =>
+        prev ? { ...prev, ...payload } : payload
+      );
       setSuggestionForm(payload.settings);
     } catch (settingsError) {
-      setError(settingsError instanceof Error ? settingsError.message : "Unbekannter Fehler");
+      setSubmitError(settingsError instanceof Error ? settingsError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -200,8 +201,10 @@ export function SettingsPage({
           </div>
         </header>
 
-        {error ? (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        {(queryError || submitError) ? (
+          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {submitError ?? (queryError instanceof Error ? queryError.message : String(queryError))}
+          </div>
         ) : null}
         {datingModeEnabled && dating.error ? (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{dating.error}</div>

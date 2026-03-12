@@ -1,11 +1,13 @@
 "use client";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
+import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 
 type GroupContact = {
@@ -80,10 +82,19 @@ export function GroupsPage({
   userEmail: string;
   userImage: string | null;
 }) {
-  const [data, setData] = useState<GroupsPayload>(emptyPayload);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const {
+    data: queryData,
+    isPending: loading,
+    error: queryError,
+  } = useQuery({
+    queryKey: DASHBOARD_QUERY_KEY,
+    queryFn: () => fetchDashboard() as Promise<GroupsPayload>,
+  });
+  const data = queryData ?? emptyPayload;
+
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [showGroupForm, setShowGroupForm] = useState(false);
 
   const [groupForm, setGroupForm] = useState({
@@ -124,39 +135,10 @@ export function GroupsPage({
     return labels[value] ?? value;
   }
 
-  async function loadData(options?: { silent?: boolean }) {
-    const silent = options?.silent ?? false;
-    if (!silent) {
-      setLoading(true);
-      setError(null);
-    }
-
-    try {
-      const response = await fetch("/api/dashboard", { cache: "no-store" });
-      const payload = (await response.json()) as GroupsPayload & { error?: string };
-
-      if (!response.ok) {
-        throw new Error(payload.error ?? "Gruppen konnten nicht geladen werden");
-      }
-
-      setData(payload);
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Unbekannter Fehler");
-    } finally {
-      if (!silent) {
-        setLoading(false);
-      }
-    }
-  }
-
-  useEffect(() => {
-    void loadData();
-  }, []);
-
   async function createGroup(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
       const response = await fetch("/api/groups", {
@@ -194,9 +176,9 @@ export function GroupsPage({
 
       setGroupForm({ name: "", description: "", hashtags: "#alle", visibility: "private" });
       setShowGroupForm(false);
-      await loadData({ silent: true });
-    } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Unbekannter Fehler");
+      await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -231,8 +213,10 @@ export function GroupsPage({
           </div>
         </header>
 
-        {error ? (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        {(queryError || submitError) ? (
+          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {submitError ?? (queryError instanceof Error ? queryError.message : String(queryError))}
+          </div>
         ) : null}
         {data.sync.warning ? (
           <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
