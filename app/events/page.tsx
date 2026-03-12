@@ -8,9 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function EventsPage() {
   const session = await getAuthSession();
 
-  if (!session?.user.email) {
-    redirect("/");
-  }
+  if (!session?.user.email) redirect("/");
 
   return (
     <Dashboard
