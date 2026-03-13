@@ -207,3 +207,8 @@ export function triggerDashboardBackgroundSync(
 export function getDashboardSyncSnapshot(userId: string) {
   return defaultBackgroundSyncService.getDashboardSyncSnapshot(userId);
 }
+
+/** Wait until the current dashboard sync for this user has finished (if any). */
+export function waitForDashboardSync(userId: string): Promise<void> {
+  return defaultBackgroundSyncService.waitForIdle(userId);
+}

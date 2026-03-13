@@ -3,6 +3,7 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -455,5 +456,35 @@ export const calendarWatchChannels = pgTable(
     uniqueIndex().on(table.channelId),
     index().on(table.userId),
     index().on(table.expirationMs),
+  ],
+);
+
+/** Job queue for background work (e.g. dashboard sync after calendar webhook). */
+export const jobQueueStatusEnum = pgEnum("job_queue_status", [
+  "pending",
+  "processing",
+  "completed",
+  "failed",
+]);
+
+export const jobQueue = pgTable(
+  "job_queue",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    type: text("type").notNull(),
+    payload: jsonb("payload").$type<Record<string, unknown>>().notNull(),
+    status: jobQueueStatusEnum("status").notNull().default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    maxAttempts: integer("max_attempts").notNull().default(3),
+    errorMessage: text("error_message"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (table) => [
+    index().on(table.status),
+    index().on(table.createdAt),
   ],
 );

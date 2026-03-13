@@ -72,6 +72,24 @@ if (process.env.DATABASE_URL) {
     .catch(() => {});
 }
 
+// Job-Queue-Worker: im gleichen Node-Prozess (z. B. Docker) periodisch pending
+// Jobs abarbeiten. Intervall konfigurierbar über JOB_QUEUE_POLL_MS (Standard 30s).
+if (process.env.DATABASE_URL) {
+  import("./src/lib/job-queue")
+    .then(({ processQueue }) => {
+      const intervalMs = Math.max(
+        15_000,
+        parseInt(process.env.JOB_QUEUE_POLL_MS ?? "30000", 10),
+      );
+      setInterval(() => {
+        processQueue(10).catch((err) => {
+          console.error("[job-queue] processQueue error:", err);
+        });
+      }, intervalMs);
+    })
+    .catch(() => {});
+}
+
 registerInstrumentations({
   tracerProvider: provider,
   instrumentations: [
