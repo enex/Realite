@@ -37,6 +37,15 @@ Before finalizing implementation work, run the smallest command set that proves 
 
 Prefer `bun run check` as the default quick validation pass when it covers the change.
 
+### AI-Hub Tasks (Implementierungsaufträge)
+
+When the user asks to implement, fix, or add a feature (e.g. “implement X”, “fix Y”):
+
+1. **Before implementing**: Query AI-Hub tasks (MCP server `user-ai-hub-tasks`, tool `task_find` with a relevant `search` such as “Realite”, “Profilbild”, “Apple”). Use `task_get` to read the matching task’s name and description as the implementation spec. Note: in the API response, `subtasks` denotes the **parent/supertask** of that task (inverted).
+2. **After implementing**: Update the task appropriately: `task_complete` with a short message, or `task_update` / `task_comment` to document what was done and what remains.
+
+See `.cursor/rules/ai-hub-tasks.mdc` for the full workflow and tool parameters.
+
 ### GitHub Workflow
 
 - `.github/workflows/docker-build.yml` builds the Docker image for pushes to `main` and `develop`, and for tags matching `v*`.
