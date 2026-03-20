@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { AUTH_ISSUER, MCP_RESOURCE_AUDIENCE } from "@/src/lib/auth";
+import { getRequestOrigin } from "@/src/lib/request-origin";
 
 export const runtime = "nodejs";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ resource: string[] }> }
 ) {
   const { resource } = await context.params;
@@ -13,9 +13,10 @@ export async function GET(
     return NextResponse.json({ error: "Protected resource not found" }, { status: 404 });
   }
 
+  const origin = getRequestOrigin(request);
   const metadata = {
-    resource: MCP_RESOURCE_AUDIENCE,
-    authorization_servers: [AUTH_ISSUER],
+    resource: `${origin}/api/mcp`,
+    authorization_servers: [origin],
     scopes_supported: ["realite:read", "realite:write"]
   };
 

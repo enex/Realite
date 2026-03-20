@@ -1,15 +1,14 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 
-import { AUTH_ISSUER, MCP_RESOURCE_AUDIENCE } from "@/src/lib/auth";
 import { createRealiteMcpServer } from "@/src/lib/mcp";
+import { getRequestOrigin } from "@/src/lib/request-origin";
 import { getServerClient } from "@/src/lib/server-client";
 import { requireAppUserFromAuthUserId } from "@/src/lib/session";
 
 export const runtime = "nodejs";
 
 function getProtectedResourceMetadataUrl(request: Request) {
-  const url = new URL(request.url);
-  return `${url.origin}/.well-known/oauth-protected-resource/api/mcp`;
+  return `${getRequestOrigin(request)}/.well-known/oauth-protected-resource/api/mcp`;
 }
 
 function unauthorizedResponse(request: Request, message: string) {
@@ -41,6 +40,9 @@ function getAccessToken(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const origin = getRequestOrigin(request);
+  const issuer = origin;
+  const audience = `${origin}/api/mcp`;
   const accessToken = getAccessToken(request);
   if (!accessToken) {
     return unauthorizedResponse(request, "Missing Bearer token");
@@ -50,8 +52,8 @@ export async function POST(request: Request) {
   try {
     jwt = await getServerClient().verifyAccessToken(accessToken, {
       verifyOptions: {
-        issuer: AUTH_ISSUER,
-        audience: MCP_RESOURCE_AUDIENCE
+        issuer,
+        audience
       }
     });
   } catch (error) {
