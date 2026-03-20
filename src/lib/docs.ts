@@ -40,6 +40,12 @@ const DOCS_PAGES: DocsPage[] = [
     title: "FAQ",
     description: "Häufige Fragen, Fehlerbilder und schnelle Lösungen.",
     fileName: "faq.md"
+  },
+  {
+    slug: "mcp-und-oauth",
+    title: "MCP und OAuth",
+    description: "Realite per MCP verbinden, authentifizieren und verwenden.",
+    fileName: "mcp-und-oauth.md"
   }
 ];
 

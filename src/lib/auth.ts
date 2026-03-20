@@ -1,6 +1,8 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
+import { jwt } from "better-auth/plugins";
+import { oauthProvider } from "@better-auth/oauth-provider";
 import { headers } from "next/headers";
 
 import * as authSchema from "@/src/db/auth-schema";
@@ -8,15 +10,13 @@ import { getDb } from "@/src/db/client";
 
 const authBaseUrl = process.env.BETTER_AUTH_URL ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 const authSecret = process.env.BETTER_AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+export const AUTH_ISSUER = process.env.BETTER_AUTH_ISSUER ?? authBaseUrl;
+export const MCP_RESOURCE_AUDIENCE = `${authBaseUrl}/api/mcp`;
+const mcpScopes = ["realite:read", "realite:write"] as const;
+const oauthScopes = ["openid", "profile", "email", "offline_access", ...mcpScopes] as const;
 
-let authInstance: ReturnType<typeof betterAuth> | null = null;
-
-export function getAuth() {
-  if (authInstance) {
-    return authInstance;
-  }
-
-  authInstance = betterAuth({
+function createAuth() {
+  return betterAuth({
     baseURL: authBaseUrl,
     secret: authSecret,
     database: drizzleAdapter(getDb(), {
@@ -24,12 +24,31 @@ export function getAuth() {
       schema: authSchema,
       camelCase: true
     }),
-    plugins: [nextCookies()],
+    plugins: [
+      nextCookies(),
+      jwt({
+        disableSettingJwtHeader: true,
+        jwt: {
+          issuer: AUTH_ISSUER
+        }
+      }),
+      oauthProvider({
+        loginPage: "/mcp/oauth/login",
+        consentPage: "/mcp/oauth/consent",
+        scopes: [...oauthScopes],
+        validAudiences: [MCP_RESOURCE_AUDIENCE],
+        clientRegistrationDefaultScopes: [...oauthScopes],
+        clientRegistrationAllowedScopes: [...oauthScopes],
+        allowDynamicClientRegistration: true,
+        allowUnauthenticatedClientRegistration: true
+      })
+    ],
     user: {
       modelName: "authUser"
     },
     session: {
-      modelName: "authSession"
+      modelName: "authSession",
+      storeSessionInDatabase: true
     },
     account: {
       modelName: "authAccount"
@@ -54,12 +73,26 @@ export function getAuth() {
       }
     }
   });
+}
+
+let authInstance: ReturnType<typeof createAuth> | undefined;
+
+export function getAuth() {
+  if (authInstance) {
+    return authInstance;
+  }
+
+  authInstance = createAuth();
 
   return authInstance;
 }
 
-export async function getAuthSession() {
+export async function getAuthSessionFromHeaders(requestHeaders: Headers) {
   return getAuth().api.getSession({
-    headers: new Headers(await headers())
+    headers: requestHeaders
   });
+}
+
+export async function getAuthSession() {
+  return getAuthSessionFromHeaders(new Headers(await headers()));
 }
