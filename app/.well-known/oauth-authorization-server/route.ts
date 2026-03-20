@@ -4,4 +4,6 @@ import { getAuth } from "@/src/lib/auth";
 
 export const runtime = "nodejs";
 
-export const GET = oauthProviderAuthServerMetadata(getAuth());
+export async function GET(request: Request) {
+  return oauthProviderAuthServerMetadata(getAuth())(request);
+}

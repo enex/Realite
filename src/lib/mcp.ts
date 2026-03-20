@@ -62,6 +62,10 @@ type McpUser = {
   image: string | null;
 };
 
+function getAppBaseUrl() {
+  return process.env.REALITE_APP_URL ?? process.env.BETTER_AUTH_URL ?? process.env.NEXTAUTH_URL ?? "https://realite.app";
+}
+
 const currentYear = new Date().getUTCFullYear();
 const MAX_COMMENT_BODY_LENGTH = 2000;
 const INVITE_SUGGESTION_COUNT = 3;
@@ -441,10 +445,30 @@ async function getSourceEventUrl(userId: string, sourceProvider: string, sourceE
 }
 
 export function createRealiteMcpServer(user: McpUser) {
+  const appBaseUrl = getAppBaseUrl().replace(/\/+$/, "");
+
   const server = new McpServer(
     {
       name: "realite",
-      version: "0.1.0"
+      version: "0.1.0",
+      title: "Realite",
+      websiteUrl: appBaseUrl,
+      icons: [
+        {
+          src: `${appBaseUrl}/icon.svg`,
+          mimeType: "image/svg+xml"
+        },
+        {
+          src: `${appBaseUrl}/icon-512.png`,
+          mimeType: "image/png",
+          sizes: ["512x512"]
+        },
+        {
+          src: `${appBaseUrl}/apple-touch-icon.png`,
+          mimeType: "image/png",
+          sizes: ["180x180"]
+        }
+      ]
     },
     {
       capabilities: {

@@ -2,7 +2,7 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 
 import { AUTH_ISSUER, MCP_RESOURCE_AUDIENCE } from "@/src/lib/auth";
 import { createRealiteMcpServer } from "@/src/lib/mcp";
-import { serverClient } from "@/src/lib/server-client";
+import { getServerClient } from "@/src/lib/server-client";
 import { requireAppUserFromAuthUserId } from "@/src/lib/session";
 
 export const runtime = "nodejs";
@@ -46,9 +46,9 @@ export async function POST(request: Request) {
     return unauthorizedResponse(request, "Missing Bearer token");
   }
 
-  let jwt: Awaited<ReturnType<typeof serverClient.verifyAccessToken>>;
+  let jwt: Awaited<ReturnType<ReturnType<typeof getServerClient>["verifyAccessToken"]>>;
   try {
-    jwt = await serverClient.verifyAccessToken(accessToken, {
+    jwt = await getServerClient().verifyAccessToken(accessToken, {
       verifyOptions: {
         issuer: AUTH_ISSUER,
         audience: MCP_RESOURCE_AUDIENCE

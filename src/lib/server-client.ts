@@ -3,6 +3,16 @@ import { oauthProviderResourceClient } from "@better-auth/oauth-provider/resourc
 
 import { getAuth } from "@/src/lib/auth";
 
-export const serverClient = createAuthClient({
-  plugins: [oauthProviderResourceClient(getAuth() as never)]
-}) as any;
+let serverClient: any;
+
+export function getServerClient() {
+  if (serverClient) {
+    return serverClient;
+  }
+
+  serverClient = createAuthClient({
+    plugins: [oauthProviderResourceClient(getAuth() as never)]
+  }) as any;
+
+  return serverClient;
+}

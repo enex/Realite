@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { MCP_RESOURCE_AUDIENCE } from "@/src/lib/auth";
-import { serverClient } from "@/src/lib/server-client";
+import { AUTH_ISSUER, MCP_RESOURCE_AUDIENCE } from "@/src/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -14,10 +13,11 @@ export async function GET(
     return NextResponse.json({ error: "Protected resource not found" }, { status: 404 });
   }
 
-  const metadata = await serverClient.getProtectedResourceMetadata({
+  const metadata = {
     resource: MCP_RESOURCE_AUDIENCE,
+    authorization_servers: [AUTH_ISSUER],
     scopes_supported: ["realite:read", "realite:write"]
-  });
+  };
 
   return NextResponse.json(metadata, {
     headers: {

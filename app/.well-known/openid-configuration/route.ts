@@ -4,4 +4,6 @@ import { getAuth } from "@/src/lib/auth";
 
 export const runtime = "nodejs";
 
-export const GET = oauthProviderOpenIdConfigMetadata(getAuth());
+export async function GET(request: Request) {
+  return oauthProviderOpenIdConfigMetadata(getAuth())(request);
+}
