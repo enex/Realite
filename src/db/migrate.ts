@@ -52,11 +52,11 @@ function triggerMigration() {
     });
 }
 
-export function getDatabaseHealth() {
-  if (state !== "healthy") {
-    triggerMigration();
-  }
+export function ensureDatabaseReady() {
+  triggerMigration();
+}
 
+export function getDatabaseHealth() {
   return {
     state,
     error: lastError

@@ -26,9 +26,19 @@ export async function GET() {
     );
   }
 
+  if (health.state === "booting" || health.state === "migrating") {
+    return NextResponse.json(
+      {
+        status: "starting",
+        database: health.state
+      },
+      { status: 200 }
+    );
+  }
+
   return NextResponse.json(
     {
-      status: "starting",
+      status: "unhealthy",
       database: health.state,
       error: health.error
     },
