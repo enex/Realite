@@ -58,6 +58,28 @@ Meist fehlt das Bearer-Token oder der Client nutzt die OAuth-Metadaten nicht kor
 - ob der Client wirklich ein Access Token für die Resource `/api/mcp` anfordert
 - ob die Anmeldung und die Consent-Seite vollständig abgeschlossen wurden
 
+### MCP Inspector im Browser zeigt CORS-Fehler
+
+Wenn du den MCP Inspector lokal im Browser nutzt, kommen Requests typischerweise von einer Localhost-Origin (z. B. `http://localhost:6274`).
+
+Realite erlaubt dafür CORS auf den Discovery- und MCP-Endpunkten:
+
+- `/.well-known/oauth-protected-resource/api/mcp`
+- `/.well-known/oauth-authorization-server`
+- `/.well-known/openid-configuration`
+- `/api/mcp`
+
+Falls du eine andere Origin verwenden willst, setze `MCP_ALLOWED_ORIGINS` als kommaseparierte Liste (z. B. `http://localhost:6274,http://localhost:3001`).
+
+### Was bedeuten `issuer` und `audience`?
+
+- `issuer`: Wer hat das Access Token ausgestellt (der OAuth-Server).  
+  Realite erwartet hier die eigene Origin (z. B. `https://realite.app`).
+- `audience`: Für welche Resource ist das Token gedacht.  
+  Realite erwartet hier den MCP-Resource-Endpunkt `https://realite.app/api/mcp`.
+
+Wenn `issuer` oder `audience` nicht zum Token passen, lehnt Realite den Zugriff auf `/api/mcp` mit `401` ab.
+
 ### Die Anmeldung endet wieder auf der Login-Seite
 
 Dann wurde der OAuth-Flow nicht vollständig fortgesetzt oder die Sitzung ist nicht gültig. Starte die MCP-Verbindung neu und melde dich erneut an.

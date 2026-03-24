@@ -1,5 +1,6 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 
+import { buildMcpCorsPreflightResponse, getMcpCorsHeaders } from "@/src/lib/mcp-cors";
 import { createRealiteMcpServer } from "@/src/lib/mcp";
 import { getRequestOrigin } from "@/src/lib/request-origin";
 import { getServerClient } from "@/src/lib/server-client";
@@ -12,20 +13,24 @@ function getProtectedResourceMetadataUrl(request: Request) {
 }
 
 function unauthorizedResponse(request: Request, message: string) {
+  const corsHeaders = getMcpCorsHeaders(request, "POST, OPTIONS");
   return new Response(message, {
     status: 401,
     headers: {
       "WWW-Authenticate": `Bearer resource_metadata="${getProtectedResourceMetadataUrl(request)}"`,
-      "Content-Type": "text/plain; charset=utf-8"
+      "Content-Type": "text/plain; charset=utf-8",
+      ...corsHeaders
     }
   });
 }
 
-function methodNotAllowed() {
+function methodNotAllowed(request: Request) {
+  const corsHeaders = getMcpCorsHeaders(request, "POST, OPTIONS");
   return new Response("Method Not Allowed", {
     status: 405,
     headers: {
-      Allow: "POST"
+      Allow: "POST, OPTIONS",
+      ...corsHeaders
     }
   });
 }
@@ -79,17 +84,26 @@ export async function POST(request: Request) {
 
   try {
     await server.connect(transport);
-    return await transport.handleRequest(request);
+    const response = await transport.handleRequest(request);
+    const corsHeaders = getMcpCorsHeaders(request, "POST, OPTIONS");
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      response.headers.set(key, value);
+    });
+    return response;
   } finally {
     await transport.close().catch(() => undefined);
     await server.close().catch(() => undefined);
   }
 }
 
-export async function GET() {
-  return methodNotAllowed();
+export async function OPTIONS(request: Request) {
+  return buildMcpCorsPreflightResponse(request, "POST, OPTIONS");
 }
 
-export async function DELETE() {
-  return methodNotAllowed();
+export async function GET(request: Request) {
+  return methodNotAllowed(request);
+}
+
+export async function DELETE(request: Request) {
+  return methodNotAllowed(request);
 }
