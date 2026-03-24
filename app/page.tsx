@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { EventImage } from "@/src/components/event-image";
-import { LandingDatingBadge, LandingDatingGate } from "@/src/components/landing-dating-gate";
+import { LandingDatingGate } from "@/src/components/landing-dating-gate";
 import { getAuthSession } from "@/src/lib/auth";
 import { listPublicAlleEvents } from "@/src/lib/repository";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
@@ -35,11 +35,13 @@ export default async function HomePage({
         <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-5 sm:px-6 sm:pb-24 sm:pt-7 lg:px-8 lg:pb-28 lg:pt-8">
           <LandingHeader signInHref={signInHref} />
           <HeroSection signInHref={signInHref} publicAlleEvents={publicAlleEvents} />
-          <WhatYouCanDoSection signInHref={signInHref} />
-          <PeopleIntentSection />
+          <ProblemSection signInHref={signInHref} />
+          <SolutionSection />
+          <CoreConceptsSection />
           <LandingDatingGate>
             <DatingSpotlightSection />
           </LandingDatingGate>
+          <AudienceSection />
           <HowItWorksSection signInHref={signInHref} />
         </div>
       </main>
@@ -115,7 +117,6 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
           <span className="rounded-lg border border-white/20 bg-teal-800/60 px-3 py-1.5">Weniger Abstimmung</span>
           <span className="rounded-lg border border-white/20 bg-teal-800/60 px-3 py-1.5">Spontan dazustoßen</span>
           <span className="rounded-lg border border-white/20 bg-teal-800/60 px-3 py-1.5">Echte Erlebnisse</span>
-          <LandingDatingBadge />
         </div>
       </div>
 
@@ -171,7 +172,7 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
   );
 }
 
-const WHAT_YOU_CAN_DO_OPTIONS = [
+const PROBLEM_POINTS = [
   {
     title: "Zu viel Abstimmung in Chats",
     text: "Statt endlos zu schreiben, siehst du direkt, was bei deinen Leuten geht und wo du spontan dazustoßen kannst.",
@@ -202,7 +203,7 @@ const WHAT_YOU_CAN_DO_OPTIONS = [
   }
 ] as const;
 
-function WhatYouCanDoSection({ signInHref }: { signInHref: string }) {
+function ProblemSection({ signInHref }: { signInHref: string }) {
   return (
     <section className="mt-12 sm:mt-14 lg:mt-16" aria-labelledby="was-du-tun-kannst">
       <div className="realite-reveal" style={{ animationDelay: "260ms" }}>
@@ -214,7 +215,7 @@ function WhatYouCanDoSection({ signInHref }: { signInHref: string }) {
         </p>
       </div>
       <div className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5">
-        {WHAT_YOU_CAN_DO_OPTIONS.map((option, index) => (
+        {PROBLEM_POINTS.map((option, index) => (
           <article
             key={option.title}
             className="realite-reveal flex flex-col rounded-2xl border border-teal-700/50 bg-teal-800/70 p-4 shadow-lg shadow-black/20 sm:rounded-3xl sm:p-5"
@@ -237,7 +238,7 @@ function WhatYouCanDoSection({ signInHref }: { signInHref: string }) {
   );
 }
 
-const INTENT_CARDS = [
+const SOLUTION_CARDS = [
   {
     title: "Sieh, was bei deinen Leuten geht",
     text: "Realite verbindet dein bestehendes Leben mit echter sozialer Interaktion und macht Möglichkeiten sichtbar.",
@@ -258,7 +259,7 @@ const INTENT_CARDS = [
   }
 ] as const;
 
-function PeopleIntentSection() {
+function SolutionSection() {
   return (
     <section className="mt-14 sm:mt-16 lg:mt-20">
       <div className="realite-reveal" style={{ animationDelay: "300ms" }}>
@@ -271,7 +272,7 @@ function PeopleIntentSection() {
         </p>
       </div>
       <div className="mt-6 grid gap-5 sm:mt-8 sm:gap-6 md:grid-cols-3">
-        {INTENT_CARDS.map((card, index) => (
+        {SOLUTION_CARDS.map((card, index) => (
           <article
             key={card.title}
             className="realite-reveal overflow-hidden rounded-2xl border border-teal-700/50 bg-teal-800/70 p-4 shadow-lg shadow-black/20 sm:rounded-3xl sm:p-5"
@@ -290,14 +291,67 @@ function PeopleIntentSection() {
           </article>
         ))}
       </div>
-      <div className="realite-reveal mt-6 rounded-2xl border border-teal-600/45 bg-teal-800/70 p-5 sm:mt-8 sm:rounded-3xl sm:p-6" style={{ animationDelay: "680ms" }}>
-        <h3 className="text-lg font-bold text-white [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">Deine Kontrolle</h3>
+    </section>
+  );
+}
+
+const CORE_CONCEPTS = [
+  {
+    title: "Kalender als Input, nicht als Feed",
+    text: "Realite nutzt deinen Kalender nur als Kontext. Es erkennt freie Slots oder markierte Termine, veröffentlicht aber nichts automatisch."
+  },
+  {
+    title: "Explizite Freigabe statt Automatik",
+    text: "Du entscheidest, was sichtbar wird. Keine stillen Veröffentlichungen, kein Kontrollverlust."
+  },
+  {
+    title: "Aktivität statt Chat",
+    text: "Fokus auf konkreten, joinbaren Aktivitäten: weniger schreiben, schneller handeln."
+  },
+  {
+    title: "Social Circles statt Randomness",
+    text: "Freunde, Freunde von Freunden, ausgewählte Gruppen und optional offen - ohne Fremde-Leute-App-Dynamik."
+  },
+  {
+    title: "Joinbarkeit statt Planungsstress",
+    text: "Beitreten, Anfrage senden oder Interesse zeigen - weniger Abstimmung, mehr Umsetzung."
+  }
+] as const;
+
+function CoreConceptsSection() {
+  return (
+    <section className="mt-14 sm:mt-16 lg:mt-20">
+      <div className="realite-reveal" style={{ animationDelay: "560ms" }}>
+        <h2 className="text-2xl font-black text-white sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+          Kernkonzepte, die den Unterschied machen
+        </h2>
+        <p className="mt-3 max-w-3xl text-base leading-7 text-slate-200 sm:text-lg">
+          Realite ist kein Event-Portal und kein Chat. Es ist die soziale Koordinationsschicht, die echte Treffen in den Alltag zurückbringt.
+        </p>
+      </div>
+      <div className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2 lg:grid-cols-3">
+        {CORE_CONCEPTS.map((concept, index) => (
+          <article
+            key={concept.title}
+            className="realite-reveal rounded-2xl border border-teal-700/50 bg-teal-800/65 p-5 shadow-lg shadow-black/20 sm:rounded-3xl"
+            style={{ animationDelay: `${640 + index * 90}ms` }}
+          >
+            <h3 className="text-base font-bold text-white sm:text-lg [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+              {concept.title}
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-slate-200">{concept.text}</p>
+          </article>
+        ))}
+      </div>
+      <div className="realite-reveal mt-6 rounded-2xl border border-teal-500/40 bg-teal-700/45 p-5 sm:mt-8 sm:rounded-3xl sm:p-6" style={{ animationDelay: "1100ms" }}>
+        <h3 className="text-lg font-bold text-white [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">Datenschutz & Vertrauen</h3>
         <ul className="mt-3 grid gap-2 text-sm leading-6 text-slate-200 sm:grid-cols-2">
           <li>Dein Kalender bleibt privat.</li>
-          <li>Geteilt wird nur, was du bewusst freigibst.</li>
+          <li>Kontakte werden nicht gespammt.</li>
           <li>Keine automatischen Einträge bei anderen.</li>
           <li>Volle Kontrolle über Sichtbarkeit.</li>
         </ul>
+        <p className="mt-3 text-sm font-semibold text-teal-100">Du entscheidest, was sozial wird.</p>
       </div>
     </section>
   );
@@ -341,6 +395,24 @@ function DatingSpotlightSection() {
   );
 }
 
+function AudienceSection() {
+  return (
+    <section className="mt-14 sm:mt-16 lg:mt-20">
+      <div className="realite-reveal rounded-2xl border border-teal-700/50 bg-teal-800/60 p-5 shadow-lg shadow-black/15 sm:rounded-3xl sm:p-6" style={{ animationDelay: "1180ms" }}>
+        <h2 className="text-2xl font-black text-white sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+          Für wen ist Realite?
+        </h2>
+        <ul className="mt-4 grid gap-2 text-sm leading-6 text-slate-200 sm:text-base">
+          <li>- weniger schreiben und mehr erleben</li>
+          <li>- spontane Aktivitäten statt Planungsfrust</li>
+          <li>- den eigenen Freundeskreis besser nutzen</li>
+          <li>- offen für neue Begegnungen im richtigen Kontext</li>
+        </ul>
+      </div>
+    </section>
+  );
+}
+
 function HowItWorksSection({ signInHref }: { signInHref: string }) {
   return (
     <section id="so-funktioniert-es" className="mt-14 sm:mt-16 lg:mt-20">
@@ -352,11 +424,11 @@ function HowItWorksSection({ signInHref }: { signInHref: string }) {
           },
           {
             title: "2. Aktivität erstellen",
-            text: "Manuell oder aus bestehendem Termin, mit Marker (z. B. #real) und selbst gewählter Sichtbarkeit."
+            text: "Manuell oder aus bestehendem Termin, mit Marker (z. B. #real) und eigenen Join-Regeln."
           },
           {
             title: "3. Zusammenkommen",
-            text: "Freunde und passende Leute sehen deine Aktivität und können direkt beitreten oder reagieren."
+            text: "Freunde und passende Leute sehen deine Aktivität und können direkt beitreten oder anfragen."
           }
         ].map((step, index) => (
           <article
@@ -376,11 +448,10 @@ function HowItWorksSection({ signInHref }: { signInHref: string }) {
         style={{ animationDelay: "1220ms" }}
       >
         <h2 className="text-xl font-black text-white sm:text-2xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
-          Für Menschen, die weniger schreiben und mehr erleben wollen.
+          Weniger Abstimmung. Mehr spontane Aktivitäten.
         </h2>
         <p className="mt-4 max-w-3xl text-base leading-7 text-teal-100 sm:text-lg">
-          Für spontane Aktivitäten, besser genutzte Freundeskreise und neue Begegnungen im richtigen Kontext. Realite
-          ist die soziale Koordinationsschicht für dein echtes Leben.
+          Mehr Nutzung deines bestehenden Netzwerks, natürliche Erweiterung deines sozialen Kreises und mehr echte Treffen in deinem Alltag.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <a
