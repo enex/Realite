@@ -47,10 +47,14 @@ export function getMcpCorsHeaders(
     return {};
   }
 
+  const requestedHeaders = request.headers.get("access-control-request-headers");
+
   return {
     "Access-Control-Allow-Origin": origin as string,
     "Access-Control-Allow-Methods": allowedMethods,
-    "Access-Control-Allow-Headers": "Authorization, Content-Type, Accept, MCP-Protocol-Version",
+    "Access-Control-Allow-Headers":
+      requestedHeaders ?? "Authorization, Content-Type, Accept, MCP-Protocol-Version",
+    "Access-Control-Allow-Credentials": "true",
     "Access-Control-Max-Age": "600",
     Vary: "Origin"
   };

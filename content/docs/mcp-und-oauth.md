@@ -71,6 +71,8 @@ Realite erlaubt dafür CORS auf den Discovery- und MCP-Endpunkten:
 
 Falls du eine andere Origin verwenden willst, setze `MCP_ALLOWED_ORIGINS` als kommaseparierte Liste (z. B. `http://localhost:6274,http://localhost:3001`).
 
+Hinweis: Für den Browser-Inspector muss CORS nicht nur auf den `/.well-known`- und `/api/mcp`-Routen stimmen, sondern auch auf den OAuth-Endpunkten unter `/api/auth/*` (z. B. Dynamic Client Registration).
+
 ### Was bedeuten `issuer` und `audience`?
 
 - `issuer`: Wer hat das Access Token ausgestellt (der OAuth-Server).  
