@@ -8,6 +8,7 @@ import { AppShell } from "@/src/components/app-shell";
 import { EventImage } from "@/src/components/event-image";
 import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
 import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
+import { EVENT_JOIN_MODE_VALUES, getEventJoinModeMeta, type EventJoinMode } from "@/src/lib/event-join-modes";
 import { getEventPatternMeta } from "@/src/lib/activity-patterns";
 import { DASHBOARD_QUERY_KEY, fetchDashboard as fetchDashboardApi } from "@/src/lib/dashboard-query";
 import {
@@ -35,6 +36,7 @@ type EventItem = {
   groupName: string | null;
   tags: string[];
   visibility: "public" | "group" | "smart_date";
+  joinMode: EventJoinMode;
   color: string | null;
   category: EventCategory;
   placeImageUrl: string | null;
@@ -238,6 +240,7 @@ export function Dashboard({
     startsAt: "",
     endsAt: "",
     visibility: "public" as "public" | "group",
+    joinMode: "direct" as EventJoinMode,
     groupId: "",
     tags: "#kontakte",
     color: "" as string,
@@ -388,6 +391,15 @@ export function Dashboard({
   }, [showEventForm, eventForm.title, eventForm.tags, eventForm.description]);
 
   useEffect(() => {
+    if (!showEventForm) return;
+    const hasDateTag = eventForm.tags.toLowerCase().includes("#date");
+    if (!hasDateTag || eventForm.joinMode === "interest") {
+      return;
+    }
+    setEventForm((state) => ({ ...state, joinMode: "interest" }));
+  }, [showEventForm, eventForm.joinMode, eventForm.tags]);
+
+  useEffect(() => {
     if (!data.sync.revalidating) {
       toast.dismiss(REVALIDATING_TOAST_ID);
       return;
@@ -415,6 +427,7 @@ export function Dashboard({
           startsAt: new Date(eventForm.startsAt).toISOString(),
           endsAt: new Date(eventForm.endsAt).toISOString(),
           groupId: eventForm.groupId || null,
+          joinMode: eventForm.joinMode,
           tags: eventForm.tags
             .split(",")
             .map((tag) => tag.trim())
@@ -428,7 +441,8 @@ export function Dashboard({
         error?: string;
         event?: {
           id: string;
-          visibility: "public" | "group";
+          visibility: "public" | "group" | "smart_date";
+          joinMode: EventJoinMode;
           groupId: string | null;
           tags: string[];
           startsAt: string;
@@ -443,6 +457,7 @@ export function Dashboard({
         captureProductEvent("event_created", {
           event_id: payload.event.id,
           visibility: payload.event.visibility,
+          join_mode: payload.event.joinMode,
           has_group: Boolean(payload.event.groupId),
           tag_count: payload.event.tags.length
         });
@@ -455,6 +470,7 @@ export function Dashboard({
         startsAt: "",
         endsAt: "",
         visibility: "public",
+        joinMode: "direct",
         groupId: "",
         tags: "#kontakte",
         color: "",
@@ -877,6 +893,7 @@ export function Dashboard({
                         const eventPattern = getEventPatternMeta({ isOwnEvent, isAccepted });
                         const coverUrl = item.event.placeImageUrl ?? item.event.linkPreviewImageUrl ?? null;
                         const borderColor = item.event.color ?? CATEGORY_COLORS[item.event.category ?? "default"];
+                        const joinModeMeta = getEventJoinModeMeta(item.event.joinMode);
                         return (
                           <li key={`event-${item.eventId}`}>
                             <a
@@ -916,6 +933,7 @@ export function Dashboard({
                                   –{" "}
                                   {new Date(item.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
                                 </p>
+                                <p className="mt-1 text-xs font-medium text-slate-600">Mitmachen: {joinModeMeta.shortLabel}</p>
                                 <div className="mt-2 rounded-lg bg-white/80 px-3 py-2.5">
                                   <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                                     Wer ist dabei?
@@ -1003,7 +1021,7 @@ export function Dashboard({
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                 required
               />
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-3">
                 <input
                   type="datetime-local"
                   value={eventForm.startsAt}
@@ -1046,6 +1064,23 @@ export function Dashboard({
                   <option value="group">Nur Gruppe</option>
                 </select>
                 <select
+                  value={eventForm.joinMode}
+                  onChange={(event) =>
+                    setEventForm((state) => ({ ...state, joinMode: event.target.value as EventJoinMode }))
+                  }
+                  disabled={eventForm.tags.toLowerCase().includes("#date")}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                >
+                  {EVENT_JOIN_MODE_VALUES.map((mode) => {
+                    const meta = getEventJoinModeMeta(mode);
+                    return (
+                      <option key={mode} value={mode}>
+                        {meta.label}
+                      </option>
+                    );
+                  })}
+                </select>
+                <select
                   value={eventForm.groupId}
                   onChange={(event) => setEventForm((state) => ({ ...state, groupId: event.target.value }))}
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
@@ -1058,6 +1093,12 @@ export function Dashboard({
                   ))}
                 </select>
               </div>
+              <p className="text-xs text-slate-500">
+                Join-Modus: <span className="font-medium text-slate-700">{getEventJoinModeMeta(eventForm.joinMode).label}</span> ·{" "}
+                {eventForm.tags.toLowerCase().includes("#date")
+                  ? "Bei #date nutzt Realite aus Privatsphäre-Gründen automatisch zuerst Interesse zeigen."
+                  : getEventJoinModeMeta(eventForm.joinMode).description}
+              </p>
               <div>
                 <label htmlFor="event-category" className="mb-1 block text-xs font-medium text-slate-600">
                   Kategorie (für Kalenderansicht)
@@ -1178,6 +1219,7 @@ export function Dashboard({
                                 const isOwnEvent = event.createdBy === data.me.id;
                                 const isAccepted = acceptedEventIds.has(event.id);
                                 const eventPattern = getEventPatternMeta({ isOwnEvent, isAccepted });
+                                const joinModeMeta = getEventJoinModeMeta(event.joinMode);
                                 const contextLabel =
                                   section.id === "context" && event.sourceProvider
                                     ? "Aus deinem Kalenderkontext"
@@ -1232,6 +1274,7 @@ export function Dashboard({
                                             {new Date(event.endsAt).toLocaleTimeString("de-DE")}
                                             {event.tags.length > 0 ? ` · ${event.tags.join(" · ")}` : ""}
                                           </p>
+                                          <p className="mt-1 text-xs font-medium text-slate-600">Mitmachen: {joinModeMeta.shortLabel}</p>
                                           <div className="mt-2 rounded-lg bg-white/80 px-3 py-2">
                                             <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                                               Wer ist dabei?

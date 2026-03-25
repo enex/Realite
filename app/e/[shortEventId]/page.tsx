@@ -86,6 +86,7 @@ export default async function EventShortcutPage({
           endsAtIso={preview.endsAt.toISOString()}
           description={preview.description}
           location={preview.location}
+          joinMode={preview.joinMode}
           placeImageUrl={preview.placeImageUrl}
           linkPreviewImageUrl={preview.linkPreviewImageUrl}
           createdByName={preview.createdByName}
@@ -140,6 +141,7 @@ export default async function EventShortcutPage({
         endsAtIso={event.endsAt.toISOString()}
         description={event.description}
         location={event.location}
+        joinMode={event.joinMode}
         placeImageUrl={event.placeImageUrl}
         linkPreviewImageUrl={event.linkPreviewImageUrl}
         groupName={event.groupName}

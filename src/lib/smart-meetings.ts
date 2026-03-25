@@ -807,6 +807,7 @@ async function finalizeApprovedRun(input: {
     startsAt: input.run.startsAt,
     endsAt: input.run.endsAt,
     visibility: "group" as EventVisibility,
+    joinMode: "direct",
     groupId: input.plan.groupId,
     tags: normalizedTags
   });

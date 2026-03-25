@@ -14,6 +14,14 @@ Ein Event besteht aus:
 
 **Kategorien:** Events werden auf dem Dashboard nach Kategorie gruppiert angezeigt (ähnlich wie in Google Kalender). Beim Anlegen schlägt Realite eine Kategorie anhand von Titel, Beschreibung und Tags vor; du kannst sie im Formular anpassen. Verfügbare Kategorien sind u. a. Sonstiges, Besprechung, Arbeit, Privat, Sport, Soziales, Geburtstag, Verabredung.
 
+**Mitmachen bewusst steuern:** Beim Anlegen legst du jetzt auch fest, wie andere auf ein Event reagieren:
+
+- **Direkt beitreten:** sichtbare Personen können direkt zusagen
+- **Anfrage senden:** Teilnahme braucht zuerst deine Freigabe
+- **Interesse zeigen:** erst ein lockeres Signal, dann bewusste Abstimmung
+
+So bleibt klar, ob ein Event offen joinbar ist oder ob du erst Rückmeldung sammeln willst. Bei `#date` nutzt Realite automatisch **Interesse zeigen**, damit Dating-Kontext low-pressure und explizit bleibt.
+
 **Bilder:** Events können ein Vorschaubild anzeigen. Realite nutzt dafür:
 - **Ort:** Ein optionales Bild des Ortes (z. B. Venue-Foto), sofern hinterlegt.
 - **Link-Preview:** Enthält die Beschreibung einen Link, wird automatisch das Vorschaubild (og:image) dieser Seite ermittelt und als Event-Bild genutzt.
@@ -21,6 +29,8 @@ Ein Event besteht aus:
 Das Bild erscheint auf der Event-Detailseite, in Event-Listen (Dashboard, Gruppen, Profil, Startseite) und lockert die Ansicht auf. Wenn weder Ortsbild noch Link-Preview verfügbar sind, wird nur Text angezeigt.
 
 **Wichtig für die Hauptansichten:** Eigene neu angelegte Events ohne Zusagen bleiben in **Events** unter deiner Planung. In **Jetzt** zeigt Realite stattdessen vor allem offene Aktivitäten, Vorschläge mit Handlungsbedarf und Termine mit erkennbarem Momentum. Deinen Sozialkalender siehst du dort nur als kompakte Vorschau; die vollständige Struktur nach Zusagen, eigener Planung und Kalenderkontext bleibt in **Events**.
+
+Auf Eventkarten und auf der Eventseite siehst du den gewählten Mitmach-Modus ebenfalls direkt. Realite veröffentlicht dabei nichts automatisch: Der Modus beschreibt nur, wie sichtbar berechtigte Personen reagieren sollen.
 
 ## Smart Treffen (automatische Terminfindung)
 

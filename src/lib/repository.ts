@@ -32,6 +32,7 @@ import {
   type DatingGender,
   type DatingProfile,
 } from "@/src/lib/dating";
+import { type EventJoinMode } from "@/src/lib/event-join-modes";
 import {
   type EventCategory,
   inferEventCategory,
@@ -49,6 +50,7 @@ import {
 
 export type GroupVisibility = "public" | "private";
 export type EventVisibility = "public" | "group" | "smart_date";
+export type { EventJoinMode } from "@/src/lib/event-join-modes";
 export type SuggestionStatus =
   | "pending"
   | "calendar_inserted"
@@ -97,6 +99,7 @@ export type VisibleEvent = {
   startsAt: Date;
   endsAt: Date;
   visibility: EventVisibility;
+  joinMode: EventJoinMode;
   groupId: string | null;
   groupName: string | null;
   createdBy: string;
@@ -116,6 +119,7 @@ export type PublicEventSharePreview = {
   location: string | null;
   startsAt: Date;
   endsAt: Date;
+  joinMode: EventJoinMode;
   createdByName: string | null;
   createdByEmail: string | null;
   color: string | null;
@@ -143,6 +147,7 @@ export type UserProfileEvent = {
   startsAt: Date;
   endsAt: Date;
   visibility: EventVisibility;
+  joinMode: EventJoinMode;
   groupName: string | null;
   color: string | null;
   placeImageUrl: string | null;
@@ -1729,6 +1734,7 @@ export async function createEvent(input: {
   startsAt: Date;
   endsAt: Date;
   visibility: EventVisibility;
+  joinMode: EventJoinMode;
   groupId?: string | null;
   tags: string[];
   color?: string | null;
@@ -1793,6 +1799,7 @@ export async function createEvent(input: {
       : targetsKontakteGroup
         ? "group"
         : input.visibility;
+  const finalJoinMode: EventJoinMode = hasDateTag ? "interest" : input.joinMode;
   const finalGroupId = hasDateTag
     ? null
     : hasAlleInTitle
@@ -1816,6 +1823,7 @@ export async function createEvent(input: {
         startsAt: input.startsAt,
         endsAt: input.endsAt,
         visibility: finalVisibility,
+        joinMode: finalJoinMode,
         groupId: finalGroupId,
         color: input.color ?? null,
         category,
@@ -1866,6 +1874,7 @@ export async function upsertExternalPublicEvent(input: {
         startsAt: input.startsAt,
         endsAt: input.endsAt,
         visibility: "public",
+        joinMode: "direct",
         groupId: input.groupId ?? null,
         sourceProvider: input.sourceProvider,
         sourceEventId: input.sourceEventId,
@@ -1881,6 +1890,7 @@ export async function upsertExternalPublicEvent(input: {
           startsAt: input.startsAt,
           endsAt: input.endsAt,
           visibility: "public",
+          joinMode: "direct",
           groupId: input.groupId ?? null,
           category,
         },
@@ -1990,6 +2000,7 @@ export async function listVisibleEventsForUser(userId: string) {
       startsAt: events.startsAt,
       endsAt: events.endsAt,
       visibility: events.visibility,
+      joinMode: events.joinMode,
       groupId: events.groupId,
       createdBy: events.createdBy,
       groupName: groups.name,
@@ -2081,6 +2092,7 @@ export async function getPublicEventSharePreviewById(
       location: events.location,
       startsAt: events.startsAt,
       endsAt: events.endsAt,
+      joinMode: events.joinMode,
       createdByName: users.name,
       createdByEmail: users.email,
       color: events.color,
@@ -2134,6 +2146,7 @@ export async function getVisibleEventForUserById(input: {
       startsAt: events.startsAt,
       endsAt: events.endsAt,
       visibility: events.visibility,
+      joinMode: events.joinMode,
       groupId: events.groupId,
       groupName: groups.name,
       createdBy: events.createdBy,
@@ -2345,11 +2358,13 @@ export async function listPublicAlleEvents(limit = 20) {
       startsAt: events.startsAt,
       endsAt: events.endsAt,
       visibility: events.visibility,
+      joinMode: events.joinMode,
       groupId: events.groupId,
       createdBy: events.createdBy,
       groupName: groups.name,
       sourceProvider: events.sourceProvider,
       sourceEventId: events.sourceEventId,
+      color: events.color,
       category: events.category,
       placeImageUrl: events.placeImageUrl,
       linkPreviewImageUrl: events.linkPreviewImageUrl,
@@ -2407,6 +2422,7 @@ async function listPublicAlleEventsForUser(userId: string) {
       startsAt: events.startsAt,
       endsAt: events.endsAt,
       visibility: events.visibility,
+      joinMode: events.joinMode,
       groupId: events.groupId,
       createdBy: events.createdBy,
       groupName: groups.name,
@@ -2474,6 +2490,7 @@ function mapVisibleEventToUserProfileEvent(
     startsAt: event.startsAt,
     endsAt: event.endsAt,
     visibility: event.visibility,
+    joinMode: event.joinMode,
     groupName: event.groupName,
     color: event.color,
     placeImageUrl: event.placeImageUrl,

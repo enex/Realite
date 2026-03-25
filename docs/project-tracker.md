@@ -33,6 +33,10 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 25.03.2026:
 
+- explizite Join-Mechaniken für Events eingeführt: **Direkt beitreten**, **Anfrage senden**, **Interesse zeigen**
+- Join-Modus ist jetzt Teil des Event-Modells, im Erstellformular wählbar und auf Karten/Eventseiten sichtbar
+- `#date` nutzt aus Privatsphäre-Gründen automatisch den low-pressure Modus **Interesse zeigen**
+- Nutzer-Doku für Mitmach-Modi ergänzt
 - `Jetzt` zeigt den Sozialkalender nur noch als kompakte Vorschau; die ausführliche Event-Struktur bleibt ausschließlich in `Events`
 - mobile und desktop Informationshierarchie der Hauptviews geprüft und geschärft: erst reagieren und mitmachen, dann Verwaltung
 - visuelle Patterns und Statuslabels für Vorschläge, offene Aktivitäten und eigene Planung vereinheitlicht
@@ -242,7 +246,7 @@ Status: `planned`
 
 ### P2
 
-- [ ] explizite Join-Mechaniken modellieren: direkt beitreten, anfragen, Interesse zeigen
+- [x] explizite Join-Mechaniken modellieren: direkt beitreten, anfragen, Interesse zeigen
 - [ ] Sichtbarkeitsmodell erweitern: Freunde, Freunde von Freunden, offen, optional vor Ort sichtbar
 - [ ] Presence-/Vor-Ort-Konzept definieren
 - [ ] Dating-Use-Case als Unterfall des Relevanzmodells schärfen, nicht als separaten Produktkern

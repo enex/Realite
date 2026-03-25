@@ -24,6 +24,11 @@ export const eventVisibilityEnum = pgEnum("event_visibility", [
   "group",
   "smart_date",
 ]);
+export const eventJoinModeEnum = pgEnum("event_join_mode", [
+  "direct",
+  "request",
+  "interest",
+]);
 /** Kategorie für die Anzeige im Kalender (Google-Calendar-Style). */
 export const eventCategoryEnum = pgEnum("event_category", [
   "default",
@@ -241,6 +246,7 @@ export const events = pgTable(
     startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
     endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
     visibility: eventVisibilityEnum("visibility").notNull().default("public"),
+    joinMode: eventJoinModeEnum("join_mode").notNull().default("direct"),
     groupId: uuid("group_id").references(() => groups.id, {
       onDelete: "set null",
     }),

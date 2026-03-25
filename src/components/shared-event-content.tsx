@@ -2,6 +2,7 @@
 
 import { EventImage } from "@/src/components/event-image";
 import { EventLocationDetails } from "@/src/components/event-location-details";
+import { getEventJoinModeMeta, type EventJoinMode } from "@/src/lib/event-join-modes";
 import { stripRealiteCalendarMetadata } from "@/src/lib/realite-calendar-links";
 import { sanitizeBasicHtml } from "@/src/lib/sanitize-basic-html";
 
@@ -11,6 +12,7 @@ type SharedEventContentProps = {
   endsAtIso: string;
   description?: string | null;
   location?: string | null;
+  joinMode?: EventJoinMode | null;
   /** Bild des Ortes (z. B. Venue). */
   placeImageUrl?: string | null;
   /** Link-Preview-Bild aus der Beschreibung. */
@@ -64,6 +66,7 @@ export function SharedEventContent(props: SharedEventContentProps) {
   const location = props.location?.trim() ?? "";
   const description = stripRealiteCalendarMetadata(props.description)?.trim() ?? "";
   const sanitizedDescriptionHtml = sanitizeBasicHtml(description);
+  const joinModeMeta = props.joinMode ? getEventJoinModeMeta(props.joinMode) : null;
   const originalEditUrl = props.isOwnedByCurrentUser
     ? buildGoogleCalendarEditUrl(props.sourceProvider, props.sourceEventId)
     : null;
@@ -121,6 +124,15 @@ export function SharedEventContent(props: SharedEventContentProps) {
           )}
           {props.createdByName ? ` (${props.createdByEmail})` : ""}
         </p>
+      ) : null}
+
+      {joinModeMeta ? (
+        <section className="mt-4 rounded-xl border border-teal-100 bg-teal-50/60 p-4">
+          <p className="text-sm font-semibold text-slate-900">Mitmachen</p>
+          <p className="mt-1 text-sm text-slate-700">
+            <span className="font-medium text-teal-800">{joinModeMeta.label}</span> · {joinModeMeta.description}
+          </p>
+        </section>
       ) : null}
 
       {location ? (

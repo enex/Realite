@@ -176,6 +176,13 @@
       "when": 1774002386256,
       "tag": "0024_smiling_jack_flag",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1774469261776,
+      "tag": "0025_flashy_ronan",
+      "breakpoints": true
     }
   ]
 }

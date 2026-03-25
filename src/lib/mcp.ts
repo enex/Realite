@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { buildDashboardPayload, buildDashboardRefreshPayload } from "@/src/lib/dashboard-data";
 import { DATE_MIN_AGE } from "@/src/lib/dating";
+import { EVENT_JOIN_MODE_VALUES, type EventJoinMode } from "@/src/lib/event-join-modes";
 import { EVENT_CATEGORY_VALUES, type EventCategory } from "@/src/lib/event-categories";
 import {
   addAttendeeToSourceEvent,
@@ -95,6 +96,7 @@ const createEventSchema = z.object({
   startsAt: z.string().datetime(),
   endsAt: z.string().datetime(),
   visibility: z.enum(["public", "group"]).default("public"),
+  joinMode: z.enum(EVENT_JOIN_MODE_VALUES).default("direct"),
   groupId: z.string().uuid().optional().nullable(),
   tags: z.array(z.string()).default([]),
   color: z.string().max(30).optional().nullable(),
@@ -756,6 +758,7 @@ export function createRealiteMcpServer(user: McpUser) {
         startsAt,
         endsAt,
         visibility: input.visibility,
+        joinMode: input.joinMode as EventJoinMode,
         groupId: input.groupId,
         tags: input.tags,
         color: input.color ?? null,

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { triggerDashboardBackgroundSync } from "@/src/lib/background-sync";
+import { EVENT_JOIN_MODE_VALUES, type EventJoinMode } from "@/src/lib/event-join-modes";
 import { EVENT_CATEGORY_VALUES, type EventCategory } from "@/src/lib/event-categories";
 import { fetchOgImageFromText } from "@/src/lib/link-preview";
 import { createEvent, listVisibleEventsForUser, RepositoryValidationError, updateEventImageUrls } from "@/src/lib/repository";
@@ -16,6 +17,7 @@ const createEventSchema = z.object({
   startsAt: z.string().datetime(),
   endsAt: z.string().datetime(),
   visibility: z.enum(["public", "group"]).default("public"),
+  joinMode: z.enum(EVENT_JOIN_MODE_VALUES).default("direct"),
   groupId: z.string().uuid().optional().nullable(),
   tags: z.array(z.string()).default([]),
   color: z.string().max(30).optional().nullable(),
@@ -113,6 +115,7 @@ export async function POST(request: Request) {
       startsAt,
       endsAt,
       visibility: parsed.data.visibility,
+      joinMode: parsed.data.joinMode as EventJoinMode,
       groupId: parsed.data.groupId,
       tags: parsed.data.tags,
       color: parsed.data.color ?? null,
