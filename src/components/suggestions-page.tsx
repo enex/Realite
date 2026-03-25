@@ -240,7 +240,7 @@ export function SuggestionsPage({
             <div className="flex items-start gap-3">
               <UserAvatar name={profileName} email={profileEmail} image={profileImage} size="lg" />
               <div>
-                <p className="text-sm text-slate-500">Vorschläge</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">Reagieren</p>
                 <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Reagiere auf passende Aktivitäten</h1>
                 <p className="mt-0.5 text-sm text-slate-600">
                   Offene Vorschläge stehen oben. Bereits entschiedene Vorschläge bleiben darunter als Verlauf sichtbar.

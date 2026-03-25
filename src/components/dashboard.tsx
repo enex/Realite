@@ -525,6 +525,9 @@ export function Dashboard({
           <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_60%_at_60%_0%,rgba(77,129,114,0.4),transparent)]" />
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-100">
+                {isEventsView ? "Verwalten" : "Entdecken"}
+              </p>
               <h1 className="text-lg font-bold tracking-tight text-white md:mt-1 md:text-2xl">
                 {isEventsView ? "Deine Events & Aktivitäten" : "Was geht heute?"}
               </h1>

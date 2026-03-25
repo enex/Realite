@@ -228,7 +228,7 @@ Status: `planned`
 ### P1
 
 - [x] Navigation überprüfen: ob `Events`, `Vorschläge`, `Gruppen` die richtige Reihenfolge und Benennung haben
-- [ ] unterscheiden zwischen `Entdecken`, `Reagieren`, `Verwalten`
+- [x] unterscheiden zwischen `Entdecken`, `Reagieren`, `Verwalten`
 - [ ] visuelle Patterns für offene Aktivitäten, persönliche Vorschläge, eigene Aktivitäten und Smart Meetings definieren
 - [x] Event-/Suggestion-Karten auf Scannability und Priorisierung überarbeiten
 - [x] leere Zustände produktnäher formulieren

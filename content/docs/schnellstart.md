@@ -25,13 +25,14 @@ Hinweis:
 
 Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade relevant ist: offene Aktivitäten, spontane Optionen und schnelle Wege zu deinen Vorschlägen.
 
+- Die Navigation trennt bewusst zwischen **Entdecken**, **Reagieren** und **Verwalten**.
 - **Jetzt** ist die Hauptansicht für „Was geht gerade?“
 - Offene Vorschläge mit Handlungsbedarf stehen dort in einem eigenen Bereich **„Reagieren zuerst“** ganz oben.
 - Die Reihenfolge der nächsten Aktion ist dort klar: **zuerst reagieren**, **dann mitmachen**, **danach selbst erstellen**
-- **Vorschläge** ist deine Handlungs-Queue für offene Entscheidungen
-- **Events** ist deine persönliche Kalender- und Verwaltungsansicht für sichtbare Aktivitäten und Zusagen
+- **Vorschläge** gehört zu **Reagieren** und ist deine Handlungs-Queue für offene Entscheidungen
+- **Events** gehört zu **Verwalten** und ist deine persönliche Kalender- und Verwaltungsansicht für sichtbare Aktivitäten und Zusagen
 - **Smart Treffen** findest du in **Events** als Planungs- und Orga-Tool, nicht im spontanen Hauptfeed
-- **Gruppen** ist der Bereich zum Organisieren, Einladen und Kontakte pflegen
+- **Gruppen** gehört ebenfalls zu **Verwalten**: dort organisierst du Einladungen, Kontakte und Sichtbarkeit
 
 ## 4. Gruppen ansehen
 
@@ -39,7 +40,7 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 - Lege dort über **Neue Gruppe** eine Gruppe an.
 - Tippe auf eine Gruppe, um Details zu öffnen.
 - Dort kannst du Mitglieder einladen und Hashtags anpassen.
-- Auf dem Handy nutzt du unten die Navigation mit **Jetzt**, **Vorschläge**, **Events** und **Gruppen**. Dein Profil erreichst du oben rechts.
+- Auf dem Handy nutzt du unten die Navigation mit **Jetzt**, **Vorschläge**, **Events** und **Gruppen**. Über den kleinen Bereichshinweis siehst du zusätzlich, ob du gerade im Modus **Entdecken**, **Reagieren** oder **Verwalten** bist. Dein Profil erreichst du oben rechts.
 
 ## 5. Erstes Event erstellen
 

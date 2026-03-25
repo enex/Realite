@@ -198,7 +198,7 @@ export function GroupsPage({
             <div className="flex items-start gap-3">
               <UserAvatar name={profileName} email={profileEmail} image={profileImage} size="lg" />
               <div>
-                <p className="text-sm text-slate-500">Gruppen</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Verwalten</p>
                 <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Alle Gruppen</h1>
                 <p className="text-xs text-slate-500">{profileEmail}</p>
                 <p className="mt-2 text-sm text-slate-600">Hier legst du neue Gruppen an und verwaltest bestehende Gruppen.</p>

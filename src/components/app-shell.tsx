@@ -18,17 +18,17 @@ type AppShellProps = {
 };
 
 const DESKTOP_ITEMS = [
-  { href: "/now", label: "Jetzt" },
-  { href: "/suggestions", label: "Vorschläge" },
-  { href: "/events", label: "Events" },
-  { href: "/groups", label: "Gruppen" },
+  { href: "/now", label: "Jetzt", intent: "Entdecken", description: "offene Aktivitäten & spontane Optionen" },
+  { href: "/suggestions", label: "Vorschläge", intent: "Reagieren", description: "offene Entscheidungen zuerst" },
+  { href: "/events", label: "Events", intent: "Verwalten", description: "Sozialkalender, Zusagen & Planung" },
+  { href: "/groups", label: "Gruppen", intent: "Verwalten", description: "Kontakte, Einladen & Sichtbarkeit" },
 ];
 
 const MOBILE_ITEMS = [
-  { href: "/now", label: "Jetzt", Icon: House },
-  { href: "/suggestions", label: "Vorschläge", Icon: Sparkle },
-  { href: "/events", label: "Events", Icon: CalendarBlank },
-  { href: "/groups", label: "Gruppen", Icon: Users },
+  { href: "/now", label: "Jetzt", intent: "Entdecken", Icon: House },
+  { href: "/suggestions", label: "Vorschläge", intent: "Reagieren", Icon: Sparkle },
+  { href: "/events", label: "Events", intent: "Verwalten", Icon: CalendarBlank },
+  { href: "/groups", label: "Gruppen", intent: "Verwalten", Icon: Users },
 ];
 
 function isItemActive(pathname: string, href: string) {
@@ -45,6 +45,16 @@ function isItemActive(pathname: string, href: string) {
 
 export function AppShell({ user, children }: AppShellProps) {
   const pathname = usePathname();
+  const currentSection =
+    DESKTOP_ITEMS.find((item) => isItemActive(pathname, item.href)) ??
+    (pathname.startsWith("/settings")
+      ? {
+          href: "/settings",
+          label: "Profil",
+          intent: "Verwalten",
+          description: "Konto, Sichtbarkeit und Integrationen"
+        }
+      : null);
 
   useEffect(() => {
     if (!user.email) return;
@@ -77,10 +87,13 @@ export function AppShell({ user, children }: AppShellProps) {
                 <a
                   key={item.href}
                   href={item.href}
-                  className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${active ? "bg-teal-100 text-teal-800" : "text-slate-700 hover:bg-slate-100"
+                  className={`rounded-xl px-3 py-2 transition ${active ? "bg-teal-100 text-teal-900" : "text-slate-700 hover:bg-slate-100"
                     }`}
                 >
-                  {item.label}
+                  <span className={`block text-[11px] font-semibold uppercase tracking-[0.14em] ${active ? "text-teal-700" : "text-slate-400"}`}>
+                    {item.intent}
+                  </span>
+                  <span className="block text-sm font-semibold">{item.label}</span>
                 </a>
               );
             })}
@@ -97,6 +110,26 @@ export function AppShell({ user, children }: AppShellProps) {
           </Link>
         </div>
       </header>
+
+      {currentSection ? (
+        <div className="border-b border-slate-200 bg-white/80 backdrop-blur">
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-2 sm:px-6 lg:px-8 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">
+                {currentSection.intent}
+              </p>
+              <p className="text-sm text-slate-600">
+                <span className="font-semibold text-slate-900">{currentSection.label}</span>
+                {" · "}
+                {currentSection.description}
+              </p>
+            </div>
+            <div className="hidden text-xs text-slate-500 md:block">
+              Realite trennt bewusst zwischen entdecken, reagieren und verwalten.
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="pb-[calc(env(safe-area-inset-bottom)+4.5rem)] md:pb-0">{children}</div>
 
@@ -118,7 +151,8 @@ export function AppShell({ user, children }: AppShellProps) {
                 title={item.label}
               >
                 <Icon size={22} weight={active ? "fill" : "regular"} aria-hidden />
-                <span className="mt-0.5 hidden text-[10px] font-medium sm:block">{item.label}</span>
+                <span className="mt-0.5 hidden text-[9px] font-semibold uppercase tracking-[0.12em] sm:block">{item.intent}</span>
+                <span className="hidden text-[10px] font-medium sm:block">{item.label}</span>
               </a>
             );
           })}
