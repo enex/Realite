@@ -46,6 +46,8 @@ Tipps:
 
 Starte dort das Matching und prüfe deine Vorschläge.
 
+- Offene Vorschläge mit Handlungsbedarf stehen oben.
+- Bereits entschiedene Vorschläge bleiben darunter im Verlauf sichtbar.
 - **Zusagen**: passt für dich
 - **Absagen**: passt nicht
 - Hashtags werden in Event- und Vorschlagsansichten nicht öffentlich angezeigt.

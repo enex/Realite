@@ -85,6 +85,21 @@ Es fehlt eine eindeutige Hierarchie:
 3. spontane Optionen / offene Join-Möglichkeiten
 4. eigene Planung und Verwaltung
 
+### Produktentscheidung festgehalten
+
+Bereits entschieden:
+
+- `Events` soll nicht die primäre "Was geht gerade?"-Ansicht sein
+- `Events` ist eher die persönliche Kalender-/Sozialkalender-Ansicht
+- `Smart Meetings` sollen aus der zentralen Hauptansicht ausgegliedert werden
+- `Smart Meetings` passen eher in einen sekundären Bereich, z. B. Profil oder einen separaten Management-Kontext
+
+Offen bleibt nur noch, ob `Smart Meetings` dauerhaft:
+
+- im Profil liegen
+- einen eigenen Top-Level-Bereich bekommen
+- oder in einem sekundären Planungs-/Verwaltungsbereich landen
+
 ### 3. Visuelle Sprache ist noch nicht stark genug
 
 Die App ist funktional, aber noch nicht auf einem klaren, markanten Produktniveau.
@@ -194,8 +209,9 @@ Status: `planned`
 ### P0
 
 - [ ] Dashboard neu strukturieren: erst relevante Aktivitäten, dann Vorschläge, dann Smart Meetings, dann eigene Verwaltung
-- [ ] Start-/Events-View als "Was geht gerade?"-Ansicht neu denken
-- [ ] Smart Meetings auf der Hauptfläche sichtbarer machen
+- [ ] neue primäre Home-/Now-Ansicht definieren, die nicht mit `Events` identisch ist
+- [ ] `Events` als persönliche Kalender-/Sozialkalender-Ansicht neu positionieren
+- [ ] `Smart Meetings` aus der Hauptansicht herauslösen und in einen sekundären Bereich verschieben
 - [ ] klare CTA-Hierarchie definieren: mitmachen, reagieren, erstellen
 - [ ] bestehende Hauptviews auf mobile und desktop Informationshierarchie prüfen
 
@@ -205,7 +221,7 @@ Status: `planned`
 - [ ] unterscheiden zwischen `Entdecken`, `Reagieren`, `Verwalten`
 - [ ] visuelle Patterns für offene Aktivitäten, persönliche Vorschläge, eigene Aktivitäten und Smart Meetings definieren
 - [ ] Event-/Suggestion-Karten auf Scannability und Priorisierung überarbeiten
-- [ ] leere Zustände produktnäher formulieren
+- [x] leere Zustände produktnäher formulieren
 
 ### P2
 
@@ -218,18 +234,26 @@ Status: `planned`
 
 ### Dashboard / Events
 
-- [ ] prüfen, ob `/events` der richtige primäre Einstieg ist
+- [x] Entscheidung: `/events` ist nicht die primäre Startansicht
+- [ ] neue Startansicht für "Was geht gerade?" definieren
 - [ ] prüfen, ob eigene Events zu viel Platz einnehmen
 - [ ] Vorschläge mit Handlungsbedarf nach oben ziehen
 - [ ] offene Aktivitäten mit vorhandenen Zusagen sichtbarer machen
 - [ ] "Wer ist dabei?" prominenter machen
-- [ ] Smart Meetings oberhalb oder direkt neben Kerninhalten platzieren
+- [ ] `Events` als Sozialkalender klar definieren: eigene Pläne, bestätigte Aktivitäten, Kalenderkontext
+
+### Smart Meetings
+
+- [x] Entscheidung: Smart Meetings sollen nicht im Hauptfeed der Startansicht bleiben
+- [ ] bevorzugte Zielposition entscheiden: Profil, eigener Top-Level-Bereich oder sekundärer Verwaltungsbereich
+- [ ] Smart Meetings als Planungs-/Orga-Tool positionieren statt als primären Discovery-Feed
+- [ ] prüfen, wie viel Prominenz Smart Meetings in der Navigation wirklich brauchen
 
 ### Suggestions
 
-- [ ] Suggestions stärker als Handlungs-Queue inszenieren
+- [x] Suggestions stärker als Handlungs-Queue inszenieren
 - [ ] Gründe, Relevanz und nächste Aktion schneller erfassbar machen
-- [ ] accepted / pending / declined Zustände visueller differenzieren
+- [x] accepted / pending / declined Zustände visueller differenzieren
 
 ### Groups
 
@@ -253,8 +277,10 @@ Status: `planned`
 
 ## Entscheidungen offen
 
-- [ ] Soll `Events` wirklich die zentrale Startansicht bleiben oder braucht es eine neue Home-/Now-Ansicht?
-- [ ] Sollen Smart Meetings ein eigener Bereich bleiben oder Teil der Hauptaktivitätsansicht werden?
+- [x] `Events` bleibt nicht die zentrale Startansicht
+- [x] `Smart Meetings` bleiben nicht Teil der primären Hauptaktivitätsansicht
+- [ ] Wie soll die neue primäre Home-/Now-Ansicht genau aufgebaut sein?
+- [ ] Sollen Smart Meetings im Profil liegen oder einen eigenen Top-Level-Bereich bekommen?
 - [ ] Wie sichtbar sollen eigene Events im Vergleich zu relevanten fremden Aktivitäten sein?
 - [ ] Wie wird Presence vor Ort dargestellt, ohne creepy oder zu offen zu wirken?
 - [ ] Welche Sichtbarkeitsstufen sind wirklich nötig für V1.5 / V2?
@@ -262,11 +288,13 @@ Status: `planned`
 ## Empfohlene Reihenfolge
 
 1. Dashboard / Startansicht neu priorisieren
-2. Hauptnavigation und IA schärfen
-3. visuelle Sprache der Kernviews verbessern
-4. Join-Modell erweitern
-5. Presence-/Vor-Ort-Layer als opt-in Zusatz einführen
-6. Trust-/Privacy-Regeln für neue Sichtbarkeit finalisieren
+2. `Events` klar als Sozialkalender positionieren
+3. `Smart Meetings` in einen sekundären Bereich verschieben
+4. Hauptnavigation und IA schärfen
+5. visuelle Sprache der Kernviews verbessern
+6. Join-Modell erweitern
+7. Presence-/Vor-Ort-Layer als opt-in Zusatz einführen
+8. Trust-/Privacy-Regeln für neue Sichtbarkeit finalisieren
 
 ## Arbeitsweise
 

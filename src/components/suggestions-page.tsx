@@ -44,6 +44,14 @@ type SuggestionsPayload = {
   acceptedByEventId?: Record<string, AcceptedUser[]>;
 };
 
+type SuggestionStatus = Suggestion["status"];
+
+type SuggestionDayGroup = {
+  dayKey: string;
+  dayLabel: string;
+  items: Suggestion[];
+};
+
 const emptyPayload: SuggestionsPayload = {
   me: {
     email: "",
@@ -71,12 +79,11 @@ export function SuggestionsPage({
   const {
     data: queryData,
     isPending: loading,
-    error: queryError,
+    error: queryError
   } = useQuery({
     queryKey: DASHBOARD_QUERY_KEY,
     queryFn: () => fetchDashboard() as Promise<SuggestionsPayload>,
-    refetchInterval: (query) =>
-      query.state.data?.sync?.revalidating ? 2_500 : 45_000,
+    refetchInterval: (query) => (query.state.data?.sync?.revalidating ? 2_500 : 45_000)
   });
   const data = queryData ?? emptyPayload;
 
@@ -84,42 +91,28 @@ export function SuggestionsPage({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [autoDecisionHandled, setAutoDecisionHandled] = useState(false);
 
-  const suggestionsByDay = useMemo(() => {
-    const sorted = [...data.suggestions].sort(
-      (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime() || b.score - a.score
-    );
-    const grouped = new Map<string, { dayLabel: string; items: Suggestion[] }>();
-
-    for (const suggestion of sorted) {
-      const startsAt = new Date(suggestion.startsAt);
-      const dayKey = `${startsAt.getFullYear()}-${String(startsAt.getMonth() + 1).padStart(2, "0")}-${String(
-        startsAt.getDate()
-      ).padStart(2, "0")}`;
-      const existing = grouped.get(dayKey);
-
-      if (existing) {
-        existing.items.push(suggestion);
-        continue;
-      }
-
-      grouped.set(dayKey, {
-        dayLabel: startsAt.toLocaleDateString("de-DE", {
-          weekday: "long",
-          day: "2-digit",
-          month: "long"
-        }),
-        items: [suggestion]
-      });
-    }
-
-    return Array.from(grouped.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([dayKey, value]) => ({
-        dayKey,
-        dayLabel: value.dayLabel,
-        items: value.items
-      }));
-  }, [data.suggestions]);
+  const actionableSuggestions = useMemo(
+    () =>
+      [...data.suggestions]
+        .filter((suggestion) => suggestion.status === "pending" || suggestion.status === "calendar_inserted")
+        .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime() || b.score - a.score),
+    [data.suggestions]
+  );
+  const historySuggestionsByDay = useMemo(
+    () =>
+      groupSuggestionsByDay(
+        data.suggestions.filter((suggestion) => suggestion.status === "accepted" || suggestion.status === "declined")
+      ),
+    [data.suggestions]
+  );
+  const acceptedCount = useMemo(
+    () => data.suggestions.filter((suggestion) => suggestion.status === "accepted").length,
+    [data.suggestions]
+  );
+  const declinedCount = useMemo(
+    () => data.suggestions.filter((suggestion) => suggestion.status === "declined").length,
+    [data.suggestions]
+  );
 
   const selectedSuggestionId = searchParams.get("suggestion");
   const decisionFromQuery = searchParams.get("decision");
@@ -136,7 +129,7 @@ export function SuggestionsPage({
     }
     toast.loading("Aktualisierung im Hintergrund läuft. Neue Vorschläge erscheinen automatisch.", {
       id: REVALIDATING_TOAST_ID,
-      duration: Number.POSITIVE_INFINITY,
+      duration: Number.POSITIVE_INFINITY
     });
     return () => {
       toast.dismiss(REVALIDATING_TOAST_ID);
@@ -248,8 +241,10 @@ export function SuggestionsPage({
               <UserAvatar name={profileName} email={profileEmail} image={profileImage} size="lg" />
               <div>
                 <p className="text-sm text-slate-500">Vorschläge</p>
-                <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Meine Vorschläge</h1>
-                <p className="mt-0.5 text-sm text-slate-600">Aktivitäten, die zu dir passen – sag zu oder lehne ab.</p>
+                <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Reagiere auf passende Aktivitäten</h1>
+                <p className="mt-0.5 text-sm text-slate-600">
+                  Offene Vorschläge stehen oben. Bereits entschiedene Vorschläge bleiben darunter als Verlauf sichtbar.
+                </p>
                 <p className="text-xs text-slate-500">{profileEmail}</p>
               </div>
             </div>
@@ -258,12 +253,36 @@ export function SuggestionsPage({
               disabled={busy}
               className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
             >
-              Matching starten
+              Matching aktualisieren
             </button>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            <SummaryCard
+              tone="amber"
+              label="Handlungsbedarf"
+              value={actionableSuggestions.length}
+              description={
+                actionableSuggestions.length > 0
+                  ? "Diese Vorschläge warten auf deine Entscheidung."
+                  : "Gerade wartet nichts auf dich."
+              }
+            />
+            <SummaryCard
+              tone="teal"
+              label="Zugesagt"
+              value={acceptedCount}
+              description={acceptedCount > 0 ? "Diese Aktivitäten hast du bestätigt." : "Noch keine zugesagten Vorschläge."}
+            />
+            <SummaryCard
+              tone="slate"
+              label="Abgelehnt"
+              value={declinedCount}
+              description={declinedCount > 0 ? "Diese Vorschläge hast du bewusst aussortiert." : "Noch nichts abgelehnt."}
+            />
           </div>
         </header>
 
-        {(queryError || submitError) ? (
+        {queryError || submitError ? (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {submitError ?? (queryError instanceof Error ? queryError.message : String(queryError))}
           </div>
@@ -275,83 +294,267 @@ export function SuggestionsPage({
         ) : null}
         {loading && data.suggestions.length === 0 ? <p className="mt-6 text-slate-600">Lade Vorschläge...</p> : null}
 
-        <section id="vorschlaege" className="mt-8 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Vorschläge</h2>
-          <div className="mt-4 space-y-3">
-            {suggestionsByDay.length === 0 ? <p className="text-sm text-slate-500">Noch keine Vorschläge.</p> : null}
-            {suggestionsByDay.map((dayGroup) => (
-              <div key={dayGroup.dayKey} className="space-y-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{dayGroup.dayLabel}</h3>
-                {dayGroup.items.map((suggestion) => (
-                  <article
+        <section id="vorschlaege" className="mt-8 scroll-mt-24 space-y-6">
+          <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-6 shadow-sm">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">Handlungs-Queue</p>
+                <h2 className="mt-1 text-lg font-semibold text-slate-900">Offene Vorschläge zuerst</h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Diese Vorschläge brauchen eine Entscheidung, bevor sie in deinem Verlauf landen.
+                </p>
+              </div>
+              <p className="text-sm font-medium text-amber-800">
+                {actionableSuggestions.length === 0
+                  ? "Kein offener Vorschlag"
+                  : `${actionableSuggestions.length} offene${actionableSuggestions.length === 1 ? "r Vorschlag" : " Vorschläge"}`}
+              </p>
+            </div>
+
+            {actionableSuggestions.length === 0 ? (
+              <div className="mt-4 rounded-xl border border-dashed border-amber-300 bg-white/80 p-4 text-sm text-slate-600">
+                Im Moment gibt es nichts zu entscheiden. Starte neues Matching oder schau in den Verlauf, welche Aktivitäten du bereits bestätigt oder abgelehnt hast.
+              </div>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {actionableSuggestions.map((suggestion) => (
+                  <SuggestionCard
                     key={suggestion.id}
-                    id={`suggestion-${suggestion.id}`}
-                    className={`rounded-lg border p-3 ${selectedSuggestionId === suggestion.id ? "border-teal-400 bg-teal-50" : "border-slate-200"}`}
-                    style={
-                      suggestion.color && selectedSuggestionId !== suggestion.id
-                        ? { borderLeftWidth: "4px", borderLeftColor: suggestion.color }
-                        : undefined
-                    }
-                  >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <a
-                          href={`/e/${shortenUUID(suggestion.eventId)}`}
-                          className="font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
-                        >
-                          {suggestion.title.replace(/#[^\s]+/gi, "").trim()}
-                        </a>
-                        <p className="text-xs text-slate-500">
-                          {new Date(suggestion.startsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} -{" "}
-                          {new Date(suggestion.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} · von{" "}
-                          <a href={`/u/${shortenUUID(suggestion.createdBy)}`} className="font-medium text-teal-700 hover:text-teal-800">
-                            {suggestion.createdByName ?? suggestion.createdByEmail}
-                          </a>
-                        </p>
-                        <p className="text-xs text-slate-500">Score {suggestion.score.toFixed(2)} · Status {suggestion.status}</p>
-                        {suggestion.status === "accepted" && (
-                          <p className="mt-1 text-xs font-medium text-teal-700">Du hast zugesagt.</p>
-                        )}
-                        {(() => {
-                          const accepted = data.acceptedByEventId?.[suggestion.eventId] ?? [];
-                          return accepted.length > 0 ? (
-                            <p className="mt-1 text-xs text-teal-700">
-                              Zugesagt: {accepted.map((u) => u.name ?? u.email).join(", ")}
-                            </p>
-                          ) : null;
-                        })()}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        {suggestion.calendarEventId ? (
-                          <a
-                            href={`/api/suggestions/${encodeURIComponent(suggestion.id)}/calendar-link`}
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-400"
-                          >
-                            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="2">
-                              <path d="M12 20h9" />
-                              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                            </svg>
-                            Im Kalender bearbeiten
-                          </a>
-                        ) : null}
-                        <a
-                          href={`/s/${shortenUUID(suggestion.id)}`}
-                          className="rounded-md border border-teal-200 px-3 py-1 text-xs font-semibold text-teal-700"
-                        >
-                          Antworten
-                        </a>
-                      </div>
-                    </div>
-                    <p className="mt-2 text-sm text-slate-600">{suggestion.reason}</p>
-                  </article>
+                    suggestion={suggestion}
+                    acceptedByEventId={data.acceptedByEventId}
+                    isSelected={selectedSuggestionId === suggestion.id}
+                    variant="action"
+                  />
                 ))}
               </div>
-            ))}
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Verlauf</p>
+                <h2 className="mt-1 text-lg font-semibold text-slate-900">Bereits entschiedene Vorschläge</h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Hier siehst du, was du schon bestätigt oder bewusst abgelehnt hast.
+                </p>
+              </div>
+              <p className="text-sm text-slate-500">{acceptedCount + declinedCount} Entscheidungen gesamt</p>
+            </div>
+            <div className="mt-4 space-y-3">
+              {historySuggestionsByDay.length === 0 ? (
+                <p className="text-sm text-slate-500">Sobald du auf Vorschläge reagierst, erscheint dein Verlauf hier.</p>
+              ) : null}
+              {historySuggestionsByDay.map((dayGroup) => (
+                <div key={dayGroup.dayKey} className="space-y-3">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{dayGroup.dayLabel}</h3>
+                  {dayGroup.items.map((suggestion) => (
+                    <SuggestionCard
+                      key={suggestion.id}
+                      suggestion={suggestion}
+                      acceptedByEventId={data.acceptedByEventId}
+                      isSelected={selectedSuggestionId === suggestion.id}
+                      variant="history"
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       </main>
     </AppShell>
   );
+}
+
+function groupSuggestionsByDay(suggestions: Suggestion[]): SuggestionDayGroup[] {
+  const sorted = [...suggestions].sort(
+    (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime() || b.score - a.score
+  );
+  const grouped = new Map<string, { dayLabel: string; items: Suggestion[] }>();
+
+  for (const suggestion of sorted) {
+    const startsAt = new Date(suggestion.startsAt);
+    const dayKey = `${startsAt.getFullYear()}-${String(startsAt.getMonth() + 1).padStart(2, "0")}-${String(
+      startsAt.getDate()
+    ).padStart(2, "0")}`;
+    const existing = grouped.get(dayKey);
+
+    if (existing) {
+      existing.items.push(suggestion);
+      continue;
+    }
+
+    grouped.set(dayKey, {
+      dayLabel: startsAt.toLocaleDateString("de-DE", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long"
+      }),
+      items: [suggestion]
+    });
+  }
+
+  return Array.from(grouped.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([dayKey, value]) => ({
+      dayKey,
+      dayLabel: value.dayLabel,
+      items: value.items
+    }));
+}
+
+function SummaryCard({
+  label,
+  value,
+  description,
+  tone
+}: {
+  label: string;
+  value: number;
+  description: string;
+  tone: "amber" | "teal" | "slate";
+}) {
+  const toneClasses = {
+    amber: "border-amber-200 bg-amber-50 text-amber-900",
+    teal: "border-teal-200 bg-teal-50 text-teal-900",
+    slate: "border-slate-200 bg-slate-50 text-slate-900"
+  }[tone];
+
+  return (
+    <div className={`rounded-xl border p-4 ${toneClasses}`}>
+      <p className="text-xs font-semibold uppercase tracking-wide">{label}</p>
+      <p className="mt-2 text-2xl font-semibold">{value}</p>
+      <p className="mt-1 text-sm opacity-80">{description}</p>
+    </div>
+  );
+}
+
+function SuggestionCard({
+  suggestion,
+  acceptedByEventId,
+  isSelected,
+  variant
+}: {
+  suggestion: Suggestion;
+  acceptedByEventId?: Record<string, AcceptedUser[]>;
+  isSelected: boolean;
+  variant: "action" | "history";
+}) {
+  const accepted = acceptedByEventId?.[suggestion.eventId] ?? [];
+  const badge = getSuggestionBadge(suggestion.status);
+  const cardClasses =
+    variant === "action"
+      ? isSelected
+        ? "border-teal-400 bg-teal-50 shadow-sm"
+        : "border-amber-200 bg-white hover:border-amber-300"
+      : isSelected
+        ? "border-teal-400 bg-teal-50 shadow-sm"
+        : suggestion.status === "accepted"
+          ? "border-teal-200 bg-teal-50/70"
+          : "border-slate-200 bg-slate-50/80";
+  const statusTextClass =
+    suggestion.status === "accepted"
+      ? "text-teal-700"
+      : suggestion.status === "declined"
+        ? "text-slate-600"
+        : "text-amber-700";
+
+  return (
+    <article
+      id={`suggestion-${suggestion.id}`}
+      className={`rounded-xl border p-4 transition ${cardClasses}`}
+      style={suggestion.color && !isSelected ? { borderLeftWidth: "4px", borderLeftColor: suggestion.color } : undefined}
+    >
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${badge.className}`}>
+            {badge.label}
+          </span>
+          <div className="mt-2">
+            <a
+              href={`/e/${shortenUUID(suggestion.eventId)}`}
+              className="font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
+            >
+              {suggestion.title.replace(/#[^\s]+/gi, "").trim()}
+            </a>
+            <p className="mt-1 text-xs text-slate-500">
+              {new Date(suggestion.startsAt).toLocaleDateString("de-DE", {
+                weekday: "short",
+                day: "2-digit",
+                month: "2-digit"
+              })}{" "}
+              · {new Date(suggestion.startsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} -{" "}
+              {new Date(suggestion.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} · von{" "}
+              <a href={`/u/${shortenUUID(suggestion.createdBy)}`} className="font-medium text-teal-700 hover:text-teal-800">
+                {suggestion.createdByName ?? suggestion.createdByEmail}
+              </a>
+            </p>
+            <p className={`mt-1 text-xs font-medium ${statusTextClass}`}>
+              {badge.description} · Score {suggestion.score.toFixed(2)}
+            </p>
+            {accepted.length > 0 ? (
+              <p className="mt-1 text-xs text-teal-700">Zugesagt: {accepted.map((u) => u.name ?? u.email).join(", ")}</p>
+            ) : null}
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {suggestion.calendarEventId ? (
+            <a
+              href={`/api/suggestions/${encodeURIComponent(suggestion.id)}/calendar-link`}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-400"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="2">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              </svg>
+              Im Kalender bearbeiten
+            </a>
+          ) : null}
+          <a
+            href={`/s/${shortenUUID(suggestion.id)}`}
+            className={`rounded-md px-3 py-1 text-xs font-semibold ${
+              variant === "action"
+                ? "border border-teal-200 bg-teal-700 text-white hover:bg-teal-800"
+                : "border border-slate-300 bg-white text-slate-700 hover:border-slate-400"
+            }`}
+          >
+            {variant === "action" ? "Jetzt antworten" : "Details öffnen"}
+          </a>
+        </div>
+      </div>
+      <p className="mt-3 text-sm text-slate-600">{suggestion.reason}</p>
+    </article>
+  );
+}
+
+function getSuggestionBadge(status: SuggestionStatus) {
+  switch (status) {
+    case "pending":
+      return {
+        label: "Jetzt reagieren",
+        description: "Dieser Vorschlag wartet noch auf deine Antwort",
+        className: "bg-amber-100 text-amber-900"
+      };
+    case "calendar_inserted":
+      return {
+        label: "Im Kalender vorgemerkt",
+        description: "Der Vorschlag liegt schon in deinem Kalender, braucht aber weiter deine Entscheidung",
+        className: "bg-orange-100 text-orange-900"
+      };
+    case "accepted":
+      return {
+        label: "Zugesagt",
+        description: "Du hast diese Aktivität bestätigt",
+        className: "bg-teal-100 text-teal-900"
+      };
+    case "declined":
+      return {
+        label: "Abgelehnt",
+        description: "Diesen Vorschlag hast du bewusst aussortiert",
+        className: "bg-slate-200 text-slate-800"
+      };
+  }
 }

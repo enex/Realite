@@ -146,6 +146,15 @@ Wenn für dich zu einem Event bereits eine Suggestion existiert und du nicht der
 
 Event- und Vorschlagslisten in Realite verlinken direkt auf diese Seiten, damit du von jeder Übersicht sofort entscheiden kannst.
 
+**Vorschlags-Ansicht als Handlungs-Queue:** In der Navigation unter **Vorschläge** zeigt Realite offene Vorschläge jetzt immer zuerst. Dort siehst du:
+
+- was gerade deine Reaktion braucht
+- ob ein Vorschlag schon in deinem Kalender vorgemerkt ist
+- wer bereits zugesagt hat
+- welche Vorschläge du schon bestätigt oder abgelehnt hast
+
+Bereits entschiedene Vorschläge rutschen in einen separaten Verlauf. So bleibt die Hauptfläche auf Reaktion statt Verwaltung fokussiert.
+
 **Vorschläge mit Kalendertermin:** Wenn zu einem Vorschlag bei dir bereits ein Termin im Kalender angelegt wurde (z. B. durch Zusage oder automatische Übernahme), findest du auf der Vorschlagsseite und auf der Vorschlags-Detailseite einen Link **Im Kalender bearbeiten** bzw. **Event im Kalender bearbeiten**. Damit öffnest du den zugehörigen Termin in Google Kalender zur Bearbeitung.
 
 ## Event-Detailseite
