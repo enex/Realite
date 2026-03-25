@@ -31,6 +31,12 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 ## Aktueller Stand
 
+Zuletzt umgesetzt am 25.03.2026:
+
+- offene Aktivitäten mit vorhandenen Zusagen in `Jetzt` und `Events` sichtbarer gemacht
+- "Wer ist dabei?" in Aktivitätskarten prominenter dargestellt
+- Nutzer-Doku für Zusagen/Momentum in den Übersichten ergänzt
+
 Bereits vorhanden:
 
 - Google Login
@@ -220,7 +226,7 @@ Status: `planned`
 - [x] Navigation überprüfen: ob `Events`, `Vorschläge`, `Gruppen` die richtige Reihenfolge und Benennung haben
 - [ ] unterscheiden zwischen `Entdecken`, `Reagieren`, `Verwalten`
 - [ ] visuelle Patterns für offene Aktivitäten, persönliche Vorschläge, eigene Aktivitäten und Smart Meetings definieren
-- [ ] Event-/Suggestion-Karten auf Scannability und Priorisierung überarbeiten
+- [x] Event-/Suggestion-Karten auf Scannability und Priorisierung überarbeiten
 - [x] leere Zustände produktnäher formulieren
 
 ### P2
@@ -238,8 +244,8 @@ Status: `planned`
 - [x] neue Startansicht für "Was geht gerade?" definieren
 - [ ] prüfen, ob eigene Events zu viel Platz einnehmen
 - [ ] Vorschläge mit Handlungsbedarf nach oben ziehen
-- [ ] offene Aktivitäten mit vorhandenen Zusagen sichtbarer machen
-- [ ] "Wer ist dabei?" prominenter machen
+- [x] offene Aktivitäten mit vorhandenen Zusagen sichtbarer machen
+- [x] "Wer ist dabei?" prominenter machen
 - [ ] `Events` als Sozialkalender klar definieren: eigene Pläne, bestätigte Aktivitäten, Kalenderkontext
 
 ### Smart Meetings

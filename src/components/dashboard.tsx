@@ -158,6 +158,18 @@ const emptyPayload: DashboardPayload = {
   smartMeetings: []
 };
 
+function getAcceptedDisplayNames(accepted: AcceptedUser[], limit = 3) {
+  return accepted.slice(0, limit).map((user) => user.name ?? user.email);
+}
+
+function getAcceptedCountLabel(count: number) {
+  if (count === 1) {
+    return "1 Zusage";
+  }
+
+  return `${count} Zusagen`;
+}
+
 export function Dashboard({
   view = "now",
   userName,
@@ -233,8 +245,21 @@ export function Dashboard({
       const list = map.get(cat) ?? map.get("default")!;
       list.push(event);
     }
-    return Array.from(map.entries()).filter(([, list]) => list.length > 0);
-  }, [visibleEvents]);
+    return Array.from(map.entries())
+      .map(([category, events]) => [
+        category,
+        [...events].sort((a, b) => {
+          const acceptedDiff =
+            (data.acceptedByEventId?.[b.id]?.length ?? 0) - (data.acceptedByEventId?.[a.id]?.length ?? 0);
+          if (acceptedDiff !== 0) {
+            return acceptedDiff;
+          }
+
+          return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
+        }),
+      ] as const)
+      .filter(([, list]) => list.length > 0);
+  }, [data.acceptedByEventId, visibleEvents]);
 
   /** Vorschläge (pending/calendar_inserted) + Events pro Tag – Fokus: Was geht? Wer ist dabei? */
   const pendingSuggestions = useMemo(
@@ -573,18 +598,29 @@ export function Dashboard({
                     <ul className="space-y-3">
                       {items.map((item) => {
                         const accepted = data.acceptedByEventId?.[item.eventId] ?? [];
+                        const acceptedNames = getAcceptedDisplayNames(accepted);
+                        const remainingAccepted = accepted.length - acceptedNames.length;
                         const isAccepted = acceptedEventIds.has(item.eventId);
                         if (item.type === "suggestion") {
                           return (
                             <li key={`suggestion-${item.suggestionId}`}>
                               <a
                                 href={`/suggestions?suggestion=${item.suggestionId}`}
-                                className="flex flex-col gap-1 rounded-xl border border-amber-200 bg-amber-50/80 p-4 text-left transition hover:border-amber-300 hover:bg-amber-50"
+                                className="flex flex-col gap-2 rounded-xl border border-amber-200 bg-amber-50/80 p-4 text-left transition hover:border-amber-300 hover:bg-amber-50"
                               >
-                                <span className="inline-flex w-fit items-center rounded-md bg-amber-200/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
-                                  Vorschlag
-                                </span>
-                                <span className="font-medium text-slate-900">{item.title}</span>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="inline-flex w-fit items-center rounded-md bg-amber-200/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
+                                    Vorschlag
+                                  </span>
+                                  {accepted.length > 0 ? (
+                                    <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-amber-900 ring-1 ring-amber-200">
+                                      {getAcceptedCountLabel(accepted.length)}
+                                    </span>
+                                  ) : null}
+                                </div>
+                                <div>
+                                  <span className="font-medium text-slate-900">{item.title}</span>
+                                </div>
                                 <p className="text-xs text-slate-500">
                                   {new Date(item.startsAt).toLocaleString("de-DE", {
                                     weekday: "short",
@@ -597,14 +633,20 @@ export function Dashboard({
                                   {new Date(item.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
                                   {item.createdByName ? ` · von ${item.createdByName}` : ""}
                                 </p>
-                                <div className="mt-2 rounded-lg bg-white/60 py-2 pr-2">
+                                <div className="rounded-lg bg-white/70 px-3 py-2.5">
                                   <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-800/80">
                                     Wer ist dabei?
                                   </p>
                                   {accepted.length > 0 ? (
-                                    <p className="mt-0.5 text-sm font-medium text-slate-800">
-                                      {accepted.map((u) => u.name ?? u.email).join(", ")}
-                                    </p>
+                                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                                      <p className="text-sm font-medium text-slate-800">
+                                        {acceptedNames.join(", ")}
+                                        {remainingAccepted > 0 ? ` +${remainingAccepted}` : ""}
+                                      </p>
+                                      <span className="text-xs font-medium text-amber-800">
+                                        Schon jemand hat zugesagt
+                                      </span>
+                                    </div>
                                   ) : (
                                     <p className="mt-0.5 text-sm text-slate-600">Noch niemand – du könntest der erste sein</p>
                                   )}
@@ -619,7 +661,11 @@ export function Dashboard({
                           <li key={`event-${item.eventId}`}>
                             <a
                               href={`/e/${shortenUUID(item.eventId)}`}
-                              className="flex gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left transition hover:border-teal-200 hover:bg-teal-50/30"
+                              className={`flex gap-3 rounded-xl border p-4 text-left transition hover:border-teal-200 ${
+                                accepted.length > 0
+                                  ? "border-teal-200 bg-teal-50/60 hover:bg-teal-50"
+                                  : "border-slate-200 bg-white hover:bg-teal-50/30"
+                              }`}
                               style={{ borderLeftWidth: "4px", borderLeftColor: borderColor }}
                             >
                               {coverUrl ? (
@@ -628,6 +674,18 @@ export function Dashboard({
                                 </span>
                               ) : null}
                               <div className="min-w-0 flex-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  {accepted.length > 0 ? (
+                                    <span className="inline-flex items-center rounded-full bg-teal-100 px-2.5 py-1 text-[11px] font-semibold text-teal-800">
+                                      {getAcceptedCountLabel(accepted.length)}
+                                    </span>
+                                  ) : null}
+                                  {isAccepted ? (
+                                    <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-teal-800 ring-1 ring-teal-200">
+                                      Du dabei
+                                    </span>
+                                  ) : null}
+                                </div>
                                 <span className="font-semibold text-slate-900">{item.title}</span>
                                 <p className="mt-0.5 text-xs text-slate-500">
                                   {new Date(item.startsAt).toLocaleString("de-DE", {
@@ -638,24 +696,25 @@ export function Dashboard({
                                   –{" "}
                                   {new Date(item.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
                                 </p>
-                                <div className="mt-2">
+                                <div className="mt-2 rounded-lg bg-white/80 px-3 py-2.5">
                                   <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                                     Wer ist dabei?
                                   </p>
                                   {accepted.length > 0 ? (
-                                    <p className="mt-0.5 text-sm font-medium text-slate-800">
-                                      {accepted.map((u) => u.name ?? u.email).join(", ")}
-                                    </p>
+                                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                                      <p className="text-sm font-medium text-slate-800">
+                                        {acceptedNames.join(", ")}
+                                        {remainingAccepted > 0 ? ` +${remainingAccepted}` : ""}
+                                      </p>
+                                      <span className="text-xs font-medium text-teal-700">
+                                        Schon Leute dabei
+                                      </span>
+                                    </div>
                                   ) : (
                                     <p className="mt-0.5 text-sm text-slate-500">Noch niemand zugesagt</p>
                                   )}
                                 </div>
                               </div>
-                              {isAccepted ? (
-                                <span className="shrink-0 self-center rounded-full bg-teal-100 px-2 py-1 text-[11px] font-semibold text-teal-800">
-                                  Du dabei
-                                </span>
-                              ) : null}
                             </a>
                           </li>
                         );
@@ -846,12 +905,16 @@ export function Dashboard({
                 <div className="space-y-2">
                   {events.map((event) => {
                     const accepted = data.acceptedByEventId?.[event.id] ?? [];
+                    const acceptedNames = getAcceptedDisplayNames(accepted);
+                    const remainingAccepted = accepted.length - acceptedNames.length;
                     const coverUrl = event.placeImageUrl ?? event.linkPreviewImageUrl ?? null;
                     const borderColor = event.color ?? CATEGORY_COLORS[event.category ?? "default"];
                     return (
                       <article
                         key={event.id}
-                        className="overflow-hidden rounded-md border border-slate-200"
+                        className={`overflow-hidden rounded-md border ${
+                          accepted.length > 0 ? "border-teal-200 bg-teal-50/40" : "border-slate-200"
+                        }`}
                         style={{ borderLeftWidth: "4px", borderLeftColor: borderColor }}
                       >
                         <div className="flex">
@@ -868,6 +931,18 @@ export function Dashboard({
                     ) : null}
                           <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-2 p-3">
                             <div>
+                              <div className="mb-1 flex flex-wrap items-center gap-2">
+                                {accepted.length > 0 ? (
+                                  <span className="inline-flex items-center rounded-full bg-teal-100 px-2.5 py-1 text-[11px] font-semibold text-teal-800">
+                                    {getAcceptedCountLabel(accepted.length)}
+                                  </span>
+                                ) : null}
+                                {acceptedEventIds.has(event.id) && (
+                                  <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-teal-800 ring-1 ring-teal-200">
+                                    Du hast zugesagt
+                                  </span>
+                                )}
+                              </div>
                               <a
                                 href={`/e/${shortenUUID(event.id)}`}
                                 className="break-words text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
@@ -878,17 +953,20 @@ export function Dashboard({
                                 {new Date(event.startsAt).toLocaleString("de-DE")} - {new Date(event.endsAt).toLocaleTimeString("de-DE")} ·{" "}
                                 {event.tags.join(" · ")}
                               </p>
-                              {accepted.length > 0 && (
-                                <p className="mt-1 text-xs text-teal-700">
-                                  Zugesagt: {accepted.map((u) => u.name ?? u.email).join(", ")}
+                              <div className="mt-2 rounded-lg bg-white/80 px-3 py-2">
+                                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                                  Wer ist dabei?
                                 </p>
-                              )}
+                                {accepted.length > 0 ? (
+                                  <p className="mt-1 text-xs font-medium text-teal-800">
+                                    {acceptedNames.join(", ")}
+                                    {remainingAccepted > 0 ? ` +${remainingAccepted}` : ""}
+                                  </p>
+                                ) : (
+                                  <p className="mt-1 text-xs text-slate-500">Noch niemand zugesagt</p>
+                                )}
+                              </div>
                             </div>
-                            {acceptedEventIds.has(event.id) && (
-                              <span className="shrink-0 rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-semibold text-teal-800">
-                                Du hast zugesagt
-                              </span>
-                            )}
                           </div>
                         </div>
                       </article>

@@ -148,6 +148,14 @@ Event- und Vorschlagslisten in Realite verlinken direkt auf diese Seiten, damit 
 
 **Jetzt zuerst, Events als Verwaltung:** Nach dem Login landest du zuerst in **Jetzt**. Diese Ansicht bündelt spontane Optionen, offene Aktivitäten und schnelle Reaktionen. Die Navigation unter **Events** bleibt deine persönliche Kalender-/Sozialkalender-Ansicht mit allen sichtbaren Terminen, Zusagen und eigenen Aktivitäten.
 
+Offene Aktivitäten mit bestehenden Zusagen werden in **Jetzt** und **Events** zusätzlich hervorgehoben. Du siehst dort direkt:
+
+- wie viele Personen schon zugesagt haben
+- wer bereits dabei ist
+- ob du selbst schon zugesagt hast
+
+So erkennst du schneller, wo schon Momentum vorhanden ist und bei welchen Aktivitäten du direkt dazustoßen kannst.
+
 **Smart Treffen als Orga-Bereich:** **Smart Treffen** erscheint nicht mehr im spontanen **Jetzt**-Feed. Du findest die Planung stattdessen unter **Events**, damit die Hauptansicht auf spontane Aktivitäten, offene Vorschläge und schnelle Entscheidungen fokussiert bleibt.
 
 **Vorschlags-Ansicht als Handlungs-Queue:** In der Navigation unter **Vorschläge** zeigt Realite offene Vorschläge jetzt immer zuerst. Dort siehst du:
