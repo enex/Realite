@@ -22,7 +22,7 @@ Das Bild erscheint auf der Event-Detailseite, in Event-Listen (Dashboard, Gruppe
 
 ## Smart Treffen (automatische Terminfindung)
 
-Mit **Smart Treffen** sucht Realite automatisch den besten Zeitpunkt für eine Gruppe. Kalendereinladungen werden aber **nicht automatisch verschickt**: Vor jedem Versand prüfst du die vorgeschlagene Teilnehmerliste ausdrücklich selbst und gibst sie frei, passt sie an oder lehnst den Versand komplett ab. Bestehende Smart Treffen kannst du im Dashboard bei „Smart Treffen“ über **Bearbeiten** anpassen (Titel, Gruppe, Suchfenster, Mindestzusagen usw.).
+Mit **Smart Treffen** sucht Realite automatisch den besten Zeitpunkt für eine Gruppe. Kalendereinladungen werden aber **nicht automatisch verschickt**: Vor jedem Versand prüfst du die vorgeschlagene Teilnehmerliste ausdrücklich selbst und gibst sie frei, passt sie an oder lehnst den Versand komplett ab. Bestehende Smart Treffen verwaltest du in **Events** im Bereich **Smart Treffen** über **Bearbeiten** (Titel, Gruppe, Suchfenster, Mindestzusagen usw.).
 
 Du legst fest:
 
@@ -36,7 +36,7 @@ So läuft es:
 
 1. Realite bewertet mögliche Zeitfenster im Suchbereich.
 2. Dabei werden Verfügbarkeiten, bisherige Interessen-Signale und frühere Zu-/Absagen der Teilnehmer berücksichtigt.
-3. Der beste Termin erscheint zuerst als Vorschlag im Bereich **Smart Treffen** auf deinem Dashboard.
+3. Der beste Termin erscheint zuerst im Bereich **Smart Treffen** unter **Events**.
 4. Dort siehst du die Teilnehmerliste und kannst einzelne Personen vor dem Versand abwählen.
 5. Erst wenn du **Kalendereinladungen senden** auswählst, trägt Realite den Termin in deinen Kalender ein und verschickt Google-Kalendereinladungen.
 6. Wenn du den Versand ablehnst, werden keine Kalendereinladungen verschickt.
@@ -68,7 +68,7 @@ Bedeutung:
 
 Die Shortcut-Tokens werden nicht als Teil des finalen Termintitels verwendet.
 
-Wichtig: Auch bei einem per Shortcut angelegten Smart Treffen werden Kalendereinladungen erst nach deiner ausdrücklichen Freigabe im Dashboard verschickt.
+Wichtig: Auch bei einem per Shortcut angelegten Smart Treffen werden Kalendereinladungen erst nach deiner ausdrücklichen Freigabe im Bereich **Smart Treffen** unter **Events** verschickt.
 
 ## Hashtags richtig nutzen
 
@@ -147,6 +147,8 @@ Wenn für dich zu einem Event bereits eine Suggestion existiert und du nicht der
 Event- und Vorschlagslisten in Realite verlinken direkt auf diese Seiten, damit du von jeder Übersicht sofort entscheiden kannst.
 
 **Jetzt zuerst, Events als Verwaltung:** Nach dem Login landest du zuerst in **Jetzt**. Diese Ansicht bündelt spontane Optionen, offene Aktivitäten und schnelle Reaktionen. Die Navigation unter **Events** bleibt deine persönliche Kalender-/Sozialkalender-Ansicht mit allen sichtbaren Terminen, Zusagen und eigenen Aktivitäten.
+
+**Smart Treffen als Orga-Bereich:** **Smart Treffen** erscheint nicht mehr im spontanen **Jetzt**-Feed. Du findest die Planung stattdessen unter **Events**, damit die Hauptansicht auf spontane Aktivitäten, offene Vorschläge und schnelle Entscheidungen fokussiert bleibt.
 
 **Vorschlags-Ansicht als Handlungs-Queue:** In der Navigation unter **Vorschläge** zeigt Realite offene Vorschläge jetzt immer zuerst. Dort siehst du:
 

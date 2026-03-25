@@ -900,7 +900,7 @@ export function Dashboard({
           </div>
         </section>
 
-        {smartMeetingsEnabled ? (
+        {smartMeetingsEnabled && isEventsView ? (
           <SmartMeetingsCard
             groups={visibleGroups}
             smartMeetings={data.smartMeetings}

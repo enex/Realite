@@ -28,6 +28,7 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 - **Jetzt** ist die Hauptansicht für „Was geht gerade?“
 - **Vorschläge** ist deine Handlungs-Queue für offene Entscheidungen
 - **Events** ist deine persönliche Kalender- und Verwaltungsansicht für sichtbare Aktivitäten und Zusagen
+- **Smart Treffen** findest du in **Events** als Planungs- und Orga-Tool, nicht im spontanen Hauptfeed
 - **Gruppen** ist der Bereich zum Organisieren, Einladen und Kontakte pflegen
 
 ## 4. Gruppen ansehen

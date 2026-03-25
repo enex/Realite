@@ -211,7 +211,7 @@ Status: `planned`
 - [ ] Dashboard neu strukturieren: erst relevante Aktivitäten, dann Vorschläge, dann Smart Meetings, dann eigene Verwaltung
 - [x] neue primäre Home-/Now-Ansicht definieren, die nicht mit `Events` identisch ist
 - [x] `Events` als persönliche Kalender-/Sozialkalender-Ansicht neu positionieren
-- [ ] `Smart Meetings` aus der Hauptansicht herauslösen und in einen sekundären Bereich verschieben
+- [x] `Smart Meetings` aus der Hauptansicht herauslösen und in einen sekundären Bereich verschieben
 - [ ] klare CTA-Hierarchie definieren: mitmachen, reagieren, erstellen
 - [ ] bestehende Hauptviews auf mobile und desktop Informationshierarchie prüfen
 
@@ -245,8 +245,8 @@ Status: `planned`
 ### Smart Meetings
 
 - [x] Entscheidung: Smart Meetings sollen nicht im Hauptfeed der Startansicht bleiben
-- [ ] bevorzugte Zielposition entscheiden: Profil, eigener Top-Level-Bereich oder sekundärer Verwaltungsbereich
-- [ ] Smart Meetings als Planungs-/Orga-Tool positionieren statt als primären Discovery-Feed
+- [x] bevorzugte Zielposition entscheiden: sekundärer Verwaltungsbereich unter `Events`
+- [x] Smart Meetings als Planungs-/Orga-Tool positionieren statt als primären Discovery-Feed
 - [ ] prüfen, wie viel Prominenz Smart Meetings in der Navigation wirklich brauchen
 
 ### Suggestions
