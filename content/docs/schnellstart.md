@@ -8,7 +8,13 @@ Auf der Startseite siehst du direkt **„Was du bei Realite tun kannst“**: off
 
 ## 2. Zugriff erlauben
 
-Bestätige den Zugriff auf Kalender und Kontakte, damit Realite dir passende Events anzeigen kann.
+Du kannst Realite mit Kalender und Kontakten verbinden, damit Vorschläge und Sichtbarkeit relevanter werden.
+
+Wichtig:
+
+- Kalender und Kontakte dienen als Input und Kontext.
+- Es wird nichts automatisch veröffentlicht.
+- Du gibst Aktivitäten immer selbst frei.
 
 Hinweis:
 

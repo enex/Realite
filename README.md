@@ -1,15 +1,76 @@
 # Realite Web MVP
 
-Bun-basierte React Webapp (Next.js + Tailwind + Drizzle/PostgreSQL) mit:
+Realite ist die soziale Koordinationsschicht für das echte Leben.
+
+Kurz gesagt:
+
+- weniger organisieren
+- mehr zusammen erleben
+
+Die Web-App hilft dabei, konkrete Aktivitäten sichtbar, joinbar und leichter koordinierbar zu machen, ohne Kalender oder Kontakte ungefragt öffentlich zu machen.
+
+## Produktüberblick
+
+### Kernidee
+
+Realite stellt nicht Posts oder Chats in den Mittelpunkt, sondern konkrete Aktivitäten:
+
+- etwas, das geplant ist
+- etwas, dem man beitreten kann
+- etwas, das im richtigen sozialen Kreis sichtbar werden kann
+
+### Welches Problem gelöst wird
+
+Realite adressiert typische Reibung im Alltag:
+
+- zu viel Abstimmung in Chats
+- unklar, wer wann Zeit hat
+- spontane Treffen kommen nicht zustande
+- bestehende Kontakte führen zu wenig zu echten gemeinsamen Aktivitäten
+
+Als kleinerer Zusatznutzen kann Realite auch beim Socializing auf bestehenden Veranstaltungen helfen, etwa wenn man auf einem Stadtfest, Festival oder ähnlichen Event sehen möchte, welche bekannten oder interessanten Personen ebenfalls gerade da sind und offen für spontanen Kontakt wären. Dieser Use Case ist bewusst nachgeordnet und soll den Kern rund um Aktivitäten nur ergänzen.
+
+### Für wen das Produkt gedacht ist
+
+Primär für sozial aktive Menschen mit bestehendem Netzwerk, die spontane gemeinsame Aktivitäten wollen, aber nicht ständig koordinieren möchten.
+
+### Produktprinzipien
+
+- **Aktivität vor Kommunikation**
+- **Explizite Freigabe statt Auto-Posting**
+- **Privatsphäre zuerst**
+- **Kontakte für Relevanz, nicht für Spam**
+- **Kontrollierte Sichtbarkeit statt Zufallsverbreitung**
+- **Vor-Ort-Sichtbarkeit nur als optionaler Zusatznutzen**
+
+## Aktueller Produktumfang
 
 - Google Sign-In
-- Google Kalender-Verbindung (frei/belegt Abgleich)
-- Google Kontakte-Sync (Labels <-> Gruppen, Standardgruppe `#kontakte`)
-- Gruppen (öffentlich/privat)
+- Google-Kalender-Verbindung für Verfügbarkeit und kontextbezogene Vorschläge
+- Google-Kontakte-Sync für Relevanz und Gruppenbezug
+- Gruppen und soziale Sichtbarkeit
 - Invite-Links für Gruppenbeitritt
-- Events mit Tags (`#kontakte`, `#dating`, `#alle`, ...)
-- Matching und proaktive Kalender-Vorschläge
+- Events bzw. Aktivitäten mit Tags wie `#kontakte`, `#dating`, `#alle`
+- Matching und Vorschläge
 - Zu-/Absage-Feedback, das zukünftige Vorschläge beeinflusst
+
+## Repo-Navigation
+
+- `app/`: App Router Seiten, Layouts und API-Routen
+- `src/`: Geschäftslogik, Integrationen, Utilities und Datenzugriff
+- `content/docs/`: gerenderte Endnutzer-Doku für `/docs`
+- `tests/`: Bun-Tests für Logik und Regressionen
+- `drizzle/`: Migrationsartefakte
+- `AGENTS.md`: verbindliche Arbeitsregeln und Produktkontext für Agenten
+
+## Wie man in diesem Repo gute Entscheidungen trifft
+
+Wenn du hier etwas änderst, prüfe immer:
+
+1. Macht die Änderung eine reale Aktivität leichter erstellbar, sichtbarer oder joinbarer?
+2. Bleibt klar, was privat ist und was ausdrücklich freigegeben wird?
+3. Ist die Logik vom konkreten Anbieter wie Google sauber getrennt?
+4. Wurde die passende Doku-Ebene aktualisiert?
 
 ## 1) Voraussetzungen
 
@@ -82,6 +143,8 @@ bun run dev
 
 Dokumentation für Nutzer: `http://localhost:3000/docs`
 
+Für Agenten und Mitwirkende ist `AGENTS.md` die verbindliche Ergänzung zu diesem README.
+
 ## MVP-Flow
 
 1. Mit Google anmelden.
@@ -89,6 +152,15 @@ Dokumentation für Nutzer: `http://localhost:3000/docs`
 3. Events erstellen und Tags setzen.
 4. Matching starten.
 5. Vorschläge als Zusage/Absage bewerten.
+
+## Dokumentation im Repo
+
+Es gibt zwei wichtige Dokumentationsarten:
+
+- Endnutzer-Doku in `content/docs/*`
+- Mitwirkenden- und Agenten-Doku in `README.md` und `AGENTS.md`
+
+Wenn sich ein Nutzerfluss ändert, muss die Endnutzer-Doku im selben Change-Set mitgezogen werden.
 
 ## Wichtige Endpunkte
 

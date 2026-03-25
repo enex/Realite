@@ -4,6 +4,120 @@
 
 This repository contains the Realite web app. It must always include clear, user-facing documentation under `/docs`.
 
+## Product Context Every Agent Must Understand
+
+### What Realite is
+
+Realite is the social coordination layer for real life.
+
+Core idea:
+
+- reduce planning overhead
+- make real activities easier to discover, create, and join
+- help people spend less time coordinating and more time actually meeting
+
+Short product sentence:
+
+- **Weniger organisieren. Mehr zusammen erleben.**
+
+### What problem Realite solves
+
+Realite exists because social coordination often breaks down due to:
+
+- too much back-and-forth in chats
+- poor visibility into who is free and what is happening
+- too much friction for spontaneous plans
+- many existing contacts but too few real shared activities
+
+There is also a secondary, less important use case:
+
+- helping people socialize in the moment at larger events such as city festivals, parties, fairs, or festivals
+- making it easier to notice that interesting, known, or mutually relevant people are already nearby and open to being approached
+
+This can support dating and spontaneous socializing, but it is not the primary product center. Treat it as an extension of real-life coordination, not as a people-browsing core.
+
+### Who Realite is for
+
+Primary audience:
+
+- socially active people, especially roughly 20-35
+- people with an existing network of friends, contacts, or loose ties
+- people who like spontaneity but do not want coordination overhead
+
+### What Realite is not
+
+Do not accidentally steer the product toward the wrong category. Realite is:
+
+- not a chat-first app
+- not a feed-first social network
+- not a generic event marketplace
+- not a stranger-first dating app
+
+It is a layer over an existing social life.
+
+## Product Principles Agents Must Preserve
+
+- **Activity over communication**: the core object is a concrete activity, not a conversation thread.
+- **Explicit sharing only**: nothing should be shared automatically without a user-controlled step.
+- **Privacy first**: calendar data is input/context, not something to publish by default.
+- **Contacts are for relevance, not spam**: importing contacts must not turn into aggressive outreach.
+- **Visibility must stay intentional**: users need clear control over who can see or join something.
+- **Real-life usefulness beats feature cleverness**: optimize for less coordination and more actual participation.
+- **Presence is secondary and opt-in**: if Realite helps users notice relevant people at the same event, that visibility must be explicit, limited, and clearly user-controlled.
+
+## Product Mental Model
+
+When making product or implementation decisions, think in this order:
+
+1. **Activity**: What is the concrete joinable thing the user wants to do?
+2. **Context**: What calendar, contacts, location, or preference data can help without being exposed?
+3. **Visibility**: Who should be able to see this activity?
+4. **Action**: Can the user join directly, request access, or express interest?
+5. **Learning**: Can the system use the outcome to make future suggestions better?
+
+For event-presence or on-site socializing features, still apply the same model:
+
+1. What real-world event or place anchors the interaction?
+2. Who has explicitly chosen to be visible there?
+3. What makes another person relevant: known contact, mutual context, mutual interest, or explicit openness?
+4. How can the interaction stay low-pressure and privacy-safe?
+
+If a proposed change adds complexity but does not improve one of these five layers, question it.
+
+## Decision Rules For Ambiguous Work
+
+If requirements are incomplete, prefer decisions that preserve these properties:
+
+1. explicit user control
+2. privacy and least surprise
+3. reuse of existing social graph over random discovery
+4. simple activity flows over feature sprawl
+5. clean abstraction boundaries over provider-specific shortcuts
+
+## Repo Map
+
+Use this as the default orientation map before making changes:
+
+- `app/`: Next.js App Router routes, screens, API handlers
+- `src/`: application logic, integrations, shared utilities, data access
+- `content/docs/`: user-facing documentation rendered at `/docs`
+- `src/lib/docs.ts`: docs index metadata and routing source of truth
+- `drizzle/`: generated migration artifacts
+- `tests/`: Bun tests for business logic and important regressions
+- `.cursor/rules/`: workspace-specific agent rules
+
+## Default Working Sequence For Agents
+
+For implementation tasks, follow this order unless there is a strong reason not to:
+
+1. understand the user request in product terms
+2. read the relevant code paths and current docs
+3. identify the affected product principle(s), user flow, and visibility/privacy constraints
+4. make the smallest coherent code change
+5. update user-facing docs if behavior changed
+6. run the smallest meaningful validation command set
+7. summarize what changed, why it changed, and whether docs/tests were updated
+
 ## Repository Workflows And Commands
 
 Use Bun for package management and local task execution.
@@ -37,6 +151,18 @@ Before finalizing implementation work, run the smallest command set that proves 
 
 Prefer `bun run check` as the default quick validation pass when it covers the change.
 
+### Documentation Workflow
+
+There are two different documentation audiences in this repository:
+
+- `content/docs/*`: end-user documentation rendered inside the product
+- `README.md` and `AGENTS.md`: developer and agent onboarding
+
+Update the right layer:
+
+- change `content/docs/*` when user behavior, product flows, permissions, or visible wording changes
+- change `README.md` or `AGENTS.md` when product framing, architecture expectations, or contributor guidance becomes unclear or outdated
+
 ### AI-Hub Tasks (Implementierungsaufträge)
 
 When the user asks to implement, fix, or add a feature (e.g. “implement X”, “fix Y”):
@@ -45,6 +171,8 @@ When the user asks to implement, fix, or add a feature (e.g. “implement X”, 
 2. **After implementing**: Update the task appropriately: `task_complete` with a short message, or `task_update` / `task_comment` to document what was done and what remains.
 
 See `.cursor/rules/ai-hub-tasks.mdc` for the full workflow and tool parameters.
+
+If the MCP server is unavailable in the current environment, continue with local repo context and mention that limitation in the final summary.
 
 ### GitHub Workflow
 
@@ -105,6 +233,23 @@ Before finalizing work, verify:
 
 If no user-facing behavior changed, explicitly state that no docs update was required.
 
+## Product Language And Writing Guidance
+
+When writing copy, docs, UI labels, or implementation notes about product behavior:
+
+- use concrete language over marketing fluff
+- describe activities, visibility, participation, and coordination clearly
+- avoid framing Realite as a social feed, chat replacement, or mass-invite tool
+- be careful with any wording that implies automatic publishing or automatic outreach
+- prefer German for user-facing product docs unless there is a deliberate reason to keep a page in English
+
+When in doubt, explain:
+
+- what happens
+- what does not happen automatically
+- who can see it
+- what the user controls
+
 ## Style
 
 - Use clear language.
@@ -152,6 +297,15 @@ When implementing or changing feature logic on the application/business-logic la
 - Prefer in-memory or fake implementations for tests so important scenarios can run without a real database or external calendar/contact provider.
 - Structure the code so underlying providers can be replaced later without rewriting the business logic.
 
+## Integration Boundary Guidance
+
+Realite currently integrates with systems like Google Calendar and Google Contacts. Agents must treat those as replaceable adapters, not as the product model itself.
+
+- Calendar integration provides timing context, free/busy signals, and optional import/export helpers.
+- Contacts integration provides relevance, ordering, and social graph hints.
+- Neither integration should define the product's core concepts.
+- Avoid leaking provider-specific terminology into the business logic unless it is isolated to an adapter boundary.
+
 ## Logic Testing Requirements
 
 For every non-trivial feature on the logic layer:
@@ -160,6 +314,16 @@ For every non-trivial feature on the logic layer:
 - Test the logic independently of the database and external provider implementations whenever reasonably possible.
 - Cover success paths, relevant failure/edge cases, and time-dependent scenarios where applicable.
 - If a change is intentionally too small to require new tests, state that explicitly in the final summary.
+
+## Definition Of A Good Change
+
+A strong change in this repo usually has these properties:
+
+- the user-facing outcome is clearer or simpler
+- privacy and visibility behavior are easier to reason about
+- business logic is more isolated from infrastructure
+- docs and tests stay aligned with behavior
+- the implementation helps future agents understand the intent, not just the mechanics
 
 ## Reference Best Practices
 

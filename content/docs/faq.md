@@ -2,19 +2,21 @@
 
 ## Was bringt mir Realite im Vergleich zu Google Kalender und direktem Einladen?
 
-Mit Google Kalender erstellst du einen Termin und lädst konkret bestimmte Leute per E-Mail ein. Realite ergänzt das um Matching und Steuerung:
+Mit Google Kalender erstellst du einen Termin und lädst konkret bestimmte Leute per E-Mail ein. Realite ergänzt das um Sichtbarkeit, Relevanz und weniger Abstimmungsaufwand:
 
-- **Passende Vorschläge statt Massen-Einladungen**: Du erstellst ein Event (z. B. mit Hashtag `#alle` oder nur für eine Gruppe). Realite schlägt es nur Leuten vor, die zu deinen Gruppen gehören, zur passenden Zeit verfügbar sind und zu denen Realite noch keine Absage-Gründe hat. Du musst nicht selbst durch Kontaktlisten gehen und raten, wer Zeit hat.
-- **Echte Verfügbarkeit**: Realite liest deinen Kalender. Termine mit **Beschäftigt** blockieren Zeitfenster; nur freie Slots werden für Vorschläge genutzt. Beim klassischen Einladen weiß der Kalender nicht, ob die anderen überhaupt können.
-- **Zentraler Zusage-/Absage-Flow**: Zu- und Absage laufen über Realite. Absage-Gründe (keine Zeit, nicht diese Aktivität, nicht mit dieser Person) verbessern künftige Vorschläge und Blocklisten. Bei einer einfachen Kalender-Einladung verschwinden Absagen im Postfach und werden nicht genutzt.
-- **Gruppen und Sichtbarkeit**: Du steuerst, wer ein Event überhaupt sieht (öffentlich vs. nur eine Gruppe). So bleiben private Runden privat und thematische Kreise getrennt – ohne für jede Runde manuell die gleichen Leute einzuladen.
-- **Smart Treffen (optional)**: Mindestteilnehmer, Fristen und automatische Neuversuche. Realite kann den Termin entfernen und einen neuen vorschlagen, wenn bis zur Frist zu wenige zusagen – das geht mit reinem Kalender-Einladen nicht.
+- **Aktivitäten statt Chat-Koordination**: Realite fokussiert auf joinbare Aktivitäten statt auf lange Abstimmung in Messenger-Chats.
+- **Passende Vorschläge statt breiter Einladung**: Realite zeigt Aktivitäten gezielt dort an, wo sie sozial und zeitlich relevant sind.
+- **Kalender als Kontext**: Realite nutzt Verfügbarkeit und markierte Termine als Input. Es wird aber nichts automatisch veröffentlicht.
+- **Kontrollierte Sichtbarkeit**: Du steuerst, wie weit sich eine Aktivität öffnet, statt direkt wahllos Einladungen zu verschicken.
+- **Einfacher Reaktions-Flow**: Beitreten, anfragen oder Interesse zeigen ist schneller als manuelle Abstimmung mit vielen Einzelpersonen.
 
-Kurz: Google Kalender bleibt deine Quelle für Termine und Verfügbarkeit. Realite nutzt das und übernimmt das **Finden passender Termine**, **zielgerichtetes Anzeigen** und **gelernte Zusage-/Absage-Logik**, damit du weniger planen und mehr treffen kannst.
+Kurz: Google Kalender bleibt deine Quelle für Termine und Verfügbarkeit. Realite nutzt das als Kontext, damit du weniger organisierst und leichter echte gemeinsame Aktivitäten zustande kommen.
 
 ## Werden Kalenderänderungen sofort in Realite übernommen?
 
 Realite nutzt Google-Kalender-Webhooks: Sobald sich in deinen ausgewählten Kalendern etwas ändert (Termin anlegen, ändern, löschen), meldet Google das an Realite und der Sync läuft automatisch. Du musst nicht mehr manuell synchronisieren oder auf den nächsten Dashboard-Besuch warten. Die Webhooks werden beim Öffnen des Dashboards und beim Speichern der Kalender-Einstellungen eingerichtet.
+
+Wichtig: Auch dabei werden Kalenderdaten nicht automatisch öffentlich gemacht. Sichtbar wird nur, was du in Realite ausdrücklich freigibst.
 
 ## Ich sehe meine Kalender-Events nicht
 
