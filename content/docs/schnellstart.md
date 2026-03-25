@@ -26,6 +26,7 @@ Hinweis:
 Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade relevant ist: offene Aktivitäten, spontane Optionen und schnelle Wege zu deinen Vorschlägen.
 
 - **Jetzt** ist die Hauptansicht für „Was geht gerade?“
+- Offene Vorschläge mit Handlungsbedarf stehen dort in einem eigenen Bereich **„Reagieren zuerst“** ganz oben.
 - Die Reihenfolge der nächsten Aktion ist dort klar: **zuerst reagieren**, **dann mitmachen**, **danach selbst erstellen**
 - **Vorschläge** ist deine Handlungs-Queue für offene Entscheidungen
 - **Events** ist deine persönliche Kalender- und Verwaltungsansicht für sichtbare Aktivitäten und Zusagen
@@ -56,7 +57,7 @@ Tipps:
 Starte dort das Matching und prüfe deine Vorschläge.
 
 - Offene Vorschläge mit Handlungsbedarf stehen oben.
-- In **Jetzt** sind offene Vorschläge auch als primäre Aktion markiert, damit du zuerst reagieren kannst.
+- In **Jetzt** stehen offene Vorschläge zusätzlich im Bereich **„Reagieren zuerst“** oberhalb des offenen Aktivitäts-Feeds.
 - Bereits entschiedene Vorschläge bleiben darunter im Verlauf sichtbar.
 - **Zusagen**: passt für dich
 - **Absagen**: passt nicht

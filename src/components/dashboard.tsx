@@ -49,6 +49,8 @@ type Suggestion = {
   title: string;
   startsAt: string;
   endsAt: string;
+  reason: string;
+  score: number;
   tags?: string[];
   createdByName?: string | null;
 };
@@ -174,6 +176,31 @@ function getAcceptedCountLabel(count: number) {
   return `${count} Zusagen`;
 }
 
+function getDashboardSuggestionTiming(startsAt: string, endsAt: string) {
+  const start = new Date(startsAt);
+  const end = new Date(endsAt);
+
+  return `${start.toLocaleDateString("de-DE", {
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit"
+  })} · ${start.toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit"
+  })} - ${end.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+function getDashboardReasonHeadline(reason: string) {
+  const trimmed = reason.trim();
+  const firstSentence = trimmed.split(/[.!?](?:\s|$)/, 1)[0]?.trim() ?? "";
+
+  if (!firstSentence) {
+    return "Passender Vorschlag";
+  }
+
+  return firstSentence.length > 72 ? `${firstSentence.slice(0, 69).trimEnd()}...` : firstSentence;
+}
+
 export function Dashboard({
   view = "now",
   userName,
@@ -265,39 +292,28 @@ export function Dashboard({
       .filter(([, list]) => list.length > 0);
   }, [data.acceptedByEventId, visibleEvents]);
 
-  /** Vorschläge (pending/calendar_inserted) + Events pro Tag – Fokus: Was geht? Wer ist dabei? */
+  type DayItem = { id: string; eventId: string; title: string; startsAt: string; endsAt: string; event: EventItem };
+
+  /** Vorschläge mit Handlungsbedarf stehen in Jetzt explizit vor dem offenen Feed. */
   const pendingSuggestions = useMemo(
     () =>
-      data.suggestions.filter(
-        (s) => s.status === "pending" || s.status === "calendar_inserted"
-      ) as (Suggestion & { title: string; startsAt: string; endsAt: string })[],
-    [data.suggestions]
+      [...data.suggestions]
+        .filter((s) => s.status === "pending" || s.status === "calendar_inserted")
+        .sort((a, b) => {
+          const acceptedDiff =
+            (data.acceptedByEventId?.[b.eventId]?.length ?? 0) - (data.acceptedByEventId?.[a.eventId]?.length ?? 0);
+          if (acceptedDiff !== 0) {
+            return acceptedDiff;
+          }
+
+          return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
+        }) as (Suggestion & { title: string; startsAt: string; endsAt: string })[],
+    [data.acceptedByEventId, data.suggestions]
   );
-  const pendingSuggestionEventIds = useMemo(
-    () => new Set(pendingSuggestions.map((s) => s.eventId)),
-    [pendingSuggestions]
-  );
-  type DayItem =
-    | { type: "suggestion"; id: string; eventId: string; title: string; startsAt: string; endsAt: string; suggestionId: string; createdByName?: string | null }
-    | { type: "event"; id: string; eventId: string; title: string; startsAt: string; endsAt: string; event: EventItem };
   const itemsByDay = useMemo(() => {
     const itemList: DayItem[] = [];
-    for (const s of pendingSuggestions) {
-      itemList.push({
-        type: "suggestion",
-        id: s.eventId,
-        eventId: s.eventId,
-        title: s.title,
-        startsAt: s.startsAt,
-        endsAt: s.endsAt,
-        suggestionId: s.id,
-        createdByName: s.createdByName
-      });
-    }
     for (const event of visibleEvents) {
-      if (pendingSuggestionEventIds.has(event.id)) continue;
       itemList.push({
-        type: "event",
         id: event.id,
         eventId: event.id,
         title: event.title.replace(/#[^\s]+/gi, "").trim(),
@@ -322,7 +338,7 @@ export function Dashboard({
     return Array.from(byDay.entries())
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([dayKey, value]) => ({ dayKey, ...value }));
-  }, [pendingSuggestions, pendingSuggestionEventIds, visibleEvents]);
+  }, [visibleEvents]);
 
   const filteredItemsByDay = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -588,7 +604,7 @@ export function Dashboard({
         {!isEventsView ? (
           <section className="mt-5 md:mt-6" aria-label="Was geht? Nach Tag">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-base font-bold text-slate-900 md:text-lg">Nach Tag</h2>
+            <h2 className="text-base font-bold text-slate-900 md:text-lg">Offene Aktivitäten nach Tag</h2>
             <div className="flex items-center gap-1">
               <input
                 type="search"
@@ -622,6 +638,83 @@ export function Dashboard({
                 <List className="h-5 w-5 md:h-4 md:w-4" weight="regular" />
               </a>
             </div>
+          </div>
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4 shadow-sm md:p-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">Reagieren zuerst</p>
+                <h3 className="mt-1 text-base font-semibold text-slate-900">Vorschläge mit Handlungsbedarf</h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  Entscheide zuerst über offene Vorschläge. Danach ist der Feed nur noch für sichtbare Aktivitäten zum Mitmachen da.
+                </p>
+              </div>
+              <p className="text-sm font-medium text-amber-800">
+                {pendingSuggestions.length === 0
+                  ? "Gerade nichts offen"
+                  : `${pendingSuggestions.length} offene${pendingSuggestions.length === 1 ? "r Vorschlag" : " Vorschläge"}`}
+              </p>
+            </div>
+            {pendingSuggestions.length === 0 ? (
+              <div className="mt-4 rounded-xl border border-dashed border-amber-300 bg-white/80 p-4 text-sm text-slate-600">
+                Im Moment wartet keine Entscheidung auf dich. Nutze den Feed darunter für offene Aktivitäten oder starte neues Matching.
+              </div>
+            ) : (
+              <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                {pendingSuggestions.map((suggestion) => {
+                  const accepted = data.acceptedByEventId?.[suggestion.eventId] ?? [];
+                  const acceptedNames = getAcceptedDisplayNames(accepted);
+                  const remainingAccepted = accepted.length - acceptedNames.length;
+
+                  return (
+                    <a
+                      key={suggestion.id}
+                      href={`/suggestions?suggestion=${suggestion.id}`}
+                      className="rounded-xl border border-amber-200 bg-white p-4 transition hover:border-amber-300 hover:bg-amber-50/70"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-900">
+                          Jetzt reagieren
+                        </span>
+                        {accepted.length > 0 ? (
+                          <span className="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-800">
+                            {getAcceptedCountLabel(accepted.length)}
+                          </span>
+                        ) : null}
+                      </div>
+                      <h3 className="mt-3 text-base font-semibold text-slate-900">
+                        {suggestion.title.replace(/#[^\s]+/gi, "").trim()}
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-600">{getDashboardSuggestionTiming(suggestion.startsAt, suggestion.endsAt)}</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {suggestion.createdByName ? `Von ${suggestion.createdByName}` : "Passender Vorschlag"} · Score{" "}
+                        {suggestion.score.toFixed(2)}
+                      </p>
+                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">Warum jetzt?</p>
+                          <p className="mt-2 text-sm font-medium text-slate-900">{getDashboardReasonHeadline(suggestion.reason)}</p>
+                          <p className="mt-1 text-xs leading-5 text-slate-600">{suggestion.reason}</p>
+                        </div>
+                        <div className="rounded-xl border border-teal-200 bg-teal-50/70 p-3">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">Wer ist dabei?</p>
+                          {accepted.length > 0 ? (
+                            <p className="mt-2 text-sm font-medium text-slate-900">
+                              {acceptedNames.join(", ")}
+                              {remainingAccepted > 0 ? ` +${remainingAccepted}` : ""}
+                            </p>
+                          ) : (
+                            <p className="mt-2 text-sm font-medium text-slate-900">Noch niemand zugesagt</p>
+                          )}
+                          <p className="mt-1 text-xs text-slate-600">
+                            {accepted.length > 0 ? "Schon Momentum vorhanden." : "Du könntest die erste Zusage sein."}
+                          </p>
+                        </div>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            )}
           </div>
           {filteredItemsByDay.length === 0 && !loading ? (
             <div className="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/80 p-6 text-center">
@@ -685,64 +778,6 @@ export function Dashboard({
                         const acceptedNames = getAcceptedDisplayNames(accepted);
                         const remainingAccepted = accepted.length - acceptedNames.length;
                         const isAccepted = acceptedEventIds.has(item.eventId);
-                        if (item.type === "suggestion") {
-                          return (
-                            <li key={`suggestion-${item.suggestionId}`}>
-                              <a
-                                href={`/suggestions?suggestion=${item.suggestionId}`}
-                                className="flex flex-col gap-2 rounded-xl border border-amber-200 bg-amber-50/80 p-4 text-left transition hover:border-amber-300 hover:bg-amber-50"
-                              >
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <span className="inline-flex w-fit items-center rounded-md bg-amber-200/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
-                                    Vorschlag
-                                  </span>
-                                  {accepted.length > 0 ? (
-                                    <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-amber-900 ring-1 ring-amber-200">
-                                      {getAcceptedCountLabel(accepted.length)}
-                                    </span>
-                                  ) : null}
-                                </div>
-                                <div>
-                                  <span className="font-medium text-slate-900">{item.title}</span>
-                                </div>
-                                <p className="text-xs text-slate-500">
-                                  {new Date(item.startsAt).toLocaleString("de-DE", {
-                                    weekday: "short",
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    hour: "2-digit",
-                                    minute: "2-digit"
-                                  })}{" "}
-                                  –{" "}
-                                  {new Date(item.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
-                                  {item.createdByName ? ` · von ${item.createdByName}` : ""}
-                                </p>
-                                <div className="rounded-lg bg-white/70 px-3 py-2.5">
-                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-800/80">
-                                    Wer ist dabei?
-                                  </p>
-                                  {accepted.length > 0 ? (
-                                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                                      <p className="text-sm font-medium text-slate-800">
-                                        {acceptedNames.join(", ")}
-                                        {remainingAccepted > 0 ? ` +${remainingAccepted}` : ""}
-                                      </p>
-                                      <span className="text-xs font-medium text-amber-800">
-                                        Schon jemand hat zugesagt
-                                      </span>
-                                    </div>
-                                  ) : (
-                                    <p className="mt-0.5 text-sm text-slate-600">Noch niemand – du könntest der erste sein</p>
-                                  )}
-                                </div>
-                                <div className="flex items-center justify-between rounded-lg border border-amber-200/80 bg-white px-3 py-2 text-sm font-semibold text-amber-900">
-                                  <span>Jetzt reagieren</span>
-                                  <span aria-hidden>→</span>
-                                </div>
-                              </a>
-                            </li>
-                          );
-                        }
                         const coverUrl = item.event.placeImageUrl ?? item.event.linkPreviewImageUrl ?? null;
                         const borderColor = item.event.color ?? CATEGORY_COLORS[item.event.category ?? "default"];
                         return (

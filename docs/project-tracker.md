@@ -33,6 +33,7 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 25.03.2026:
 
+- offene Vorschläge mit Handlungsbedarf in `Jetzt` als eigene Reaktions-Section vor den Aktivitätsfeed gezogen
 - offene Aktivitäten mit vorhandenen Zusagen in `Jetzt` und `Events` sichtbarer gemacht
 - "Wer ist dabei?" in Aktivitätskarten prominenter dargestellt
 - Nutzer-Doku für Zusagen/Momentum in den Übersichten ergänzt
@@ -217,7 +218,7 @@ Status: `planned`
 
 ### P0
 
-- [ ] Dashboard neu strukturieren: erst relevante Aktivitäten, dann Vorschläge, dann Smart Meetings, dann eigene Verwaltung
+- [x] Dashboard neu strukturieren: erst relevante Aktivitäten, dann Vorschläge, dann Smart Meetings, dann eigene Verwaltung
 - [x] neue primäre Home-/Now-Ansicht definieren, die nicht mit `Events` identisch ist
 - [x] `Events` als persönliche Kalender-/Sozialkalender-Ansicht neu positionieren
 - [x] `Smart Meetings` aus der Hauptansicht herauslösen und in einen sekundären Bereich verschieben
@@ -246,7 +247,7 @@ Status: `planned`
 - [x] Entscheidung: `/events` ist nicht die primäre Startansicht
 - [x] neue Startansicht für "Was geht gerade?" definieren
 - [ ] prüfen, ob eigene Events zu viel Platz einnehmen
-- [ ] Vorschläge mit Handlungsbedarf nach oben ziehen
+- [x] Vorschläge mit Handlungsbedarf nach oben ziehen
 - [x] CTA-Reihenfolge in `Jetzt` sichtbar machen: reagieren, mitmachen, erstellen
 - [x] offene Aktivitäten mit vorhandenen Zusagen sichtbarer machen
 - [x] "Wer ist dabei?" prominenter machen
