@@ -8,6 +8,7 @@ import { AppShell } from "@/src/components/app-shell";
 import { EventImage } from "@/src/components/event-image";
 import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
 import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
+import { getEventPatternMeta } from "@/src/lib/activity-patterns";
 import { DASHBOARD_QUERY_KEY, fetchDashboard as fetchDashboardApi } from "@/src/lib/dashboard-query";
 import {
   CATEGORY_COLORS,
@@ -864,6 +865,8 @@ export function Dashboard({
                         const acceptedNames = getAcceptedDisplayNames(accepted);
                         const remainingAccepted = accepted.length - acceptedNames.length;
                         const isAccepted = acceptedEventIds.has(item.eventId);
+                        const isOwnEvent = item.event.createdBy === data.me.id;
+                        const eventPattern = getEventPatternMeta({ isOwnEvent, isAccepted });
                         const coverUrl = item.event.placeImageUrl ?? item.event.linkPreviewImageUrl ?? null;
                         const borderColor = item.event.color ?? CATEGORY_COLORS[item.event.category ?? "default"];
                         return (
@@ -884,14 +887,14 @@ export function Dashboard({
                               ) : null}
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
+                                  <span
+                                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${eventPattern.badgeClassName}`}
+                                  >
+                                    {eventPattern.label}
+                                  </span>
                                   {accepted.length > 0 ? (
                                     <span className="inline-flex items-center rounded-full bg-teal-100 px-2.5 py-1 text-[11px] font-semibold text-teal-800">
                                       {getAcceptedCountLabel(accepted.length)}
-                                    </span>
-                                  ) : null}
-                                  {isAccepted ? (
-                                    <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-teal-800 ring-1 ring-teal-200">
-                                      Du dabei
                                     </span>
                                   ) : null}
                                 </div>
@@ -924,13 +927,7 @@ export function Dashboard({
                                   )}
                                 </div>
                                 <div className="mt-2 flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700">
-                                  <span>
-                                    {item.event.createdBy === data.me.id
-                                      ? "Verwalten"
-                                      : isAccepted
-                                        ? "Details ansehen"
-                                        : "Mitmachen prüfen"}
-                                  </span>
+                                  <span>{eventPattern.actionLabel}</span>
                                   <span aria-hidden>→</span>
                                 </div>
                               </div>
@@ -1170,6 +1167,8 @@ export function Dashboard({
                               const coverUrl = event.placeImageUrl ?? event.linkPreviewImageUrl ?? null;
                               const borderColor = event.color ?? CATEGORY_COLORS[event.category ?? "default"];
                               const isOwnEvent = event.createdBy === data.me.id;
+                              const isAccepted = acceptedEventIds.has(event.id);
+                              const eventPattern = getEventPatternMeta({ isOwnEvent, isAccepted });
                               const contextLabel =
                                 section.id === "context" && event.sourceProvider
                                   ? "Aus deinem Kalenderkontext"
@@ -1197,14 +1196,14 @@ export function Dashboard({
                                     <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-2 p-3">
                                       <div>
                                         <div className="mb-1 flex flex-wrap items-center gap-2">
+                                          <span
+                                            className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${eventPattern.badgeClassName}`}
+                                          >
+                                            {eventPattern.label}
+                                          </span>
                                           {accepted.length > 0 ? (
                                             <span className="inline-flex items-center rounded-full bg-teal-100 px-2.5 py-1 text-[11px] font-semibold text-teal-800">
                                               {getAcceptedCountLabel(accepted.length)}
-                                            </span>
-                                          ) : null}
-                                          {acceptedEventIds.has(event.id) ? (
-                                            <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-teal-800 ring-1 ring-teal-200">
-                                              Du hast zugesagt
                                             </span>
                                           ) : null}
                                           {contextLabel ? (

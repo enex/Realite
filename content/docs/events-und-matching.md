@@ -166,6 +166,13 @@ Offene Aktivitäten mit bestehenden Zusagen werden in **Jetzt** und **Events** z
 
 So erkennst du schneller, wo schon Momentum vorhanden ist und bei welchen Aktivitäten du direkt dazustoßen kannst.
 
+Für Event-Karten nutzt Realite zusätzlich feste Muster-Badges:
+
+- **Offene Aktivität:** sichtbarer Termin, bei dem du noch prüfen kannst, ob du mitmachen willst
+- **Deine Planung:** eigener Termin, der in deiner Verwaltung liegt
+- **Du dabei:** Aktivität, zu der du bereits zugesagt hast
+- **Aus deinem Kalenderkontext:** zusätzlicher Hinweis in **Events**, wenn ein Termin vor allem als Kontext aus deinem Sozialkalender angezeigt wird
+
 **Smart Treffen als Orga-Bereich:** **Smart Treffen** erscheint nicht mehr im spontanen **Jetzt**-Feed. Du findest die Planung stattdessen unter **Events**, damit die Hauptansicht auf spontane Aktivitäten, offene Vorschläge und schnelle Entscheidungen fokussiert bleibt.
 
 In **Events** bleibt **Smart Treffen** bewusst ein nachgelagerter Bereich unterhalb deines Sozialkalenders:
@@ -186,6 +193,13 @@ So bleibt die globale Navigation schlank, während der Planungs-Flow für Gruppe
 - was du als Nächstes konkret tun solltest
 
 Bereits entschiedene Vorschläge rutschen in einen separaten Verlauf. So bleibt die Hauptfläche auf Reaktion statt Verwaltung fokussiert.
+
+Die Statuslabels sind dabei absichtlich konsistent:
+
+- **Jetzt reagieren:** Vorschlag wartet noch auf deine Entscheidung
+- **Im Kalender vorgemerkt:** Termin liegt schon in deinem Kalender, braucht aber weiter deine Zu- oder Absage
+- **Zugesagt:** du hast die Aktivität bestätigt
+- **Abgelehnt:** du hast den Vorschlag bewusst aussortiert
 
 Jede Vorschlagskarte beantwortet dabei jetzt direkt drei Fragen:
 

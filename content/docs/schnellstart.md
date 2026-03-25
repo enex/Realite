@@ -28,6 +28,7 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 - Die Navigation trennt bewusst zwischen **Entdecken**, **Reagieren** und **Verwalten**.
 - **Jetzt** ist die Hauptansicht für „Was geht gerade?“
 - Offene Vorschläge mit Handlungsbedarf stehen dort in einem eigenen Bereich **„Reagieren zuerst“** ganz oben.
+- Vorschläge und Aktivitäten zeigen klare Muster-Badges, damit du schneller scannst, was gerade Sache ist: etwa **„Jetzt reagieren“**, **„Offene Aktivität“**, **„Deine Planung“** oder **„Du dabei“**.
 - Eigene neue Events ohne Zusagen bleiben bewusst in **Events**, damit **Jetzt** nicht mit Verwaltung überladen wird.
 - Die Reihenfolge der nächsten Aktion ist dort klar: **zuerst reagieren**, **dann mitmachen**, **danach selbst erstellen**
 - **Vorschläge** gehört zu **Reagieren** und ist deine Handlungs-Queue für offene Entscheidungen
@@ -59,6 +60,7 @@ Tipps:
 Starte dort das Matching und prüfe deine Vorschläge.
 
 - Offene Vorschläge mit Handlungsbedarf stehen oben.
+- Status-Badges helfen dir beim schnellen Sortieren: **„Jetzt reagieren“** für offene Entscheidungen, **„Im Kalender vorgemerkt“** für bereits eingetragene Vorschläge, **„Zugesagt“** und **„Abgelehnt“** im Verlauf.
 - In **Jetzt** stehen offene Vorschläge zusätzlich im Bereich **„Reagieren zuerst“** oberhalb des offenen Aktivitäts-Feeds.
 - Bereits entschiedene Vorschläge bleiben darunter im Verlauf sichtbar.
 - **Zusagen**: passt für dich

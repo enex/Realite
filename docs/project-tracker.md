@@ -33,6 +33,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 25.03.2026:
 
+- visuelle Patterns und Statuslabels für Vorschläge, offene Aktivitäten und eigene Planung vereinheitlicht
+- Karten in `Jetzt` und `Events` zeigen konsistente Pattern-Badges wie `Jetzt reagieren`, `Offene Aktivität`, `Deine Planung` und `Du dabei`
+- Nutzer-Doku für die neuen Kartenmuster und Statushinweise ergänzt
 - Smart Treffen in `Events` als sekundären Planungsbereich mit eigener Bereichs-Navigation verankert statt als stärkere Hauptnavigation
 - eigene Events ohne Zusagen aus dem `Jetzt`-Feed herausgenommen und klar in `Events` als Planung verortet
 - offene Vorschläge mit Handlungsbedarf in `Jetzt` als eigene Reaktions-Section vor den Aktivitätsfeed gezogen
@@ -231,7 +234,7 @@ Status: `planned`
 
 - [x] Navigation überprüfen: ob `Events`, `Vorschläge`, `Gruppen` die richtige Reihenfolge und Benennung haben
 - [x] unterscheiden zwischen `Entdecken`, `Reagieren`, `Verwalten`
-- [ ] visuelle Patterns für offene Aktivitäten, persönliche Vorschläge, eigene Aktivitäten und Smart Meetings definieren
+- [x] visuelle Patterns für offene Aktivitäten, persönliche Vorschläge, eigene Aktivitäten und Smart Meetings definieren
 - [x] Event-/Suggestion-Karten auf Scannability und Priorisierung überarbeiten
 - [x] leere Zustände produktnäher formulieren
 
@@ -278,7 +281,7 @@ Status: `planned`
 - [ ] visuelle Prioritätsstufen definieren
 - [ ] Typografie- und Spacing-Hierarchie vereinheitlichen
 - [ ] Card-System für Aktivitäten, Vorschläge, Presence und Smart Meetings definieren
-- [ ] konsistente Statusfarben und Statuslabels definieren
+- [x] konsistente Statusfarben und Statuslabels definieren
 
 ## Product Discovery Tasks
 

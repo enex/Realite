@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/components/app-shell";
 import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
 import { UserAvatar } from "@/src/components/user-avatar";
+import { getSuggestionNextAction, getSuggestionStatusMeta } from "@/src/lib/activity-patterns";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
@@ -43,8 +44,6 @@ type SuggestionsPayload = {
   suggestions: Suggestion[];
   acceptedByEventId?: Record<string, AcceptedUser[]>;
 };
-
-type SuggestionStatus = Suggestion["status"];
 
 type SuggestionDayGroup = {
   dayKey: string;
@@ -442,7 +441,7 @@ function SuggestionCard({
   variant: "action" | "history";
 }) {
   const accepted = acceptedByEventId?.[suggestion.eventId] ?? [];
-  const badge = getSuggestionBadge(suggestion.status);
+  const badge = getSuggestionStatusMeta(suggestion.status);
   const timing = getSuggestionTiming(suggestion.startsAt, suggestion.endsAt);
   const nextAction = getSuggestionNextAction(suggestion.status, variant);
   const cardClasses =
@@ -611,60 +610,4 @@ function getSuggestionTiming(startsAt: string, endsAt: string) {
     primary: `${dayLabel}, ${start.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`,
     secondary: `bis ${end.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`
   };
-}
-
-function getSuggestionNextAction(status: SuggestionStatus, variant: "action" | "history") {
-  if (variant === "history") {
-    return {
-      label: status === "accepted" ? "Zusage steht" : "Bewusst abgelehnt",
-      detail:
-        status === "accepted"
-          ? "Du bist für diese Aktivität bereits bestätigt."
-          : "Der Vorschlag bleibt nur noch als Verlauf sichtbar.",
-      ctaLabel: "Details öffnen"
-    };
-  }
-
-  if (status === "calendar_inserted") {
-    return {
-      label: "Kalendereintrag prüfen",
-      detail: "Der Termin ist vorgemerkt, aber Realite wartet weiter auf deine Zu- oder Absage.",
-      ctaLabel: "Zu- oder absagen"
-    };
-  }
-
-  return {
-    label: "Jetzt reagieren",
-    detail: "Öffne die Detailansicht und entscheide, ob du mitmachst oder absagst.",
-    ctaLabel: "Jetzt antworten"
-  };
-}
-
-function getSuggestionBadge(status: SuggestionStatus) {
-  switch (status) {
-    case "pending":
-      return {
-        label: "Jetzt reagieren",
-        description: "Dieser Vorschlag wartet noch auf deine Antwort",
-        className: "bg-amber-100 text-amber-900"
-      };
-    case "calendar_inserted":
-      return {
-        label: "Im Kalender vorgemerkt",
-        description: "Der Vorschlag liegt schon in deinem Kalender, braucht aber weiter deine Entscheidung",
-        className: "bg-orange-100 text-orange-900"
-      };
-    case "accepted":
-      return {
-        label: "Zugesagt",
-        description: "Du hast diese Aktivität bestätigt",
-        className: "bg-teal-100 text-teal-900"
-      };
-    case "declined":
-      return {
-        label: "Abgelehnt",
-        description: "Diesen Vorschlag hast du bewusst aussortiert",
-        className: "bg-slate-200 text-slate-800"
-      };
-  }
 }
