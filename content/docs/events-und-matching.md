@@ -20,6 +20,8 @@ Ein Event besteht aus:
 
 Das Bild erscheint auf der Event-Detailseite, in Event-Listen (Dashboard, Gruppen, Profil, Startseite) und lockert die Ansicht auf. Wenn weder Ortsbild noch Link-Preview verfügbar sind, wird nur Text angezeigt.
 
+**Wichtig für die Hauptansichten:** Eigene neu angelegte Events ohne Zusagen bleiben in **Events** unter deiner Planung. In **Jetzt** zeigt Realite stattdessen vor allem offene Aktivitäten, Vorschläge mit Handlungsbedarf und Termine mit erkennbarem Momentum.
+
 ## Smart Treffen (automatische Terminfindung)
 
 Mit **Smart Treffen** sucht Realite automatisch den besten Zeitpunkt für eine Gruppe. Kalendereinladungen werden aber **nicht automatisch verschickt**: Vor jedem Versand prüfst du die vorgeschlagene Teilnehmerliste ausdrücklich selbst und gibst sie frei, passt sie an oder lehnst den Versand komplett ab. Bestehende Smart Treffen verwaltest du in **Events** im Bereich **Smart Treffen** über **Bearbeiten** (Titel, Gruppe, Suchfenster, Mindestzusagen usw.).

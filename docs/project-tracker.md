@@ -33,6 +33,7 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 25.03.2026:
 
+- eigene Events ohne Zusagen aus dem `Jetzt`-Feed herausgenommen und klar in `Events` als Planung verortet
 - offene Vorschläge mit Handlungsbedarf in `Jetzt` als eigene Reaktions-Section vor den Aktivitätsfeed gezogen
 - offene Aktivitäten mit vorhandenen Zusagen in `Jetzt` und `Events` sichtbarer gemacht
 - "Wer ist dabei?" in Aktivitätskarten prominenter dargestellt
@@ -246,7 +247,7 @@ Status: `planned`
 
 - [x] Entscheidung: `/events` ist nicht die primäre Startansicht
 - [x] neue Startansicht für "Was geht gerade?" definieren
-- [ ] prüfen, ob eigene Events zu viel Platz einnehmen
+- [x] prüfen, ob eigene Events zu viel Platz einnehmen
 - [x] Vorschläge mit Handlungsbedarf nach oben ziehen
 - [x] CTA-Reihenfolge in `Jetzt` sichtbar machen: reagieren, mitmachen, erstellen
 - [x] offene Aktivitäten mit vorhandenen Zusagen sichtbarer machen

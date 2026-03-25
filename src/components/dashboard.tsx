@@ -310,9 +310,23 @@ export function Dashboard({
         }) as (Suggestion & { title: string; startsAt: string; endsAt: string })[],
     [data.acceptedByEventId, data.suggestions]
   );
+  const nowFeedEvents = useMemo(
+    () =>
+      visibleEvents.filter((event) => {
+        const acceptedCount = data.acceptedByEventId?.[event.id]?.length ?? 0;
+        const isOwnEvent = event.createdBy === data.me.id;
+
+        if (!isOwnEvent) {
+          return true;
+        }
+
+        return acceptedCount > 0 || acceptedEventIds.has(event.id);
+      }),
+    [acceptedEventIds, data.acceptedByEventId, data.me.id, visibleEvents]
+  );
   const itemsByDay = useMemo(() => {
     const itemList: DayItem[] = [];
-    for (const event of visibleEvents) {
+    for (const event of nowFeedEvents) {
       itemList.push({
         id: event.id,
         eventId: event.id,
@@ -338,7 +352,7 @@ export function Dashboard({
     return Array.from(byDay.entries())
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([dayKey, value]) => ({ dayKey, ...value }));
-  }, [visibleEvents]);
+  }, [nowFeedEvents]);
 
   const filteredItemsByDay = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -464,6 +478,10 @@ export function Dashboard({
   const ownPlannedEvents = useMemo(
     () => visibleEvents.filter((event) => !acceptedEventIds.has(event.id) && event.createdBy === data.me.id),
     [acceptedEventIds, data.me.id, visibleEvents]
+  );
+  const hiddenOwnPlanningEvents = useMemo(
+    () => ownPlannedEvents.filter((event) => (data.acceptedByEventId?.[event.id] ?? []).length === 0),
+    [data.acceptedByEventId, ownPlannedEvents]
   );
   const calendarContextEvents = useMemo(
     () =>
@@ -719,6 +737,32 @@ export function Dashboard({
               </div>
             )}
           </div>
+          {hiddenOwnPlanningEvents.length > 0 ? (
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Deine Planung bleibt in Events</p>
+                  <h3 className="mt-1 text-base font-semibold text-slate-900">
+                    {hiddenOwnPlanningEvents.length === 1
+                      ? "1 eigenes Event ohne Zusagen wurde aus Jetzt herausgenommen"
+                      : `${hiddenOwnPlanningEvents.length} eigene Events ohne Zusagen wurden aus Jetzt herausgenommen`}
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-600">
+                    So bleibt der Feed auf offene Aktivitäten zum Reagieren und Mitmachen fokussiert. Deine eigene Planung findest du gesammelt in{" "}
+                    <a href="/events#events" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">
+                      Events
+                    </a>.
+                  </p>
+                </div>
+                <a
+                  href="/events#events"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                >
+                  Planung öffnen
+                </a>
+              </div>
+            </div>
+          ) : null}
           {filteredItemsByDay.length === 0 && !loading ? (
             <div className="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/80 p-6 text-center">
               {searchQuery.trim() ? (
