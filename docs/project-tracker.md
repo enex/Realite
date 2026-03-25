@@ -36,6 +36,7 @@ Zuletzt umgesetzt am 25.03.2026:
 - offene Aktivitäten mit vorhandenen Zusagen in `Jetzt` und `Events` sichtbarer gemacht
 - "Wer ist dabei?" in Aktivitätskarten prominenter dargestellt
 - Nutzer-Doku für Zusagen/Momentum in den Übersichten ergänzt
+- `Events` klarer als Sozialkalender segmentiert: bestätigte Aktivitäten, eigene Planung und Kalenderkontext
 
 Bereits vorhanden:
 
@@ -246,7 +247,7 @@ Status: `planned`
 - [ ] Vorschläge mit Handlungsbedarf nach oben ziehen
 - [x] offene Aktivitäten mit vorhandenen Zusagen sichtbarer machen
 - [x] "Wer ist dabei?" prominenter machen
-- [ ] `Events` als Sozialkalender klar definieren: eigene Pläne, bestätigte Aktivitäten, Kalenderkontext
+- [x] `Events` als Sozialkalender klar definieren: eigene Pläne, bestätigte Aktivitäten, Kalenderkontext
 
 ### Smart Meetings
 

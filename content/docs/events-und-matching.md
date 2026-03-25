@@ -146,7 +146,15 @@ Wenn für dich zu einem Event bereits eine Suggestion existiert und du nicht der
 
 Event- und Vorschlagslisten in Realite verlinken direkt auf diese Seiten, damit du von jeder Übersicht sofort entscheiden kannst.
 
-**Jetzt zuerst, Events als Verwaltung:** Nach dem Login landest du zuerst in **Jetzt**. Diese Ansicht bündelt spontane Optionen, offene Aktivitäten und schnelle Reaktionen. Die Navigation unter **Events** bleibt deine persönliche Kalender-/Sozialkalender-Ansicht mit allen sichtbaren Terminen, Zusagen und eigenen Aktivitäten.
+**Jetzt zuerst, Events als Verwaltung:** Nach dem Login landest du zuerst in **Jetzt**. Diese Ansicht bündelt spontane Optionen, offene Aktivitäten und schnelle Reaktionen. Die Navigation unter **Events** bleibt deine persönliche Kalender-/Sozialkalender-Ansicht.
+
+Dort trennt Realite jetzt klar zwischen drei Bereichen:
+
+- **Zugesagt & bestätigt:** Aktivitäten, bei denen du schon dabei bist oder für die bereits Zusagen vorliegen
+- **Deine Planung:** eigene Events, die du angelegt hast und weiter verwaltest
+- **Kalenderkontext:** weitere sichtbare Termine aus deinem Sozialkalender, die dir Kontext für Planung und spontane Entscheidungen geben
+
+So wirkt **Events** nicht mehr wie eine ungeordnete Gesamtliste, sondern wie dein persönlicher Überblick über Teilnahme, eigene Planung und Umfeld.
 
 Offene Aktivitäten mit bestehenden Zusagen werden in **Jetzt** und **Events** zusätzlich hervorgehoben. Du siehst dort direkt:
 

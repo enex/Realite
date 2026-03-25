@@ -38,6 +38,8 @@ type EventItem = {
   category: EventCategory;
   placeImageUrl: string | null;
   linkPreviewImageUrl: string | null;
+  createdBy: string;
+  sourceProvider: string | null;
 };
 
 type Suggestion = {
@@ -92,6 +94,7 @@ type AcceptedUser = { name: string | null; email: string };
 
 type DashboardPayload = {
   me: {
+    id: string;
     email: string;
     name: string | null;
     image: string | null;
@@ -133,6 +136,7 @@ async function fetchDashboard(): Promise<DashboardPayload> {
 
 const emptyPayload: DashboardPayload = {
   me: {
+    id: "",
     email: "",
     name: null,
     image: null,
@@ -437,6 +441,45 @@ export function Dashboard({
   const pendingCount = data.suggestions.filter((s) => s.status === "pending" || s.status === "calendar_inserted").length;
   const eventsWithoutAccepted = visibleEvents.filter((e) => (data.acceptedByEventId?.[e.id] ?? []).length === 0);
   const isEventsView = view === "events";
+  const acceptedEvents = useMemo(
+    () => visibleEvents.filter((event) => acceptedEventIds.has(event.id)),
+    [acceptedEventIds, visibleEvents]
+  );
+  const ownPlannedEvents = useMemo(
+    () => visibleEvents.filter((event) => !acceptedEventIds.has(event.id) && event.createdBy === data.me.id),
+    [acceptedEventIds, data.me.id, visibleEvents]
+  );
+  const calendarContextEvents = useMemo(
+    () =>
+      visibleEvents.filter((event) => !acceptedEventIds.has(event.id) && event.createdBy !== data.me.id),
+    [acceptedEventIds, data.me.id, visibleEvents]
+  );
+  const eventSections = useMemo(
+    () => [
+      {
+        id: "confirmed",
+        title: "Zugesagt & bestätigt",
+        description: "Aktivitäten, bei denen du schon dabei bist oder die bereits klar zugesagt sind.",
+        empty: "Sobald du auf Vorschläge reagierst oder Zusagen reinkommen, erscheinen sie hier.",
+        events: acceptedEvents
+      },
+      {
+        id: "owned",
+        title: "Deine Planung",
+        description: "Eigene Events, die du angelegt hast und aktiv verwaltest oder teilst.",
+        empty: "Eigene neue Aktivitäten landen nach dem Erstellen in diesem Bereich.",
+        events: ownPlannedEvents
+      },
+      {
+        id: "context",
+        title: "Kalenderkontext",
+        description: "Weitere sichtbare Termine aus deinem Sozialkalender, die dir gerade Kontext geben.",
+        empty: "Wenn weitere sichtbare Termine vorhanden sind, tauchen sie hier auf.",
+        events: calendarContextEvents
+      }
+    ],
+    [acceptedEvents, calendarContextEvents, ownPlannedEvents]
+  );
 
   return (
     <AppShell
@@ -868,10 +911,28 @@ export function Dashboard({
         ) : null}
 
         <section id="events" className="mt-8 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Was gibt’s? Deine Events & Aktivitäten</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Alle sichtbaren Erlebnisse und Termine – dabei sein, Leute einladen oder selbst was starten.
-          </p>
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Events als Sozialkalender</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Hier trennst du bestätigte Aktivitäten, eigene Planung und übrigen Kalenderkontext sauber voneinander.
+              </p>
+            </div>
+            <div className="grid gap-2 text-sm text-slate-600 sm:grid-cols-3">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Zugesagt</p>
+                <p className="mt-1 text-lg font-semibold text-slate-900">{acceptedEvents.length}</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Eigen</p>
+                <p className="mt-1 text-lg font-semibold text-slate-900">{ownPlannedEvents.length}</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Kontext</p>
+                <p className="mt-1 text-lg font-semibold text-slate-900">{calendarContextEvents.length}</p>
+              </div>
+            </div>
+          </div>
           <div className="mt-4 space-y-6">
             {visibleEvents.length === 0 ? (
               <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/80 p-5 text-center">
@@ -888,93 +949,132 @@ export function Dashboard({
                 </button>
               </div>
             ) : null}
-            {eventsByCategory.map(([category, events]) => (
-              <div key={category}>
-                <div
-                  className="mb-2 flex items-center gap-2 border-b border-slate-200 pb-1.5"
-                  style={{ borderBottomColor: CATEGORY_COLORS[category] }}
-                >
-                  <span
-                    className="inline-block h-3 w-1 shrink-0 rounded-full"
-                    style={{ backgroundColor: CATEGORY_COLORS[category] }}
-                    aria-hidden
-                  />
-                  <h3 className="text-sm font-semibold text-slate-700">{CATEGORY_LABELS[category]}</h3>
-                  <span className="text-xs text-slate-500">({events.length})</span>
-                </div>
-                <div className="space-y-2">
-                  {events.map((event) => {
-                    const accepted = data.acceptedByEventId?.[event.id] ?? [];
-                    const acceptedNames = getAcceptedDisplayNames(accepted);
-                    const remainingAccepted = accepted.length - acceptedNames.length;
-                    const coverUrl = event.placeImageUrl ?? event.linkPreviewImageUrl ?? null;
-                    const borderColor = event.color ?? CATEGORY_COLORS[event.category ?? "default"];
-                    return (
-                      <article
-                        key={event.id}
-                        className={`overflow-hidden rounded-md border ${
-                          accepted.length > 0 ? "border-teal-200 bg-teal-50/40" : "border-slate-200"
-                        }`}
-                        style={{ borderLeftWidth: "4px", borderLeftColor: borderColor }}
-                      >
-                        <div className="flex">
-                    {coverUrl ? (
-                      <a
-                        href={`/e/${shortenUUID(event.id)}`}
-                        className="relative block h-20 w-24 shrink-0 bg-slate-100 sm:h-24 sm:w-28"
-                      >
-                        <EventImage
-                          src={coverUrl}
-                          className="h-full w-full object-cover"
-                        />
-                      </a>
-                    ) : null}
-                          <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-2 p-3">
-                            <div>
-                              <div className="mb-1 flex flex-wrap items-center gap-2">
-                                {accepted.length > 0 ? (
-                                  <span className="inline-flex items-center rounded-full bg-teal-100 px-2.5 py-1 text-[11px] font-semibold text-teal-800">
-                                    {getAcceptedCountLabel(accepted.length)}
-                                  </span>
-                                ) : null}
-                                {acceptedEventIds.has(event.id) && (
-                                  <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-teal-800 ring-1 ring-teal-200">
-                                    Du hast zugesagt
-                                  </span>
-                                )}
-                              </div>
-                              <a
-                                href={`/e/${shortenUUID(event.id)}`}
-                                className="break-words text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
-                              >
-                                {event.title.replace(/#[^\s]+/gi, "").trim()}
-                              </a>
-                              <p className="text-xs text-slate-500">
-                                {new Date(event.startsAt).toLocaleString("de-DE")} - {new Date(event.endsAt).toLocaleTimeString("de-DE")} ·{" "}
-                                {event.tags.join(" · ")}
-                              </p>
-                              <div className="mt-2 rounded-lg bg-white/80 px-3 py-2">
-                                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                                  Wer ist dabei?
-                                </p>
-                                {accepted.length > 0 ? (
-                                  <p className="mt-1 text-xs font-medium text-teal-800">
-                                    {acceptedNames.join(", ")}
-                                    {remainingAccepted > 0 ? ` +${remainingAccepted}` : ""}
-                                  </p>
-                                ) : (
-                                  <p className="mt-1 text-xs text-slate-500">Noch niemand zugesagt</p>
-                                )}
-                              </div>
-                            </div>
+            {eventSections.map((section) => {
+              const sectionEventsByCategory = eventsByCategory
+                .map(([category, events]) => [category, events.filter((event) => section.events.some((candidate) => candidate.id === event.id))] as const)
+                .filter(([, events]) => events.length > 0);
+
+              return (
+                <section key={section.id} className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-base font-semibold text-slate-900">{section.title}</h3>
+                      <p className="mt-1 text-sm text-slate-600">{section.description}</p>
+                    </div>
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+                      {section.events.length === 0 ? "Leer" : `${section.events.length} Termine`}
+                    </span>
+                  </div>
+
+                  {section.events.length === 0 ? (
+                    <p className="mt-4 rounded-xl border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
+                      {section.empty}
+                    </p>
+                  ) : (
+                    <div className="mt-4 space-y-5">
+                      {sectionEventsByCategory.map(([category, events]) => (
+                        <div key={`${section.id}-${category}`}>
+                          <div
+                            className="mb-2 flex items-center gap-2 border-b border-slate-200 pb-1.5"
+                            style={{ borderBottomColor: CATEGORY_COLORS[category] }}
+                          >
+                            <span
+                              className="inline-block h-3 w-1 shrink-0 rounded-full"
+                              style={{ backgroundColor: CATEGORY_COLORS[category] }}
+                              aria-hidden
+                            />
+                            <h4 className="text-sm font-semibold text-slate-700">{CATEGORY_LABELS[category]}</h4>
+                            <span className="text-xs text-slate-500">({events.length})</span>
+                          </div>
+                          <div className="space-y-2">
+                            {events.map((event) => {
+                              const accepted = data.acceptedByEventId?.[event.id] ?? [];
+                              const acceptedNames = getAcceptedDisplayNames(accepted);
+                              const remainingAccepted = accepted.length - acceptedNames.length;
+                              const coverUrl = event.placeImageUrl ?? event.linkPreviewImageUrl ?? null;
+                              const borderColor = event.color ?? CATEGORY_COLORS[event.category ?? "default"];
+                              const isOwnEvent = event.createdBy === data.me.id;
+                              const contextLabel =
+                                section.id === "context" && event.sourceProvider
+                                  ? "Aus deinem Kalenderkontext"
+                                  : isOwnEvent
+                                    ? "Von dir angelegt"
+                                    : null;
+
+                              return (
+                                <article
+                                  key={event.id}
+                                  className={`overflow-hidden rounded-md border ${
+                                    accepted.length > 0 ? "border-teal-200 bg-teal-50/40" : "border-slate-200 bg-white"
+                                  }`}
+                                  style={{ borderLeftWidth: "4px", borderLeftColor: borderColor }}
+                                >
+                                  <div className="flex">
+                                    {coverUrl ? (
+                                      <a
+                                        href={`/e/${shortenUUID(event.id)}`}
+                                        className="relative block h-20 w-24 shrink-0 bg-slate-100 sm:h-24 sm:w-28"
+                                      >
+                                        <EventImage src={coverUrl} className="h-full w-full object-cover" />
+                                      </a>
+                                    ) : null}
+                                    <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-2 p-3">
+                                      <div>
+                                        <div className="mb-1 flex flex-wrap items-center gap-2">
+                                          {accepted.length > 0 ? (
+                                            <span className="inline-flex items-center rounded-full bg-teal-100 px-2.5 py-1 text-[11px] font-semibold text-teal-800">
+                                              {getAcceptedCountLabel(accepted.length)}
+                                            </span>
+                                          ) : null}
+                                          {acceptedEventIds.has(event.id) ? (
+                                            <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-teal-800 ring-1 ring-teal-200">
+                                              Du hast zugesagt
+                                            </span>
+                                          ) : null}
+                                          {contextLabel ? (
+                                            <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200">
+                                              {contextLabel}
+                                            </span>
+                                          ) : null}
+                                        </div>
+                                        <a
+                                          href={`/e/${shortenUUID(event.id)}`}
+                                          className="break-words text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
+                                        >
+                                          {event.title.replace(/#[^\s]+/gi, "").trim()}
+                                        </a>
+                                        <p className="text-xs text-slate-500">
+                                          {new Date(event.startsAt).toLocaleString("de-DE")} -{" "}
+                                          {new Date(event.endsAt).toLocaleTimeString("de-DE")}
+                                          {event.tags.length > 0 ? ` · ${event.tags.join(" · ")}` : ""}
+                                        </p>
+                                        <div className="mt-2 rounded-lg bg-white/80 px-3 py-2">
+                                          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                                            Wer ist dabei?
+                                          </p>
+                                          {accepted.length > 0 ? (
+                                            <p className="mt-1 text-xs font-medium text-teal-800">
+                                              {acceptedNames.join(", ")}
+                                              {remainingAccepted > 0 ? ` +${remainingAccepted}` : ""}
+                                            </p>
+                                          ) : (
+                                            <p className="mt-1 text-xs text-slate-500">Noch niemand zugesagt</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </article>
+                              );
+                            })}
                           </div>
                         </div>
-                      </article>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+                      ))}
+                    </div>
+                  )}
+                </section>
+              );
+            })}
           </div>
         </section>
 
