@@ -21,17 +21,24 @@ Hinweis:
 - Auf der Startseite siehst du direkt öffentliche Events als Beispiel, bevor du dich anmeldest.
 - Die Startseite zeigt kurze Einstiege für **neue Leute kennenlernen**, **Reconnecten** und optional **Dating** (`#date`).
 
-## 3. Gruppen ansehen
+## 3. Startansicht verstehen
 
-Nach dem Login landest du in **Events**. Oben siehst du deinen **Überblick** und darunter direkt **„Nächste Schritte“** mit vier Vorschlägen: Event anlegen, Vorschläge, Gruppen & Einladen, Alle Events. So siehst du sofort, welche Optionen es gibt. Wenn Events noch keine Zusagen haben, erscheint ein Hinweis zum Einladen.
+Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade relevant ist: offene Aktivitäten, spontane Optionen und schnelle Wege zu deinen Vorschlägen.
+
+- **Jetzt** ist die Hauptansicht für „Was geht gerade?“
+- **Vorschläge** ist deine Handlungs-Queue für offene Entscheidungen
+- **Events** ist deine persönliche Kalender- und Verwaltungsansicht für sichtbare Aktivitäten und Zusagen
+- **Gruppen** ist der Bereich zum Organisieren, Einladen und Kontakte pflegen
+
+## 4. Gruppen ansehen
 
 - Öffne **Gruppen** (bzw. **Gruppen & Einladen** in der Navigation).
 - Lege dort über **Neue Gruppe** eine Gruppe an.
 - Tippe auf eine Gruppe, um Details zu öffnen.
 - Dort kannst du Mitglieder einladen und Hashtags anpassen.
-- Auf dem Handy nutzt du unten die Navigation mit **Events**, **Gruppen**, **Vorschläge** und **Profil**.
+- Auf dem Handy nutzt du unten die Navigation mit **Jetzt**, **Vorschläge**, **Events** und **Gruppen**. Dein Profil erreichst du oben rechts.
 
-## 4. Erstes Event erstellen
+## 5. Erstes Event erstellen
 
 Lege ein Event mit Titel, Uhrzeit und Hashtags an.
 
@@ -40,7 +47,7 @@ Tipps:
 - Nutze `#alle`, wenn der Termin für alle sichtbar sein soll.
 - Nutze `#kontakte`, wenn der Termin für dein Netzwerk gedacht ist.
 
-## 5. Vorschläge prüfen
+## 6. Vorschläge prüfen
 
 Öffne **Vorschläge** in der Navigation.
 
@@ -52,7 +59,7 @@ Starte dort das Matching und prüfe deine Vorschläge.
 - **Absagen**: passt nicht
 - Hashtags werden in Event- und Vorschlagsansichten nicht öffentlich angezeigt.
 
-## 6. Profil und Einstellungen festlegen
+## 7. Profil und Einstellungen festlegen
 
 Über **Mein Profil** (oben rechts) oder den Punkt **Profil** in der mobilen Navigation kannst du:
 

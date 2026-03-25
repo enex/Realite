@@ -5,14 +5,14 @@ import { getAuthSession } from "@/src/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export default async function EventsPage() {
+export default async function NowPage() {
   const session = await getAuthSession();
 
   if (!session?.user.email) redirect("/");
 
   return (
     <Dashboard
-      view="events"
+      view="now"
       userName={session.user.name ?? session.user.email}
       userEmail={session.user.email}
       userImage={session.user.image ?? null}

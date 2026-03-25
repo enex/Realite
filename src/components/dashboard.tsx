@@ -159,10 +159,12 @@ const emptyPayload: DashboardPayload = {
 };
 
 export function Dashboard({
+  view = "now",
   userName,
   userEmail,
   userImage
 }: {
+  view?: "now" | "events";
   userName: string;
   userEmail: string;
   userImage: string | null;
@@ -409,6 +411,7 @@ export function Dashboard({
 
   const pendingCount = data.suggestions.filter((s) => s.status === "pending" || s.status === "calendar_inserted").length;
   const eventsWithoutAccepted = visibleEvents.filter((e) => (data.acceptedByEventId?.[e.id] ?? []).length === 0);
+  const isEventsView = view === "events";
 
   return (
     <AppShell
@@ -422,30 +425,41 @@ export function Dashboard({
         {/* Mobile: Events zuerst. Desktop: Hero + Kontext. */}
         <section
           className="relative isolate overflow-hidden rounded-2xl bg-gradient-to-br from-teal-700 via-teal-800 to-teal-900 px-4 py-4 text-white shadow-lg md:rounded-3xl md:px-6 md:py-7"
-          aria-label="Was kannst du heute machen?"
+          aria-label={isEventsView ? "Deine Event-Ansicht" : "Was kannst du heute machen?"}
         >
           <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_60%_at_60%_0%,rgba(77,129,114,0.4),transparent)]" />
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">
               <h1 className="text-lg font-bold tracking-tight text-white md:mt-1 md:text-2xl">
-                Was geht heute?
+                {isEventsView ? "Deine Events & Aktivitäten" : "Was geht heute?"}
               </h1>
               <p className="mt-1 hidden text-sm text-teal-100 md:block md:max-w-xl md:text-base">
-                Coole Aktivitäten entdecken, bei was dabei sein oder selbst was starten.
+                {isEventsView
+                  ? "Das ist deine persönliche Kalender- und Sozialkalender-Ansicht: planen, verwalten, zusagen und teilen."
+                  : "Coole Aktivitäten entdecken, bei was dabei sein oder selbst was starten."}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <a
-                href="/suggestions"
-                className="inline-flex items-center justify-center rounded-xl bg-white px-3 py-2 text-sm font-bold text-teal-900 shadow-md transition hover:bg-teal-50 active:bg-teal-100"
-              >
-                Vorschläge
-                {pendingCount > 0 ? (
-                  <span className="ml-1.5 rounded-full bg-amber-400 px-1.5 py-0.5 text-xs font-bold text-teal-900">
-                    {pendingCount}
-                  </span>
-                ) : null}
-              </a>
+              {isEventsView ? (
+                <a
+                  href="/now"
+                  className="inline-flex items-center justify-center rounded-xl bg-white px-3 py-2 text-sm font-bold text-teal-900 shadow-md transition hover:bg-teal-50 active:bg-teal-100"
+                >
+                  Zur Jetzt-Ansicht
+                </a>
+              ) : (
+                <a
+                  href="/suggestions"
+                  className="inline-flex items-center justify-center rounded-xl bg-white px-3 py-2 text-sm font-bold text-teal-900 shadow-md transition hover:bg-teal-50 active:bg-teal-100"
+                >
+                  Vorschläge
+                  {pendingCount > 0 ? (
+                    <span className="ml-1.5 rounded-full bg-amber-400 px-1.5 py-0.5 text-xs font-bold text-teal-900">
+                      {pendingCount}
+                    </span>
+                  ) : null}
+                </a>
+              )}
               <button
                 type="button"
                 onClick={() => setShowEventForm((v) => !v)}
@@ -457,8 +471,19 @@ export function Dashboard({
           </div>
         </section>
 
-        {/* Was geht? Nach Tag – Fokus auf Events, „Wer ist dabei“ klar */}
-        <section className="mt-5 md:mt-6" aria-label="Was geht? Nach Tag">
+        {isEventsView ? (
+          <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:mt-6 md:p-6">
+            <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">Einordnung</p>
+            <h2 className="mt-2 text-lg font-semibold text-slate-900">Events ist deine persönliche Verwaltungsansicht</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Hier sammelst du alle sichtbaren Termine, Zusagen und eigenen Aktivitäten. Für schnelle Reaktionen und spontane Optionen ist
+              die <a href="/now" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">Jetzt-Ansicht</a> gedacht.
+            </p>
+          </section>
+        ) : null}
+
+        {!isEventsView ? (
+          <section className="mt-5 md:mt-6" aria-label="Was geht? Nach Tag">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-base font-bold text-slate-900 md:text-lg">Nach Tag</h2>
             <div className="flex items-center gap-1">
@@ -641,7 +666,8 @@ export function Dashboard({
               })}
             </div>
           )}
-        </section>
+          </section>
+        ) : null}
 
         {/* Nudge: Events ohne Zusagen – Leute einladen */}
         {eventsWithoutAccepted.length > 0 && !showEventForm ? (
@@ -782,15 +808,6 @@ export function Dashboard({
           </form>
         ) : null}
 
-        {smartMeetingsEnabled ? (
-          <SmartMeetingsCard
-            groups={visibleGroups}
-            smartMeetings={data.smartMeetings}
-            onCreated={() => queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY })}
-            onError={(message) => setSubmitError(message)}
-          />
-        ) : null}
-
         <section id="events" className="mt-8 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">Was gibt’s? Deine Events & Aktivitäten</h2>
           <p className="mt-1 text-sm text-slate-600">
@@ -882,6 +899,15 @@ export function Dashboard({
             ))}
           </div>
         </section>
+
+        {smartMeetingsEnabled ? (
+          <SmartMeetingsCard
+            groups={visibleGroups}
+            smartMeetings={data.smartMeetings}
+            onCreated={() => queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY })}
+            onError={(message) => setSubmitError(message)}
+          />
+        ) : null}
       </main>
     </AppShell>
   );

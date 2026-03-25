@@ -50,7 +50,7 @@ export default async function HomePage({
   }
 
   const hasSuggestionFlow = query.has("suggestion") || query.has("decision");
-  const baseTarget = hasSuggestionFlow ? "/suggestions" : "/events";
+  const baseTarget = hasSuggestionFlow ? "/suggestions" : "/now";
   const redirectTarget = query.toString() ? `${baseTarget}?${query.toString()}` : baseTarget;
   redirect(redirectTarget as never);
 }

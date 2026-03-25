@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarBlank, Sparkle, Users } from "@phosphor-icons/react";
+import { CalendarBlank, House, Sparkle, Users } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
@@ -18,15 +18,17 @@ type AppShellProps = {
 };
 
 const DESKTOP_ITEMS = [
-  { href: "/events", label: "Events" },
-  { href: "/groups", label: "Gruppen & Einladen" },
+  { href: "/now", label: "Jetzt" },
   { href: "/suggestions", label: "Vorschläge" },
+  { href: "/events", label: "Events" },
+  { href: "/groups", label: "Gruppen" },
 ];
 
 const MOBILE_ITEMS = [
+  { href: "/now", label: "Jetzt", Icon: House },
+  { href: "/suggestions", label: "Vorschläge", Icon: Sparkle },
   { href: "/events", label: "Events", Icon: CalendarBlank },
   { href: "/groups", label: "Gruppen", Icon: Users },
-  { href: "/suggestions", label: "Vorschläge", Icon: Sparkle },
 ];
 
 function isItemActive(pathname: string, href: string) {
@@ -57,7 +59,7 @@ export function AppShell({ user, children }: AppShellProps) {
     <div className="min-h-screen">
       <header className="sticky top-0 z-40 border-b border-slate-200/90 bg-white/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          <a href="/events" className="inline-flex items-center gap-2 text-lg font-bold tracking-tight text-slate-900" title="Zur Übersicht">
+          <a href="/now" className="inline-flex items-center gap-2 text-lg font-bold tracking-tight text-slate-900" title="Zur Übersicht">
             <img
               src="/icon.svg"
               alt=""
@@ -98,7 +100,7 @@ export function AppShell({ user, children }: AppShellProps) {
 
       <div className="pb-[calc(env(safe-area-inset-bottom)+4.5rem)] md:pb-0">{children}</div>
 
-      {/* Mobile: iOS 26-style floating bubble nav (3 Tabs, Profil nur oben) */}
+      {/* Mobile: floating bubble nav, Profil nur oben */}
       <nav
         className="fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 md:hidden"
         aria-label="Mobile Navigation"

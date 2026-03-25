@@ -209,15 +209,15 @@ Status: `planned`
 ### P0
 
 - [ ] Dashboard neu strukturieren: erst relevante Aktivitäten, dann Vorschläge, dann Smart Meetings, dann eigene Verwaltung
-- [ ] neue primäre Home-/Now-Ansicht definieren, die nicht mit `Events` identisch ist
-- [ ] `Events` als persönliche Kalender-/Sozialkalender-Ansicht neu positionieren
+- [x] neue primäre Home-/Now-Ansicht definieren, die nicht mit `Events` identisch ist
+- [x] `Events` als persönliche Kalender-/Sozialkalender-Ansicht neu positionieren
 - [ ] `Smart Meetings` aus der Hauptansicht herauslösen und in einen sekundären Bereich verschieben
 - [ ] klare CTA-Hierarchie definieren: mitmachen, reagieren, erstellen
 - [ ] bestehende Hauptviews auf mobile und desktop Informationshierarchie prüfen
 
 ### P1
 
-- [ ] Navigation überprüfen: ob `Events`, `Vorschläge`, `Gruppen` die richtige Reihenfolge und Benennung haben
+- [x] Navigation überprüfen: ob `Events`, `Vorschläge`, `Gruppen` die richtige Reihenfolge und Benennung haben
 - [ ] unterscheiden zwischen `Entdecken`, `Reagieren`, `Verwalten`
 - [ ] visuelle Patterns für offene Aktivitäten, persönliche Vorschläge, eigene Aktivitäten und Smart Meetings definieren
 - [ ] Event-/Suggestion-Karten auf Scannability und Priorisierung überarbeiten
@@ -235,7 +235,7 @@ Status: `planned`
 ### Dashboard / Events
 
 - [x] Entscheidung: `/events` ist nicht die primäre Startansicht
-- [ ] neue Startansicht für "Was geht gerade?" definieren
+- [x] neue Startansicht für "Was geht gerade?" definieren
 - [ ] prüfen, ob eigene Events zu viel Platz einnehmen
 - [ ] Vorschläge mit Handlungsbedarf nach oben ziehen
 - [ ] offene Aktivitäten mit vorhandenen Zusagen sichtbarer machen
