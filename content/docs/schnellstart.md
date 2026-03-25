@@ -26,6 +26,7 @@ Hinweis:
 Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade relevant ist: offene Aktivitäten, spontane Optionen und schnelle Wege zu deinen Vorschlägen.
 
 - **Jetzt** ist die Hauptansicht für „Was geht gerade?“
+- Die Reihenfolge der nächsten Aktion ist dort klar: **zuerst reagieren**, **dann mitmachen**, **danach selbst erstellen**
 - **Vorschläge** ist deine Handlungs-Queue für offene Entscheidungen
 - **Events** ist deine persönliche Kalender- und Verwaltungsansicht für sichtbare Aktivitäten und Zusagen
 - **Smart Treffen** findest du in **Events** als Planungs- und Orga-Tool, nicht im spontanen Hauptfeed
@@ -55,6 +56,7 @@ Tipps:
 Starte dort das Matching und prüfe deine Vorschläge.
 
 - Offene Vorschläge mit Handlungsbedarf stehen oben.
+- In **Jetzt** sind offene Vorschläge auch als primäre Aktion markiert, damit du zuerst reagieren kannst.
 - Bereits entschiedene Vorschläge bleiben darunter im Verlauf sichtbar.
 - **Zusagen**: passt für dich
 - **Absagen**: passt nicht

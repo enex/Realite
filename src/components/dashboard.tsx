@@ -480,6 +480,17 @@ export function Dashboard({
     ],
     [acceptedEvents, calendarContextEvents, ownPlannedEvents]
   );
+  const nextJoinableEvent = useMemo(
+    () =>
+      visibleEvents.find(
+        (event) => event.createdBy !== data.me.id && !acceptedEventIds.has(event.id)
+      ) ?? null,
+    [acceptedEventIds, data.me.id, visibleEvents]
+  );
+  const joinCtaHref = nextJoinableEvent ? `/e/${shortenUUID(nextJoinableEvent.id)}` : "/events#events";
+  const joinCtaLabel = nextJoinableEvent ? "Mitmachen" : "Events ansehen";
+  const joinCtaHint = nextJoinableEvent ? "eine sichtbare Aktivität öffnen" : "sichtbare Aktivitäten öffnen";
+  const suggestionCtaLabel = pendingCount > 0 ? "Reagieren" : "Vorschläge prüfen";
 
   return (
     <AppShell
@@ -516,27 +527,51 @@ export function Dashboard({
                   Zur Jetzt-Ansicht
                 </a>
               ) : (
-                <a
-                  href="/suggestions"
-                  className="inline-flex items-center justify-center rounded-xl bg-white px-3 py-2 text-sm font-bold text-teal-900 shadow-md transition hover:bg-teal-50 active:bg-teal-100"
-                >
-                  Vorschläge
-                  {pendingCount > 0 ? (
-                    <span className="ml-1.5 rounded-full bg-amber-400 px-1.5 py-0.5 text-xs font-bold text-teal-900">
-                      {pendingCount}
-                    </span>
-                  ) : null}
-                </a>
+                <>
+                  <a
+                    href="/suggestions"
+                    className="inline-flex items-center justify-center rounded-xl bg-white px-3 py-2 text-sm font-bold text-teal-900 shadow-md transition hover:bg-teal-50 active:bg-teal-100"
+                  >
+                    {suggestionCtaLabel}
+                    {pendingCount > 0 ? (
+                      <span className="ml-1.5 rounded-full bg-amber-400 px-1.5 py-0.5 text-xs font-bold text-teal-900">
+                        {pendingCount}
+                      </span>
+                    ) : null}
+                  </a>
+                  <a
+                    href={joinCtaHref}
+                    className="inline-flex items-center justify-center rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                  >
+                    {joinCtaLabel}
+                  </a>
+                </>
               )}
               <button
                 type="button"
                 onClick={() => setShowEventForm((v) => !v)}
                 className="inline-flex items-center justify-center rounded-xl border border-white/35 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
               >
-                {showEventForm ? "Schließen" : "Event starten"}
+                {showEventForm ? "Schließen" : "Erstellen"}
               </button>
             </div>
           </div>
+          {!isEventsView ? (
+            <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium text-teal-50">
+              <span className="rounded-full bg-white/10 px-3 py-1">
+                1. Reagieren
+                <span className="ml-1 text-teal-100">wenn etwas offen ist</span>
+              </span>
+              <span className="rounded-full bg-white/10 px-3 py-1">
+                2. Mitmachen
+                <span className="ml-1 text-teal-100">{joinCtaHint}</span>
+              </span>
+              <span className="rounded-full bg-white/10 px-3 py-1">
+                3. Erstellen
+                <span className="ml-1 text-teal-100">wenn noch nichts passt</span>
+              </span>
+            </div>
+          ) : null}
         </section>
 
         {isEventsView ? (
@@ -605,21 +640,27 @@ export function Dashboard({
                 <>
                   <p className="text-sm font-medium text-slate-700">Noch nichts geplant?</p>
                   <p className="mt-1 text-sm text-slate-500">
-                    Schau unter <a href="/suggestions" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">Vorschläge</a> oder starte ein eigenes Event.
+                    Reagiere zuerst auf <a href="/suggestions" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">Vorschläge</a>, schau dann nach offenen Aktivitäten oder starte selbst etwas.
                   </p>
                   <div className="mt-4 flex flex-wrap justify-center gap-2">
                     <a
                       href="/suggestions"
                       className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
                     >
-                      Vorschläge
+                      {suggestionCtaLabel}
+                    </a>
+                    <a
+                      href={joinCtaHref}
+                      className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      {joinCtaLabel}
                     </a>
                     <button
                       type="button"
                       onClick={() => setShowEventForm(true)}
                       className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                     >
-                      Event starten
+                      Erstellen
                     </button>
                   </div>
                 </>
@@ -694,6 +735,10 @@ export function Dashboard({
                                     <p className="mt-0.5 text-sm text-slate-600">Noch niemand – du könntest der erste sein</p>
                                   )}
                                 </div>
+                                <div className="flex items-center justify-between rounded-lg border border-amber-200/80 bg-white px-3 py-2 text-sm font-semibold text-amber-900">
+                                  <span>Jetzt reagieren</span>
+                                  <span aria-hidden>→</span>
+                                </div>
                               </a>
                             </li>
                           );
@@ -756,6 +801,16 @@ export function Dashboard({
                                   ) : (
                                     <p className="mt-0.5 text-sm text-slate-500">Noch niemand zugesagt</p>
                                   )}
+                                </div>
+                                <div className="mt-2 flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700">
+                                  <span>
+                                    {item.event.createdBy === data.me.id
+                                      ? "Verwalten"
+                                      : isAccepted
+                                        ? "Details ansehen"
+                                        : "Mitmachen prüfen"}
+                                  </span>
+                                  <span aria-hidden>→</span>
                                 </div>
                               </div>
                             </a>

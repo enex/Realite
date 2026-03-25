@@ -38,6 +38,7 @@ Zuletzt umgesetzt am 25.03.2026:
 - Nutzer-Doku für Zusagen/Momentum in den Übersichten ergänzt
 - `Events` klarer als Sozialkalender segmentiert: bestätigte Aktivitäten, eigene Planung und Kalenderkontext
 - Vorschlagskarten so geschärft, dass Zeitpunkt, Relevanzgrund und nächste Aktion direkt sichtbar sind
+- CTA-Hierarchie in `Jetzt` festgelegt und umgesetzt: zuerst reagieren, dann mitmachen, dann erstellen
 
 Bereits vorhanden:
 
@@ -220,7 +221,7 @@ Status: `planned`
 - [x] neue primäre Home-/Now-Ansicht definieren, die nicht mit `Events` identisch ist
 - [x] `Events` als persönliche Kalender-/Sozialkalender-Ansicht neu positionieren
 - [x] `Smart Meetings` aus der Hauptansicht herauslösen und in einen sekundären Bereich verschieben
-- [ ] klare CTA-Hierarchie definieren: mitmachen, reagieren, erstellen
+- [x] klare CTA-Hierarchie definieren: zuerst reagieren, dann mitmachen, dann erstellen
 - [ ] bestehende Hauptviews auf mobile und desktop Informationshierarchie prüfen
 
 ### P1
@@ -246,6 +247,7 @@ Status: `planned`
 - [x] neue Startansicht für "Was geht gerade?" definieren
 - [ ] prüfen, ob eigene Events zu viel Platz einnehmen
 - [ ] Vorschläge mit Handlungsbedarf nach oben ziehen
+- [x] CTA-Reihenfolge in `Jetzt` sichtbar machen: reagieren, mitmachen, erstellen
 - [x] offene Aktivitäten mit vorhandenen Zusagen sichtbarer machen
 - [x] "Wer ist dabei?" prominenter machen
 - [x] `Events` als Sozialkalender klar definieren: eigene Pläne, bestätigte Aktivitäten, Kalenderkontext
