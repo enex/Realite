@@ -33,6 +33,8 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 25.03.2026:
 
+- `Jetzt` zeigt den Sozialkalender nur noch als kompakte Vorschau; die ausführliche Event-Struktur bleibt ausschließlich in `Events`
+- mobile und desktop Informationshierarchie der Hauptviews geprüft und geschärft: erst reagieren und mitmachen, dann Verwaltung
 - visuelle Patterns und Statuslabels für Vorschläge, offene Aktivitäten und eigene Planung vereinheitlicht
 - Karten in `Jetzt` und `Events` zeigen konsistente Pattern-Badges wie `Jetzt reagieren`, `Offene Aktivität`, `Deine Planung` und `Du dabei`
 - Nutzer-Doku für die neuen Kartenmuster und Statushinweise ergänzt
@@ -228,7 +230,7 @@ Status: `planned`
 - [x] `Events` als persönliche Kalender-/Sozialkalender-Ansicht neu positionieren
 - [x] `Smart Meetings` aus der Hauptansicht herauslösen und in einen sekundären Bereich verschieben
 - [x] klare CTA-Hierarchie definieren: zuerst reagieren, dann mitmachen, dann erstellen
-- [ ] bestehende Hauptviews auf mobile und desktop Informationshierarchie prüfen
+- [x] bestehende Hauptviews auf mobile und desktop Informationshierarchie prüfen
 
 ### P1
 

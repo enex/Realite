@@ -30,6 +30,7 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 - Offene Vorschläge mit Handlungsbedarf stehen dort in einem eigenen Bereich **„Reagieren zuerst“** ganz oben.
 - Vorschläge und Aktivitäten zeigen klare Muster-Badges, damit du schneller scannst, was gerade Sache ist: etwa **„Jetzt reagieren“**, **„Offene Aktivität“**, **„Deine Planung“** oder **„Du dabei“**.
 - Eigene neue Events ohne Zusagen bleiben bewusst in **Events**, damit **Jetzt** nicht mit Verwaltung überladen wird.
+- Der Sozialkalender erscheint in **Jetzt** nur noch als kurze Vorschau. Die ausführliche Aufteilung nach **Zugesagt**, **Deine Planung** und **Kalenderkontext** bleibt in **Events**.
 - Die Reihenfolge der nächsten Aktion ist dort klar: **zuerst reagieren**, **dann mitmachen**, **danach selbst erstellen**
 - **Vorschläge** gehört zu **Reagieren** und ist deine Handlungs-Queue für offene Entscheidungen
 - **Events** gehört zu **Verwalten** und ist deine persönliche Kalender- und Verwaltungsansicht für sichtbare Aktivitäten und Zusagen
