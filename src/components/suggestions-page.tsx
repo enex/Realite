@@ -443,6 +443,8 @@ function SuggestionCard({
 }) {
   const accepted = acceptedByEventId?.[suggestion.eventId] ?? [];
   const badge = getSuggestionBadge(suggestion.status);
+  const timing = getSuggestionTiming(suggestion.startsAt, suggestion.endsAt);
+  const nextAction = getSuggestionNextAction(suggestion.status, variant);
   const cardClasses =
     variant === "action"
       ? isSelected
@@ -521,13 +523,121 @@ function SuggestionCard({
                 : "border border-slate-300 bg-white text-slate-700 hover:border-slate-400"
             }`}
           >
-            {variant === "action" ? "Jetzt antworten" : "Details öffnen"}
+            {nextAction.ctaLabel}
           </a>
         </div>
       </div>
-      <p className="mt-3 text-sm text-slate-600">{suggestion.reason}</p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <SuggestionInfoBlock
+          label="Wann"
+          value={timing.primary}
+          detail={timing.secondary}
+          tone={variant === "action" ? "amber" : "slate"}
+        />
+        <SuggestionInfoBlock
+          label={variant === "action" ? "Warum passend" : "Entscheidungsgrundlage"}
+          value={getReasonHeadline(suggestion.reason)}
+          detail={suggestion.reason}
+          tone="teal"
+        />
+        <SuggestionInfoBlock
+          label="Nächste Aktion"
+          value={nextAction.label}
+          detail={nextAction.detail}
+          tone={variant === "action" ? "amber" : "slate"}
+        />
+      </div>
     </article>
   );
+}
+
+function SuggestionInfoBlock({
+  label,
+  value,
+  detail,
+  tone
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  tone: "amber" | "teal" | "slate";
+}) {
+  const toneClasses = {
+    amber: "border-amber-200 bg-amber-50/80",
+    teal: "border-teal-200 bg-teal-50/80",
+    slate: "border-slate-200 bg-slate-50/80"
+  }[tone];
+
+  return (
+    <div className={`rounded-xl border p-3 ${toneClasses}`}>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">{label}</p>
+      <p className="mt-2 text-sm font-semibold text-slate-900">{value}</p>
+      <p className="mt-1 text-xs leading-5 text-slate-600">{detail}</p>
+    </div>
+  );
+}
+
+function getReasonHeadline(reason: string) {
+  const trimmed = reason.trim();
+  const firstSentence = trimmed.split(/[.!?](?:\s|$)/, 1)[0]?.trim() ?? "";
+
+  if (!firstSentence) {
+    return "Passender Vorschlag";
+  }
+
+  return firstSentence.length > 72 ? `${firstSentence.slice(0, 69).trimEnd()}...` : firstSentence;
+}
+
+function getSuggestionTiming(startsAt: string, endsAt: string) {
+  const start = new Date(startsAt);
+  const end = new Date(endsAt);
+  const today = new Date();
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const startOfSuggestionDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const dayDiff = Math.round((startOfSuggestionDay.getTime() - startOfToday.getTime()) / 86_400_000);
+
+  const dayLabel =
+    dayDiff === 0
+      ? "Heute"
+      : dayDiff === 1
+        ? "Morgen"
+        : start.toLocaleDateString("de-DE", {
+            weekday: "long",
+            day: "2-digit",
+            month: "2-digit"
+          });
+
+  return {
+    primary: `${dayLabel}, ${start.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`,
+    secondary: `bis ${end.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`
+  };
+}
+
+function getSuggestionNextAction(status: SuggestionStatus, variant: "action" | "history") {
+  if (variant === "history") {
+    return {
+      label: status === "accepted" ? "Zusage steht" : "Bewusst abgelehnt",
+      detail:
+        status === "accepted"
+          ? "Du bist für diese Aktivität bereits bestätigt."
+          : "Der Vorschlag bleibt nur noch als Verlauf sichtbar.",
+      ctaLabel: "Details öffnen"
+    };
+  }
+
+  if (status === "calendar_inserted") {
+    return {
+      label: "Kalendereintrag prüfen",
+      detail: "Der Termin ist vorgemerkt, aber Realite wartet weiter auf deine Zu- oder Absage.",
+      ctaLabel: "Zu- oder absagen"
+    };
+  }
+
+  return {
+    label: "Jetzt reagieren",
+    detail: "Öffne die Detailansicht und entscheide, ob du mitmachst oder absagst.",
+    ctaLabel: "Jetzt antworten"
+  };
 }
 
 function getSuggestionBadge(status: SuggestionStatus) {

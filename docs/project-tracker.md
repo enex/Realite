@@ -37,6 +37,7 @@ Zuletzt umgesetzt am 25.03.2026:
 - "Wer ist dabei?" in Aktivitätskarten prominenter dargestellt
 - Nutzer-Doku für Zusagen/Momentum in den Übersichten ergänzt
 - `Events` klarer als Sozialkalender segmentiert: bestätigte Aktivitäten, eigene Planung und Kalenderkontext
+- Vorschlagskarten so geschärft, dass Zeitpunkt, Relevanzgrund und nächste Aktion direkt sichtbar sind
 
 Bereits vorhanden:
 
@@ -259,7 +260,7 @@ Status: `planned`
 ### Suggestions
 
 - [x] Suggestions stärker als Handlungs-Queue inszenieren
-- [ ] Gründe, Relevanz und nächste Aktion schneller erfassbar machen
+- [x] Gründe, Relevanz und nächste Aktion schneller erfassbar machen
 - [x] accepted / pending / declined Zustände visueller differenzieren
 
 ### Groups

@@ -172,8 +172,16 @@ So erkennst du schneller, wo schon Momentum vorhanden ist und bei welchen Aktivi
 - ob ein Vorschlag schon in deinem Kalender vorgemerkt ist
 - wer bereits zugesagt hat
 - welche Vorschläge du schon bestätigt oder abgelehnt hast
+- warum ein Vorschlag zu dir passt
+- was du als Nächstes konkret tun solltest
 
 Bereits entschiedene Vorschläge rutschen in einen separaten Verlauf. So bleibt die Hauptfläche auf Reaktion statt Verwaltung fokussiert.
+
+Jede Vorschlagskarte beantwortet dabei jetzt direkt drei Fragen:
+
+- **Wann?** Tag und Uhrzeit der Aktivität
+- **Warum passend?** der wichtigste Relevanzhinweis aus dem Matching
+- **Nächste Aktion?** ob du jetzt reagieren oder nur den bestehenden Stand prüfen solltest
 
 **Vorschläge mit Kalendertermin:** Wenn zu einem Vorschlag bei dir bereits ein Termin im Kalender angelegt wurde (z. B. durch Zusage oder automatische Übernahme), findest du auf der Vorschlagsseite und auf der Vorschlags-Detailseite einen Link **Im Kalender bearbeiten** bzw. **Event im Kalender bearbeiten**. Damit öffnest du den zugehörigen Termin in Google Kalender zur Bearbeitung.
 
