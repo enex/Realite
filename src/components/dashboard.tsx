@@ -514,6 +514,10 @@ export function Dashboard({
     ],
     [acceptedEvents, calendarContextEvents, ownPlannedEvents]
   );
+  const smartMeetingsCount = data.smartMeetings.length;
+  const smartMeetingsNeedingApproval = data.smartMeetings.filter(
+    (meeting) => meeting.latestRun?.status === "awaiting_approval"
+  ).length;
   const nextJoinableEvent = useMemo(
     () =>
       visibleEvents.find(
@@ -619,6 +623,41 @@ export function Dashboard({
               Hier sammelst du alle sichtbaren Termine, Zusagen und eigenen Aktivitäten. Für schnelle Reaktionen und spontane Optionen ist
               die <a href="/now" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">Jetzt-Ansicht</a> gedacht.
             </p>
+            <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Bereiche in Events</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <a
+                    href="#events"
+                    className="inline-flex items-center rounded-full border border-teal-200 bg-white px-3 py-1.5 text-sm font-semibold text-teal-800 transition hover:border-teal-300 hover:bg-teal-50"
+                  >
+                    Sozialkalender
+                  </a>
+                  <a
+                    href="#smart-meetings"
+                    className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
+                  >
+                    Smart Treffen
+                  </a>
+                </div>
+                <p className="mt-3 text-sm text-slate-600">
+                  Erst kommen zugesagte, eigene und kontextuelle Aktivitäten. Smart Treffen bleiben darunter als eigener Planungsbereich.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-700">Smart Treffen</p>
+                <p className="mt-2 text-sm font-semibold text-slate-900">
+                  {smartMeetingsCount === 0
+                    ? "Kein aktives Smart Treffen"
+                    : `${smartMeetingsCount} Smart ${smartMeetingsCount === 1 ? "Treffen" : "Treffen"} im Planungsbereich`}
+                </p>
+                <p className="mt-1 text-sm text-slate-600">
+                  {smartMeetingsNeedingApproval > 0
+                    ? `${smartMeetingsNeedingApproval} ${smartMeetingsNeedingApproval === 1 ? "Lauf braucht" : "Läufe brauchen"} gerade deine Freigabe für Kalendereinladungen.`
+                    : "Hier planst du Gruppen-Termine, ohne die Hauptnavigation stärker aufzublähen."}
+                </p>
+              </div>
+            </div>
           </section>
         ) : null}
 

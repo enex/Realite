@@ -33,6 +33,7 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 25.03.2026:
 
+- Smart Treffen in `Events` als sekundären Planungsbereich mit eigener Bereichs-Navigation verankert statt als stärkere Hauptnavigation
 - eigene Events ohne Zusagen aus dem `Jetzt`-Feed herausgenommen und klar in `Events` als Planung verortet
 - offene Vorschläge mit Handlungsbedarf in `Jetzt` als eigene Reaktions-Section vor den Aktivitätsfeed gezogen
 - offene Aktivitäten mit vorhandenen Zusagen in `Jetzt` und `Events` sichtbarer gemacht
@@ -259,7 +260,7 @@ Status: `planned`
 - [x] Entscheidung: Smart Meetings sollen nicht im Hauptfeed der Startansicht bleiben
 - [x] bevorzugte Zielposition entscheiden: sekundärer Verwaltungsbereich unter `Events`
 - [x] Smart Meetings als Planungs-/Orga-Tool positionieren statt als primären Discovery-Feed
-- [ ] prüfen, wie viel Prominenz Smart Meetings in der Navigation wirklich brauchen
+- [x] prüfen, wie viel Prominenz Smart Meetings in der Navigation wirklich brauchen
 
 ### Suggestions
 

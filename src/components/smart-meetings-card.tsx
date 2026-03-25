@@ -359,13 +359,15 @@ export function SmartMeetingsCard({
   }
 
   return (
-    <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section id="smart-meetings" className="mt-8 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Sekundärer Planungsbereich</p>
           <h2 className="text-lg font-semibold text-slate-900">Smart Treffen</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Realite sucht den besten Zeitpunkt in deinem Fenster. Kalendereinladungen gehen erst raus, wenn du die
-            Teilnehmerliste ausdrücklich freigibst.
+            Realite sucht den besten Zeitpunkt in deinem Fenster. Der Bereich bleibt bewusst unterhalb des Sozialkalenders, damit
+            spontane Aktivitäten und offene Reaktionen in der Hauptnavigation Vorrang behalten. Kalendereinladungen gehen erst raus,
+            wenn du die Teilnehmerliste ausdrücklich freigibst.
           </p>
         </div>
         <button

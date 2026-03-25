@@ -20,7 +20,7 @@ type AppShellProps = {
 const DESKTOP_ITEMS = [
   { href: "/now", label: "Jetzt", intent: "Entdecken", description: "offene Aktivitäten & spontane Optionen" },
   { href: "/suggestions", label: "Vorschläge", intent: "Reagieren", description: "offene Entscheidungen zuerst" },
-  { href: "/events", label: "Events", intent: "Verwalten", description: "Sozialkalender, Zusagen & Planung" },
+  { href: "/events", label: "Events", intent: "Verwalten", description: "Sozialkalender, Zusagen, Planung & Smart Treffen" },
   { href: "/groups", label: "Gruppen", intent: "Verwalten", description: "Kontakte, Einladen & Sichtbarkeit" },
 ];
 

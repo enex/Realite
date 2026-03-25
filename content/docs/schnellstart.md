@@ -32,7 +32,7 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 - Die Reihenfolge der nächsten Aktion ist dort klar: **zuerst reagieren**, **dann mitmachen**, **danach selbst erstellen**
 - **Vorschläge** gehört zu **Reagieren** und ist deine Handlungs-Queue für offene Entscheidungen
 - **Events** gehört zu **Verwalten** und ist deine persönliche Kalender- und Verwaltungsansicht für sichtbare Aktivitäten und Zusagen
-- **Smart Treffen** findest du in **Events** als Planungs- und Orga-Tool, nicht im spontanen Hauptfeed
+- **Smart Treffen** findest du in **Events** als nachgelagerten Planungs- und Orga-Bereich, nicht als eigenen Hauptnavigationspunkt und nicht im spontanen Hauptfeed
 - **Gruppen** gehört ebenfalls zu **Verwalten**: dort organisierst du Einladungen, Kontakte und Sichtbarkeit
 
 ## 4. Gruppen ansehen

@@ -168,6 +168,14 @@ So erkennst du schneller, wo schon Momentum vorhanden ist und bei welchen Aktivi
 
 **Smart Treffen als Orga-Bereich:** **Smart Treffen** erscheint nicht mehr im spontanen **Jetzt**-Feed. Du findest die Planung stattdessen unter **Events**, damit die Hauptansicht auf spontane Aktivitäten, offene Vorschläge und schnelle Entscheidungen fokussiert bleibt.
 
+In **Events** bleibt **Smart Treffen** bewusst ein nachgelagerter Bereich unterhalb deines Sozialkalenders:
+
+- kein eigener Hauptnavigationspunkt
+- über einen Bereichslink in **Events** schnell erreichbar
+- klar getrennt von zugesagten Aktivitäten, eigener Planung und Kalenderkontext
+
+So bleibt die globale Navigation schlank, während der Planungs-Flow für Gruppen trotzdem direkt auffindbar bleibt.
+
 **Vorschlags-Ansicht als Handlungs-Queue:** In der Navigation unter **Vorschläge** zeigt Realite offene Vorschläge jetzt immer zuerst. Dort siehst du:
 
 - was gerade deine Reaktion braucht
