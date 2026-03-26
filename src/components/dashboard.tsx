@@ -989,7 +989,7 @@ export function Dashboard({
               href="/groups"
               className="shrink-0 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-amber-600"
             >
-              Gruppen & Einladen
+              Gruppen öffnen
             </a>
           </div>
         ) : null}

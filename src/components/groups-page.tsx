@@ -1,8 +1,8 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Route } from "next";
 import Link from "next/link";
+import type { ComponentProps } from "react";
 import { useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
@@ -80,7 +80,7 @@ function FlowLink({
   title,
   description
 }: {
-  href: Route;
+  href: ComponentProps<typeof Link>["href"];
   eyebrow: string;
   title: string;
   description: string;

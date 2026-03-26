@@ -307,9 +307,9 @@ Status: `planned`
 
 - [x] `Events` bleibt nicht die zentrale Startansicht
 - [x] `Smart Meetings` bleiben nicht Teil der primären Hauptaktivitätsansicht
-- [ ] Wie soll die neue primäre Home-/Now-Ansicht genau aufgebaut sein?
-- [ ] Sollen Smart Meetings im Profil liegen oder einen eigenen Top-Level-Bereich bekommen?
-- [ ] Wie sichtbar sollen eigene Events im Vergleich zu relevanten fremden Aktivitäten sein?
+- [x] Die primäre Home-/Now-Ansicht priorisiert Reaktion und offene Aktivitäten vor Verwaltung
+- [x] Smart Meetings bleiben als sekundärer Verwaltungsbereich unter `Events`
+- [x] Eigene Events ohne Zusagen bleiben in `Events`; relevante fremde Aktivitäten und offene Reaktionen stehen in `Jetzt` vorn
 - [ ] Wie wird Presence vor Ort dargestellt, ohne creepy oder zu offen zu wirken?
 - [ ] Welche Sichtbarkeitsstufen sind wirklich nötig für V1.5 / V2?
 

@@ -39,7 +39,7 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 
 ## 4. Gruppen ansehen
 
-- Öffne **Gruppen** (bzw. **Gruppen & Einladen** in der Navigation).
+- Öffne **Gruppen** in der Navigation.
 - Lege dort über **Neue Gruppe** eine Gruppe an.
 - Tippe auf eine Gruppe, um Details zu öffnen.
 - Dort kannst du Mitglieder einladen und Hashtags anpassen.
@@ -70,7 +70,7 @@ Starte dort das Matching und prüfe deine Vorschläge.
 
 ## 7. Profil und Einstellungen festlegen
 
-Über **Mein Profil** (oben rechts) oder den Punkt **Profil** in der mobilen Navigation kannst du:
+Über **Mein Profil** oben rechts kannst du:
 
 - dein eigenes Profil öffnen
 - deine Kontodaten sehen
