@@ -3,9 +3,12 @@
 import { useState } from "react";
 
 import {
+  formatEventPresenceTime,
+  getDefaultEventPresenceVisibleUntil,
   getEventPresenceStatusMeta,
   getEventPresenceToggleCopy,
   getEventPresenceWindow,
+  getEventPresenceWindowOptions,
   getEventPresenceWindowCopy,
   type EventPresenceStatus,
 } from "@/src/lib/event-presence";
@@ -15,7 +18,7 @@ type PresenceUser = {
   userId: string;
   name: string | null;
   email: string;
-  updatedAtIso: string;
+  visibleUntilIso: string;
 };
 
 type EventPresencePanelProps = {
@@ -23,6 +26,7 @@ type EventPresencePanelProps = {
   startsAtIso: string;
   endsAtIso: string;
   initialStatus: EventPresenceStatus | null;
+  initialVisibleUntilIso: string | null;
   initialCheckedInUsers: PresenceUser[];
 };
 
@@ -30,6 +34,9 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
   const presenceCard = getCardSurfaceMeta("presence");
   const [status, setStatus] = useState<EventPresenceStatus | null>(
     props.initialStatus,
+  );
+  const [currentVisibleUntilIso, setCurrentVisibleUntilIso] = useState(
+    props.initialVisibleUntilIso,
   );
   const [checkedInUsers, setCheckedInUsers] = useState(props.initialCheckedInUsers);
   const [busy, setBusy] = useState(false);
@@ -39,12 +46,36 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
   const endsAt = new Date(props.endsAtIso);
   const presenceWindow = getEventPresenceWindow({ startsAt, endsAt });
   const windowCopy = getEventPresenceWindowCopy({ startsAt, endsAt });
+  const windowOptions = getEventPresenceWindowOptions(endsAt);
+  const [selectedVisibleUntilIso, setSelectedVisibleUntilIso] = useState(
+    props.initialVisibleUntilIso ??
+      getDefaultEventPresenceVisibleUntil(endsAt)?.toISOString() ??
+      "",
+  );
 
   const hasCheckedIn = status === "checked_in";
   const toggleCopy = getEventPresenceToggleCopy(hasCheckedIn);
   const statusMeta = getEventPresenceStatusMeta(
     hasCheckedIn ? "checked_in" : "left",
   );
+  const selectOptions =
+    selectedVisibleUntilIso &&
+    !windowOptions.some(
+      (option) => option.visibleUntil.toISOString() === selectedVisibleUntilIso,
+    )
+      ? [
+          {
+            value: "current_selection",
+            label: "Aktuelles Zeitfenster",
+            visibleUntil: new Date(selectedVisibleUntilIso),
+          },
+          ...windowOptions,
+        ]
+      : windowOptions;
+  const activeVisibleUntilLabel =
+    hasCheckedIn && currentVisibleUntilIso
+      ? formatEventPresenceTime(new Date(currentVisibleUntilIso))
+      : null;
 
   async function updateStatus(nextStatus: EventPresenceStatus) {
     setBusy(true);
@@ -57,12 +88,17 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: nextStatus }),
+        body: JSON.stringify({
+          status: nextStatus,
+          visibleUntilIso:
+            nextStatus === "checked_in" ? selectedVisibleUntilIso : undefined,
+        }),
       });
       const payload = (await response.json()) as {
         error?: string;
         summary?: {
           currentUserStatus: EventPresenceStatus | null;
+          currentUserVisibleUntilIso: string | null;
           checkedInUsers: PresenceUser[];
         };
       };
@@ -74,7 +110,11 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
       }
 
       setStatus(payload.summary.currentUserStatus);
+      setCurrentVisibleUntilIso(payload.summary.currentUserVisibleUntilIso);
       setCheckedInUsers(payload.summary.checkedInUsers);
+      if (payload.summary.currentUserVisibleUntilIso) {
+        setSelectedVisibleUntilIso(payload.summary.currentUserVisibleUntilIso);
+      }
       setSavedMessage(getEventPresenceToggleCopy(nextStatus === "checked_in").successMessage);
     } catch (requestError) {
       setError(
@@ -92,25 +132,45 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
       <p className="mt-2 text-sm text-slate-700">{toggleCopy.description}</p>
       <p className="mt-3 text-sm text-slate-600">
         <span className="font-medium text-slate-900">{statusMeta.label}</span> ·{" "}
-        {statusMeta.description}
+        {activeVisibleUntilLabel
+          ? `sichtbar bis ${activeVisibleUntilLabel}`
+          : statusMeta.description}
       </p>
       <p className="mt-2 text-sm text-slate-600">
         <span className="font-medium text-slate-900">{windowCopy.label}</span> ·{" "}
         {windowCopy.description}
       </p>
 
+      {presenceWindow.canCheckIn ? (
+        <label className="mt-4 block text-sm text-slate-700">
+          <span className="font-medium text-slate-900">Sichtbar bis</span>
+          <select
+            value={selectedVisibleUntilIso}
+            onChange={(event) => setSelectedVisibleUntilIso(event.target.value)}
+            className="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
+          >
+            {selectOptions.map((option) => (
+              <option key={option.value} value={option.visibleUntil.toISOString()}>
+                {option.label} ({formatEventPresenceTime(option.visibleUntil)})
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+
       <div className="mt-4 flex flex-wrap gap-2">
         <button
           type="button"
-          disabled={busy || hasCheckedIn || !presenceWindow.canCheckIn}
+          disabled={
+            busy ||
+            !presenceWindow.canCheckIn ||
+            !selectedVisibleUntilIso ||
+            windowOptions.length === 0
+          }
           onClick={() => updateStatus("checked_in")}
           className={presenceCard.actionClassName}
         >
-          {hasCheckedIn
-            ? "Vor Ort sichtbar"
-            : presenceWindow.canCheckIn
-              ? toggleCopy.actionLabel
-              : windowCopy.actionLabel}
+          {presenceWindow.canCheckIn ? toggleCopy.actionLabel : windowCopy.actionLabel}
         </button>
         <button
           type="button"
@@ -118,7 +178,7 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
           onClick={() => updateStatus("left")}
           className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {!hasCheckedIn ? "Nicht vor Ort sichtbar" : toggleCopy.actionLabel}
+          {!hasCheckedIn ? "Nicht vor Ort sichtbar" : "Nicht mehr vor Ort sichtbar"}
         </button>
       </div>
 
@@ -133,11 +193,7 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
                 <span className="font-medium text-slate-900">
                   {user.name ?? user.email}
                 </span>{" "}
-                · sichtbar seit{" "}
-                {new Date(user.updatedAtIso).toLocaleTimeString("de-DE", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                · sichtbar bis {formatEventPresenceTime(new Date(user.visibleUntilIso))}
               </li>
             ))}
           </ul>

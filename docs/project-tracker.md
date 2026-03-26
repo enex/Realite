@@ -39,6 +39,8 @@ Zuletzt umgesetzt am 26.03.2026:
 - Presence an ein klares Event-Zeitfenster gekoppelt: Check-in erst 90 Minuten vor Start, automatisches Ende mit Eventschluss
 - Eventseite kommuniziert das Presence-Zeitfenster jetzt explizit statt unbegrenzter Vor-Ort-Sichtbarkeit
 - Nutzer-Doku und FAQ für die begrenzte Vor-Ort-Sichtbarkeit ergänzt
+- Presence-Check-ins sind jetzt zusätzlich mit bewusst wählbaren Sichtbarkeitsfenstern begrenzt statt nur mit einem offenen Eventfenster
+- Eventseite zeigt aktive Vor-Ort-Sichtbarkeit jetzt konsistent als `sichtbar bis …` für die eigene Freigabe und andere sichtbare Personen
 - ideales Home-Erlebnis für `Jetzt` in einem Satz festgezogen: sofort sehen, was gerade relevant ist, wo Reaktion fehlt und wie man ohne Verwaltungsballast direkt ins gemeinsame Erleben kommt
 - die drei Kernfragen der Startansicht explizit festgehalten, damit `Jetzt` produktseitig klar gegen `Events` und `Gruppen` abgegrenzt bleibt
 - primäre Produktobjekte festgelegt: Aktivität zuerst, Vorschlag als Reaktionsobjekt, Presence als optionaler Event-Layer, Gruppe als Relevanz- und Sichtbarkeitskontext
@@ -174,7 +176,7 @@ Der zusätzliche Socializing-Use-Case auf Stadtfesten, Festivals oder ähnlichen
 Es fehlt bisher:
 
 - opt-in Sichtbarkeit vor Ort
-- Zeitfenster für Anwesenheit
+- feinere Presence-Regeln innerhalb des vorhandenen Zeitfensters
 - Relevanzlogik für bekannte, interessante oder gegenseitig relevante Personen
 - sichere low-pressure Interaktion
 
@@ -287,6 +289,7 @@ Status: `planned`
 - [x] Dating-Use-Case als Unterfall des Relevanzmodells schärfen, nicht als separaten Produktkern
 - [x] echten Presence-/Check-in-Status über die reine Event-Freigabe hinaus modellieren
 - [x] Zeitfenster für Anwesenheit definieren und Vor-Ort-Sichtbarkeit an das Event koppeln
+- [x] Presence-Check-in auf begrenzte Sichtbarkeitsdauer pro Eventseite erweitern
 
 ## Konkret bekannte UX-/View-Aufgaben
 

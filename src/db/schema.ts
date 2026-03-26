@@ -321,6 +321,7 @@ export const eventPresences = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     status: eventPresenceStatusEnum("status").notNull().default("checked_in"),
+    visibleUntil: timestamp("visible_until", { withTimezone: true }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

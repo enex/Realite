@@ -71,11 +71,13 @@ export type SuggestionDeclineReason = DeclineReason;
 
 export type EventPresenceSummary = {
   currentUserStatus: EventPresenceStatus | null;
+  currentUserVisibleUntil: Date | null;
   checkedInUsers: Array<{
     userId: string;
     name: string | null;
     email: string;
     updatedAt: Date;
+    visibleUntil: Date;
   }>;
 };
 
@@ -83,6 +85,7 @@ type EventPresenceRow = {
   userId: string;
   status: EventPresenceStatus;
   updatedAt: Date;
+  visibleUntil: Date;
   name: string | null;
   email: string;
 };
@@ -2402,6 +2405,7 @@ export async function getEventPresenceSummary(input: {
       userId: eventPresences.userId,
       status: eventPresences.status,
       updatedAt: eventPresences.updatedAt,
+      visibleUntil: eventPresences.visibleUntil,
       name: users.name,
       email: users.email,
     })
@@ -2426,31 +2430,48 @@ function buildEventPresenceSummary(input: {
   endsAt: Date;
   now?: Date;
 }): EventPresenceSummary {
+  const referenceNow = input.now ?? new Date();
   const presenceWindow = getEventPresenceWindow({
     startsAt: input.startsAt,
     endsAt: input.endsAt,
-    now: input.now,
+    now: referenceNow,
   });
 
   if (!presenceWindow.showsPresence) {
     return {
       currentUserStatus: null,
+      currentUserVisibleUntil: null,
       checkedInUsers: [],
     };
   }
 
   const currentUserRow =
     input.rows.find((row) => row.userId === input.userId) ?? null;
+  const currentUserIsActive =
+    currentUserRow?.status === "checked_in" &&
+    currentUserRow.visibleUntil.getTime() > referenceNow.getTime();
 
   return {
-    currentUserStatus: currentUserRow?.status ?? null,
+    currentUserStatus: currentUserIsActive
+      ? "checked_in"
+      : currentUserRow?.status === "left"
+        ? "left"
+        : null,
+    currentUserVisibleUntil: currentUserIsActive
+      ? currentUserRow?.visibleUntil ?? null
+      : null,
     checkedInUsers: input.rows
-      .filter((row) => row.status === "checked_in")
+      .filter(
+        (row) =>
+          row.status === "checked_in" &&
+          row.visibleUntil.getTime() > referenceNow.getTime(),
+      )
       .map((row) => ({
         userId: row.userId,
         name: row.name,
         email: row.email,
         updatedAt: row.updatedAt,
+        visibleUntil: row.visibleUntil,
       })),
   };
 }
@@ -2459,6 +2480,7 @@ export async function setEventPresenceStatus(input: {
   userId: string;
   eventId: string;
   status: EventPresenceStatus;
+  visibleUntil?: Date;
   now?: Date;
 }) {
   const visibleEvent = await getVisibleEventForUserById({
@@ -2491,6 +2513,28 @@ export async function setEventPresenceStatus(input: {
     );
   }
 
+  const nextVisibleUntil = input.status === "checked_in" ? input.visibleUntil : now;
+
+  if (input.status === "checked_in") {
+    if (!nextVisibleUntil) {
+      throw new RepositoryValidationError(
+        "Bitte wähle ein Zeitfenster für deine Vor-Ort-Sichtbarkeit.",
+      );
+    }
+
+    if (nextVisibleUntil.getTime() <= now.getTime()) {
+      throw new RepositoryValidationError(
+        "Das gewählte Presence-Zeitfenster muss in der Zukunft liegen.",
+      );
+    }
+
+    if (nextVisibleUntil.getTime() > visibleEvent.endsAt.getTime()) {
+      throw new RepositoryValidationError(
+        "Vor-Ort-Sichtbarkeit kann nur bis zum Ende dieses Events aktiviert werden.",
+      );
+    }
+  }
+
   const db = getDb();
 
   await db
@@ -2499,12 +2543,14 @@ export async function setEventPresenceStatus(input: {
       eventId: input.eventId,
       userId: input.userId,
       status: input.status,
+      visibleUntil: nextVisibleUntil ?? now,
       updatedAt: now,
     })
     .onConflictDoUpdate({
       target: [eventPresences.eventId, eventPresences.userId],
       set: {
         status: input.status,
+        visibleUntil: nextVisibleUntil ?? now,
         updatedAt: now,
       },
     });
@@ -2514,6 +2560,7 @@ export async function setEventPresenceStatus(input: {
       userId: eventPresences.userId,
       status: eventPresences.status,
       updatedAt: eventPresences.updatedAt,
+      visibleUntil: eventPresences.visibleUntil,
       name: users.name,
       email: users.email,
     })

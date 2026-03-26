@@ -181,11 +181,14 @@ export default async function EventShortcutPage({
           startsAtIso={event.startsAt.toISOString()}
           endsAtIso={event.endsAt.toISOString()}
           initialStatus={presenceSummary.currentUserStatus}
+          initialVisibleUntilIso={
+            presenceSummary.currentUserVisibleUntil?.toISOString() ?? null
+          }
           initialCheckedInUsers={presenceSummary.checkedInUsers.map((entry) => ({
             userId: entry.userId,
             name: entry.name,
             email: entry.email,
-            updatedAtIso: entry.updatedAt.toISOString(),
+            visibleUntilIso: entry.visibleUntil.toISOString(),
           }))}
         />
       ) : null}

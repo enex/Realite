@@ -95,7 +95,7 @@ Wichtig:
 - kein automatischer Standort-Share
 - keine offene Personenliste außerhalb des Events
 - keine Sichtbarkeit ohne bewussten Event-Kontext
-- Check-in erst 90 Minuten vor Beginn, automatisch beendet mit dem Event
+- Check-in erst 90 Minuten vor Beginn, nur bis zum gewählten Zeitfenster und spätestens bis Eventende sichtbar
 
 Mehr dazu steht unter **[Vor-Ort-Sichtbarkeit](/docs/vor-ort-sichtbarkeit)**.
 

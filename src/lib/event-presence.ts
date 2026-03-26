@@ -1,8 +1,14 @@
 export const EVENT_PRESENCE_STATUS_VALUES = ["checked_in", "left"] as const;
 export const EVENT_PRESENCE_CHECK_IN_LEAD_MINUTES = 90;
+const EVENT_PRESENCE_PRESET_WINDOWS_MINUTES = [30, 60, 120] as const;
 
 export type EventPresenceStatus = (typeof EVENT_PRESENCE_STATUS_VALUES)[number];
 export type EventPresenceWindowState = "before_window" | "active" | "ended";
+export type EventPresenceWindowOption = {
+  value: string;
+  label: string;
+  visibleUntil: Date;
+};
 
 export function getEventPresenceWindow(input: {
   startsAt: Date;
@@ -74,7 +80,7 @@ export function getEventPresenceStatusMeta(status: EventPresenceStatus) {
     return {
       label: "Vor Ort sichtbar",
       description:
-        "Du bist für dieses Event aktuell bewusst als vor Ort sichtbar markiert.",
+        "Du bist für dieses Event aktuell bewusst und zeitlich begrenzt als vor Ort sichtbar markiert.",
     };
   }
 
@@ -90,9 +96,9 @@ export function getEventPresenceToggleCopy(hasCheckedIn: boolean) {
     return {
       title: "Du bist vor Ort sichtbar",
       description:
-        "Andere Personen mit Event-Zugriff sehen, dass du gerade bewusst vor Ort sichtbar bist.",
-      actionLabel: "Nicht mehr vor Ort sichtbar",
-      successMessage: "Dein Vor-Ort-Status wurde ausgeblendet.",
+        "Andere Personen mit Event-Zugriff sehen nur bis zum Ende deines gewählten Zeitfensters, dass du bewusst vor Ort sichtbar bist.",
+      actionLabel: "Zeitfenster aktualisieren",
+      successMessage: "Dein Vor-Ort-Zeitfenster wurde aktualisiert.",
     };
   }
 
@@ -103,4 +109,56 @@ export function getEventPresenceToggleCopy(hasCheckedIn: boolean) {
     actionLabel: "Jetzt vor Ort sichtbar sein",
     successMessage: "Du bist für dieses Event jetzt vor Ort sichtbar.",
   };
+}
+
+export function getEventPresenceWindowOptions(
+  eventEndsAt: Date,
+  now: Date = new Date(),
+): EventPresenceWindowOption[] {
+  const remainingMs = eventEndsAt.getTime() - now.getTime();
+  if (remainingMs <= 0) {
+    return [];
+  }
+
+  const options = EVENT_PRESENCE_PRESET_WINDOWS_MINUTES
+    .filter((minutes) => minutes * 60 * 1000 < remainingMs)
+    .map((minutes) => ({
+      value: `${minutes}_minutes`,
+      label: `${minutes} Minuten`,
+      visibleUntil: new Date(now.getTime() + minutes * 60 * 1000),
+    }));
+
+  options.push({
+    value: "until_event_end",
+    label: "Bis Eventende",
+    visibleUntil: eventEndsAt,
+  });
+
+  return options;
+}
+
+export function getDefaultEventPresenceVisibleUntil(
+  eventEndsAt: Date,
+  now: Date = new Date(),
+) {
+  return getEventPresenceWindowOptions(eventEndsAt, now)[0]?.visibleUntil ?? null;
+}
+
+export function isEventPresenceActive(
+  status: EventPresenceStatus | null,
+  visibleUntil: Date | null,
+  now: Date = new Date(),
+) {
+  return (
+    status === "checked_in" &&
+    visibleUntil !== null &&
+    visibleUntil.getTime() > now.getTime()
+  );
+}
+
+export function formatEventPresenceTime(date: Date) {
+  return new Intl.DateTimeFormat("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }

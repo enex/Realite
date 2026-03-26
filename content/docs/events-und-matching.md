@@ -37,7 +37,7 @@ So bleibt klar, ob ein Event offen joinbar ist oder ob du erst Rückmeldung samm
 - standardmäßig ist die Funktion aus
 - Realite teilt dabei nichts automatisch
 - die Event-Sichtbarkeit bleibt weiter getrennt von dieser Zusatzfreigabe
-- wenn sie aktiv ist, kannst du dich erst auf der Eventseite bewusst als **vor Ort sichtbar** markieren oder wieder ausblenden
+- wenn sie aktiv ist, kannst du dich erst auf der Eventseite bewusst für ein Zeitfenster als **vor Ort sichtbar** markieren oder wieder ausblenden
 
 So bleibt klar: Erst legst du fest, wer das Event sehen darf. Danach entscheidest du separat, ob es für dieses Event überhaupt einen freiwilligen Vor-Ort-Layer geben darf.
 

@@ -2,10 +2,13 @@ import { describe, expect, test } from "bun:test";
 
 import {
   EVENT_PRESENCE_CHECK_IN_LEAD_MINUTES,
+  getDefaultEventPresenceVisibleUntil,
   getEventPresenceStatusMeta,
   getEventPresenceToggleCopy,
   getEventPresenceWindow,
+  getEventPresenceWindowOptions,
   getEventPresenceWindowCopy,
+  isEventPresenceActive,
 } from "@/src/lib/event-presence";
 
 describe("event presence", () => {
@@ -13,10 +16,10 @@ describe("event presence", () => {
     expect(getEventPresenceStatusMeta("checked_in")).toEqual({
       label: "Vor Ort sichtbar",
       description:
-        "Du bist für dieses Event aktuell bewusst als vor Ort sichtbar markiert.",
+        "Du bist für dieses Event aktuell bewusst und zeitlich begrenzt als vor Ort sichtbar markiert.",
     });
     expect(getEventPresenceToggleCopy(true).actionLabel).toBe(
-      "Nicht mehr vor Ort sichtbar",
+      "Zeitfenster aktualisieren",
     );
   });
 
@@ -76,5 +79,36 @@ describe("event presence", () => {
     expect(copy.label).toBe("Vor-Ort-Sichtbarkeit startet später");
     expect(copy.description).toContain("kurz vor dem Event");
     expect(copy.actionLabel).toContain("vor Ort sichtbar");
+  });
+
+  test("offers bounded visibility options until the event ends", () => {
+    const now = new Date("2026-03-26T18:00:00.000Z");
+    const eventEndsAt = new Date("2026-03-26T19:15:00.000Z");
+
+    expect(
+      getEventPresenceWindowOptions(eventEndsAt, now).map((option) => option.label),
+    ).toEqual(["30 Minuten", "60 Minuten", "Bis Eventende"]);
+    expect(
+      getDefaultEventPresenceVisibleUntil(eventEndsAt, now)?.toISOString(),
+    ).toBe("2026-03-26T18:30:00.000Z");
+  });
+
+  test("treats expired presence windows as inactive", () => {
+    const now = new Date("2026-03-26T18:00:00.000Z");
+
+    expect(
+      isEventPresenceActive(
+        "checked_in",
+        new Date("2026-03-26T18:30:00.000Z"),
+        now,
+      ),
+    ).toBe(true);
+    expect(
+      isEventPresenceActive(
+        "checked_in",
+        new Date("2026-03-26T17:59:00.000Z"),
+        now,
+      ),
+    ).toBe(false);
   });
 });

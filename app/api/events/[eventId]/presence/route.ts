@@ -6,6 +6,7 @@ import { requireAppUser } from "@/src/lib/session";
 
 const eventPresenceSchema = z.object({
   status: z.enum(["checked_in", "left"]),
+  visibleUntilIso: z.string().datetime().optional(),
 });
 
 export async function POST(
@@ -31,15 +32,22 @@ export async function POST(
       userId: user.id,
       eventId,
       status: parsed.data.status,
+      visibleUntil: parsed.data.visibleUntilIso
+        ? new Date(parsed.data.visibleUntilIso)
+        : undefined,
     });
 
     return NextResponse.json({
       ok: true,
       summary: {
         currentUserStatus: summary.currentUserStatus,
+        currentUserVisibleUntilIso:
+          summary.currentUserVisibleUntil?.toISOString() ?? null,
         checkedInUsers: summary.checkedInUsers.map((entry) => ({
-          ...entry,
-          updatedAtIso: entry.updatedAt.toISOString(),
+          userId: entry.userId,
+          name: entry.name,
+          email: entry.email,
+          visibleUntilIso: entry.visibleUntil.toISOString(),
         })),
       },
     });
