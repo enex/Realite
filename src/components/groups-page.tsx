@@ -201,7 +201,10 @@ export function GroupsPage({
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Verwalten</p>
                 <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Alle Gruppen</h1>
                 <p className="text-xs text-slate-500">{profileEmail}</p>
-                <p className="mt-2 text-sm text-slate-600">Hier legst du neue Gruppen an und verwaltest bestehende Gruppen.</p>
+                <p className="mt-2 text-sm text-slate-600">
+                  Gruppen sind dein Relevanz- und Sichtbarkeitslayer. Du steuerst hier, welche sozialen Kreise Realite für
+                  Aktivitäten berücksichtigen soll, ohne daraus einen eigenen Feed zu machen.
+                </p>
               </div>
             </div>
             <button
@@ -212,6 +215,31 @@ export function GroupsPage({
             </button>
           </div>
         </header>
+
+        <section className="mt-6 grid gap-3 lg:grid-cols-3">
+          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Relevanz</p>
+            <h2 className="mt-2 text-base font-semibold text-slate-900">Wen Realite zuerst einbezieht</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Gruppen helfen dabei, Aktivitäten zuerst für passende Leute zu priorisieren, statt alles wahllos offen zu streuen.
+            </p>
+          </article>
+          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Sichtbarkeit</p>
+            <h2 className="mt-2 text-base font-semibold text-slate-900">Welche Kreise etwas sehen</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Eine Gruppe definiert den sozialen Rahmen eines Events. Sichtbarkeit bleibt bewusst begrenzt und von dir steuerbar.
+            </p>
+          </article>
+          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Verwalten</p>
+            <h2 className="mt-2 text-base font-semibold text-slate-900">Nicht Teil des spontanen Hauptfeeds</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Aktivitäten entdeckst und entscheidest du weiter in <span className="font-medium text-slate-700">Jetzt</span> und{" "}
+              <span className="font-medium text-slate-700">Vorschläge</span>. Gruppen bleiben bewusst im Verwaltungsbereich.
+            </p>
+          </article>
+        </section>
 
         {(queryError || submitError) ? (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -233,6 +261,10 @@ export function GroupsPage({
         {showGroupForm ? (
           <form onSubmit={createGroup} className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold text-slate-900">Neue Gruppe anlegen</h2>
+            <p className="mt-2 max-w-2xl text-sm text-slate-600">
+              Eine Gruppe bündelt Kontakte, Hashtags und Sichtbarkeit. Sie bestimmt nicht den Hauptfeed, sondern hilft Realite,
+              spätere Aktivitäten für den richtigen Kreis einzuordnen.
+            </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <input
                 value={groupForm.name}
@@ -309,7 +341,10 @@ export function GroupsPage({
 
         <section id="gruppen" className="mt-8 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">Sichtbare Gruppen</h2>
-          <p className="mt-1 text-sm text-slate-600">Klick auf eine Gruppe für Mitglieder, Invite und Bearbeitung.</p>
+          <p className="mt-1 text-sm text-slate-600">
+            Klick auf eine Gruppe für Mitglieder, Invite und Bearbeitung. Die Karten zeigen dir, welche Kreise du aktuell als
+            Relevanz- und Sichtbarkeitslayer pflegst.
+          </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {visibleGroups.length === 0 ? <p className="text-sm text-slate-500">Noch keine sichtbaren Gruppen angelegt.</p> : null}
             {visibleGroups.map((group) => (

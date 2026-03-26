@@ -4,6 +4,12 @@
 
 Gruppen helfen dir, Events mit den richtigen Personen zu teilen.
 
+Wichtig: Gruppen sind in Realite kein eigener Aktivitäts-Feed. Sie sind der Layer, mit dem du Relevanz und Sichtbarkeit steuerst:
+
+- **Relevanz:** Welche Kontakte oder Kreise für ein Event zuerst wichtig sind
+- **Sichtbarkeit:** Wer ein Event überhaupt sehen oder darüber eingeladen werden soll
+- **Verwaltung:** Wo du Kontakte, Invite-Links und Hashtags pflegst, ohne den spontanen Aktivitätsfluss zu überladen
+
 Jede Gruppe hat:
 
 - einen Namen
@@ -22,6 +28,12 @@ In der Gruppenansicht kannst du:
 - Gruppen als Besitzer löschen oder synchronisierte Gruppen ein-/ausblenden (über **Aktionen**)
 - synchronisierte Google-Kontaktgruppen direkt in Google Kontakte öffnen und dort bearbeiten (über **Aktionen**)
 - bei synchronisierten Google-Kontaktgruppen über das Sync-Symbol eine manuelle Synchronisierung starten
+
+Die Hauptansichten **Jetzt** und **Vorschläge** bleiben dabei bewusst getrennt:
+
+- In **Jetzt** entscheidest du über spontane Aktivitäten
+- In **Vorschläge** reagierst du auf offene Empfehlungen
+- In **Gruppen** pflegst du die sozialen Kreise, die diese Entscheidungen später relevanter machen
 
 ## Smarte Gruppe `#date`
 
@@ -60,5 +72,7 @@ Wenn du Kontakte aktiviert hast:
 ## Sichtbarkeit
 
 - `#alle`: für alle in Realite sichtbar
-- Gruppen-Events: für Mitglieder dieser Gruppe sichtbar
+- Gruppen-Events: für den ausgewählten Kreis sichtbar, also z. B. eine konkrete private Gruppe oder deine Kontaktgruppe
 - `#date`: nur für Nutzer sichtbar, die mit dir im Dating-Modus gegenseitig matchen
+
+Realite veröffentlicht dabei nichts automatisch. Gruppen helfen nur dabei, die Sichtbarkeit eines Events bewusst zu begrenzen oder zu öffnen.

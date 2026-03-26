@@ -31,7 +31,7 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 ## Aktueller Stand
 
-Zuletzt umgesetzt am 25.03.2026:
+Zuletzt umgesetzt am 26.03.2026:
 
 - explizite Join-Mechaniken für Events eingeführt: **Direkt beitreten**, **Anfrage senden**, **Interesse zeigen**
 - Join-Modus ist jetzt Teil des Event-Modells, im Erstellformular wählbar und auf Karten/Eventseiten sichtbar
@@ -51,6 +51,7 @@ Zuletzt umgesetzt am 25.03.2026:
 - `Events` klarer als Sozialkalender segmentiert: bestätigte Aktivitäten, eigene Planung und Kalenderkontext
 - Vorschlagskarten so geschärft, dass Zeitpunkt, Relevanzgrund und nächste Aktion direkt sichtbar sind
 - CTA-Hierarchie in `Jetzt` festgelegt und umgesetzt: zuerst reagieren, dann mitmachen, dann erstellen
+- Gruppen-Seite und Nutzer-Doku klarer als Relevanz- und Sichtbarkeitslayer positioniert statt als eigener Aktivitätsfeed
 
 Bereits vorhanden:
 
@@ -279,7 +280,7 @@ Status: `planned`
 
 ### Groups
 
-- [ ] Gruppen stärker als Relevanz- und Sichtbarkeitslayer erklären
+- [x] Gruppen stärker als Relevanz- und Sichtbarkeitslayer erklären
 - [ ] Gruppenverwaltung vom eigentlichen Aktivitätsfluss entkoppeln
 
 ### Design System / UI
