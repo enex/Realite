@@ -6,6 +6,7 @@ import { AppShell } from "@/src/components/app-shell";
 import { EventImage } from "@/src/components/event-image";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
+import { type EventVisibility } from "@/src/lib/event-visibility";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
@@ -43,7 +44,7 @@ type EventItem = {
   location: string | null;
   startsAt: string;
   endsAt: string;
-  visibility: "public" | "group" | "smart_date";
+  visibility: EventVisibility;
   groupId: string | null;
   groupName: string | null;
   tags: string[];

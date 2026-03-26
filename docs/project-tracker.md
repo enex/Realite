@@ -33,6 +33,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 26.03.2026:
 
+- Event-Sichtbarkeiten um **Freunde** und **Freunde von Freunden** erweitert
+- Kontakte-Events über den bestehenden `#kontakte`-Graphen als echte Freundes-Sichtbarkeit modelliert statt nur als Gruppen-Scope
+- Event-Formular, Eventseiten und Nutzer-Doku um klare Sichtbarkeitsbeschreibungen ergänzt
 - explizite Join-Mechaniken für Events eingeführt: **Direkt beitreten**, **Anfrage senden**, **Interesse zeigen**
 - Join-Modus ist jetzt Teil des Event-Modells, im Erstellformular wählbar und auf Karten/Eventseiten sichtbar
 - `#date` nutzt aus Privatsphäre-Gründen automatisch den low-pressure Modus **Interesse zeigen**
@@ -73,7 +76,7 @@ Noch nicht sauber ausgearbeitet:
 - klare Home-/Dashboard-Informationsarchitektur
 - bessere Priorisierung der wichtigsten Aktionen beim Einstieg
 - explizite Join-Mechaniken jenseits von Vorschlagsentscheidung
-- feinere Sichtbarkeit wie Freunde / Freunde von Freunden / vor Ort sichtbar
+- feinere Sichtbarkeit wie optional vor Ort sichtbar weiter ausarbeiten
 - echter Presence-/Vor-Ort-Layer
 - konsistente, starke UI-Sprache über alle Hauptviews
 
@@ -248,6 +251,7 @@ Status: `planned`
 ### P2
 
 - [x] explizite Join-Mechaniken modellieren: direkt beitreten, anfragen, Interesse zeigen
+- [x] Sichtbarkeitsstufen `Freunde` und `Freunde von Freunden` im Event-Modell, Formular und UI ergänzen
 - [ ] Sichtbarkeitsmodell erweitern: Freunde, Freunde von Freunden, offen, optional vor Ort sichtbar
 - [ ] Presence-/Vor-Ort-Konzept definieren
 - [ ] Dating-Use-Case als Unterfall des Relevanzmodells schärfen, nicht als separaten Produktkern

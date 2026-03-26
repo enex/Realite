@@ -18,6 +18,12 @@ import {
   type EventCategory,
   inferEventCategory,
 } from "@/src/lib/event-categories";
+import {
+  EVENT_CREATION_VISIBILITY_VALUES,
+  getEventVisibilityMeta,
+  type EventCreationVisibility,
+  type EventVisibility,
+} from "@/src/lib/event-visibility";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
@@ -35,7 +41,7 @@ type EventItem = {
   endsAt: string;
   groupName: string | null;
   tags: string[];
-  visibility: "public" | "group" | "smart_date";
+  visibility: EventVisibility;
   joinMode: EventJoinMode;
   color: string | null;
   category: EventCategory;
@@ -239,7 +245,7 @@ export function Dashboard({
     location: "",
     startsAt: "",
     endsAt: "",
-    visibility: "public" as "public" | "group",
+    visibility: "public" as EventCreationVisibility,
     joinMode: "direct" as EventJoinMode,
     groupId: "",
     tags: "#kontakte",
@@ -441,7 +447,7 @@ export function Dashboard({
         error?: string;
         event?: {
           id: string;
-          visibility: "public" | "group" | "smart_date";
+          visibility: EventVisibility;
           joinMode: EventJoinMode;
           groupId: string | null;
           tags: string[];
@@ -1056,12 +1062,21 @@ export function Dashboard({
                 <select
                   value={eventForm.visibility}
                   onChange={(event) =>
-                    setEventForm((state) => ({ ...state, visibility: event.target.value as "public" | "group" }))
+                    setEventForm((state) => ({
+                      ...state,
+                      visibility: event.target.value as EventCreationVisibility,
+                    }))
                   }
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                 >
-                  <option value="public">Öffentlich</option>
-                  <option value="group">Nur Gruppe</option>
+                  {EVENT_CREATION_VISIBILITY_VALUES.map((visibility) => {
+                    const meta = getEventVisibilityMeta(visibility);
+                    return (
+                      <option key={visibility} value={visibility}>
+                        {meta.label}
+                      </option>
+                    );
+                  })}
                 </select>
                 <select
                   value={eventForm.joinMode}
@@ -1093,6 +1108,20 @@ export function Dashboard({
                   ))}
                 </select>
               </div>
+              <p className="text-xs text-slate-500">
+                Sichtbarkeit:{" "}
+                <span className="font-medium text-slate-700">
+                  {getEventVisibilityMeta(
+                    eventForm.tags.toLowerCase().includes("#date")
+                      ? "smart_date"
+                      : eventForm.visibility,
+                  ).label}
+                </span>{" "}
+                ·{" "}
+                {eventForm.tags.toLowerCase().includes("#date")
+                  ? getEventVisibilityMeta("smart_date").description
+                  : getEventVisibilityMeta(eventForm.visibility).description}
+              </p>
               <p className="text-xs text-slate-500">
                 Join-Modus: <span className="font-medium text-slate-700">{getEventJoinModeMeta(eventForm.joinMode).label}</span> ·{" "}
                 {eventForm.tags.toLowerCase().includes("#date")

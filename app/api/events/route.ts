@@ -4,6 +4,7 @@ import { z } from "zod";
 import { triggerDashboardBackgroundSync } from "@/src/lib/background-sync";
 import { EVENT_JOIN_MODE_VALUES, type EventJoinMode } from "@/src/lib/event-join-modes";
 import { EVENT_CATEGORY_VALUES, type EventCategory } from "@/src/lib/event-categories";
+import { EVENT_CREATION_VISIBILITY_VALUES } from "@/src/lib/event-visibility";
 import { fetchOgImageFromText } from "@/src/lib/link-preview";
 import { createEvent, listVisibleEventsForUser, RepositoryValidationError, updateEventImageUrls } from "@/src/lib/repository";
 import { parseSmartMeetingShortcuts } from "@/src/lib/smart-meeting-shortcuts";
@@ -16,7 +17,7 @@ const createEventSchema = z.object({
   location: z.string().max(180).optional(),
   startsAt: z.string().datetime(),
   endsAt: z.string().datetime(),
-  visibility: z.enum(["public", "group"]).default("public"),
+  visibility: z.enum(EVENT_CREATION_VISIBILITY_VALUES).default("public"),
   joinMode: z.enum(EVENT_JOIN_MODE_VALUES).default("direct"),
   groupId: z.string().uuid().optional().nullable(),
   tags: z.array(z.string()).default([]),

@@ -22,6 +22,8 @@ export const groupRoleEnum = pgEnum("group_role", ["owner", "member"]);
 export const eventVisibilityEnum = pgEnum("event_visibility", [
   "public",
   "group",
+  "friends",
+  "friends_of_friends",
   "smart_date",
 ]);
 export const eventJoinModeEnum = pgEnum("event_join_mode", [

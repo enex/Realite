@@ -12,9 +12,18 @@ Ein Event besteht aus:
 - optionaler Farbe (z. B. zur schnellen Zuordnung; wird bei Events und Vorschlägen als farbiger Rand angezeigt)
 - **Kategorie** (z. B. Besprechung, Sport, Privat, Geburtstag) – für die Kalenderansicht
 
+**Sichtbarkeit bewusst steuern:** Beim Anlegen legst du fest, wer ein Event sehen darf:
+
+- **Öffentlich:** für alle sichtbaren Nutzer in Realite
+- **Nur Gruppe:** nur für Mitglieder der ausgewählten Gruppe
+- **Freunde:** nur für deine registrierten Kontakte
+- **Freunde von Freunden:** für deine registrierten Kontakte und deren Kontakte
+
+Wenn du `#kontakte` nutzt oder direkt die Kontakte-Gruppe auswählst, behandelt Realite das Event automatisch als **Freunde** statt als allgemeines Gruppen-Event. Bei `#date` überschreibt Realite die normale Auswahl weiterhin mit einem separaten, geschützten Dating-Sichtbarkeitsmodus.
+
 **Kategorien:** Events werden auf dem Dashboard nach Kategorie gruppiert angezeigt (ähnlich wie in Google Kalender). Beim Anlegen schlägt Realite eine Kategorie anhand von Titel, Beschreibung und Tags vor; du kannst sie im Formular anpassen. Verfügbare Kategorien sind u. a. Sonstiges, Besprechung, Arbeit, Privat, Sport, Soziales, Geburtstag, Verabredung.
 
-**Mitmachen bewusst steuern:** Beim Anlegen legst du jetzt auch fest, wie andere auf ein Event reagieren:
+**Mitmachen bewusst steuern:** Beim Anlegen legst du außerdem fest, wie andere auf ein Event reagieren:
 
 - **Direkt beitreten:** sichtbare Personen können direkt zusagen
 - **Anfrage senden:** Teilnahme braucht zuerst deine Freigabe

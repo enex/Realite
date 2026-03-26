@@ -34,6 +34,11 @@ import {
 } from "@/src/lib/dating";
 import { type EventJoinMode } from "@/src/lib/event-join-modes";
 import {
+  type EventCreationVisibility,
+  resolveEventVisibility,
+  type EventVisibility,
+} from "@/src/lib/event-visibility";
+import {
   type EventCategory,
   inferEventCategory,
 } from "@/src/lib/event-categories";
@@ -49,8 +54,9 @@ import {
 } from "@/src/lib/suggestion-feedback";
 
 export type GroupVisibility = "public" | "private";
-export type EventVisibility = "public" | "group" | "smart_date";
 export type { EventJoinMode } from "@/src/lib/event-join-modes";
+export type { EventCreationVisibility } from "@/src/lib/event-visibility";
+export type { EventVisibility } from "@/src/lib/event-visibility";
 export type SuggestionStatus =
   | "pending"
   | "calendar_inserted"
@@ -174,6 +180,9 @@ export type DateHashtagStatus = {
   age: number | null;
   missingRequirements: DateMissingRequirement[];
 };
+
+const GOOGLE_CONTACTS_PROVIDER = "google_contacts";
+const MY_CONTACTS_SYNC_REFERENCE = "contactGroups/myContacts";
 
 function normalizeTags(tags: string[]) {
   const normalized = normalizeDateTags(
@@ -1733,7 +1742,7 @@ export async function createEvent(input: {
   location?: string;
   startsAt: Date;
   endsAt: Date;
-  visibility: EventVisibility;
+  visibility: EventCreationVisibility;
   joinMode: EventJoinMode;
   groupId?: string | null;
   tags: string[];
@@ -1792,13 +1801,12 @@ export async function createEvent(input: {
     }
   }
 
-  const finalVisibility: EventVisibility = hasDateTag
-    ? "smart_date"
-    : isGlobalAlleEvent
-      ? "public"
-      : targetsKontakteGroup
-        ? "group"
-        : input.visibility;
+  const finalVisibility: EventVisibility = resolveEventVisibility({
+    requestedVisibility: input.visibility,
+    hasDateTag,
+    isGlobalAlleEvent,
+    targetsKontakteGroup,
+  });
   const finalJoinMode: EventJoinMode = hasDateTag ? "interest" : input.joinMode;
   const finalGroupId = hasDateTag
     ? null
@@ -1973,12 +1981,72 @@ export async function updateEventImageUrls(
   await db.update(events).set(updates).where(eq(events.id, eventId));
 }
 
+async function getContactVisibilityCreatorIdsForUser(userId: string) {
+  const db = getDb();
+
+  const directRows = await db
+    .select({ creatorId: groups.createdBy })
+    .from(groupMemberships)
+    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+    .where(
+      and(
+        eq(groupMemberships.userId, userId),
+        eq(groups.syncProvider, GOOGLE_CONTACTS_PROVIDER),
+        eq(groups.syncReference, MY_CONTACTS_SYNC_REFERENCE),
+      ),
+    );
+
+  const directCreatorIds = new Set(
+    directRows
+      .map((row) => row.creatorId)
+      .filter((creatorId) => creatorId !== userId),
+  );
+
+  if (!directCreatorIds.size) {
+    return {
+      directCreatorIds: [] as string[],
+      secondDegreeCreatorIds: [] as string[],
+    };
+  }
+
+  const secondDegreeRows = await db
+    .select({ creatorId: groups.createdBy })
+    .from(groupMemberships)
+    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+    .where(
+      and(
+        inArray(groupMemberships.userId, Array.from(directCreatorIds)),
+        eq(groups.syncProvider, GOOGLE_CONTACTS_PROVIDER),
+        eq(groups.syncReference, MY_CONTACTS_SYNC_REFERENCE),
+      ),
+    );
+
+  const secondDegreeCreatorIds = Array.from(
+    new Set(
+      secondDegreeRows
+        .map((row) => row.creatorId)
+        .filter(
+          (creatorId) =>
+            creatorId !== userId && !directCreatorIds.has(creatorId),
+        ),
+    ),
+  );
+
+  return {
+    directCreatorIds: Array.from(directCreatorIds),
+    secondDegreeCreatorIds,
+  };
+}
+
 export async function listVisibleEventsForUser(userId: string) {
   const db = getDb();
-  const memberships = await db
-    .select({ groupId: groupMemberships.groupId })
-    .from(groupMemberships)
-    .where(eq(groupMemberships.userId, userId));
+  const [memberships, contactVisibility] = await Promise.all([
+    db
+      .select({ groupId: groupMemberships.groupId })
+      .from(groupMemberships)
+      .where(eq(groupMemberships.userId, userId)),
+    getContactVisibilityCreatorIdsForUser(userId),
+  ]);
 
   const groupIds = memberships.map((membership) => membership.groupId);
   const filters = [
@@ -1989,6 +2057,33 @@ export async function listVisibleEventsForUser(userId: string) {
 
   if (groupIds.length > 0) {
     filters.push(inArray(events.groupId, groupIds));
+  }
+
+  if (contactVisibility.directCreatorIds.length > 0) {
+    const friendsFilter = and(
+      eq(events.visibility, "friends" as EventVisibility),
+      inArray(events.createdBy, contactVisibility.directCreatorIds),
+    );
+    if (friendsFilter) {
+      filters.push(friendsFilter);
+    }
+  }
+
+  const friendsOfFriendsCreatorIds = Array.from(
+    new Set([
+      ...contactVisibility.directCreatorIds,
+      ...contactVisibility.secondDegreeCreatorIds,
+    ]),
+  );
+
+  if (friendsOfFriendsCreatorIds.length > 0) {
+    const friendsOfFriendsFilter = and(
+      eq(events.visibility, "friends_of_friends" as EventVisibility),
+      inArray(events.createdBy, friendsOfFriendsCreatorIds),
+    );
+    if (friendsOfFriendsFilter) {
+      filters.push(friendsOfFriendsFilter);
+    }
   }
 
   const rows = await db
@@ -2121,10 +2216,13 @@ export async function getVisibleEventForUserById(input: {
   eventId: string;
 }) {
   const db = getDb();
-  const memberships = await db
-    .select({ groupId: groupMemberships.groupId })
-    .from(groupMemberships)
-    .where(eq(groupMemberships.userId, input.userId));
+  const [memberships, contactVisibility] = await Promise.all([
+    db
+      .select({ groupId: groupMemberships.groupId })
+      .from(groupMemberships)
+      .where(eq(groupMemberships.userId, input.userId)),
+    getContactVisibilityCreatorIdsForUser(input.userId),
+  ]);
 
   const groupIds = memberships.map((membership) => membership.groupId);
   const visibilityFilters = [
@@ -2135,6 +2233,33 @@ export async function getVisibleEventForUserById(input: {
 
   if (groupIds.length > 0) {
     visibilityFilters.push(inArray(events.groupId, groupIds));
+  }
+
+  if (contactVisibility.directCreatorIds.length > 0) {
+    const friendsFilter = and(
+      eq(events.visibility, "friends" as EventVisibility),
+      inArray(events.createdBy, contactVisibility.directCreatorIds),
+    );
+    if (friendsFilter) {
+      visibilityFilters.push(friendsFilter);
+    }
+  }
+
+  const friendsOfFriendsCreatorIds = Array.from(
+    new Set([
+      ...contactVisibility.directCreatorIds,
+      ...contactVisibility.secondDegreeCreatorIds,
+    ]),
+  );
+
+  if (friendsOfFriendsCreatorIds.length > 0) {
+    const friendsOfFriendsFilter = and(
+      eq(events.visibility, "friends_of_friends" as EventVisibility),
+      inArray(events.createdBy, friendsOfFriendsCreatorIds),
+    );
+    if (friendsOfFriendsFilter) {
+      visibilityFilters.push(friendsOfFriendsFilter);
+    }
   }
 
   const rows = await db

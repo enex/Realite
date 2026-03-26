@@ -23,7 +23,7 @@ import {
   deleteEventsByIds,
   getUserSuggestionSettings,
   isGroupMember,
-  type EventVisibility
+  type EventCreationVisibility
 } from "@/src/lib/repository";
 import { createPersonPreferenceTag, createTimeslotPreferenceTag } from "@/src/lib/suggestion-feedback";
 
@@ -806,7 +806,7 @@ async function finalizeApprovedRun(input: {
     location: input.plan.location ?? undefined,
     startsAt: input.run.startsAt,
     endsAt: input.run.endsAt,
-    visibility: "group" as EventVisibility,
+    visibility: "group" as EventCreationVisibility,
     joinMode: "direct",
     groupId: input.plan.groupId,
     tags: normalizedTags

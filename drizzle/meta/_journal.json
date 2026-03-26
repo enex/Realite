@@ -183,6 +183,13 @@
       "when": 1774469261776,
       "tag": "0025_flashy_ronan",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1774512297849,
+      "tag": "0026_gifted_black_widow",
+      "breakpoints": true
     }
   ]
 }
