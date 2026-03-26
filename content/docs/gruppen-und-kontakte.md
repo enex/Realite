@@ -33,7 +33,16 @@ Die Hauptansichten **Jetzt** und **Vorschläge** bleiben dabei bewusst getrennt:
 
 - In **Jetzt** entscheidest du über spontane Aktivitäten
 - In **Vorschläge** reagierst du auf offene Empfehlungen
+- In **Events** prüfst du deinen Sozialkalender, bestätigte Zusagen und laufende Planung
 - In **Gruppen** pflegst du die sozialen Kreise, die diese Entscheidungen später relevanter machen
+
+Die Gruppenansicht ist deshalb bewusst als Verwaltungsbereich aufgebaut:
+
+- oben mit klaren Rückwegen in **Jetzt**, **Vorschläge** und **Events**
+- darunter mit Erklärungen zu Relevanz, Sichtbarkeit und Pflege
+- erst danach mit den eigentlichen Gruppenlisten
+
+So bleiben spontane Entscheidungen und soziale Verwaltung getrennt.
 
 ## Smarte Gruppe `#date`
 

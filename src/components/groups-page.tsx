@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Route } from "next";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -73,6 +74,47 @@ const emptyPayload: GroupsPayload = {
   groups: []
 };
 
+function FlowLink({
+  href,
+  eyebrow,
+  title,
+  description
+}: {
+  href: Route;
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-teal-300 hover:bg-teal-50"
+    >
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{eyebrow}</p>
+      <h3 className="mt-2 text-sm font-semibold text-slate-900">{title}</h3>
+      <p className="mt-2 text-sm text-slate-600">{description}</p>
+    </Link>
+  );
+}
+
+function ManagementCard({
+  eyebrow,
+  title,
+  description
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{eyebrow}</p>
+      <h2 className="mt-2 text-base font-semibold text-slate-900">{title}</h2>
+      <p className="mt-2 text-sm text-slate-600">{description}</p>
+    </article>
+  );
+}
+
 export function GroupsPage({
   userName,
   userEmail,
@@ -107,6 +149,14 @@ export function GroupsPage({
   const datingModeEnabled = useRealiteFeatureFlag("dating-mode", false);
   const visibleGroups = useMemo(() => data.groups.filter((group) => !group.isHidden), [data.groups]);
   const hiddenGroups = useMemo(() => data.groups.filter((group) => group.isHidden), [data.groups]);
+  const managedContactCount = useMemo(
+    () => visibleGroups.reduce((total, group) => total + group.contactCount, 0),
+    [visibleGroups]
+  );
+  const managedEventCount = useMemo(
+    () => visibleGroups.reduce((total, group) => total + group.eventCount, 0),
+    [visibleGroups]
+  );
 
   const profileName = data.me.name ?? userName;
   const profileEmail = data.me.email || userEmail;
@@ -203,7 +253,8 @@ export function GroupsPage({
                 <p className="text-xs text-slate-500">{profileEmail}</p>
                 <p className="mt-2 text-sm text-slate-600">
                   Gruppen sind dein Relevanz- und Sichtbarkeitslayer. Du steuerst hier, welche sozialen Kreise Realite für
-                  Aktivitäten berücksichtigen soll, ohne daraus einen eigenen Feed zu machen.
+                  Aktivitäten berücksichtigen soll. Der eigentliche Aktivitätsfluss bleibt bewusst in Jetzt, Vorschlägen und
+                  Events.
                 </p>
               </div>
             </div>
@@ -216,29 +267,69 @@ export function GroupsPage({
           </div>
         </header>
 
+        <section className="mt-6 rounded-2xl border border-teal-200 bg-teal-50 p-6 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">Aktivitätsfluss getrennt halten</p>
+              <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">Hier pflegst du Kreise. Entscheidungen triffst du anderswo.</h2>
+              <p className="mt-2 text-sm text-slate-700">
+                Gruppen helfen Realite bei Relevanz, Sichtbarkeit und Einladungen. Sie sollen aber nicht mit spontanen Aktivitäten,
+                offenen Reaktionen oder deinem Sozialkalender konkurrieren.
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="rounded-xl bg-white px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Gruppen</p>
+                <p className="mt-1 text-xl font-semibold text-slate-900">{visibleGroups.length}</p>
+              </div>
+              <div className="rounded-xl bg-white px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Kontakte</p>
+                <p className="mt-1 text-xl font-semibold text-slate-900">{managedContactCount}</p>
+              </div>
+              <div className="rounded-xl bg-white px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Events</p>
+                <p className="mt-1 text-xl font-semibold text-slate-900">{managedEventCount}</p>
+              </div>
+            </div>
+          </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            <FlowLink
+              href="/now"
+              eyebrow="Zurück zu Jetzt"
+              title="Spontane Aktivitäten sehen"
+              description="Wechsle dorthin, wenn du wissen willst, was gerade relevant ist und wo du direkt mitmachen kannst."
+            />
+            <FlowLink
+              href="/suggestions"
+              eyebrow="Zurück zu Vorschlägen"
+              title="Offene Reaktionen priorisieren"
+              description="Nutze Vorschläge für Empfehlungen, auf die du antworten, zusagen oder bewusst ablehnen willst."
+            />
+            <FlowLink
+              href="/events"
+              eyebrow="Zurück zu Events"
+              title="Planung und Sozialkalender prüfen"
+              description="Dort siehst du bestätigte Aktivitäten, eigene Planung und Smart Treffen im laufenden Kontext."
+            />
+          </div>
+        </section>
+
         <section className="mt-6 grid gap-3 lg:grid-cols-3">
-          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Relevanz</p>
-            <h2 className="mt-2 text-base font-semibold text-slate-900">Wen Realite zuerst einbezieht</h2>
-            <p className="mt-2 text-sm text-slate-600">
-              Gruppen helfen dabei, Aktivitäten zuerst für passende Leute zu priorisieren, statt alles wahllos offen zu streuen.
-            </p>
-          </article>
-          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Sichtbarkeit</p>
-            <h2 className="mt-2 text-base font-semibold text-slate-900">Welche Kreise etwas sehen</h2>
-            <p className="mt-2 text-sm text-slate-600">
-              Eine Gruppe definiert den sozialen Rahmen eines Events. Sichtbarkeit bleibt bewusst begrenzt und von dir steuerbar.
-            </p>
-          </article>
-          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Verwalten</p>
-            <h2 className="mt-2 text-base font-semibold text-slate-900">Nicht Teil des spontanen Hauptfeeds</h2>
-            <p className="mt-2 text-sm text-slate-600">
-              Aktivitäten entdeckst und entscheidest du weiter in <span className="font-medium text-slate-700">Jetzt</span> und{" "}
-              <span className="font-medium text-slate-700">Vorschläge</span>. Gruppen bleiben bewusst im Verwaltungsbereich.
-            </p>
-          </article>
+          <ManagementCard
+            eyebrow="Relevanz"
+            title="Wen Realite zuerst einbezieht"
+            description="Gruppen helfen dabei, Aktivitäten zuerst für passende Leute zu priorisieren, statt alles wahllos offen zu streuen."
+          />
+          <ManagementCard
+            eyebrow="Sichtbarkeit"
+            title="Welche Kreise etwas sehen"
+            description="Eine Gruppe definiert den sozialen Rahmen eines Events. Sichtbarkeit bleibt bewusst begrenzt und von dir steuerbar."
+          />
+          <ManagementCard
+            eyebrow="Verwaltung"
+            title="Kontakte, Hashtags und Einladungen pflegen"
+            description="Hier strukturierst du Kreise und Sichtbarkeit. Reagieren, entdecken und zusagen passiert weiter getrennt in den Aktivitätsansichten."
+          />
         </section>
 
         {(queryError || submitError) ? (
@@ -305,6 +396,43 @@ export function GroupsPage({
             </button>
           </form>
         ) : null}
+
+        <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Gruppenverwaltung</p>
+              <h2 className="mt-2 text-lg font-semibold text-slate-900">Was du hier konkret pflegst</h2>
+              <p className="mt-2 text-sm text-slate-600">
+                Nutze Gruppen, um deinen sozialen Rahmen sauber zu halten. Das hilft später bei Sichtbarkeit, Relevanz und
+                Einladungen, ohne dass du im spontanen Flow zusätzliche Verwaltungsarbeit siehst.
+              </p>
+            </div>
+            <a
+              href="#gruppen"
+              className="rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700"
+            >
+              Zu den Gruppenlisten
+            </a>
+          </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <h3 className="text-sm font-semibold text-slate-900">Hier verwaltest du</h3>
+              <ul className="mt-3 space-y-2 text-sm text-slate-600">
+                <li>Kontakte und Kreise, die für spätere Events relevant sind</li>
+                <li>Hashtags und Sichtbarkeit, die du bewusst begrenzen oder öffnen willst</li>
+                <li>Invite-Links, Mitgliedschaften und Sync-Gruppen aus Google Kontakte</li>
+              </ul>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <h3 className="text-sm font-semibold text-slate-900">Hier machst du bewusst nicht</h3>
+              <ul className="mt-3 space-y-2 text-sm text-slate-600">
+                <li>offene Aktivitäten durchscrollen wie in einem Feed</li>
+                <li>Vorschläge beantworten oder spontane Zusagen priorisieren</li>
+                <li>eigene Planung gegen fremde Aktivitäten direkt vergleichen</li>
+              </ul>
+            </div>
+          </div>
+        </section>
 
         {datingModeEnabled ? (
           <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

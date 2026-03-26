@@ -33,6 +33,7 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 26.03.2026:
 
+- Gruppenansicht klar als Verwaltungsbereich geschärft: erst Rückwege in `Jetzt`, `Vorschläge` und `Events`, dann Verwaltungslogik, dann Gruppenlisten
 - Event-Sichtbarkeiten um **Freunde** und **Freunde von Freunden** erweitert
 - Kontakte-Events über den bestehenden `#kontakte`-Graphen als echte Freundes-Sichtbarkeit modelliert statt nur als Gruppen-Scope
 - Event-Formular, Eventseiten und Nutzer-Doku um klare Sichtbarkeitsbeschreibungen ergänzt
@@ -285,7 +286,7 @@ Status: `planned`
 ### Groups
 
 - [x] Gruppen stärker als Relevanz- und Sichtbarkeitslayer erklären
-- [ ] Gruppenverwaltung vom eigentlichen Aktivitätsfluss entkoppeln
+- [x] Gruppenverwaltung vom eigentlichen Aktivitätsfluss entkoppeln
 
 ### Design System / UI
 
