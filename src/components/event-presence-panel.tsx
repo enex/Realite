@@ -3,9 +3,11 @@
 import { useState } from "react";
 
 import {
+  getEventPresenceAudienceCopy,
+  getEventPresenceDisplayMeta,
+  getEventPresenceDisplayState,
   formatEventPresenceTime,
   getDefaultEventPresenceVisibleUntil,
-  getEventPresenceStatusMeta,
   getEventPresenceToggleCopy,
   getEventPresenceWindow,
   getEventPresenceWindowOptions,
@@ -55,9 +57,15 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
 
   const hasCheckedIn = status === "checked_in";
   const toggleCopy = getEventPresenceToggleCopy(hasCheckedIn);
-  const statusMeta = getEventPresenceStatusMeta(
-    hasCheckedIn ? "checked_in" : "left",
-  );
+  const displayState = getEventPresenceDisplayState({
+    status,
+    visibleUntil: currentVisibleUntilIso ? new Date(currentVisibleUntilIso) : null,
+  });
+  const statusMeta = getEventPresenceDisplayMeta(displayState);
+  const audienceCopy = getEventPresenceAudienceCopy({
+    windowState: presenceWindow.state,
+    checkedInCount: checkedInUsers.length,
+  });
   const selectOptions =
     selectedVisibleUntilIso &&
     !windowOptions.some(
@@ -73,7 +81,7 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
         ]
       : windowOptions;
   const activeVisibleUntilLabel =
-    hasCheckedIn && currentVisibleUntilIso
+    displayState === "checked_in" && currentVisibleUntilIso
       ? formatEventPresenceTime(new Date(currentVisibleUntilIso))
       : null;
 
@@ -183,9 +191,7 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
       </div>
 
       <div className={`mt-4 ${presenceCard.insetClassName}`}>
-        <p className="text-sm font-semibold text-slate-900">
-          Gerade vor Ort sichtbar: {checkedInUsers.length}
-        </p>
+        <p className="text-sm font-semibold text-slate-900">{audienceCopy.title}</p>
         {checkedInUsers.length > 0 ? (
           <ul className="mt-2 space-y-2 text-sm text-slate-700">
             {checkedInUsers.map((user) => (
@@ -198,9 +204,9 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
             ))}
           </ul>
         ) : (
-          <p className="mt-2 text-sm text-slate-600">
-            Noch niemand hat sich für dieses Event aktiv vor Ort sichtbar gemacht.
-          </p>
+          audienceCopy.description ? (
+            <p className="mt-2 text-sm text-slate-600">{audienceCopy.description}</p>
+          ) : null
         )}
       </div>
 

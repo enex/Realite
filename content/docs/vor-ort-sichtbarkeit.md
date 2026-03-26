@@ -24,6 +24,7 @@ Wenn die Option aktiv ist:
 - auf der Eventseite erscheint zusätzlich ein eigener Bereich **Vor Ort Status**
 - dort kannst du dich bewusst mit einem begrenzten Zeitfenster auf **Jetzt vor Ort sichtbar sein** setzen oder wieder ausblenden
 - dieser Check-in ist erst **90 Minuten vor Eventbeginn** möglich und endet automatisch mit dem Event
+- wenn dein gewähltes Zeitfenster abläuft, zeigt Realite das auf der Eventseite ausdrücklich als **Zeitfenster abgelaufen** statt weiter so zu wirken, als wärst du noch sichtbar
 - andere Personen mit Zugriff auf dieses Event sehen nur innerhalb dieses Event-Kontexts, wer sich aktiv sichtbar gemacht hat
 - die normale Event-Sichtbarkeit bleibt unverändert
 
@@ -44,6 +45,7 @@ Zusätzlich gilt jetzt ein klares Zeitfenster:
 
 - vor dem Presence-Fenster bleibt der Vor-Ort-Status geschlossen
 - ab **90 Minuten vor Start** kannst du dich bewusst sichtbar machen
+- nach Ablauf deines gewählten Fensters bist du automatisch wieder unsichtbar, auch wenn das Event selbst noch läuft
 - mit dem Eventende verschwindet der Vor-Ort-Status wieder automatisch
 
 ## So ist das Konzept gedacht
@@ -82,6 +84,13 @@ Diese Trennung reduziert Überraschungen:
 4. Wenn du nicht mehr sichtbar sein willst, wähle **Nicht mehr vor Ort sichtbar**.
 
 Wenn du die Eventseite früher öffnest, zeigt Realite dir direkt, ab wann Vor-Ort-Sichtbarkeit für dieses Event verfügbar ist.
+
+Wenn du das Event später noch einmal öffnest, unterscheidet Realite jetzt auch klar zwischen:
+
+- **Nicht vor Ort sichtbar**: du hast dich nicht sichtbar gemacht oder dich wieder ausgeblendet
+- **Zeitfenster abgelaufen**: dein letztes Vor-Ort-Zeitfenster ist vorbei
+- **Vor-Ort-Sichtbarkeit startet später**: das Eventfenster ist noch nicht offen
+- **Vor-Ort-Sichtbarkeit ist beendet**: das Event ist vorbei und niemand bleibt weiter sichtbar
 
 ## Kurz gesagt
 

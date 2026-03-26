@@ -31,8 +31,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 ## Aktueller Stand
 
-Zuletzt umgesetzt am 26.03.2026:
+Zuletzt umgesetzt am 27.03.2026:
 
+- Presence-/Vor-Ort-Status auf der Eventseite um klarere Schutz-Zustände erweitert: vor dem Fenster, nach Eventende und nach abgelaufenem eigenem Zeitfenster wird jetzt explizit erklärt, warum niemand sichtbar ist
 - `Jetzt` beantwortet die drei Kernfragen jetzt direkt im UI: nächst relevante Aktivität, offene Reaktion und schnellster Mitmach-Einstieg stehen als eigener Orientierungsblock über dem Feed
 - Sichtbarkeitsmodell für V1.5/V2 explizit entschieden und zentralisiert: vier Kernstufen für normale Events, geschützte Sonderfälle separat
 - Event-Formular erklärt jetzt direkt, dass Realite das Standardmodell bewusst klein hält statt weitere Freigabe-Zwischenstufen einzuführen
@@ -290,6 +291,7 @@ Status: `planned`
 - [x] echten Presence-/Check-in-Status über die reine Event-Freigabe hinaus modellieren
 - [x] Zeitfenster für Anwesenheit definieren und Vor-Ort-Sichtbarkeit an das Event koppeln
 - [x] Presence-Check-in auf begrenzte Sichtbarkeitsdauer pro Eventseite erweitern
+- [x] Presence-Zustände im UI klar erklären: noch geschlossen, eigenes Zeitfenster abgelaufen, Event beendet
 
 ## Konkret bekannte UX-/View-Aufgaben
 

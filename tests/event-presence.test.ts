@@ -3,6 +3,9 @@ import { describe, expect, test } from "bun:test";
 import {
   EVENT_PRESENCE_CHECK_IN_LEAD_MINUTES,
   getDefaultEventPresenceVisibleUntil,
+  getEventPresenceAudienceCopy,
+  getEventPresenceDisplayMeta,
+  getEventPresenceDisplayState,
   getEventPresenceStatusMeta,
   getEventPresenceToggleCopy,
   getEventPresenceWindow,
@@ -32,6 +35,21 @@ describe("event presence", () => {
     expect(getEventPresenceToggleCopy(false).actionLabel).toBe(
       "Jetzt vor Ort sichtbar sein",
     );
+  });
+
+  test("distinguishes expired own visibility windows from manually hidden state", () => {
+    const expiredState = getEventPresenceDisplayState({
+      status: "checked_in",
+      visibleUntil: new Date("2026-03-26T17:59:00.000Z"),
+      now: new Date("2026-03-26T18:00:00.000Z"),
+    });
+
+    expect(expiredState).toBe("expired");
+    expect(getEventPresenceDisplayMeta(expiredState)).toEqual({
+      label: "Zeitfenster abgelaufen",
+      description:
+        "Dein gewähltes Vor-Ort-Zeitfenster ist vorbei. Du bist für dieses Event aktuell nicht mehr sichtbar.",
+    });
   });
 
   test("opens on-site visibility shortly before the event and closes it after the event", () => {
@@ -91,6 +109,30 @@ describe("event presence", () => {
     expect(
       getDefaultEventPresenceVisibleUntil(eventEndsAt, now)?.toISOString(),
     ).toBe("2026-03-26T18:30:00.000Z");
+  });
+
+  test("explains why nobody is shown before the presence window or after the event", () => {
+    expect(
+      getEventPresenceAudienceCopy({
+        windowState: "before_window",
+        checkedInCount: 0,
+      }),
+    ).toEqual({
+      title: "Vor-Ort-Sichtbarkeit startet später",
+      description:
+        "Vor dem Presence-Fenster ist noch niemand sichtbar. Realite zeigt erst kurz vor dem Event aktive Check-ins an.",
+    });
+
+    expect(
+      getEventPresenceAudienceCopy({
+        windowState: "ended",
+        checkedInCount: 0,
+      }),
+    ).toEqual({
+      title: "Vor-Ort-Sichtbarkeit ist beendet",
+      description:
+        "Mit dem Eventende verschwindet der Vor-Ort-Status automatisch. Danach bleibt niemand weiter sichtbar.",
+    });
   });
 
   test("treats expired presence windows as inactive", () => {

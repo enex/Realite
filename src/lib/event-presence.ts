@@ -4,6 +4,10 @@ const EVENT_PRESENCE_PRESET_WINDOWS_MINUTES = [30, 60, 120] as const;
 
 export type EventPresenceStatus = (typeof EVENT_PRESENCE_STATUS_VALUES)[number];
 export type EventPresenceWindowState = "before_window" | "active" | "ended";
+export type EventPresenceDisplayState =
+  | "checked_in"
+  | "left"
+  | "expired";
 export type EventPresenceWindowOption = {
   value: string;
   label: string;
@@ -91,6 +95,48 @@ export function getEventPresenceStatusMeta(status: EventPresenceStatus) {
   };
 }
 
+export function getEventPresenceDisplayState(input: {
+  status: EventPresenceStatus | null;
+  visibleUntil: Date | null;
+  now?: Date;
+}): EventPresenceDisplayState | null {
+  if (input.status === null) {
+    return null;
+  }
+
+  if (
+    input.status === "checked_in" &&
+    input.visibleUntil !== null &&
+    input.visibleUntil.getTime() > (input.now ?? new Date()).getTime()
+  ) {
+    return "checked_in";
+  }
+
+  if (input.status === "checked_in") {
+    return "expired";
+  }
+
+  return "left";
+}
+
+export function getEventPresenceDisplayMeta(
+  state: EventPresenceDisplayState | null,
+) {
+  if (state === "checked_in") {
+    return getEventPresenceStatusMeta("checked_in");
+  }
+
+  if (state === "expired") {
+    return {
+      label: "Zeitfenster abgelaufen",
+      description:
+        "Dein gewähltes Vor-Ort-Zeitfenster ist vorbei. Du bist für dieses Event aktuell nicht mehr sichtbar.",
+    };
+  }
+
+  return getEventPresenceStatusMeta("left");
+}
+
 export function getEventPresenceToggleCopy(hasCheckedIn: boolean) {
   if (hasCheckedIn) {
     return {
@@ -142,6 +188,38 @@ export function getDefaultEventPresenceVisibleUntil(
   now: Date = new Date(),
 ) {
   return getEventPresenceWindowOptions(eventEndsAt, now)[0]?.visibleUntil ?? null;
+}
+
+export function getEventPresenceAudienceCopy(input: {
+  windowState: EventPresenceWindowState;
+  checkedInCount: number;
+}) {
+  if (input.windowState === "before_window") {
+    return {
+      title: "Vor-Ort-Sichtbarkeit startet später",
+      description:
+        "Vor dem Presence-Fenster ist noch niemand sichtbar. Realite zeigt erst kurz vor dem Event aktive Check-ins an.",
+    };
+  }
+
+  if (input.windowState === "ended") {
+    return {
+      title: "Vor-Ort-Sichtbarkeit ist beendet",
+      description:
+        "Mit dem Eventende verschwindet der Vor-Ort-Status automatisch. Danach bleibt niemand weiter sichtbar.",
+    };
+  }
+
+  return input.checkedInCount > 0
+    ? {
+        title: `Gerade vor Ort sichtbar: ${input.checkedInCount}`,
+        description: null,
+      }
+    : {
+        title: "Gerade vor Ort sichtbar: 0",
+        description:
+          "Noch niemand hat sich für dieses Event aktiv vor Ort sichtbar gemacht.",
+      };
 }
 
 export function isEventPresenceActive(
