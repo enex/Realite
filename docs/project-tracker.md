@@ -33,6 +33,7 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 26.03.2026:
 
+- `Jetzt` beantwortet die drei Kernfragen jetzt direkt im UI: nächst relevante Aktivität, offene Reaktion und schnellster Mitmach-Einstieg stehen als eigener Orientierungsblock über dem Feed
 - Sichtbarkeitsmodell für V1.5/V2 explizit entschieden und zentralisiert: vier Kernstufen für normale Events, geschützte Sonderfälle separat
 - Event-Formular erklärt jetzt direkt, dass Realite das Standardmodell bewusst klein hält statt weitere Freigabe-Zwischenstufen einzuführen
 - Nutzer-Doku zu Sichtbarkeit/Relevanz um die klare V1.5/V2-Abgrenzung ergänzt
@@ -105,7 +106,6 @@ Bereits vorhanden:
 
 Noch nicht sauber ausgearbeitet:
 
-- klare Home-/Dashboard-Informationsarchitektur
 - bessere Priorisierung der wichtigsten Aktionen beim Einstieg
 - explizite Join-Mechaniken jenseits von Vorschlagsentscheidung
 - feinere Sichtbarkeit wie optional vor Ort sichtbar weiter ausarbeiten
@@ -297,6 +297,7 @@ Status: `planned`
 
 - [x] Entscheidung: `/events` ist nicht die primäre Startansicht
 - [x] neue Startansicht für "Was geht gerade?" definieren
+- [x] die drei Kernfragen der Startansicht direkt in `Jetzt` als eigenen Orientierungsblock beantworten
 - [x] prüfen, ob eigene Events zu viel Platz einnehmen
 - [x] Vorschläge mit Handlungsbedarf nach oben ziehen
 - [x] CTA-Reihenfolge in `Jetzt` sichtbar machen: reagieren, mitmachen, erstellen

@@ -151,6 +151,16 @@ type DashboardPayload = {
   acceptedByEventId?: Record<string, AcceptedUser[]>;
 };
 
+type DashboardQuestionCardProps = {
+  eyebrow: string;
+  title: string;
+  value: string;
+  description: string;
+  actionHref: string;
+  actionLabel: string;
+  priority: VisualPriority;
+};
+
 async function fetchDashboard(): Promise<DashboardPayload> {
   return fetchDashboardApi() as Promise<DashboardPayload>;
 }
@@ -220,6 +230,10 @@ function getDashboardReasonHeadline(reason: string) {
   return firstSentence.length > 72 ? `${firstSentence.slice(0, 69).trimEnd()}...` : firstSentence;
 }
 
+function formatQuestionTiming(startsAt: string, endsAt: string) {
+  return getDashboardSuggestionTiming(startsAt, endsAt).replace(" · ", ", ");
+}
+
 function getEventSectionPriority(sectionId: string): VisualPriority {
   if (sectionId === "accepted") {
     return "momentum";
@@ -230,6 +244,33 @@ function getEventSectionPriority(sectionId: string): VisualPriority {
   }
 
   return "neutral";
+}
+
+function DashboardQuestionCard({
+  eyebrow,
+  title,
+  value,
+  description,
+  actionHref,
+  actionLabel,
+  priority,
+}: DashboardQuestionCardProps) {
+  const priorityMeta = getVisualPriorityMeta(priority);
+
+  return (
+    <article className={`rounded-2xl p-4 md:p-5 ${priorityMeta.sectionClassName}`}>
+      <p className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${priorityMeta.eyebrowClassName}`}>{eyebrow}</p>
+      <h3 className="mt-2 text-base font-semibold text-slate-900">{title}</h3>
+      <p className={`mt-3 text-2xl font-bold tracking-tight ${priorityMeta.accentTextClassName}`}>{value}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
+      <a
+        href={actionHref}
+        className={`mt-4 inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-semibold transition ${priorityMeta.itemClassName}`}
+      >
+        {actionLabel}
+      </a>
+    </article>
+  );
 }
 
 export function Dashboard({
@@ -583,12 +624,76 @@ export function Dashboard({
       ) ?? null,
     [acceptedEventIds, data.me.id, visibleEvents]
   );
+  const nextRelevantEvent = useMemo(() => nowFeedEvents[0] ?? null, [nowFeedEvents]);
+  const joinableMomentumEvents = useMemo(
+    () =>
+      visibleEvents.filter((event) => {
+        if (event.createdBy === data.me.id || acceptedEventIds.has(event.id)) {
+          return false;
+        }
+
+        return (data.acceptedByEventId?.[event.id]?.length ?? 0) > 0;
+      }),
+    [acceptedEventIds, data.acceptedByEventId, data.me.id, visibleEvents]
+  );
   const joinCtaHref = nextJoinableEvent ? `/e/${shortenUUID(nextJoinableEvent.id)}` : "/events#events";
   const joinCtaLabel = nextJoinableEvent ? "Mitmachen" : "Events ansehen";
   const joinCtaHint = nextJoinableEvent ? "eine sichtbare Aktivität öffnen" : "sichtbare Aktivitäten öffnen";
   const suggestionCtaLabel = pendingCount > 0 ? "Reagieren" : "Vorschläge prüfen";
   const reactionPage = getPageIntentMeta("react");
   const managementPage = getPageIntentMeta("manage");
+  const nowQuestionCards = [
+    {
+      eyebrow: "1. Was passiert gerade?",
+      title: "Was ist als Nächstes konkret relevant?",
+      value: nextRelevantEvent
+        ? `${nextRelevantEvent.title.replace(/#[^\s]+/gi, "").trim()} · ${formatQuestionTiming(
+            nextRelevantEvent.startsAt,
+            nextRelevantEvent.endsAt
+          )}`
+        : "Gerade keine offene Aktivität",
+      description: nextRelevantEvent
+        ? "Das ist die nächste sichtbare Aktivität aus deinem Jetzt-Feed."
+        : "Sobald etwas Sichtbares oder Joinbares auftaucht, erscheint es hier zuerst.",
+      actionHref: nextRelevantEvent ? `/e/${shortenUUID(nextRelevantEvent.id)}` : "/events#events",
+      actionLabel: nextRelevantEvent ? "Aktivität öffnen" : "Events ansehen",
+      priority: "activity" as VisualPriority,
+    },
+    {
+      eyebrow: "2. Wo fehlt deine Reaktion?",
+      title: "Welche Entscheidung wartet gerade auf dich?",
+      value:
+        pendingSuggestions.length === 0
+          ? "Keine offene Entscheidung"
+          : `${pendingSuggestions.length} offene${pendingSuggestions.length === 1 ? "r Vorschlag" : " Vorschläge"}`,
+      description:
+        pendingSuggestions.length === 0
+          ? "Du hast aktuell keinen offenen Vorschlag, der zuerst beantwortet werden muss."
+          : "Offene Vorschläge stehen bewusst vor dem Feed, damit du erst reagierst und dann weiterplanst.",
+      actionHref: "/suggestions",
+      actionLabel: suggestionCtaLabel,
+      priority: "reaction" as VisualPriority,
+    },
+    {
+      eyebrow: "3. Wo kannst du direkt einsteigen?",
+      title: "Welche Aktivität hat schon Momentum?",
+      value:
+        joinableMomentumEvents.length > 0
+          ? `${joinableMomentumEvents.length} Aktivität${joinableMomentumEvents.length === 1 ? "" : "en"} mit Zusagen`
+          : nextJoinableEvent
+            ? "1 sichtbare Aktivität zum Mitmachen"
+            : "Gerade nichts Joinbares offen",
+      description:
+        joinableMomentumEvents.length > 0
+          ? "Hier ist schon Bewegung drin. Du kannst direkt in eine laufende Aktivität einsteigen."
+          : nextJoinableEvent
+            ? "Es gibt eine sichtbare Aktivität ohne Zusagen. Du könntest den ersten Schritt machen."
+            : "Wenn neue offene Aktivitäten auftauchen, findest du sie hier mit dem kürzesten Weg zum Mitmachen.",
+      actionHref: joinCtaHref,
+      actionLabel: joinCtaLabel,
+      priority: "momentum" as VisualPriority,
+    },
+  ];
 
   return (
     <AppShell
@@ -674,6 +779,32 @@ export function Dashboard({
             </div>
           ) : null}
         </section>
+
+        {!isEventsView ? (
+          <section className="mt-5 md:mt-6" aria-label="Jetzt in drei Fragen">
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className={reactionPage.eyebrowClassName}>Jetzt in 3 Fragen</p>
+                <h2 className={sectionTitleClassName}>Die Startansicht beantwortet zuerst Orientierung statt Verwaltung</h2>
+                <p className={sectionBodyClassName}>
+                  Bevor du scrollst, siehst du hier direkt, was relevant ist, wo eine Reaktion fehlt und wo du ohne viel Abstimmung
+                  einsteigen kannst.
+                </p>
+              </div>
+              <a
+                href="/events#events"
+                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Planung separat öffnen
+              </a>
+            </div>
+            <div className="mt-4 grid gap-3 lg:grid-cols-3">
+              {nowQuestionCards.map((card) => (
+                <DashboardQuestionCard key={card.eyebrow} {...card} />
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {isEventsView ? (
           <section className={`mt-5 ${surfaceShellClassName} p-5 md:mt-6 md:p-6`}>

@@ -27,6 +27,10 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 
 - Die Navigation trennt bewusst zwischen **Entdecken**, **Reagieren** und **Verwalten**.
 - **Jetzt** ist die Hauptansicht für „Was geht gerade?“
+- Direkt unter dem Einstieg siehst du den Block **„Jetzt in 3 Fragen“**. Dort beantwortet Realite zuerst:
+- was als Nächstes konkret relevant ist
+- wo gerade deine Reaktion fehlt
+- wo du mit wenig Abstimmung direkt mitmachen kannst
 - Offene Vorschläge mit Handlungsbedarf stehen dort in einem eigenen Bereich **„Reagieren zuerst“** ganz oben.
 - Vorschläge und Aktivitäten zeigen klare Muster-Badges, damit du schneller scannst, was gerade Sache ist: etwa **„Jetzt reagieren“**, **„Offene Aktivität“**, **„Deine Planung“** oder **„Du dabei“**.
 - Dieselbe Kartenlogik taucht jetzt auch in **Vorschläge**, **Smart Treffen**, auf der Eventseite und beim Bereich **Vor Ort Status** auf: wichtige Aktionen stehen in farblich stärkeren Karten, Kontext und Details in ruhigeren Inset-Flächen darunter.
