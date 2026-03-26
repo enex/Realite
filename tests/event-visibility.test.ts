@@ -3,6 +3,7 @@ import { describe, expect, test } from "bun:test";
 import {
   EVENT_CREATION_VISIBILITY_VALUES,
   getEventVisibilityMeta,
+  getEventVisibilityRoadmapSummary,
   resolveEventVisibility,
 } from "@/src/lib/event-visibility";
 
@@ -43,5 +44,18 @@ describe("event visibility", () => {
     expect(getEventVisibilityMeta("friends_of_friends").label).toBe(
       "Freunde von Freunden",
     );
+  });
+
+  test("treats regular event visibilities as the v1.5 core model", () => {
+    expect(getEventVisibilityMeta("group").stage).toBe("v1_5_core");
+    expect(getEventVisibilityMeta("public").isCoreTier).toBe(true);
+    expect(getEventVisibilityMeta("smart_date").stage).toBe("v2_extension");
+  });
+
+  test("documents the compact roadmap for visibility tiers", () => {
+    expect(getEventVisibilityRoadmapSummary().description).toContain(
+      "vier Freigaben",
+    );
+    expect(getEventVisibilityRoadmapSummary().description).toContain("#date");
   });
 });

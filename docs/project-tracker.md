@@ -33,6 +33,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 26.03.2026:
 
+- Sichtbarkeitsmodell für V1.5/V2 explizit entschieden und zentralisiert: vier Kernstufen für normale Events, geschützte Sonderfälle separat
+- Event-Formular erklärt jetzt direkt, dass Realite das Standardmodell bewusst klein hält statt weitere Freigabe-Zwischenstufen einzuführen
+- Nutzer-Doku zu Sichtbarkeit/Relevanz um die klare V1.5/V2-Abgrenzung ergänzt
 - Presence an ein klares Event-Zeitfenster gekoppelt: Check-in erst 90 Minuten vor Start, automatisches Ende mit Eventschluss
 - Eventseite kommuniziert das Presence-Zeitfenster jetzt explizit statt unbegrenzter Vor-Ort-Sichtbarkeit
 - Nutzer-Doku und FAQ für die begrenzte Vor-Ort-Sichtbarkeit ergänzt
@@ -358,7 +361,7 @@ Status: `planned`
 - [x] Smart Meetings bleiben als sekundärer Verwaltungsbereich unter `Events`
 - [x] Eigene Events ohne Zusagen bleiben in `Events`; relevante fremde Aktivitäten und offene Reaktionen stehen in `Jetzt` vorn
 - [x] Wie wird Presence vor Ort dargestellt, ohne creepy oder zu offen zu wirken?
-- [ ] Welche Sichtbarkeitsstufen sind wirklich nötig für V1.5 / V2?
+- [x] Welche Sichtbarkeitsstufen sind wirklich nötig für V1.5 / V2?
 
 ## Empfohlene Reihenfolge
 

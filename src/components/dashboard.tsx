@@ -22,6 +22,7 @@ import {
 import {
   EVENT_CREATION_VISIBILITY_VALUES,
   getEventVisibilityMeta,
+  getEventVisibilityRoadmapSummary,
   type EventCreationVisibility,
   type EventVisibility,
 } from "@/src/lib/event-visibility";
@@ -243,6 +244,7 @@ export function Dashboard({
   userImage: string | null;
 }) {
   const queryClient = useQueryClient();
+  const visibilityRoadmap = getEventVisibilityRoadmapSummary();
   const {
     data: queryData,
     isPending: loading,
@@ -1146,6 +1148,9 @@ export function Dashboard({
                 {eventForm.tags.toLowerCase().includes("#date")
                   ? getEventVisibilityMeta("smart_date").description
                   : getEventVisibilityMeta(eventForm.visibility).description}
+              </p>
+              <p className="text-xs text-slate-500">
+                {visibilityRoadmap.headline} {visibilityRoadmap.description}
               </p>
               <p className="text-xs text-slate-500">
                 Join-Modus: <span className="font-medium text-slate-700">{getEventJoinModeMeta(eventForm.joinMode).label}</span> ·{" "}

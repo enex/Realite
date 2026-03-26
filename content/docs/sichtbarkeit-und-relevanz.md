@@ -52,6 +52,33 @@ Realite nutzt dafür aktuell diese Stufen:
 - **Freunde von Freunden:** dein erweiterter sozialer Kontext
 - **Offen:** sichtbar für alle sichtbaren Nutzer in Realite
 
+## Welche Stufen Realite bewusst klein hält
+
+Für normale Events reicht Realite aktuell bewusst ein kompaktes Modell mit vier Standardstufen:
+
+1. **Nur Gruppe**
+2. **Freunde**
+3. **Freunde von Freunden**
+4. **Öffentlich**
+
+Diese vier Stufen sind der Kern für V1.5:
+
+- sie decken private Planung, bestehende Kontakte, erweiterten sozialen Kontext und offene Aktivitäten ab
+- sie bleiben für Nutzer nachvollziehbar
+- sie vermeiden eine wachsende Liste aus halb ähnlichen Freigaben
+
+Realite führt deshalb aktuell **keine weiteren Standardstufen** wie „nur Kontakte ohne Gruppe“, „nur gleiche Stadt“, „nur gemeinsame Interessen“ oder ähnliche Zwischenmodelle ein.
+
+## Was für V2 separat bleibt
+
+Einige Fälle brauchen mehr Schutz, aber keine neue Standard-Sichtbarkeitsstufe:
+
+- **`#date`** bleibt ein geschützter Sonderfall für konkrete Aktivitäten mit gegenseitiger Passung
+- **Vor-Ort-Sichtbarkeit** bleibt ein zusätzlicher Opt-in-Layer pro Event
+- weitere Spezialfälle sollen, wenn überhaupt, als klar benannte Zusatzregeln entstehen und nicht als immer feinere allgemeine Sichtbarkeitsleiter
+
+Damit bleibt das Basismodell klein, während sensible Kontexte trotzdem eigene Schutzlogik bekommen.
+
 Zusätzlich gibt es optionale Schutzlayer:
 
 - **Mitmach-Modus:** sichtbar Berechtigte können direkt beitreten, anfragen oder nur Interesse zeigen
