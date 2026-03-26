@@ -22,8 +22,16 @@ describe("activity patterns", () => {
   });
 
   test("derives event patterns for now and events cards", () => {
-    expect(getEventPatternMeta({ isOwnEvent: false, isAccepted: false }).label).toBe("Offene Aktivität");
-    expect(getEventPatternMeta({ isOwnEvent: true, isAccepted: false }).label).toBe("Deine Planung");
-    expect(getEventPatternMeta({ isOwnEvent: false, isAccepted: true }).label).toBe("Du dabei");
+    const openEvent = getEventPatternMeta({ isOwnEvent: false, isAccepted: false });
+    expect(openEvent.label).toBe("Offene Aktivität");
+    expect(openEvent.priority).toBe("reaction");
+
+    const ownEvent = getEventPatternMeta({ isOwnEvent: true, isAccepted: false });
+    expect(ownEvent.label).toBe("Deine Planung");
+    expect(ownEvent.priority).toBe("planning");
+
+    const acceptedEvent = getEventPatternMeta({ isOwnEvent: false, isAccepted: true });
+    expect(acceptedEvent.label).toBe("Du dabei");
+    expect(acceptedEvent.priority).toBe("momentum");
   });
 });

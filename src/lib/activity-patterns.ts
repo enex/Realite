@@ -64,7 +64,8 @@ export function getEventPatternMeta(input: { isOwnEvent: boolean; isAccepted: bo
       label: "Du dabei",
       description: "Du hast bereits zugesagt",
       badgeClassName: "bg-white text-teal-800 ring-1 ring-teal-200",
-      actionLabel: "Details ansehen"
+      actionLabel: "Details ansehen",
+      priority: "momentum" as const
     };
   }
 
@@ -73,7 +74,8 @@ export function getEventPatternMeta(input: { isOwnEvent: boolean; isAccepted: bo
       label: "Deine Planung",
       description: "Von dir angelegt",
       badgeClassName: "bg-slate-100 text-slate-700",
-      actionLabel: "Verwalten"
+      actionLabel: "Verwalten",
+      priority: "planning" as const
     };
   }
 
@@ -81,6 +83,7 @@ export function getEventPatternMeta(input: { isOwnEvent: boolean; isAccepted: bo
     label: "Offene Aktivität",
     description: "Zum Mitmachen sichtbar",
     badgeClassName: "bg-amber-100 text-amber-900",
-    actionLabel: "Mitmachen prüfen"
+    actionLabel: "Mitmachen prüfen",
+    priority: "reaction" as const
   };
 }

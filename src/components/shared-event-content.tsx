@@ -7,6 +7,7 @@ import { getEventOnSiteVisibilityMeta } from "@/src/lib/event-on-site";
 import { getEventVisibilityMeta, type EventVisibility } from "@/src/lib/event-visibility";
 import { stripRealiteCalendarMetadata } from "@/src/lib/realite-calendar-links";
 import { sanitizeBasicHtml } from "@/src/lib/sanitize-basic-html";
+import { getVisualPriorityMeta } from "@/src/lib/visual-priority";
 
 type SharedEventContentProps = {
   title: string;
@@ -135,7 +136,7 @@ export function SharedEventContent(props: SharedEventContentProps) {
       ) : null}
 
       {joinModeMeta ? (
-        <section className="mt-4 rounded-xl border border-teal-100 bg-teal-50/60 p-4">
+        <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("reaction").insetClassName}`}>
           <p className="text-sm font-semibold text-slate-900">Mitmachen</p>
           <p className="mt-1 text-sm text-slate-700">
             <span className="font-medium text-teal-800">{joinModeMeta.label}</span> · {joinModeMeta.description}
@@ -144,7 +145,7 @@ export function SharedEventContent(props: SharedEventContentProps) {
       ) : null}
 
       {visibilityMeta ? (
-        <section className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("neutral").insetClassName}`}>
           <p className="text-sm font-semibold text-slate-900">Sichtbarkeit</p>
           <p className="mt-1 text-sm text-slate-700">
             <span className="font-medium text-slate-900">{visibilityMeta.label}</span> ·{" "}
@@ -153,7 +154,7 @@ export function SharedEventContent(props: SharedEventContentProps) {
         </section>
       ) : null}
 
-      <section className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("momentum").insetClassName}`}>
         <p className="text-sm font-semibold text-slate-900">Vor Ort</p>
         <p className="mt-1 text-sm text-slate-700">
           <span className="font-medium text-slate-900">{onSiteMeta.label}</span> ·{" "}
@@ -164,13 +165,13 @@ export function SharedEventContent(props: SharedEventContentProps) {
       {location ? (
         <EventLocationDetails location={location} />
       ) : (
-        <section className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("neutral").insetClassName}`}>
           <p className="text-sm font-semibold text-slate-900">Ort</p>
           <p className="mt-1 text-sm text-slate-600">Kein Ort angegeben.</p>
         </section>
       )}
 
-      <section className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("neutral").insetClassName}`}>
         <p className="text-sm font-semibold text-slate-900">Beschreibung</p>
         {sanitizedDescriptionHtml ? (
           <div

@@ -33,6 +33,8 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 26.03.2026:
 
+- visuelle Prioritätsstufen für Kernflächen definiert und in `Jetzt`, `Events` sowie Event-Details als gemeinsame Surface-Logik verankert
+- offene Reaktionen, Momentum und Planung nutzen jetzt konsistente Card-/Inset-/Badge-Gewichtung statt verstreuter Einzelklassen
 - echter Presence-/Check-in-Status für Events eingeführt: auf der Eventseite bewusst ein- und ausblendbar statt nur als abstrakte Freigabe
 - Presence jetzt als eigenes Domain-Objekt mit explizitem Nutzerstatus pro Event modelliert
 - Eventseite zeigt bei erlaubter Vor-Ort-Sichtbarkeit jetzt, wer sich aktuell bewusst als vor Ort sichtbar markiert hat
@@ -300,7 +302,7 @@ Status: `planned`
 
 ### Design System / UI
 
-- [ ] visuelle Prioritätsstufen definieren
+- [x] visuelle Prioritätsstufen definieren
 - [ ] Typografie- und Spacing-Hierarchie vereinheitlichen
 - [ ] Card-System für Aktivitäten, Vorschläge, Presence und Smart Meetings definieren
 - [x] konsistente Statusfarben und Statuslabels definieren

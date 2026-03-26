@@ -28,6 +28,7 @@ import {
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
+import { getVisualPriorityMeta, type VisualPriority } from "@/src/lib/visual-priority";
 
 type Group = {
   id: string;
@@ -210,6 +211,18 @@ function getDashboardReasonHeadline(reason: string) {
   }
 
   return firstSentence.length > 72 ? `${firstSentence.slice(0, 69).trimEnd()}...` : firstSentence;
+}
+
+function getEventSectionPriority(sectionId: string): VisualPriority {
+  if (sectionId === "accepted") {
+    return "momentum";
+  }
+
+  if (sectionId === "planning") {
+    return "planning";
+  }
+
+  return "neutral";
 }
 
 export function Dashboard({
@@ -736,23 +749,23 @@ export function Dashboard({
               </a>
             </div>
           </div>
-          <div className="mt-4 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4 shadow-sm md:p-5">
+          <div className={`mt-4 rounded-2xl p-4 md:p-5 ${getVisualPriorityMeta("reaction").sectionClassName}`}>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">Reagieren zuerst</p>
+                <p className={`text-xs font-semibold uppercase tracking-[0.14em] ${getVisualPriorityMeta("reaction").eyebrowClassName}`}>Reagieren zuerst</p>
                 <h3 className="mt-1 text-base font-semibold text-slate-900">Vorschläge mit Handlungsbedarf</h3>
                 <p className="mt-1 text-sm text-slate-600">
                   Entscheide zuerst über offene Vorschläge. Danach ist der Feed nur noch für sichtbare Aktivitäten zum Mitmachen da.
                 </p>
               </div>
-              <p className="text-sm font-medium text-amber-800">
+              <p className={`text-sm font-medium ${getVisualPriorityMeta("reaction").accentTextClassName}`}>
                 {pendingSuggestions.length === 0
                   ? "Gerade nichts offen"
                   : `${pendingSuggestions.length} offene${pendingSuggestions.length === 1 ? "r Vorschlag" : " Vorschläge"}`}
               </p>
             </div>
             {pendingSuggestions.length === 0 ? (
-              <div className="mt-4 rounded-xl border border-dashed border-amber-300 bg-white/80 p-4 text-sm text-slate-600">
+              <div className={`mt-4 rounded-xl border p-4 text-sm text-slate-600 ${getVisualPriorityMeta("reaction").mutedInsetClassName}`}>
                 Im Moment wartet keine Entscheidung auf dich. Nutze den Feed darunter für offene Aktivitäten oder starte neues Matching.
               </div>
             ) : (
@@ -766,10 +779,10 @@ export function Dashboard({
                     <a
                       key={suggestion.id}
                       href={`/suggestions?suggestion=${suggestion.id}`}
-                      className="rounded-xl border border-amber-200 bg-white p-4 transition hover:border-amber-300 hover:bg-amber-50/70"
+                      className={`rounded-xl border p-4 transition ${getVisualPriorityMeta("reaction").itemClassName}`}
                     >
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-900">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${getVisualPriorityMeta("reaction").badgeClassName}`}>
                           Jetzt reagieren
                         </span>
                         {accepted.length > 0 ? (
@@ -787,12 +800,12 @@ export function Dashboard({
                         {suggestion.score.toFixed(2)}
                       </p>
                       <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">Warum jetzt?</p>
+                        <div className={`rounded-xl border p-3 ${getVisualPriorityMeta("reaction").insetClassName}`}>
+                          <p className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${getVisualPriorityMeta("reaction").accentTextClassName}`}>Warum jetzt?</p>
                           <p className="mt-2 text-sm font-medium text-slate-900">{getDashboardReasonHeadline(suggestion.reason)}</p>
                           <p className="mt-1 text-xs leading-5 text-slate-600">{suggestion.reason}</p>
                         </div>
-                        <div className="rounded-xl border border-teal-200 bg-teal-50/70 p-3">
+                        <div className={`rounded-xl border p-3 ${getVisualPriorityMeta("momentum").insetClassName}`}>
                           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">Wer ist dabei?</p>
                           {accepted.length > 0 ? (
                             <p className="mt-2 text-sm font-medium text-slate-900">
@@ -814,10 +827,10 @@ export function Dashboard({
             )}
           </div>
           {hiddenOwnPlanningEvents.length > 0 ? (
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className={`mt-4 rounded-2xl p-4 ${getVisualPriorityMeta("planning").sectionClassName}`}>
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Deine Planung bleibt in Events</p>
+                  <p className={`text-xs font-semibold uppercase tracking-[0.14em] ${getVisualPriorityMeta("planning").eyebrowClassName}`}>Deine Planung bleibt in Events</p>
                   <h3 className="mt-1 text-base font-semibold text-slate-900">
                     {hiddenOwnPlanningEvents.length === 1
                       ? "1 eigenes Event ohne Zusagen wurde aus Jetzt herausgenommen"
@@ -911,11 +924,7 @@ export function Dashboard({
                           <li key={`event-${item.eventId}`}>
                             <a
                               href={`/e/${shortenUUID(item.eventId)}`}
-                              className={`flex gap-3 rounded-xl border p-4 text-left transition hover:border-teal-200 ${
-                                accepted.length > 0
-                                  ? "border-teal-200 bg-teal-50/60 hover:bg-teal-50"
-                                  : "border-slate-200 bg-white hover:bg-teal-50/30"
-                              }`}
+                              className={`flex gap-3 rounded-xl border p-4 text-left transition ${getVisualPriorityMeta(eventPattern.priority).itemClassName}`}
                               style={{ borderLeftWidth: "4px", borderLeftColor: borderColor }}
                             >
                               {coverUrl ? (
@@ -948,7 +957,7 @@ export function Dashboard({
                                 </p>
                                 <p className="mt-1 text-xs font-medium text-slate-600">Mitmachen: {joinModeMeta.shortLabel}</p>
                                 <p className="mt-1 text-xs font-medium text-slate-600">Vor Ort: {onSiteMeta.shortLabel}</p>
-                                <div className="mt-2 rounded-lg bg-white/80 px-3 py-2.5">
+                                <div className={`mt-2 rounded-lg border px-3 py-2.5 ${getVisualPriorityMeta(eventPattern.priority).insetClassName}`}>
                                   <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                                     Wer ist dabei?
                                   </p>
@@ -966,7 +975,7 @@ export function Dashboard({
                                     <p className="mt-0.5 text-sm text-slate-500">Noch niemand zugesagt</p>
                                   )}
                                 </div>
-                                <div className="mt-2 flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700">
+                                <div className={`mt-2 flex items-center justify-between rounded-lg border px-3 py-2 text-sm font-semibold ${getVisualPriorityMeta(eventPattern.priority).actionRowClassName}`}>
                                   <span>{eventPattern.actionLabel}</span>
                                   <span aria-hidden>→</span>
                                 </div>
@@ -1195,15 +1204,15 @@ export function Dashboard({
                 </p>
               </div>
               <div className="grid gap-2 text-sm text-slate-600 sm:grid-cols-3">
-                <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <div className={`rounded-xl border px-3 py-2 ${getVisualPriorityMeta("momentum").statClassName}`}>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Zugesagt</p>
                   <p className="mt-1 text-lg font-semibold text-slate-900">{acceptedEvents.length}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <div className={`rounded-xl border px-3 py-2 ${getVisualPriorityMeta("planning").statClassName}`}>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Eigen</p>
                   <p className="mt-1 text-lg font-semibold text-slate-900">{ownPlannedEvents.length}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <div className={`rounded-xl border px-3 py-2 ${getVisualPriorityMeta("neutral").statClassName}`}>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Kontext</p>
                   <p className="mt-1 text-lg font-semibold text-slate-900">{calendarContextEvents.length}</p>
                 </div>
@@ -1231,19 +1240,19 @@ export function Dashboard({
                   .filter(([, events]) => events.length > 0);
 
                 return (
-                  <section key={section.id} className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
+                  <section key={section.id} className={`rounded-2xl p-4 ${getVisualPriorityMeta(getEventSectionPriority(section.id)).sectionClassName}`}>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <h3 className="text-base font-semibold text-slate-900">{section.title}</h3>
                         <p className="mt-1 text-sm text-slate-600">{section.description}</p>
                       </div>
-                      <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+                      <span className={`rounded-full px-3 py-1 text-xs font-semibold ${getVisualPriorityMeta(getEventSectionPriority(section.id)).badgeClassName}`}>
                         {section.events.length === 0 ? "Leer" : `${section.events.length} Termine`}
                       </span>
                     </div>
 
                     {section.events.length === 0 ? (
-                      <p className="mt-4 rounded-xl border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
+                      <p className={`mt-4 rounded-xl border px-4 py-3 text-sm text-slate-500 ${getVisualPriorityMeta(getEventSectionPriority(section.id)).mutedInsetClassName}`}>
                         {section.empty}
                       </p>
                     ) : (
@@ -1284,9 +1293,7 @@ export function Dashboard({
                                 return (
                                   <article
                                     key={event.id}
-                                    className={`overflow-hidden rounded-md border ${
-                                      accepted.length > 0 ? "border-teal-200 bg-teal-50/40" : "border-slate-200 bg-white"
-                                    }`}
+                                    className={`overflow-hidden rounded-md border ${getVisualPriorityMeta(eventPattern.priority).itemClassName}`}
                                     style={{ borderLeftWidth: "4px", borderLeftColor: borderColor }}
                                   >
                                     <div className="flex">
@@ -1330,7 +1337,7 @@ export function Dashboard({
                                           </p>
                                           <p className="mt-1 text-xs font-medium text-slate-600">Mitmachen: {joinModeMeta.shortLabel}</p>
                                           <p className="mt-1 text-xs font-medium text-slate-600">Vor Ort: {onSiteMeta.shortLabel}</p>
-                                          <div className="mt-2 rounded-lg bg-white/80 px-3 py-2">
+                                          <div className={`mt-2 rounded-lg border px-3 py-2 ${getVisualPriorityMeta(eventPattern.priority).insetClassName}`}>
                                             <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                                               Wer ist dabei?
                                             </p>
@@ -1386,20 +1393,20 @@ export function Dashboard({
                 const accepted = previewEvent ? data.acceptedByEventId?.[previewEvent.id] ?? [] : [];
 
                 return (
-                  <article key={section.id} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                  <article key={section.id} className={`rounded-2xl p-4 ${getVisualPriorityMeta(getEventSectionPriority(section.id)).sectionClassName}`}>
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <h3 className="text-base font-semibold text-slate-900">{section.title}</h3>
                         <p className="mt-1 text-sm text-slate-600">{section.description}</p>
                       </div>
-                      <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+                      <span className={`rounded-full px-3 py-1 text-xs font-semibold ${getVisualPriorityMeta(getEventSectionPriority(section.id)).badgeClassName}`}>
                         {section.events.length}
                       </span>
                     </div>
                     {previewEvent ? (
                       <a
                         href={`/e/${shortenUUID(previewEvent.id)}`}
-                        className="mt-4 block rounded-xl border border-slate-200 bg-white p-3 transition hover:border-teal-200 hover:bg-teal-50/40"
+                        className={`mt-4 block rounded-xl border p-3 transition ${getVisualPriorityMeta(getEventSectionPriority(section.id)).itemClassName}`}
                       >
                         <p className="text-sm font-semibold text-slate-900">
                           {previewEvent.title.replace(/#[^\s]+/gi, "").trim()}
