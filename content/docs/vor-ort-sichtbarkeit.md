@@ -23,6 +23,7 @@ Wenn die Option aktiv ist:
 - die Eventseite und Eventkarten zeigen den Hinweis **Vor Ort sichtbar möglich**
 - auf der Eventseite erscheint zusätzlich ein eigener Bereich **Vor Ort Status**
 - dort kannst du dich bewusst auf **Jetzt vor Ort sichtbar sein** setzen oder wieder ausblenden
+- dieser Check-in ist erst **90 Minuten vor Eventbeginn** möglich und endet automatisch mit dem Event
 - andere Personen mit Zugriff auf dieses Event sehen nur innerhalb dieses Event-Kontexts, wer sich aktiv sichtbar gemacht hat
 - die normale Event-Sichtbarkeit bleibt unverändert
 
@@ -38,6 +39,12 @@ Die Freigabe bedeutet ausdrücklich **nicht**:
 - dass Realite eine offene Liste anwesender Personen veröffentlicht
 
 Die Freigabe markiert also nicht einfach nur einen Rahmen: Sie erlaubt einen späteren, expliziten Check-in direkt auf der Eventseite. Auch dieser Check-in bleibt freiwillig und eventgebunden.
+
+Zusätzlich gilt jetzt ein klares Zeitfenster:
+
+- vor dem Presence-Fenster bleibt der Vor-Ort-Status geschlossen
+- ab **90 Minuten vor Start** kannst du dich bewusst sichtbar machen
+- mit dem Eventende verschwindet der Vor-Ort-Status wieder automatisch
 
 ## So ist das Konzept gedacht
 
@@ -73,10 +80,13 @@ Diese Trennung reduziert Überraschungen:
 2. Nutze im Bereich **Vor Ort Status** den Button **Jetzt vor Ort sichtbar sein**.
 3. Wenn du nicht mehr sichtbar sein willst, wähle **Nicht mehr vor Ort sichtbar**.
 
+Wenn du die Eventseite früher öffnest, zeigt Realite dir direkt, ab wann Vor-Ort-Sichtbarkeit für dieses Event verfügbar ist.
+
 ## Kurz gesagt
 
 **Vor Ort sichtbar möglich** heißt in Realite aktuell:
 
 - dieses Event darf freiwillige Präsenz mit explizitem Check-in unterstützen
 - du wirst dadurch nicht automatisch live sichtbar
+- deine Sichtbarkeit läuft in einem klaren Event-Zeitfenster statt unbegrenzt weiter
 - Sichtbarkeit bleibt explizit, eventgebunden und kontrolliert

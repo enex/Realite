@@ -5,6 +5,8 @@ import { useState } from "react";
 import {
   getEventPresenceStatusMeta,
   getEventPresenceToggleCopy,
+  getEventPresenceWindow,
+  getEventPresenceWindowCopy,
   type EventPresenceStatus,
 } from "@/src/lib/event-presence";
 import { getCardSurfaceMeta } from "@/src/lib/card-system";
@@ -18,6 +20,8 @@ type PresenceUser = {
 
 type EventPresencePanelProps = {
   eventId: string;
+  startsAtIso: string;
+  endsAtIso: string;
   initialStatus: EventPresenceStatus | null;
   initialCheckedInUsers: PresenceUser[];
 };
@@ -31,6 +35,10 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const startsAt = new Date(props.startsAtIso);
+  const endsAt = new Date(props.endsAtIso);
+  const presenceWindow = getEventPresenceWindow({ startsAt, endsAt });
+  const windowCopy = getEventPresenceWindowCopy({ startsAt, endsAt });
 
   const hasCheckedIn = status === "checked_in";
   const toggleCopy = getEventPresenceToggleCopy(hasCheckedIn);
@@ -86,15 +94,23 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
         <span className="font-medium text-slate-900">{statusMeta.label}</span> ·{" "}
         {statusMeta.description}
       </p>
+      <p className="mt-2 text-sm text-slate-600">
+        <span className="font-medium text-slate-900">{windowCopy.label}</span> ·{" "}
+        {windowCopy.description}
+      </p>
 
       <div className="mt-4 flex flex-wrap gap-2">
         <button
           type="button"
-          disabled={busy || hasCheckedIn}
+          disabled={busy || hasCheckedIn || !presenceWindow.canCheckIn}
           onClick={() => updateStatus("checked_in")}
           className={presenceCard.actionClassName}
         >
-          {hasCheckedIn ? "Vor Ort sichtbar" : toggleCopy.actionLabel}
+          {hasCheckedIn
+            ? "Vor Ort sichtbar"
+            : presenceWindow.canCheckIn
+              ? toggleCopy.actionLabel
+              : windowCopy.actionLabel}
         </button>
         <button
           type="button"

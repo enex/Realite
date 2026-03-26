@@ -178,6 +178,8 @@ export default async function EventShortcutPage({
       {event.allowOnSiteVisibility && presenceSummary ? (
         <EventPresencePanel
           eventId={event.id}
+          startsAtIso={event.startsAt.toISOString()}
+          endsAtIso={event.endsAt.toISOString()}
           initialStatus={presenceSummary.currentUserStatus}
           initialCheckedInUsers={presenceSummary.checkedInUsers.map((entry) => ({
             userId: entry.userId,

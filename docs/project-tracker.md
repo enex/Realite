@@ -33,6 +33,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 26.03.2026:
 
+- Presence an ein klares Event-Zeitfenster gekoppelt: Check-in erst 90 Minuten vor Start, automatisches Ende mit Eventschluss
+- Eventseite kommuniziert das Presence-Zeitfenster jetzt explizit statt unbegrenzter Vor-Ort-Sichtbarkeit
+- Nutzer-Doku und FAQ für die begrenzte Vor-Ort-Sichtbarkeit ergänzt
 - ideales Home-Erlebnis für `Jetzt` in einem Satz festgezogen: sofort sehen, was gerade relevant ist, wo Reaktion fehlt und wie man ohne Verwaltungsballast direkt ins gemeinsame Erleben kommt
 - die drei Kernfragen der Startansicht explizit festgehalten, damit `Jetzt` produktseitig klar gegen `Events` und `Gruppen` abgegrenzt bleibt
 - primäre Produktobjekte festgelegt: Aktivität zuerst, Vorschlag als Reaktionsobjekt, Presence als optionaler Event-Layer, Gruppe als Relevanz- und Sichtbarkeitskontext
@@ -101,7 +104,7 @@ Noch nicht sauber ausgearbeitet:
 - bessere Priorisierung der wichtigsten Aktionen beim Einstieg
 - explizite Join-Mechaniken jenseits von Vorschlagsentscheidung
 - feinere Sichtbarkeit wie optional vor Ort sichtbar weiter ausarbeiten
-- Zeitfenster für Anwesenheit und feinere Presence-Regeln
+- weitergehende Presence-Regeln über das Event-Zeitfenster hinaus
 - konsistente, starke UI-Sprache über alle Hauptviews
 
 ## Wichtigste Produktprobleme aktuell
@@ -280,6 +283,7 @@ Status: `planned`
 - [x] Presence-/Vor-Ort-Konzept definieren
 - [x] Dating-Use-Case als Unterfall des Relevanzmodells schärfen, nicht als separaten Produktkern
 - [x] echten Presence-/Check-in-Status über die reine Event-Freigabe hinaus modellieren
+- [x] Zeitfenster für Anwesenheit definieren und Vor-Ort-Sichtbarkeit an das Event koppeln
 
 ## Konkret bekannte UX-/View-Aufgaben
 

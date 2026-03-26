@@ -18,7 +18,10 @@ import {
   userSettings,
   users,
 } from "@/src/db/schema";
-import { type EventPresenceStatus } from "@/src/lib/event-presence";
+import {
+  getEventPresenceWindow,
+  type EventPresenceStatus,
+} from "@/src/lib/event-presence";
 import {
   DATE_TAG,
   EMPTY_DATING_PROFILE,
@@ -74,6 +77,14 @@ export type EventPresenceSummary = {
     email: string;
     updatedAt: Date;
   }>;
+};
+
+type EventPresenceRow = {
+  userId: string;
+  status: EventPresenceStatus;
+  updatedAt: Date;
+  name: string | null;
+  email: string;
 };
 
 export class RepositoryValidationError extends Error {
@@ -2374,7 +2385,17 @@ export async function getAcceptedUsersForEventIds(
 export async function getEventPresenceSummary(input: {
   userId: string;
   eventId: string;
+  now?: Date;
 }): Promise<EventPresenceSummary> {
+  const visibleEvent = await getVisibleEventForUserById({
+    userId: input.userId,
+    eventId: input.eventId,
+  });
+
+  if (!visibleEvent) {
+    throw new RepositoryValidationError("Event nicht gefunden oder nicht sichtbar.");
+  }
+
   const db = getDb();
   const rows = await db
     .select({
@@ -2389,12 +2410,41 @@ export async function getEventPresenceSummary(input: {
     .where(eq(eventPresences.eventId, input.eventId))
     .orderBy(desc(eventPresences.updatedAt));
 
+  return buildEventPresenceSummary({
+    rows,
+    userId: input.userId,
+    startsAt: visibleEvent.startsAt,
+    endsAt: visibleEvent.endsAt,
+    now: input.now,
+  });
+}
+
+function buildEventPresenceSummary(input: {
+  rows: EventPresenceRow[];
+  userId: string;
+  startsAt: Date;
+  endsAt: Date;
+  now?: Date;
+}): EventPresenceSummary {
+  const presenceWindow = getEventPresenceWindow({
+    startsAt: input.startsAt,
+    endsAt: input.endsAt,
+    now: input.now,
+  });
+
+  if (!presenceWindow.showsPresence) {
+    return {
+      currentUserStatus: null,
+      checkedInUsers: [],
+    };
+  }
+
   const currentUserRow =
-    rows.find((row) => row.userId === input.userId) ?? null;
+    input.rows.find((row) => row.userId === input.userId) ?? null;
 
   return {
     currentUserStatus: currentUserRow?.status ?? null,
-    checkedInUsers: rows
+    checkedInUsers: input.rows
       .filter((row) => row.status === "checked_in")
       .map((row) => ({
         userId: row.userId,
@@ -2409,6 +2459,7 @@ export async function setEventPresenceStatus(input: {
   userId: string;
   eventId: string;
   status: EventPresenceStatus;
+  now?: Date;
 }) {
   const visibleEvent = await getVisibleEventForUserById({
     userId: input.userId,
@@ -2425,8 +2476,22 @@ export async function setEventPresenceStatus(input: {
     );
   }
 
+  const now = input.now ?? new Date();
+  const presenceWindow = getEventPresenceWindow({
+    startsAt: visibleEvent.startsAt,
+    endsAt: visibleEvent.endsAt,
+    now,
+  });
+
+  if (input.status === "checked_in" && !presenceWindow.canCheckIn) {
+    throw new RepositoryValidationError(
+      presenceWindow.state === "before_window"
+        ? "Vor-Ort-Sichtbarkeit ist erst 90 Minuten vor Eventbeginn möglich."
+        : "Dieses Event ist bereits beendet. Vor-Ort-Sichtbarkeit wurde automatisch geschlossen.",
+    );
+  }
+
   const db = getDb();
-  const now = new Date();
 
   await db
     .insert(eventPresences)
@@ -2444,7 +2509,26 @@ export async function setEventPresenceStatus(input: {
       },
     });
 
-  return getEventPresenceSummary(input);
+  const rows = await db
+    .select({
+      userId: eventPresences.userId,
+      status: eventPresences.status,
+      updatedAt: eventPresences.updatedAt,
+      name: users.name,
+      email: users.email,
+    })
+    .from(eventPresences)
+    .innerJoin(users, eq(eventPresences.userId, users.id))
+    .where(eq(eventPresences.eventId, input.eventId))
+    .orderBy(desc(eventPresences.updatedAt));
+
+  return buildEventPresenceSummary({
+    rows,
+    userId: input.userId,
+    startsAt: visibleEvent.startsAt,
+    endsAt: visibleEvent.endsAt,
+    now,
+  });
 }
 
 export type EventCommentRow = {
