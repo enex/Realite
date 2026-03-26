@@ -33,6 +33,10 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 26.03.2026:
 
+- echter Presence-/Check-in-Status für Events eingeführt: auf der Eventseite bewusst ein- und ausblendbar statt nur als abstrakte Freigabe
+- Presence jetzt als eigenes Domain-Objekt mit explizitem Nutzerstatus pro Event modelliert
+- Eventseite zeigt bei erlaubter Vor-Ort-Sichtbarkeit jetzt, wer sich aktuell bewusst als vor Ort sichtbar markiert hat
+- Nutzer-Doku für den neuen Check-in-Flow ergänzt
 - Presence-/Vor-Ort-Konzept jetzt sauber dokumentiert: eventgebunden, opt-in, getrennt von Event-Sichtbarkeit und ohne automatischen Live-Status
 - neue Nutzer-Doku unter `/docs` erklärt den aktuellen Vor-Ort-Layer und grenzt klar ab, was noch nicht automatisch passiert
 - Event-Modell um explizites Opt-in `Vor Ort sichtbar` erweitert, getrennt von der eigentlichen Event-Sichtbarkeit
@@ -83,7 +87,7 @@ Noch nicht sauber ausgearbeitet:
 - bessere Priorisierung der wichtigsten Aktionen beim Einstieg
 - explizite Join-Mechaniken jenseits von Vorschlagsentscheidung
 - feinere Sichtbarkeit wie optional vor Ort sichtbar weiter ausarbeiten
-- echter Presence-/Vor-Ort-Layer
+- Zeitfenster für Anwesenheit und feinere Presence-Regeln
 - konsistente, starke UI-Sprache über alle Hauptviews
 
 ## Wichtigste Produktprobleme aktuell
@@ -261,7 +265,7 @@ Status: `planned`
 - [x] Sichtbarkeitsmodell erweitern: Freunde, Freunde von Freunden, offen, optional vor Ort sichtbar
 - [x] Presence-/Vor-Ort-Konzept definieren
 - [ ] Dating-Use-Case als Unterfall des Relevanzmodells schärfen, nicht als separaten Produktkern
-- [ ] echten Presence-/Check-in-Status über die reine Event-Freigabe hinaus modellieren
+- [x] echten Presence-/Check-in-Status über die reine Event-Freigabe hinaus modellieren
 
 ## Konkret bekannte UX-/View-Aufgaben
 

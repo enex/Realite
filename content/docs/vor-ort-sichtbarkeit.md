@@ -17,10 +17,13 @@ Der aktuelle Produktgrundsatz ist:
 
 Beim Erstellen eines Events kannst du die Option **Vor Ort sichtbar erlauben** aktivieren.
 
-Wenn die Option aktiv ist, bedeutet das aktuell:
+Wenn die Option aktiv ist:
 
 - dieses Event darf grundsätzlich einen freiwilligen Vor-Ort-Layer haben
 - die Eventseite und Eventkarten zeigen den Hinweis **Vor Ort sichtbar möglich**
+- auf der Eventseite erscheint zusätzlich ein eigener Bereich **Vor Ort Status**
+- dort kannst du dich bewusst auf **Jetzt vor Ort sichtbar sein** setzen oder wieder ausblenden
+- andere Personen mit Zugriff auf dieses Event sehen nur innerhalb dieses Event-Kontexts, wer sich aktiv sichtbar gemacht hat
 - die normale Event-Sichtbarkeit bleibt unverändert
 
 Wenn die Option aus ist, zeigt Realite stattdessen **Vor Ort aus**.
@@ -34,7 +37,7 @@ Die Freigabe bedeutet ausdrücklich **nicht**:
 - dass du außerhalb des Events sichtbar wirst
 - dass Realite eine offene Liste anwesender Personen veröffentlicht
 
-Die Funktion markiert aktuell nur den Rahmen: Für dieses Event wäre freiwillige Präsenz grundsätzlich erlaubt.
+Die Freigabe markiert also nicht einfach nur einen Rahmen: Sie erlaubt einen späteren, expliziten Check-in direkt auf der Eventseite. Auch dieser Check-in bleibt freiwillig und eventgebunden.
 
 ## So ist das Konzept gedacht
 
@@ -42,7 +45,7 @@ Realite behandelt Vor-Ort-Sichtbarkeit als zusätzlichen Schutzlayer über einem
 
 1. Zuerst legst du fest, wer das Event überhaupt sehen darf.
 2. Danach kann der Event-Ersteller erlauben, dass dieses Event optional einen Vor-Ort-Kontext haben darf.
-3. Erst auf dieser Basis kann später ein bewusster Vor-Ort-Status sinnvoll werden.
+3. Erst auf dieser Basis kannst du dich auf der Eventseite bewusst als **vor Ort sichtbar** markieren.
 
 Wichtig bleibt:
 
@@ -64,10 +67,16 @@ Diese Trennung reduziert Überraschungen:
 - eine spätere Vor-Ort-Funktion würde nur innerhalb des erlaubten Event-Kontexts stattfinden
 - Dating- oder Festival-Kontexte bleiben damit ein Zusatzfall derselben Schutzlogik
 
+## So nutzt du es
+
+1. Öffne ein Event, bei dem **Vor Ort sichtbar möglich** angezeigt wird.
+2. Nutze im Bereich **Vor Ort Status** den Button **Jetzt vor Ort sichtbar sein**.
+3. Wenn du nicht mehr sichtbar sein willst, wähle **Nicht mehr vor Ort sichtbar**.
+
 ## Kurz gesagt
 
 **Vor Ort sichtbar möglich** heißt in Realite aktuell:
 
-- dieses Event darf freiwillige Präsenz später grundsätzlich unterstützen
+- dieses Event darf freiwillige Präsenz mit explizitem Check-in unterstützen
 - du wirst dadurch nicht automatisch live sichtbar
 - Sichtbarkeit bleibt explizit, eventgebunden und kontrolliert

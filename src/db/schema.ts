@@ -31,6 +31,10 @@ export const eventJoinModeEnum = pgEnum("event_join_mode", [
   "request",
   "interest",
 ]);
+export const eventPresenceStatusEnum = pgEnum("event_presence_status", [
+  "checked_in",
+  "left",
+]);
 /** Kategorie für die Anzeige im Kalender (Google-Calendar-Style). */
 export const eventCategoryEnum = pgEnum("event_category", [
   "default",
@@ -304,6 +308,31 @@ export const eventComments = pgTable(
       .notNull(),
   },
   (table) => [index().on(table.eventId), index().on(table.createdAt)],
+);
+
+export const eventPresences = pgTable(
+  "event_presences",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    status: eventPresenceStatusEnum("status").notNull().default("checked_in"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex().on(table.eventId, table.userId),
+    index().on(table.eventId, table.status),
+    index().on(table.userId, table.status),
+  ],
 );
 
 export const suggestions = pgTable(

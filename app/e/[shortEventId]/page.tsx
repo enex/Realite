@@ -4,11 +4,13 @@ import { notFound } from "next/navigation";
 
 import { EventComments } from "@/src/components/event-comments";
 import { EventInviteSection } from "@/src/components/event-invite-section";
+import { EventPresencePanel } from "@/src/components/event-presence-panel";
 import { SharedEventContent } from "@/src/components/shared-event-content";
 import { SuggestionDecisionPanel } from "@/src/components/suggestion-decision-panel";
 import { getEventShareCopy, getPublicEventSharePreviewByShortId } from "@/src/lib/event-share";
 import {
   getAcceptedUsersForEventIds,
+  getEventPresenceSummary,
   getSuggestionForEventForUser,
   getVisibleEventForUserById
 } from "@/src/lib/repository";
@@ -119,12 +121,16 @@ export default async function EventShortcutPage({
   const [event, suggestion, acceptedByEventId] = await Promise.all([
     getVisibleEventForUserById({ userId: user.id, eventId }),
     getSuggestionForEventForUser({ userId: user.id, eventId }),
-    getAcceptedUsersForEventIds([eventId])
+    getAcceptedUsersForEventIds([eventId]),
   ]);
 
   if (!event) {
     notFound();
   }
+
+  const presenceSummary = event.allowOnSiteVisibility
+    ? await getEventPresenceSummary({ userId: user.id, eventId })
+    : null;
 
   const acceptedBy = acceptedByEventId.get(eventId) ?? [];
   const suggestionForFlow = suggestion && event.createdBy !== user.id ? suggestion : null;
@@ -165,6 +171,19 @@ export default async function EventShortcutPage({
           </p>
         </section>
       )}
+
+      {event.allowOnSiteVisibility && presenceSummary ? (
+        <EventPresencePanel
+          eventId={event.id}
+          initialStatus={presenceSummary.currentUserStatus}
+          initialCheckedInUsers={presenceSummary.checkedInUsers.map((entry) => ({
+            userId: entry.userId,
+            name: entry.name,
+            email: entry.email,
+            updatedAtIso: entry.updatedAt.toISOString(),
+          }))}
+        />
+      ) : null}
 
       {event.createdBy === user.id &&
         event.sourceProvider === "google" &&

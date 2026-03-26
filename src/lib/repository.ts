@@ -6,6 +6,7 @@ import {
   calendarWatchChannels,
   datingProfiles,
   eventComments,
+  eventPresences,
   eventTags,
   events,
   groupContacts,
@@ -17,6 +18,7 @@ import {
   userSettings,
   users,
 } from "@/src/db/schema";
+import { type EventPresenceStatus } from "@/src/lib/event-presence";
 import {
   DATE_TAG,
   EMPTY_DATING_PROFILE,
@@ -63,6 +65,16 @@ export type SuggestionStatus =
   | "accepted"
   | "declined";
 export type SuggestionDeclineReason = DeclineReason;
+
+export type EventPresenceSummary = {
+  currentUserStatus: EventPresenceStatus | null;
+  checkedInUsers: Array<{
+    userId: string;
+    name: string | null;
+    email: string;
+    updatedAt: Date;
+  }>;
+};
 
 export class RepositoryValidationError extends Error {
   constructor(message: string) {
@@ -2357,6 +2369,82 @@ export async function getAcceptedUsersForEventIds(
     byEvent.set(row.eventId, list);
   }
   return byEvent;
+}
+
+export async function getEventPresenceSummary(input: {
+  userId: string;
+  eventId: string;
+}): Promise<EventPresenceSummary> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      userId: eventPresences.userId,
+      status: eventPresences.status,
+      updatedAt: eventPresences.updatedAt,
+      name: users.name,
+      email: users.email,
+    })
+    .from(eventPresences)
+    .innerJoin(users, eq(eventPresences.userId, users.id))
+    .where(eq(eventPresences.eventId, input.eventId))
+    .orderBy(desc(eventPresences.updatedAt));
+
+  const currentUserRow =
+    rows.find((row) => row.userId === input.userId) ?? null;
+
+  return {
+    currentUserStatus: currentUserRow?.status ?? null,
+    checkedInUsers: rows
+      .filter((row) => row.status === "checked_in")
+      .map((row) => ({
+        userId: row.userId,
+        name: row.name,
+        email: row.email,
+        updatedAt: row.updatedAt,
+      })),
+  };
+}
+
+export async function setEventPresenceStatus(input: {
+  userId: string;
+  eventId: string;
+  status: EventPresenceStatus;
+}) {
+  const visibleEvent = await getVisibleEventForUserById({
+    userId: input.userId,
+    eventId: input.eventId,
+  });
+
+  if (!visibleEvent) {
+    throw new RepositoryValidationError("Event nicht gefunden oder nicht sichtbar.");
+  }
+
+  if (!visibleEvent.allowOnSiteVisibility) {
+    throw new RepositoryValidationError(
+      "Für dieses Event ist Vor-Ort-Sichtbarkeit nicht freigeschaltet.",
+    );
+  }
+
+  const db = getDb();
+  const now = new Date();
+
+  await db
+    .insert(eventPresences)
+    .values({
+      eventId: input.eventId,
+      userId: input.userId,
+      status: input.status,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: [eventPresences.eventId, eventPresences.userId],
+      set: {
+        status: input.status,
+        updatedAt: now,
+      },
+    });
+
+  return getEventPresenceSummary(input);
 }
 
 export type EventCommentRow = {
