@@ -54,8 +54,13 @@ export function DatingSettingsCard({
       </div>
 
       <p className="mt-2 text-sm text-slate-600">
-        Wenn freigeschaltet, kannst du Events mit `#date` erstellen. Diese sind nur für Nutzer sichtbar, die gegenseitig mit
-        dir matchen.
+        Wenn freigeschaltet, kannst du Events mit `#date` als geschützten Unterfall deiner normalen Aktivitätsplanung
+        erstellen. Diese Events sind nur für Nutzer sichtbar, die gegenseitig mit dir matchen.
+      </p>
+
+      <p className="mt-2 text-xs text-slate-500">
+        Realite behandelt Dating damit nicht als eigenen Produktkern oder offenen Personenfeed, sondern als bewusst begrenzte
+        Relevanz-Sichtbarkeit für konkrete Aktivitäten.
       </p>
 
       {loading ? <p className="mt-3 text-sm text-slate-500">Lade Dating-Einstellungen...</p> : null}

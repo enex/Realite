@@ -115,6 +115,9 @@ Realite ist:
 
 Realite ist ein Layer über deinem bestehenden sozialen Leben.
 
+Dating oder spontanes Kennenlernen können als Unterfall vorkommen, bleiben aber bewusst an konkrete Aktivitäten,
+gegenseitige Relevanz und explizite Sichtbarkeit gebunden.
+
 ## Was du davon hast
 
 Mit Realite soll es leichter werden:

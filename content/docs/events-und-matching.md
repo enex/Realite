@@ -20,7 +20,7 @@ Ein Event besteht aus:
 - **Freunde:** nur für deine registrierten Kontakte
 - **Freunde von Freunden:** für deine registrierten Kontakte und deren Kontakte
 
-Wenn du `#kontakte` nutzt oder direkt die Kontakte-Gruppe auswählst, behandelt Realite das Event automatisch als **Freunde** statt als allgemeines Gruppen-Event. Bei `#date` überschreibt Realite die normale Auswahl weiterhin mit einem separaten, geschützten Dating-Sichtbarkeitsmodus.
+Wenn du `#kontakte` nutzt oder direkt die Kontakte-Gruppe auswählst, behandelt Realite das Event automatisch als **Freunde** statt als allgemeines Gruppen-Event. Bei `#date` überschreibt Realite die normale Auswahl weiterhin mit einem separaten, geschützten Sichtbarkeitsmodus.
 
 **Kategorien:** Events werden auf dem Dashboard nach Kategorie gruppiert angezeigt (ähnlich wie in Google Kalender). Beim Anlegen schlägt Realite eine Kategorie anhand von Titel, Beschreibung und Tags vor; du kannst sie im Formular anpassen. Verfügbare Kategorien sind u. a. Sonstiges, Besprechung, Arbeit, Privat, Sport, Soziales, Geburtstag, Verabredung.
 
@@ -30,7 +30,7 @@ Wenn du `#kontakte` nutzt oder direkt die Kontakte-Gruppe auswählst, behandelt 
 - **Anfrage senden:** Teilnahme braucht zuerst deine Freigabe
 - **Interesse zeigen:** erst ein lockeres Signal, dann bewusste Abstimmung
 
-So bleibt klar, ob ein Event offen joinbar ist oder ob du erst Rückmeldung sammeln willst. Bei `#date` nutzt Realite automatisch **Interesse zeigen**, damit Dating-Kontext low-pressure und explizit bleibt.
+So bleibt klar, ob ein Event offen joinbar ist oder ob du erst Rückmeldung sammeln willst. Bei `#date` nutzt Realite automatisch **Interesse zeigen**, damit dieser sensible Unterfall des Relevanzmodells low-pressure und explizit bleibt.
 
 **Vor Ort sichtbar bleibt opt-in:** Du kannst beim Anlegen zusätzlich aktivieren, dass für dieses Event später freiwillige Vor-Ort-Sichtbarkeit erlaubt ist. Das ist keine automatische Freigabe:
 
@@ -107,7 +107,7 @@ Wichtig: Auch bei einem per Shortcut angelegten Smart Treffen werden Kalenderein
 
 - `#alle`: Event ist allgemein sichtbar
 - `#kontakte`: Event richtet sich an deine Kontakte
-- `#date`: Event für Dating-Matches (nur nach gegenseitigem Profil-Match sichtbar)
+- `#date`: Event für gegenseitig passende Dating-Matches als geschützter Unterfall normaler Aktivitätssichtbarkeit
 
 Du kannst mehrere Hashtags nutzen.
 
@@ -117,6 +117,10 @@ Regeln für `#date`:
 - `#date` kann nicht mit `#alle` oder `#kontakte` kombiniert werden
 - `#dating` wird automatisch als `#date` behandelt
 
+Wichtig: `#date` macht Realite nicht zu einer separaten Dating-App. Der Tag ist nur ein zusätzlicher Relevanz- und
+Sichtbarkeitsfilter für konkrete Aktivitäten. Es gibt keinen offenen Personenkatalog und keine automatische Veröffentlichung
+deines Profils.
+
 ## Wie Vorschläge entstehen
 
 Realite vergleicht:
@@ -124,7 +128,8 @@ Realite vergleicht:
 - deine Interessen (über Hashtags und bisherige Entscheidungen)
 - deine verfügbare Zeit
 - passende Events aus deinen Gruppen und öffentlichen Bereichen
-- bei `#date` zusätzlich: gegenseitige Profilkriterien (Geschlecht, Altersbereich, Single-Status)
+- bei `#date` zusätzlich: gegenseitige Profilkriterien (Geschlecht, Altersbereich, Single-Status) als zusätzlicher
+  Relevanzfilter für diesen Sonderfall
 
 Verfügbarkeit bedeutet hier die Kalender-Eigenschaft pro Termin:
 
@@ -132,7 +137,8 @@ Verfügbarkeit bedeutet hier die Kalender-Eigenschaft pro Termin:
 - **Frei/Verfügbar** blockiert den Zeitraum nicht
 
 Realite macht Vorschläge nur dann, wenn du im betreffenden Zeitraum verfügbar bist.
-Für `#date`-Events gilt zusätzlich: beide Seiten müssen sich gegenseitig matchen.
+Für `#date`-Events gilt zusätzlich: beide Seiten müssen sich gegenseitig matchen. Auch hier bleibt die Aktivität der Kern,
+nicht das reine Durchsuchen von Personen.
 
 Hinweis zum Datenschutz:
 

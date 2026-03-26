@@ -441,7 +441,8 @@ export function GroupsPage({
                 <p className="text-sm text-slate-500">Smarte Gruppe</p>
                 <h2 className="text-lg font-semibold text-slate-900">#date</h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Events mit `#date` sind nur für Personen sichtbar, die sich gegenseitig im Dating-Profil matchen.
+                  `#date` ist kein eigener Feed, sondern ein geschützter Sonderfall deines Relevanzmodells: Events sind nur
+                  für Personen sichtbar, die sich gegenseitig im Dating-Profil matchen.
                 </p>
                 <p className="mt-2 text-xs text-slate-500">
                   Status:{" "}

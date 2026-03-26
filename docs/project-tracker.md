@@ -33,6 +33,8 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 26.03.2026:
 
+- Dating-Use-Case in UI-Texten und Nutzer-Doku als geschützter Unterfall des Relevanz- und Sichtbarkeitsmodells geschärft
+- `#date` wird jetzt konsequenter als Aktivitätsfilter statt als separater Produktkern beschrieben
 - gemeinsames Card-System für Kernflächen definiert und auf Vorschläge, Smart Treffen, Event-Details sowie Vor-Ort-Status angewendet
 - Handlungs-Queue, Verlauf, Smart-Treffen-Planung und Presence nutzen jetzt dieselbe Surface-Hierarchie für Section-, Item- und Inset-Karten
 - Event-Detailseite übernimmt dieselbe Kartenlogik jetzt auch für Zusagen und den persönlichen Vorschlags-Flow
@@ -269,7 +271,7 @@ Status: `planned`
 - [x] Sichtbarkeitsstufen `Freunde` und `Freunde von Freunden` im Event-Modell, Formular und UI ergänzen
 - [x] Sichtbarkeitsmodell erweitern: Freunde, Freunde von Freunden, offen, optional vor Ort sichtbar
 - [x] Presence-/Vor-Ort-Konzept definieren
-- [ ] Dating-Use-Case als Unterfall des Relevanzmodells schärfen, nicht als separaten Produktkern
+- [x] Dating-Use-Case als Unterfall des Relevanzmodells schärfen, nicht als separaten Produktkern
 - [x] echten Presence-/Check-in-Status über die reine Event-Freigabe hinaus modellieren
 
 ## Konkret bekannte UX-/View-Aufgaben
