@@ -33,6 +33,8 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 26.03.2026:
 
+- High-Level-Domain-Dokument für Sichtbarkeit und Relevanz unter `/docs` ergänzt und im Docs-Index verankert
+- Überblicks-Doku jetzt mit direktem Verweis auf das gemeinsame Modell aus Relevanz, Sichtbarkeit, Gruppen, Kontakten und geschützten Sonderfällen
 - Typografie- und Spacing-Hierarchie der Kernviews vereinheitlicht: gemeinsame Header-, Section- und Detailrhythmen für `Jetzt`/`Events`, `Vorschläge`, `Gruppen`, Event-Details, Settings und Shell-Kontext
 - wiederholte Eyebrow-, Titel-, Meta- und Lead-Styles in eine zentrale UI-Hierarchie gezogen statt verteilter Einzelklassen
 - Dating-Use-Case in UI-Texten und Nutzer-Doku als geschützter Unterfall des Relevanz- und Sichtbarkeitsmodells geschärft
@@ -320,7 +322,7 @@ Status: `planned`
 - [ ] definieren, welche drei Fragen die Startansicht beantworten muss
 - [ ] festlegen, welche Objekte produktseitig primär sind: Aktivität, Vorschlag, Presence, Gruppe
 - [x] Presence-/On-Site-Use-Case als opt-in Flow beschreiben
-- [ ] Sichtbarkeit und Relevanzmodell als High-Level-Domain-Dokument festhalten
+- [x] Sichtbarkeit und Relevanzmodell als High-Level-Domain-Dokument festhalten
 
 ## Entscheidungen offen
 

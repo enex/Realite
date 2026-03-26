@@ -36,6 +36,12 @@ const DOCS_PAGES: DocsPage[] = [
     fileName: "events-und-matching.md"
   },
   {
+    slug: "sichtbarkeit-und-relevanz",
+    title: "Sichtbarkeit und Relevanz",
+    description: "Wie Realite soziale Kreise, Matching und Freigaben sauber trennt.",
+    fileName: "sichtbarkeit-und-relevanz.md"
+  },
+  {
     slug: "vor-ort-sichtbarkeit",
     title: "Vor-Ort-Sichtbarkeit",
     description: "Wie Realite eventgebundene Presence bewusst und kontrolliert denkt.",

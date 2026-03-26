@@ -73,6 +73,8 @@ Realite arbeitet mit abgestufter Sichtbarkeit:
 
 So kannst du selbst steuern, wie weit sich eine Aktivität in deinem sozialen Umfeld öffnet.
 
+Wie Relevanz, Sichtbarkeit, Gruppen, Kontakte und geschützte Sonderfälle zusammenhängen, steht auch gesammelt unter **[Sichtbarkeit und Relevanz](/docs/sichtbarkeit-und-relevanz)**.
+
 ### Einfach reagieren statt lange abstimmen
 
 Je nach Aktivität kannst du:
