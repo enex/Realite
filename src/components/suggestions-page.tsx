@@ -11,6 +11,7 @@ import { getSuggestionNextAction, getSuggestionStatusMeta } from "@/src/lib/acti
 import { getCardSurfaceMeta } from "@/src/lib/card-system";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
+import { getPageIntentMeta, pageLeadClassName, pageMetaClassName, pageShellClassName, pageTitleClassName } from "@/src/lib/page-hierarchy";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
 type Suggestion = {
@@ -76,6 +77,7 @@ export function SuggestionsPage({
 }) {
   const suggestionCard = getCardSurfaceMeta("suggestion");
   const activityCard = getCardSurfaceMeta("activity");
+  const reactionPage = getPageIntentMeta("react");
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const {
@@ -237,17 +239,17 @@ export function SuggestionsPage({
       }}
     >
       <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <header className={pageShellClassName}>
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex items-start gap-3">
               <UserAvatar name={profileName} email={profileEmail} image={profileImage} size="lg" />
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">Reagieren</p>
-                <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Reagiere auf passende Aktivitäten</h1>
-                <p className="mt-0.5 text-sm text-slate-600">
+                <p className={reactionPage.eyebrowClassName}>Reagieren</p>
+                <h1 className={pageTitleClassName}>Reagiere auf passende Aktivitäten</h1>
+                <p className={pageMetaClassName}>{profileEmail}</p>
+                <p className={pageLeadClassName}>
                   Offene Vorschläge stehen oben. Bereits entschiedene Vorschläge bleiben darunter als Verlauf sichtbar.
                 </p>
-                <p className="text-xs text-slate-500">{profileEmail}</p>
               </div>
             </div>
             <button

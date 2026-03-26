@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import posthog from "posthog-js";
 
 import { UserAvatar } from "@/src/components/user-avatar";
+import { eyebrowBaseClassName, getPageIntentMeta, type PageIntent } from "@/src/lib/page-hierarchy";
 
 type AppShellProps = {
   user: {
@@ -41,6 +42,18 @@ function isItemActive(pathname: string, href: string) {
   }
 
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function getIntentTone(intent: string): PageIntent {
+  if (intent === "Entdecken") {
+    return "discover";
+  }
+
+  if (intent === "Reagieren") {
+    return "react";
+  }
+
+  return "manage";
 }
 
 export function AppShell({ user, children }: AppShellProps) {
@@ -90,7 +103,7 @@ export function AppShell({ user, children }: AppShellProps) {
                   className={`rounded-xl px-3 py-2 transition ${active ? "bg-teal-100 text-teal-900" : "text-slate-700 hover:bg-slate-100"
                     }`}
                 >
-                  <span className={`block text-[11px] font-semibold uppercase tracking-[0.14em] ${active ? "text-teal-700" : "text-slate-400"}`}>
+                  <span className={`block ${eyebrowBaseClassName} ${active ? "text-teal-700" : "text-slate-400"}`}>
                     {item.intent}
                   </span>
                   <span className="block text-sm font-semibold">{item.label}</span>
@@ -115,7 +128,7 @@ export function AppShell({ user, children }: AppShellProps) {
         <div className="border-b border-slate-200 bg-white/80 backdrop-blur">
           <div className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-2 sm:px-6 lg:px-8 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">
+              <p className={getPageIntentMeta(getIntentTone(currentSection.intent)).eyebrowClassName}>
                 {currentSection.intent}
               </p>
               <p className="text-sm text-slate-600">

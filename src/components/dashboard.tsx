@@ -25,6 +25,12 @@ import {
   type EventCreationVisibility,
   type EventVisibility,
 } from "@/src/lib/event-visibility";
+import {
+  getPageIntentMeta,
+  sectionBodyClassName,
+  sectionTitleClassName,
+  surfaceShellClassName,
+} from "@/src/lib/page-hierarchy";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
@@ -579,6 +585,8 @@ export function Dashboard({
   const joinCtaLabel = nextJoinableEvent ? "Mitmachen" : "Events ansehen";
   const joinCtaHint = nextJoinableEvent ? "eine sichtbare Aktivität öffnen" : "sichtbare Aktivitäten öffnen";
   const suggestionCtaLabel = pendingCount > 0 ? "Reagieren" : "Vorschläge prüfen";
+  const reactionPage = getPageIntentMeta("react");
+  const managementPage = getPageIntentMeta("manage");
 
   return (
     <AppShell
@@ -666,16 +674,16 @@ export function Dashboard({
         </section>
 
         {isEventsView ? (
-          <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:mt-6 md:p-6">
-            <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">Einordnung</p>
-            <h2 className="mt-2 text-lg font-semibold text-slate-900">Events ist deine persönliche Verwaltungsansicht</h2>
-            <p className="mt-2 text-sm text-slate-600">
+          <section className={`mt-5 ${surfaceShellClassName} p-5 md:mt-6 md:p-6`}>
+            <p className={managementPage.eyebrowClassName}>Einordnung</p>
+            <h2 className={sectionTitleClassName}>Events ist deine persönliche Verwaltungsansicht</h2>
+            <p className={sectionBodyClassName}>
               Hier sammelst du alle sichtbaren Termine, Zusagen und eigenen Aktivitäten. Für schnelle Reaktionen und spontane Optionen ist
               die <a href="/now" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">Jetzt-Ansicht</a> gedacht.
             </p>
             <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
               <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Bereiche in Events</p>
+                <p className={managementPage.eyebrowClassName}>Bereiche in Events</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <a
                     href="#events"
@@ -690,18 +698,18 @@ export function Dashboard({
                     Smart Treffen
                   </a>
                 </div>
-                <p className="mt-3 text-sm text-slate-600">
+                <p className={sectionBodyClassName}>
                   Erst kommen zugesagte, eigene und kontextuelle Aktivitäten. Smart Treffen bleiben darunter als eigener Planungsbereich.
                 </p>
               </div>
               <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-700">Smart Treffen</p>
-                <p className="mt-2 text-sm font-semibold text-slate-900">
+                <p className={reactionPage.eyebrowClassName}>Smart Treffen</p>
+                <p className={sectionTitleClassName}>
                   {smartMeetingsCount === 0
                     ? "Kein aktives Smart Treffen"
                     : `${smartMeetingsCount} Smart ${smartMeetingsCount === 1 ? "Treffen" : "Treffen"} im Planungsbereich`}
                 </p>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className={sectionBodyClassName}>
                   {smartMeetingsNeedingApproval > 0
                     ? `${smartMeetingsNeedingApproval} ${smartMeetingsNeedingApproval === 1 ? "Lauf braucht" : "Läufe brauchen"} gerade deine Freigabe für Kalendereinladungen.`
                     : "Hier planst du Gruppen-Termine, ohne die Hauptnavigation stärker aufzublähen."}
@@ -752,9 +760,9 @@ export function Dashboard({
           <div className={`mt-4 rounded-2xl p-4 md:p-5 ${getVisualPriorityMeta("reaction").sectionClassName}`}>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className={`text-xs font-semibold uppercase tracking-[0.14em] ${getVisualPriorityMeta("reaction").eyebrowClassName}`}>Reagieren zuerst</p>
-                <h3 className="mt-1 text-base font-semibold text-slate-900">Vorschläge mit Handlungsbedarf</h3>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className={reactionPage.eyebrowClassName}>Reagieren zuerst</p>
+                <h3 className={sectionTitleClassName}>Vorschläge mit Handlungsbedarf</h3>
+                <p className={sectionBodyClassName}>
                   Entscheide zuerst über offene Vorschläge. Danach ist der Feed nur noch für sichtbare Aktivitäten zum Mitmachen da.
                 </p>
               </div>

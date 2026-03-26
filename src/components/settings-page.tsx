@@ -9,6 +9,7 @@ import { DatingSettingsCard } from "@/src/components/settings/dating-settings-ca
 import { MpcSettingsCard } from "@/src/components/settings/mcp-settings-card";
 import { SuggestionLearningCard } from "@/src/components/settings/suggestion-learning-card";
 import { SuggestionSettingsCard, type SuggestionSettingsForm } from "@/src/components/settings/suggestion-settings-card";
+import { getPageIntentMeta, pageLeadClassName, pageMetaClassName, pageShellClassName, pageTitleClassName } from "@/src/lib/page-hierarchy";
 import { useDatingSettings } from "@/src/components/settings/use-dating-settings";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 
@@ -87,6 +88,7 @@ export function SettingsPage({
   userEmail: string;
   userImage: string | null;
 }) {
+  const managementPage = getPageIntentMeta("manage");
   const queryClient = useQueryClient();
   const {
     data: queryData,
@@ -184,15 +186,15 @@ export function SettingsPage({
       }}
     >
       <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <header className={pageShellClassName}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-start gap-3">
               <UserAvatar name={userName} email={userEmail} image={userImage} size="lg" />
               <div>
-                <p className="text-sm text-slate-500">Profil & Einstellungen</p>
-                <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{userName}</h1>
-                <p className="text-xs text-slate-500">{userEmail}</p>
-                <p className="mt-2 text-sm text-slate-600">
+                <p className={managementPage.eyebrowClassName}>Profil & Einstellungen</p>
+                <h1 className={pageTitleClassName}>{userName}</h1>
+                <p className={pageMetaClassName}>{userEmail}</p>
+                <p className={pageLeadClassName}>
                   {datingModeEnabled
                     ? "Steuere hier Vorschlagslogik, Kalenderverhalten und den Dating-Modus für die Smart Group `#date`."
                     : "Steuere hier Vorschlagslogik und Kalenderverhalten."}

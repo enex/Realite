@@ -9,6 +9,17 @@ import { AppShell } from "@/src/components/app-shell";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
+import {
+  getPageIntentMeta,
+  pageLeadClassName,
+  pageMetaClassName,
+  pageShellClassName,
+  pageTitleClassName,
+  sectionBodyClassName,
+  sectionTitleClassName,
+  statLabelClassName,
+  statValueClassName,
+} from "@/src/lib/page-hierarchy";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 
 type GroupContact = {
@@ -90,9 +101,9 @@ function FlowLink({
       href={href}
       className="rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-teal-300 hover:bg-teal-50"
     >
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{eyebrow}</p>
-      <h3 className="mt-2 text-sm font-semibold text-slate-900">{title}</h3>
-      <p className="mt-2 text-sm text-slate-600">{description}</p>
+      <p className={getPageIntentMeta("manage").eyebrowClassName}>{eyebrow}</p>
+      <h3 className={sectionTitleClassName}>{title}</h3>
+      <p className={sectionBodyClassName}>{description}</p>
     </Link>
   );
 }
@@ -108,9 +119,9 @@ function ManagementCard({
 }) {
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{eyebrow}</p>
-      <h2 className="mt-2 text-base font-semibold text-slate-900">{title}</h2>
-      <p className="mt-2 text-sm text-slate-600">{description}</p>
+      <p className={getPageIntentMeta("manage").eyebrowClassName}>{eyebrow}</p>
+      <h2 className={sectionTitleClassName}>{title}</h2>
+      <p className={sectionBodyClassName}>{description}</p>
     </article>
   );
 }
@@ -147,6 +158,8 @@ export function GroupsPage({
   });
 
   const datingModeEnabled = useRealiteFeatureFlag("dating-mode", false);
+  const managementPage = getPageIntentMeta("manage");
+  const discoveryPage = getPageIntentMeta("discover");
   const visibleGroups = useMemo(() => data.groups.filter((group) => !group.isHidden), [data.groups]);
   const hiddenGroups = useMemo(() => data.groups.filter((group) => group.isHidden), [data.groups]);
   const managedContactCount = useMemo(
@@ -243,15 +256,15 @@ export function GroupsPage({
       }}
     >
       <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <header className={pageShellClassName}>
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex items-start gap-3">
               <UserAvatar name={profileName} email={profileEmail} image={profileImage} size="lg" />
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Verwalten</p>
-                <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Alle Gruppen</h1>
-                <p className="text-xs text-slate-500">{profileEmail}</p>
-                <p className="mt-2 text-sm text-slate-600">
+                <p className={managementPage.eyebrowClassName}>Verwalten</p>
+                <h1 className={pageTitleClassName}>Alle Gruppen</h1>
+                <p className={pageMetaClassName}>{profileEmail}</p>
+                <p className={pageLeadClassName}>
                   Gruppen sind dein Relevanz- und Sichtbarkeitslayer. Du steuerst hier, welche sozialen Kreise Realite für
                   Aktivitäten berücksichtigen soll. Der eigentliche Aktivitätsfluss bleibt bewusst in Jetzt, Vorschlägen und
                   Events.
@@ -270,25 +283,25 @@ export function GroupsPage({
         <section className="mt-6 rounded-2xl border border-teal-200 bg-teal-50 p-6 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">Aktivitätsfluss getrennt halten</p>
-              <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">Hier pflegst du Kreise. Entscheidungen triffst du anderswo.</h2>
-              <p className="mt-2 text-sm text-slate-700">
+              <p className={discoveryPage.eyebrowClassName}>Aktivitätsfluss getrennt halten</p>
+              <h2 className={sectionTitleClassName}>Hier pflegst du Kreise. Entscheidungen triffst du anderswo.</h2>
+              <p className={sectionBodyClassName}>
                 Gruppen helfen Realite bei Relevanz, Sichtbarkeit und Einladungen. Sie sollen aber nicht mit spontanen Aktivitäten,
                 offenen Reaktionen oder deinem Sozialkalender konkurrieren.
               </p>
             </div>
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="rounded-xl bg-white px-3 py-3">
-                <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Gruppen</p>
-                <p className="mt-1 text-xl font-semibold text-slate-900">{visibleGroups.length}</p>
+                <p className={statLabelClassName}>Gruppen</p>
+                <p className={statValueClassName}>{visibleGroups.length}</p>
               </div>
               <div className="rounded-xl bg-white px-3 py-3">
-                <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Kontakte</p>
-                <p className="mt-1 text-xl font-semibold text-slate-900">{managedContactCount}</p>
+                <p className={statLabelClassName}>Kontakte</p>
+                <p className={statValueClassName}>{managedContactCount}</p>
               </div>
               <div className="rounded-xl bg-white px-3 py-3">
-                <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Events</p>
-                <p className="mt-1 text-xl font-semibold text-slate-900">{managedEventCount}</p>
+                <p className={statLabelClassName}>Events</p>
+                <p className={statValueClassName}>{managedEventCount}</p>
               </div>
             </div>
           </div>

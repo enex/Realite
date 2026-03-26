@@ -5,6 +5,14 @@ import { EventLocationDetails } from "@/src/components/event-location-details";
 import { getEventJoinModeMeta, type EventJoinMode } from "@/src/lib/event-join-modes";
 import { getEventOnSiteVisibilityMeta } from "@/src/lib/event-on-site";
 import { getEventVisibilityMeta, type EventVisibility } from "@/src/lib/event-visibility";
+import {
+  detailBodyClassName,
+  detailLabelClassName,
+  getPageIntentMeta,
+  pageMetaClassName,
+  pageTitleClassName,
+  surfaceShellClassName,
+} from "@/src/lib/page-hierarchy";
 import { stripRealiteCalendarMetadata } from "@/src/lib/realite-calendar-links";
 import { sanitizeBasicHtml } from "@/src/lib/sanitize-basic-html";
 import { getVisualPriorityMeta } from "@/src/lib/visual-priority";
@@ -75,23 +83,28 @@ export function SharedEventContent(props: SharedEventContentProps) {
   const visibilityMeta = props.visibility
     ? getEventVisibilityMeta(props.visibility)
     : null;
+  const managementPage = getPageIntentMeta("manage");
   const onSiteMeta = getEventOnSiteVisibilityMeta(Boolean(props.allowOnSiteVisibility));
   const originalEditUrl = props.isOwnedByCurrentUser
     ? buildGoogleCalendarEditUrl(props.sourceProvider, props.sourceEventId)
     : null;
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <section className={`${surfaceShellClassName} p-5 sm:p-6`}>
       <EventCoverImage
         placeImageUrl={props.placeImageUrl}
         linkPreviewImageUrl={props.linkPreviewImageUrl}
       />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{props.title}</h1>
           {props.groupName ? (
-            <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Gruppe: {props.groupName}</p>
+            <p className={managementPage.eyebrowClassName}>Gruppe: {props.groupName}</p>
           ) : null}
+          <h1
+            className={`${props.groupName ? pageTitleClassName : "text-2xl font-semibold tracking-tight text-slate-900"} sm:text-3xl`}
+          >
+            {props.title}
+          </h1>
         </div>
 
         {originalEditUrl ? (
@@ -110,7 +123,7 @@ export function SharedEventContent(props: SharedEventContentProps) {
         ) : null}
       </div>
 
-      <p className="mt-3 text-sm text-slate-600 sm:text-base">
+      <p className={`${detailBodyClassName} sm:text-base`}>
         {startsAt.toLocaleDateString("de-DE", {
           weekday: "long",
           day: "2-digit",
@@ -122,7 +135,7 @@ export function SharedEventContent(props: SharedEventContentProps) {
       </p>
 
       {props.createdByEmail ? (
-        <p className="mt-2 text-sm text-slate-500">
+        <p className={pageMetaClassName}>
           Von{" "}
           {props.createdByShortId ? (
             <a href={`/u/${props.createdByShortId}`} className="font-medium text-teal-700 hover:text-teal-800">
@@ -137,8 +150,8 @@ export function SharedEventContent(props: SharedEventContentProps) {
 
       {joinModeMeta ? (
         <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("reaction").insetClassName}`}>
-          <p className="text-sm font-semibold text-slate-900">Mitmachen</p>
-          <p className="mt-1 text-sm text-slate-700">
+          <p className={detailLabelClassName}>Mitmachen</p>
+          <p className={detailBodyClassName}>
             <span className="font-medium text-teal-800">{joinModeMeta.label}</span> · {joinModeMeta.description}
           </p>
         </section>
@@ -146,8 +159,8 @@ export function SharedEventContent(props: SharedEventContentProps) {
 
       {visibilityMeta ? (
         <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("neutral").insetClassName}`}>
-          <p className="text-sm font-semibold text-slate-900">Sichtbarkeit</p>
-          <p className="mt-1 text-sm text-slate-700">
+          <p className={detailLabelClassName}>Sichtbarkeit</p>
+          <p className={detailBodyClassName}>
             <span className="font-medium text-slate-900">{visibilityMeta.label}</span> ·{" "}
             {visibilityMeta.description}
           </p>
@@ -155,8 +168,8 @@ export function SharedEventContent(props: SharedEventContentProps) {
       ) : null}
 
       <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("momentum").insetClassName}`}>
-        <p className="text-sm font-semibold text-slate-900">Vor Ort</p>
-        <p className="mt-1 text-sm text-slate-700">
+        <p className={detailLabelClassName}>Vor Ort</p>
+        <p className={detailBodyClassName}>
           <span className="font-medium text-slate-900">{onSiteMeta.label}</span> ·{" "}
           {onSiteMeta.description}
         </p>
@@ -166,20 +179,20 @@ export function SharedEventContent(props: SharedEventContentProps) {
         <EventLocationDetails location={location} />
       ) : (
         <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("neutral").insetClassName}`}>
-          <p className="text-sm font-semibold text-slate-900">Ort</p>
-          <p className="mt-1 text-sm text-slate-600">Kein Ort angegeben.</p>
+          <p className={detailLabelClassName}>Ort</p>
+          <p className={detailBodyClassName}>Kein Ort angegeben.</p>
         </section>
       )}
 
       <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("neutral").insetClassName}`}>
-        <p className="text-sm font-semibold text-slate-900">Beschreibung</p>
+        <p className={detailLabelClassName}>Beschreibung</p>
         {sanitizedDescriptionHtml ? (
           <div
-            className="mt-1 whitespace-pre-wrap text-sm text-slate-700 [&_a]:font-medium [&_a]:text-teal-700 [&_a]:underline hover:[&_a]:text-teal-800 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-6"
+            className={`${detailBodyClassName} whitespace-pre-wrap [&_a]:font-medium [&_a]:text-teal-700 [&_a]:underline hover:[&_a]:text-teal-800 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-6`}
             dangerouslySetInnerHTML={{ __html: sanitizedDescriptionHtml }}
           />
         ) : (
-          <p className="mt-1 text-sm text-slate-700">Keine Beschreibung vorhanden.</p>
+          <p className={detailBodyClassName}>Keine Beschreibung vorhanden.</p>
         )}
       </section>
     </section>
