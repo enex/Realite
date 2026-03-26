@@ -3,6 +3,7 @@
 import { EventImage } from "@/src/components/event-image";
 import { EventLocationDetails } from "@/src/components/event-location-details";
 import { getEventJoinModeMeta, type EventJoinMode } from "@/src/lib/event-join-modes";
+import { getEventOnSiteVisibilityMeta } from "@/src/lib/event-on-site";
 import { getEventVisibilityMeta, type EventVisibility } from "@/src/lib/event-visibility";
 import { stripRealiteCalendarMetadata } from "@/src/lib/realite-calendar-links";
 import { sanitizeBasicHtml } from "@/src/lib/sanitize-basic-html";
@@ -15,6 +16,7 @@ type SharedEventContentProps = {
   location?: string | null;
   joinMode?: EventJoinMode | null;
   visibility?: EventVisibility | null;
+  allowOnSiteVisibility?: boolean | null;
   /** Bild des Ortes (z. B. Venue). */
   placeImageUrl?: string | null;
   /** Link-Preview-Bild aus der Beschreibung. */
@@ -72,6 +74,7 @@ export function SharedEventContent(props: SharedEventContentProps) {
   const visibilityMeta = props.visibility
     ? getEventVisibilityMeta(props.visibility)
     : null;
+  const onSiteMeta = getEventOnSiteVisibilityMeta(Boolean(props.allowOnSiteVisibility));
   const originalEditUrl = props.isOwnedByCurrentUser
     ? buildGoogleCalendarEditUrl(props.sourceProvider, props.sourceEventId)
     : null;
@@ -149,6 +152,14 @@ export function SharedEventContent(props: SharedEventContentProps) {
           </p>
         </section>
       ) : null}
+
+      <section className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <p className="text-sm font-semibold text-slate-900">Vor Ort</p>
+        <p className="mt-1 text-sm text-slate-700">
+          <span className="font-medium text-slate-900">{onSiteMeta.label}</span> ·{" "}
+          {onSiteMeta.description}
+        </p>
+      </section>
 
       {location ? (
         <EventLocationDetails location={location} />

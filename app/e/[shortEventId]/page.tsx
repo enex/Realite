@@ -88,6 +88,7 @@ export default async function EventShortcutPage({
           location={preview.location}
           joinMode={preview.joinMode}
           visibility="public"
+          allowOnSiteVisibility={false}
           placeImageUrl={preview.placeImageUrl}
           linkPreviewImageUrl={preview.linkPreviewImageUrl}
           createdByName={preview.createdByName}
@@ -144,6 +145,7 @@ export default async function EventShortcutPage({
         location={event.location}
         joinMode={event.joinMode}
         visibility={event.visibility}
+        allowOnSiteVisibility={event.allowOnSiteVisibility}
         placeImageUrl={event.placeImageUrl}
         linkPreviewImageUrl={event.linkPreviewImageUrl}
         groupName={event.groupName}

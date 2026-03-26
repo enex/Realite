@@ -9,6 +9,7 @@ import { EventImage } from "@/src/components/event-image";
 import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
 import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
 import { EVENT_JOIN_MODE_VALUES, getEventJoinModeMeta, type EventJoinMode } from "@/src/lib/event-join-modes";
+import { getEventOnSiteVisibilityMeta } from "@/src/lib/event-on-site";
 import { getEventPatternMeta } from "@/src/lib/activity-patterns";
 import { DASHBOARD_QUERY_KEY, fetchDashboard as fetchDashboardApi } from "@/src/lib/dashboard-query";
 import {
@@ -43,6 +44,7 @@ type EventItem = {
   tags: string[];
   visibility: EventVisibility;
   joinMode: EventJoinMode;
+  allowOnSiteVisibility: boolean;
   color: string | null;
   category: EventCategory;
   placeImageUrl: string | null;
@@ -247,6 +249,7 @@ export function Dashboard({
     endsAt: "",
     visibility: "public" as EventCreationVisibility,
     joinMode: "direct" as EventJoinMode,
+    allowOnSiteVisibility: false,
     groupId: "",
     tags: "#kontakte",
     color: "" as string,
@@ -449,6 +452,7 @@ export function Dashboard({
           id: string;
           visibility: EventVisibility;
           joinMode: EventJoinMode;
+          allowOnSiteVisibility: boolean;
           groupId: string | null;
           tags: string[];
           startsAt: string;
@@ -464,6 +468,7 @@ export function Dashboard({
           event_id: payload.event.id,
           visibility: payload.event.visibility,
           join_mode: payload.event.joinMode,
+          allow_on_site_visibility: payload.event.allowOnSiteVisibility,
           has_group: Boolean(payload.event.groupId),
           tag_count: payload.event.tags.length
         });
@@ -477,6 +482,7 @@ export function Dashboard({
         endsAt: "",
         visibility: "public",
         joinMode: "direct",
+        allowOnSiteVisibility: false,
         groupId: "",
         tags: "#kontakte",
         color: "",
@@ -900,6 +906,7 @@ export function Dashboard({
                         const coverUrl = item.event.placeImageUrl ?? item.event.linkPreviewImageUrl ?? null;
                         const borderColor = item.event.color ?? CATEGORY_COLORS[item.event.category ?? "default"];
                         const joinModeMeta = getEventJoinModeMeta(item.event.joinMode);
+                        const onSiteMeta = getEventOnSiteVisibilityMeta(item.event.allowOnSiteVisibility);
                         return (
                           <li key={`event-${item.eventId}`}>
                             <a
@@ -940,6 +947,7 @@ export function Dashboard({
                                   {new Date(item.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
                                 </p>
                                 <p className="mt-1 text-xs font-medium text-slate-600">Mitmachen: {joinModeMeta.shortLabel}</p>
+                                <p className="mt-1 text-xs font-medium text-slate-600">Vor Ort: {onSiteMeta.shortLabel}</p>
                                 <div className="mt-2 rounded-lg bg-white/80 px-3 py-2.5">
                                   <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                                     Wer ist dabei?
@@ -1128,6 +1136,22 @@ export function Dashboard({
                   ? "Bei #date nutzt Realite aus Privatsphäre-Gründen automatisch zuerst Interesse zeigen."
                   : getEventJoinModeMeta(eventForm.joinMode).description}
               </p>
+              <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={eventForm.allowOnSiteVisibility}
+                  onChange={(event) =>
+                    setEventForm((state) => ({ ...state, allowOnSiteVisibility: event.target.checked }))
+                  }
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-teal-700 focus:ring-teal-700"
+                />
+                <span>
+                  <span className="font-medium text-slate-900">Vor Ort sichtbar erlauben</span>
+                  {" · "}
+                  Aktiviert für dieses Event einen expliziten Opt-in-Layer für spätere Vor-Ort-Sichtbarkeit. Standard bleibt
+                  aus, und es wird nichts automatisch geteilt.
+                </span>
+              </label>
               <div>
                 <label htmlFor="event-category" className="mb-1 block text-xs font-medium text-slate-600">
                   Kategorie (für Kalenderansicht)
@@ -1249,6 +1273,7 @@ export function Dashboard({
                                 const isAccepted = acceptedEventIds.has(event.id);
                                 const eventPattern = getEventPatternMeta({ isOwnEvent, isAccepted });
                                 const joinModeMeta = getEventJoinModeMeta(event.joinMode);
+                                const onSiteMeta = getEventOnSiteVisibilityMeta(event.allowOnSiteVisibility);
                                 const contextLabel =
                                   section.id === "context" && event.sourceProvider
                                     ? "Aus deinem Kalenderkontext"
@@ -1304,6 +1329,7 @@ export function Dashboard({
                                             {event.tags.length > 0 ? ` · ${event.tags.join(" · ")}` : ""}
                                           </p>
                                           <p className="mt-1 text-xs font-medium text-slate-600">Mitmachen: {joinModeMeta.shortLabel}</p>
+                                          <p className="mt-1 text-xs font-medium text-slate-600">Vor Ort: {onSiteMeta.shortLabel}</p>
                                           <div className="mt-2 rounded-lg bg-white/80 px-3 py-2">
                                             <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                                               Wer ist dabei?

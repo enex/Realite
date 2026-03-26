@@ -106,6 +106,7 @@ export type VisibleEvent = {
   endsAt: Date;
   visibility: EventVisibility;
   joinMode: EventJoinMode;
+  allowOnSiteVisibility: boolean;
   groupId: string | null;
   groupName: string | null;
   createdBy: string;
@@ -154,6 +155,7 @@ export type UserProfileEvent = {
   endsAt: Date;
   visibility: EventVisibility;
   joinMode: EventJoinMode;
+  allowOnSiteVisibility: boolean;
   groupName: string | null;
   color: string | null;
   placeImageUrl: string | null;
@@ -1744,6 +1746,7 @@ export async function createEvent(input: {
   endsAt: Date;
   visibility: EventCreationVisibility;
   joinMode: EventJoinMode;
+  allowOnSiteVisibility?: boolean;
   groupId?: string | null;
   tags: string[];
   color?: string | null;
@@ -1832,6 +1835,7 @@ export async function createEvent(input: {
         endsAt: input.endsAt,
         visibility: finalVisibility,
         joinMode: finalJoinMode,
+        allowOnSiteVisibility: input.allowOnSiteVisibility ?? false,
         groupId: finalGroupId,
         color: input.color ?? null,
         category,
@@ -2096,6 +2100,7 @@ export async function listVisibleEventsForUser(userId: string) {
       endsAt: events.endsAt,
       visibility: events.visibility,
       joinMode: events.joinMode,
+      allowOnSiteVisibility: events.allowOnSiteVisibility,
       groupId: events.groupId,
       createdBy: events.createdBy,
       groupName: groups.name,
@@ -2272,6 +2277,7 @@ export async function getVisibleEventForUserById(input: {
       endsAt: events.endsAt,
       visibility: events.visibility,
       joinMode: events.joinMode,
+      allowOnSiteVisibility: events.allowOnSiteVisibility,
       groupId: events.groupId,
       groupName: groups.name,
       createdBy: events.createdBy,
@@ -2484,6 +2490,7 @@ export async function listPublicAlleEvents(limit = 20) {
       endsAt: events.endsAt,
       visibility: events.visibility,
       joinMode: events.joinMode,
+      allowOnSiteVisibility: events.allowOnSiteVisibility,
       groupId: events.groupId,
       createdBy: events.createdBy,
       groupName: groups.name,
@@ -2548,6 +2555,7 @@ async function listPublicAlleEventsForUser(userId: string) {
       endsAt: events.endsAt,
       visibility: events.visibility,
       joinMode: events.joinMode,
+      allowOnSiteVisibility: events.allowOnSiteVisibility,
       groupId: events.groupId,
       createdBy: events.createdBy,
       groupName: groups.name,
@@ -2616,6 +2624,7 @@ function mapVisibleEventToUserProfileEvent(
     endsAt: event.endsAt,
     visibility: event.visibility,
     joinMode: event.joinMode,
+    allowOnSiteVisibility: event.allowOnSiteVisibility,
     groupName: event.groupName,
     color: event.color,
     placeImageUrl: event.placeImageUrl,

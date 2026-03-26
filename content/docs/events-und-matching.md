@@ -8,6 +8,7 @@ Ein Event besteht aus:
 - Start und Ende
 - optionalem Ort
 - Sichtbarkeit
+- optionaler Freigabe für Vor-Ort-Sichtbarkeit
 - Hashtags
 - optionaler Farbe (z. B. zur schnellen Zuordnung; wird bei Events und Vorschlägen als farbiger Rand angezeigt)
 - **Kategorie** (z. B. Besprechung, Sport, Privat, Geburtstag) – für die Kalenderansicht
@@ -30,6 +31,14 @@ Wenn du `#kontakte` nutzt oder direkt die Kontakte-Gruppe auswählst, behandelt 
 - **Interesse zeigen:** erst ein lockeres Signal, dann bewusste Abstimmung
 
 So bleibt klar, ob ein Event offen joinbar ist oder ob du erst Rückmeldung sammeln willst. Bei `#date` nutzt Realite automatisch **Interesse zeigen**, damit Dating-Kontext low-pressure und explizit bleibt.
+
+**Vor Ort sichtbar bleibt opt-in:** Du kannst beim Anlegen zusätzlich aktivieren, dass für dieses Event später freiwillige Vor-Ort-Sichtbarkeit erlaubt ist. Das ist keine automatische Freigabe:
+
+- standardmäßig ist die Funktion aus
+- Realite teilt dabei nichts automatisch
+- die Event-Sichtbarkeit bleibt weiter getrennt von dieser Zusatzfreigabe
+
+So bleibt klar: Erst legst du fest, wer das Event sehen darf. Danach entscheidest du separat, ob es für dieses Event überhaupt einen freiwilligen Vor-Ort-Layer geben darf.
 
 **Bilder:** Events können ein Vorschaubild anzeigen. Realite nutzt dafür:
 - **Ort:** Ein optionales Bild des Ortes (z. B. Venue-Foto), sofern hinterlegt.

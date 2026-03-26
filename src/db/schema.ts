@@ -249,6 +249,9 @@ export const events = pgTable(
     endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
     visibility: eventVisibilityEnum("visibility").notNull().default("public"),
     joinMode: eventJoinModeEnum("join_mode").notNull().default("direct"),
+    allowOnSiteVisibility: boolean("allow_on_site_visibility")
+      .notNull()
+      .default(false),
     groupId: uuid("group_id").references(() => groups.id, {
       onDelete: "set null",
     }),

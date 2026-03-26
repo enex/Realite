@@ -17,6 +17,7 @@ function buildEvent(
     endsAt: overrides.endsAt,
     visibility: overrides.visibility ?? "public",
     joinMode: overrides.joinMode ?? "direct",
+    allowOnSiteVisibility: overrides.allowOnSiteVisibility ?? false,
     groupId: overrides.groupId ?? null,
     groupName: overrides.groupName ?? null,
     createdBy: overrides.createdBy ?? "other-user",

@@ -1,0 +1,1 @@
+ALTER TABLE "events" ADD COLUMN "allow_on_site_visibility" boolean DEFAULT false NOT NULL;
