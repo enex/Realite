@@ -8,6 +8,7 @@ import { AppShell } from "@/src/components/app-shell";
 import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { getSuggestionNextAction, getSuggestionStatusMeta } from "@/src/lib/activity-patterns";
+import { getCardSurfaceMeta } from "@/src/lib/card-system";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
@@ -73,6 +74,8 @@ export function SuggestionsPage({
   userEmail: string;
   userImage: string | null;
 }) {
+  const suggestionCard = getCardSurfaceMeta("suggestion");
+  const activityCard = getCardSurfaceMeta("activity");
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const {
@@ -294,16 +297,16 @@ export function SuggestionsPage({
         {loading && data.suggestions.length === 0 ? <p className="mt-6 text-slate-600">Lade Vorschläge...</p> : null}
 
         <section id="vorschlaege" className="mt-8 scroll-mt-24 space-y-6">
-          <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-6 shadow-sm">
+          <div className={suggestionCard.sectionClassName}>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">Handlungs-Queue</p>
+                <p className={`text-xs font-semibold uppercase tracking-[0.14em] ${suggestionCard.eyebrowClassName}`}>Handlungs-Queue</p>
                 <h2 className="mt-1 text-lg font-semibold text-slate-900">Offene Vorschläge zuerst</h2>
                 <p className="mt-1 text-sm text-slate-600">
                   Diese Vorschläge brauchen eine Entscheidung, bevor sie in deinem Verlauf landen.
                 </p>
               </div>
-              <p className="text-sm font-medium text-amber-800">
+              <p className={`text-sm font-medium ${suggestionCard.accentTextClassName}`}>
                 {actionableSuggestions.length === 0
                   ? "Kein offener Vorschlag"
                   : `${actionableSuggestions.length} offene${actionableSuggestions.length === 1 ? "r Vorschlag" : " Vorschläge"}`}
@@ -311,7 +314,7 @@ export function SuggestionsPage({
             </div>
 
             {actionableSuggestions.length === 0 ? (
-              <div className="mt-4 rounded-xl border border-dashed border-amber-300 bg-white/80 p-4 text-sm text-slate-600">
+              <div className={`mt-4 text-sm text-slate-600 ${suggestionCard.mutedInsetClassName}`}>
                 Im Moment gibt es nichts zu entscheiden. Starte neues Matching oder schau in den Verlauf, welche Aktivitäten du bereits bestätigt oder abgelehnt hast.
               </div>
             ) : (
@@ -329,10 +332,10 @@ export function SuggestionsPage({
             )}
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className={activityCard.sectionClassName}>
             <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Verlauf</p>
+                <p className={`text-xs font-semibold uppercase tracking-[0.14em] ${activityCard.eyebrowClassName}`}>Verlauf</p>
                 <h2 className="mt-1 text-lg font-semibold text-slate-900">Bereits entschiedene Vorschläge</h2>
                 <p className="mt-1 text-sm text-slate-600">
                   Hier siehst du, was du schon bestätigt oder bewusst abgelehnt hast.
@@ -415,13 +418,13 @@ function SummaryCard({
   tone: "amber" | "teal" | "slate";
 }) {
   const toneClasses = {
-    amber: "border-amber-200 bg-amber-50 text-amber-900",
-    teal: "border-teal-200 bg-teal-50 text-teal-900",
-    slate: "border-slate-200 bg-slate-50 text-slate-900"
+    amber: getCardSurfaceMeta("suggestion").statClassName,
+    teal: getCardSurfaceMeta("activity").statClassName,
+    slate: getCardSurfaceMeta("smart_meeting").statClassName
   }[tone];
 
   return (
-    <div className={`rounded-xl border p-4 ${toneClasses}`}>
+    <div className={toneClasses}>
       <p className="text-xs font-semibold uppercase tracking-wide">{label}</p>
       <p className="mt-2 text-2xl font-semibold">{value}</p>
       <p className="mt-1 text-sm opacity-80">{description}</p>
@@ -440,6 +443,8 @@ function SuggestionCard({
   isSelected: boolean;
   variant: "action" | "history";
 }) {
+  const suggestionCard = getCardSurfaceMeta("suggestion");
+  const activityCard = getCardSurfaceMeta("activity");
   const accepted = acceptedByEventId?.[suggestion.eventId] ?? [];
   const badge = getSuggestionStatusMeta(suggestion.status);
   const timing = getSuggestionTiming(suggestion.startsAt, suggestion.endsAt);
@@ -447,13 +452,13 @@ function SuggestionCard({
   const cardClasses =
     variant === "action"
       ? isSelected
-        ? "border-teal-400 bg-teal-50 shadow-sm"
-        : "border-amber-200 bg-white hover:border-amber-300"
+        ? suggestionCard.selectedItemClassName
+        : suggestionCard.itemClassName
       : isSelected
-        ? "border-teal-400 bg-teal-50 shadow-sm"
+        ? activityCard.selectedItemClassName
         : suggestion.status === "accepted"
-          ? "border-teal-200 bg-teal-50/70"
-          : "border-slate-200 bg-slate-50/80";
+          ? activityCard.itemClassName
+          : getCardSurfaceMeta("smart_meeting").itemClassName;
   const statusTextClass =
     suggestion.status === "accepted"
       ? "text-teal-700"
@@ -464,7 +469,7 @@ function SuggestionCard({
   return (
     <article
       id={`suggestion-${suggestion.id}`}
-      className={`rounded-xl border p-4 transition ${cardClasses}`}
+      className={cardClasses}
       style={suggestion.color && !isSelected ? { borderLeftWidth: "4px", borderLeftColor: suggestion.color } : undefined}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -531,19 +536,19 @@ function SuggestionCard({
           label="Wann"
           value={timing.primary}
           detail={timing.secondary}
-          tone={variant === "action" ? "amber" : "slate"}
+          tone={variant === "action" ? "suggestion" : "smart_meeting"}
         />
         <SuggestionInfoBlock
           label={variant === "action" ? "Warum passend" : "Entscheidungsgrundlage"}
           value={getReasonHeadline(suggestion.reason)}
           detail={suggestion.reason}
-          tone="teal"
+          tone="activity"
         />
         <SuggestionInfoBlock
           label="Nächste Aktion"
           value={nextAction.label}
           detail={nextAction.detail}
-          tone={variant === "action" ? "amber" : "slate"}
+          tone={variant === "action" ? "suggestion" : "smart_meeting"}
         />
       </div>
     </article>
@@ -559,16 +564,12 @@ function SuggestionInfoBlock({
   label: string;
   value: string;
   detail: string;
-  tone: "amber" | "teal" | "slate";
+  tone: "activity" | "suggestion" | "smart_meeting";
 }) {
-  const toneClasses = {
-    amber: "border-amber-200 bg-amber-50/80",
-    teal: "border-teal-200 bg-teal-50/80",
-    slate: "border-slate-200 bg-slate-50/80"
-  }[tone];
+  const toneClasses = getCardSurfaceMeta(tone).insetClassName;
 
   return (
-    <div className={`rounded-xl border p-3 ${toneClasses}`}>
+    <div className={toneClasses}>
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">{label}</p>
       <p className="mt-2 text-sm font-semibold text-slate-900">{value}</p>
       <p className="mt-1 text-xs leading-5 text-slate-600">{detail}</p>

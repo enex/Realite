@@ -29,6 +29,7 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 - **Jetzt** ist die Hauptansicht für „Was geht gerade?“
 - Offene Vorschläge mit Handlungsbedarf stehen dort in einem eigenen Bereich **„Reagieren zuerst“** ganz oben.
 - Vorschläge und Aktivitäten zeigen klare Muster-Badges, damit du schneller scannst, was gerade Sache ist: etwa **„Jetzt reagieren“**, **„Offene Aktivität“**, **„Deine Planung“** oder **„Du dabei“**.
+- Dieselbe Kartenlogik taucht jetzt auch in **Vorschläge**, **Smart Treffen**, auf der Eventseite und beim Bereich **Vor Ort Status** auf: wichtige Aktionen stehen in farblich stärkeren Karten, Kontext und Details in ruhigeren Inset-Flächen darunter.
 - Eigene neue Events ohne Zusagen bleiben bewusst in **Events**, damit **Jetzt** nicht mit Verwaltung überladen wird.
 - Der Sozialkalender erscheint in **Jetzt** nur noch als kurze Vorschau. Die ausführliche Aufteilung nach **Zugesagt**, **Deine Planung** und **Kalenderkontext** bleibt in **Events**.
 - Die Reihenfolge der nächsten Aktion ist dort klar: **zuerst reagieren**, **dann mitmachen**, **danach selbst erstellen**
@@ -64,6 +65,7 @@ Starte dort das Matching und prüfe deine Vorschläge.
 - Status-Badges helfen dir beim schnellen Sortieren: **„Jetzt reagieren“** für offene Entscheidungen, **„Im Kalender vorgemerkt“** für bereits eingetragene Vorschläge, **„Zugesagt“** und **„Abgelehnt“** im Verlauf.
 - In **Jetzt** stehen offene Vorschläge zusätzlich im Bereich **„Reagieren zuerst“** oberhalb des offenen Aktivitäts-Feeds.
 - Bereits entschiedene Vorschläge bleiben darunter im Verlauf sichtbar.
+- Die Karten im Verlauf, in offenen Vorschlägen und auf der Eventseite folgen jetzt derselben visuellen Hierarchie: zuerst Status und nächste Aktion, darunter Begründung, Timing und Zusatzkontext.
 - **Zusagen**: passt für dich
 - **Absagen**: passt nicht
 - Hashtags werden in Event- und Vorschlagsansichten nicht öffentlich angezeigt.

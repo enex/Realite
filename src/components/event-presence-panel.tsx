@@ -7,6 +7,7 @@ import {
   getEventPresenceToggleCopy,
   type EventPresenceStatus,
 } from "@/src/lib/event-presence";
+import { getCardSurfaceMeta } from "@/src/lib/card-system";
 
 type PresenceUser = {
   userId: string;
@@ -22,6 +23,7 @@ type EventPresencePanelProps = {
 };
 
 export function EventPresencePanel(props: EventPresencePanelProps) {
+  const presenceCard = getCardSurfaceMeta("presence");
   const [status, setStatus] = useState<EventPresenceStatus | null>(
     props.initialStatus,
   );
@@ -76,8 +78,8 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
   }
 
   return (
-    <section className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/80 p-5 shadow-sm sm:p-6">
-      <p className="text-sm font-semibold text-slate-900">Vor Ort Status</p>
+    <section className={`mt-4 ${presenceCard.sectionClassName} sm:p-6`}>
+      <p className={`text-sm font-semibold ${presenceCard.accentTextClassName}`}>Vor Ort Status</p>
       <h2 className="mt-1 text-lg font-semibold text-slate-900">{toggleCopy.title}</h2>
       <p className="mt-2 text-sm text-slate-700">{toggleCopy.description}</p>
       <p className="mt-3 text-sm text-slate-600">
@@ -90,7 +92,7 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
           type="button"
           disabled={busy || hasCheckedIn}
           onClick={() => updateStatus("checked_in")}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className={presenceCard.actionClassName}
         >
           {hasCheckedIn ? "Vor Ort sichtbar" : toggleCopy.actionLabel}
         </button>
@@ -104,7 +106,7 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
         </button>
       </div>
 
-      <div className="mt-4 rounded-xl border border-amber-200 bg-white/90 p-4">
+      <div className={`mt-4 ${presenceCard.insetClassName}`}>
         <p className="text-sm font-semibold text-slate-900">
           Gerade vor Ort sichtbar: {checkedInUsers.length}
         </p>

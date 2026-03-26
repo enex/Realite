@@ -33,6 +33,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 26.03.2026:
 
+- gemeinsames Card-System für Kernflächen definiert und auf Vorschläge, Smart Treffen, Event-Details sowie Vor-Ort-Status angewendet
+- Handlungs-Queue, Verlauf, Smart-Treffen-Planung und Presence nutzen jetzt dieselbe Surface-Hierarchie für Section-, Item- und Inset-Karten
+- Event-Detailseite übernimmt dieselbe Kartenlogik jetzt auch für Zusagen und den persönlichen Vorschlags-Flow
 - visuelle Prioritätsstufen für Kernflächen definiert und in `Jetzt`, `Events` sowie Event-Details als gemeinsame Surface-Logik verankert
 - offene Reaktionen, Momentum und Planung nutzen jetzt konsistente Card-/Inset-/Badge-Gewichtung statt verstreuter Einzelklassen
 - echter Presence-/Check-in-Status für Events eingeführt: auf der Eventseite bewusst ein- und ausblendbar statt nur als abstrakte Freigabe
@@ -304,7 +307,7 @@ Status: `planned`
 
 - [x] visuelle Prioritätsstufen definieren
 - [ ] Typografie- und Spacing-Hierarchie vereinheitlichen
-- [ ] Card-System für Aktivitäten, Vorschläge, Presence und Smart Meetings definieren
+- [x] Card-System für Aktivitäten, Vorschläge, Presence und Smart Meetings definieren
 - [x] konsistente Statusfarben und Statuslabels definieren
 
 ## Product Discovery Tasks

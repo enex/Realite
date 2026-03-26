@@ -7,6 +7,7 @@ import { EventInviteSection } from "@/src/components/event-invite-section";
 import { EventPresencePanel } from "@/src/components/event-presence-panel";
 import { SharedEventContent } from "@/src/components/shared-event-content";
 import { SuggestionDecisionPanel } from "@/src/components/suggestion-decision-panel";
+import { getCardSurfaceMeta } from "@/src/lib/card-system";
 import { getEventShareCopy, getPublicEventSharePreviewByShortId } from "@/src/lib/event-share";
 import {
   getAcceptedUsersForEventIds,
@@ -134,6 +135,8 @@ export default async function EventShortcutPage({
 
   const acceptedBy = acceptedByEventId.get(eventId) ?? [];
   const suggestionForFlow = suggestion && event.createdBy !== user.id ? suggestion : null;
+  const activityCard = getCardSurfaceMeta("activity");
+  const suggestionCard = getCardSurfaceMeta("suggestion");
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
@@ -164,7 +167,7 @@ export default async function EventShortcutPage({
       />
 
       {acceptedBy.length > 0 && (
-        <section className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <section className={`mt-4 ${activityCard.insetClassName}`}>
           <p className="text-sm font-semibold text-slate-900">Zusagen</p>
           <p className="mt-1 text-sm text-slate-700">
             Zugesagt: {acceptedBy.map((u) => u.name ?? u.email).join(", ")}
@@ -194,7 +197,7 @@ export default async function EventShortcutPage({
         )}
 
       {suggestionForFlow ? (
-        <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <section className={`mt-4 ${suggestionCard.sectionClassName} sm:p-6`}>
           {suggestionForFlow.status === "accepted" && (
             <p className="mb-4 text-sm font-medium text-teal-700">Du hast diesem Termin zugesagt.</p>
           )}
@@ -205,13 +208,13 @@ export default async function EventShortcutPage({
             initialNote={suggestionForFlow.decisionNote}
             creatorName={event.createdByName ?? event.createdByEmail}
           />
-          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className={`mt-4 ${activityCard.insetClassName}`}>
             <p className="text-sm text-slate-600">Warum wurde dir das vorgeschlagen?</p>
             <p className="mt-2 text-sm text-slate-800">{suggestionForFlow.reason}</p>
           </div>
         </section>
       ) : suggestion ? (
-        <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <section className={`mt-4 ${suggestionCard.sectionClassName} sm:p-6`}>
           <p className="text-sm text-slate-700">
             Für dieses Event gibt es einen persönlichen Vorschlag mit Status <strong>{suggestion.status}</strong>.
           </p>

@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { getCardSurfaceMeta } from "@/src/lib/card-system";
+
 type Group = {
   id: string;
   name: string;
@@ -103,9 +105,10 @@ function SmartMeetingApprovalPanel({
   onReject: () => void;
 }) {
   const selectedSet = new Set(selectedEmails);
+  const suggestionCard = getCardSurfaceMeta("suggestion");
 
   return (
-    <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+    <div className={`mt-3 ${suggestionCard.insetClassName}`}>
       <p className="text-sm font-semibold text-amber-950">Kalendereinladungen erst nach deiner Freigabe</p>
       <p className="mt-1 text-xs text-amber-800">
         Prüfe die Liste, entferne Personen bei Bedarf und sende die Einladungen erst danach.
@@ -167,6 +170,7 @@ export function SmartMeetingsCard({
   onCreated: () => Promise<void>;
   onError: (message: string) => void;
 }) {
+  const smartMeetingCard = getCardSurfaceMeta("smart_meeting");
   const [expanded, setExpanded] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const now = useMemo(() => new Date(), []);
@@ -359,10 +363,10 @@ export function SmartMeetingsCard({
   }
 
   return (
-    <section id="smart-meetings" className="mt-8 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section id="smart-meetings" className={`mt-8 scroll-mt-24 ${smartMeetingCard.sectionClassName}`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Sekundärer Planungsbereich</p>
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${smartMeetingCard.eyebrowClassName}`}>Sekundärer Planungsbereich</p>
           <h2 className="text-lg font-semibold text-slate-900">Smart Treffen</h2>
           <p className="mt-1 text-sm text-slate-600">
             Realite sucht den besten Zeitpunkt in deinem Fenster. Der Bereich bleibt bewusst unterhalb des Sozialkalenders, damit
@@ -372,14 +376,14 @@ export function SmartMeetingsCard({
         </div>
         <button
           onClick={() => setExpanded((current) => !current)}
-          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+          className={smartMeetingCard.actionClassName}
         >
           {expanded ? "Planer schließen" : "Smart Treffen planen"}
         </button>
       </div>
 
       {expanded ? (
-        <form onSubmit={submitSmartMeeting} className="mt-4 grid gap-3 rounded-lg border border-slate-200 p-4">
+        <form onSubmit={submitSmartMeeting} className={`mt-4 grid gap-3 ${smartMeetingCard.insetClassName}`}>
           <input
             value={form.title}
             onChange={(event) => setForm((state) => ({ ...state, title: event.target.value }))}
@@ -536,11 +540,13 @@ export function SmartMeetingsCard({
       <div className="mt-4 space-y-2">
         {smartMeetings.length === 0 ? <p className="text-sm text-slate-500">Noch keine Smart Treffen vorhanden.</p> : null}
         {smartMeetings.map((meeting) => (
-          <article key={meeting.id} className="rounded-lg border border-slate-200 p-3">
+          <article key={meeting.id} className={smartMeetingCard.itemClassName}>
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm font-semibold text-slate-900">{meeting.title}</p>
               <div className="flex flex-wrap items-center gap-2">
-                <p className="text-xs text-slate-500">Status: {statusLabel(meeting.status)}</p>
+                <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${smartMeetingCard.badgeClassName}`}>
+                  {statusLabel(meeting.status)}
+                </span>
                 <button
                   type="button"
                   onClick={() => startEditing(meeting)}
