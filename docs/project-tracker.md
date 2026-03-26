@@ -33,6 +33,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 26.03.2026:
 
+- ideales Home-Erlebnis für `Jetzt` in einem Satz festgezogen: sofort sehen, was gerade relevant ist, wo Reaktion fehlt und wie man ohne Verwaltungsballast direkt ins gemeinsame Erleben kommt
+- die drei Kernfragen der Startansicht explizit festgehalten, damit `Jetzt` produktseitig klar gegen `Events` und `Gruppen` abgegrenzt bleibt
+- primäre Produktobjekte festgelegt: Aktivität zuerst, Vorschlag als Reaktionsobjekt, Presence als optionaler Event-Layer, Gruppe als Relevanz- und Sichtbarkeitskontext
 - High-Level-Domain-Dokument für Sichtbarkeit und Relevanz unter `/docs` ergänzt und im Docs-Index verankert
 - Überblicks-Doku jetzt mit direktem Verweis auf das gemeinsame Modell aus Relevanz, Sichtbarkeit, Gruppen, Kontakten und geschützten Sonderfällen
 - Typografie- und Spacing-Hierarchie der Kernviews vereinheitlicht: gemeinsame Header-, Section- und Detailrhythmen für `Jetzt`/`Events`, `Vorschläge`, `Gruppen`, Event-Details, Settings und Shell-Kontext
@@ -318,11 +321,30 @@ Status: `planned`
 
 ## Product Discovery Tasks
 
-- [ ] gewünschtes ideales Home-Erlebnis in 1 Satz definieren
-- [ ] definieren, welche drei Fragen die Startansicht beantworten muss
-- [ ] festlegen, welche Objekte produktseitig primär sind: Aktivität, Vorschlag, Presence, Gruppe
+- [x] gewünschtes ideales Home-Erlebnis in 1 Satz definieren
+- [x] definieren, welche drei Fragen die Startansicht beantworten muss
+- [x] festlegen, welche Objekte produktseitig primär sind: Aktivität, Vorschlag, Presence, Gruppe
 - [x] Presence-/On-Site-Use-Case als opt-in Flow beschreiben
 - [x] Sichtbarkeit und Relevanzmodell als High-Level-Domain-Dokument festhalten
+
+### Discovery-Entscheidungen für die Startansicht
+
+**Ideales Home-Erlebnis in 1 Satz**
+
+`Jetzt` soll in wenigen Sekunden zeigen, was gerade sozial relevant ist, wo eine bewusste Reaktion von dir fehlt und welcher nächste Schritt dich mit minimaler Koordination ins echte gemeinsame Erleben bringt.
+
+**Die drei Fragen, die `Jetzt` beantworten muss**
+
+1. Was passiert gerade oder in Kürze, das für mich konkret relevant ist?
+2. Wo wartet gerade eine Entscheidung oder Reaktion von mir?
+3. Wo kann ich mit wenig Abstimmung direkt einsteigen oder Momentum aufnehmen?
+
+**Primäre Produktobjekte**
+
+1. **Aktivität** ist das primäre Produktobjekt: der konkrete, joinbare Anlass.
+2. **Vorschlag** ist das primäre Reaktionsobjekt: ein relevanter Anlass, der bewusst deine Entscheidung braucht.
+3. **Presence** ist ein optionaler, eventgebundener Zusatzlayer: sichtbar nur mit explizitem Opt-in und nie eigenständig vor der Aktivität.
+4. **Gruppe** ist Kontext für Relevanz und Sichtbarkeit, aber kein eigener Feed-Kern.
 
 ## Entscheidungen offen
 
