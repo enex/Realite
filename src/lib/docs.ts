@@ -36,6 +36,12 @@ const DOCS_PAGES: DocsPage[] = [
     fileName: "events-und-matching.md"
   },
   {
+    slug: "vor-ort-sichtbarkeit",
+    title: "Vor-Ort-Sichtbarkeit",
+    description: "Wie Realite eventgebundene Presence bewusst und kontrolliert denkt.",
+    fileName: "vor-ort-sichtbarkeit.md"
+  },
+  {
     slug: "faq",
     title: "FAQ",
     description: "Häufige Fragen, Fehlerbilder und schnelle Lösungen.",

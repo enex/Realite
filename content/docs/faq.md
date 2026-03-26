@@ -80,6 +80,24 @@ Sie werden nur Nutzern angezeigt, die mit dir im Dating-Modus **gegenseitig** ma
 
 Wenn du kein gegenseitiges Match mit jemandem hast, sieht diese Person das Event nicht.
 
+## Bedeutet `Vor Ort sichtbar möglich`, dass ich automatisch live sichtbar bin?
+
+Nein.
+
+`Vor Ort sichtbar möglich` heißt aktuell nur:
+
+- der Event-Ersteller hat für dieses konkrete Event freiwillige Vor-Ort-Sichtbarkeit grundsätzlich erlaubt
+- die normale Event-Sichtbarkeit bleibt davon getrennt
+- Realite veröffentlicht dadurch noch keinen automatischen Live-Status
+
+Wichtig:
+
+- kein automatischer Standort-Share
+- keine offene Personenliste außerhalb des Events
+- keine Sichtbarkeit ohne bewussten Event-Kontext
+
+Mehr dazu steht unter **[Vor-Ort-Sichtbarkeit](/docs/vor-ort-sichtbarkeit)**.
+
 ## Warum fragt Realite bei Absage nach Gründen?
 
 Du kannst mehrere Gründe angeben (z. B. keine Zeit und zu weit entfernt).

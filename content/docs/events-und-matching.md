@@ -40,6 +40,8 @@ So bleibt klar, ob ein Event offen joinbar ist oder ob du erst Rückmeldung samm
 
 So bleibt klar: Erst legst du fest, wer das Event sehen darf. Danach entscheidest du separat, ob es für dieses Event überhaupt einen freiwilligen Vor-Ort-Layer geben darf.
 
+Mehr Details dazu findest du in **[Vor-Ort-Sichtbarkeit](/docs/vor-ort-sichtbarkeit)**.
+
 **Bilder:** Events können ein Vorschaubild anzeigen. Realite nutzt dafür:
 - **Ort:** Ein optionales Bild des Ortes (z. B. Venue-Foto), sofern hinterlegt.
 - **Link-Preview:** Enthält die Beschreibung einen Link, wird automatisch das Vorschaubild (og:image) dieser Seite ermittelt und als Event-Bild genutzt.

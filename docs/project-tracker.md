@@ -33,6 +33,8 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 26.03.2026:
 
+- Presence-/Vor-Ort-Konzept jetzt sauber dokumentiert: eventgebunden, opt-in, getrennt von Event-Sichtbarkeit und ohne automatischen Live-Status
+- neue Nutzer-Doku unter `/docs` erklärt den aktuellen Vor-Ort-Layer und grenzt klar ab, was noch nicht automatisch passiert
 - Event-Modell um explizites Opt-in `Vor Ort sichtbar` erweitert, getrennt von der eigentlichen Event-Sichtbarkeit
 - Event-Formular, Eventkarten und Eventseite zeigen jetzt klar, ob Vor-Ort-Sichtbarkeit für ein Event überhaupt erlaubt ist
 - Nutzer-Doku für den neuen opt-in Presence-Baustein ergänzt
@@ -257,8 +259,9 @@ Status: `planned`
 - [x] explizite Join-Mechaniken modellieren: direkt beitreten, anfragen, Interesse zeigen
 - [x] Sichtbarkeitsstufen `Freunde` und `Freunde von Freunden` im Event-Modell, Formular und UI ergänzen
 - [x] Sichtbarkeitsmodell erweitern: Freunde, Freunde von Freunden, offen, optional vor Ort sichtbar
-- [ ] Presence-/Vor-Ort-Konzept definieren
+- [x] Presence-/Vor-Ort-Konzept definieren
 - [ ] Dating-Use-Case als Unterfall des Relevanzmodells schärfen, nicht als separaten Produktkern
+- [ ] echten Presence-/Check-in-Status über die reine Event-Freigabe hinaus modellieren
 
 ## Konkret bekannte UX-/View-Aufgaben
 
@@ -303,7 +306,7 @@ Status: `planned`
 - [ ] gewünschtes ideales Home-Erlebnis in 1 Satz definieren
 - [ ] definieren, welche drei Fragen die Startansicht beantworten muss
 - [ ] festlegen, welche Objekte produktseitig primär sind: Aktivität, Vorschlag, Presence, Gruppe
-- [ ] Presence-/On-Site-Use-Case als opt-in Flow beschreiben
+- [x] Presence-/On-Site-Use-Case als opt-in Flow beschreiben
 - [ ] Sichtbarkeit und Relevanzmodell als High-Level-Domain-Dokument festhalten
 
 ## Entscheidungen offen
@@ -313,7 +316,7 @@ Status: `planned`
 - [x] Die primäre Home-/Now-Ansicht priorisiert Reaktion und offene Aktivitäten vor Verwaltung
 - [x] Smart Meetings bleiben als sekundärer Verwaltungsbereich unter `Events`
 - [x] Eigene Events ohne Zusagen bleiben in `Events`; relevante fremde Aktivitäten und offene Reaktionen stehen in `Jetzt` vorn
-- [ ] Wie wird Presence vor Ort dargestellt, ohne creepy oder zu offen zu wirken?
+- [x] Wie wird Presence vor Ort dargestellt, ohne creepy oder zu offen zu wirken?
 - [ ] Welche Sichtbarkeitsstufen sind wirklich nötig für V1.5 / V2?
 
 ## Empfohlene Reihenfolge
