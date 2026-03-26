@@ -1,6 +1,7 @@
 import { after, NextResponse } from "next/server";
+import { sql } from "drizzle-orm";
 
-import { getDatabaseHealth } from "@/src/db/migrate";
+import { getDb } from "@/src/db/client";
 import {
   flushPostHogLogs,
   getServerLogger
@@ -14,9 +15,10 @@ export async function GET() {
   });
 
   logger.info("Health check", { endpoint: "/api/health" });
-  const health = getDatabaseHealth();
 
-  if (health.state === "healthy") {
+  try {
+    await getDb().execute(sql`SELECT 1`);
+
     return NextResponse.json(
       {
         status: "healthy",
@@ -24,24 +26,21 @@ export async function GET() {
       },
       { status: 200 }
     );
-  }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Database unavailable";
 
-  if (health.state === "booting" || health.state === "migrating") {
+    logger.error("Health check failed", {
+      endpoint: "/api/health",
+      error: message
+    });
+
     return NextResponse.json(
       {
-        status: "starting",
-        database: health.state
+        status: "unhealthy",
+        database: "unavailable",
+        error: message
       },
-      { status: 200 }
+      { status: 503 }
     );
   }
-
-  return NextResponse.json(
-    {
-      status: "unhealthy",
-      database: health.state,
-      error: health.error
-    },
-    { status: 503 }
-  );
 }

@@ -72,12 +72,6 @@ if (process.env.DATABASE_URL) {
     .catch(() => {});
 }
 
-if (process.env.DATABASE_URL) {
-  import("./src/db/migrate")
-    .then((m) => m.ensureDatabaseReady())
-    .catch(() => {});
-}
-
 // Job-Queue-Worker: im gleichen Node-Prozess (z. B. Docker) periodisch pending
 // Jobs abarbeiten. Intervall konfigurierbar über JOB_QUEUE_POLL_MS (Standard 30s).
 if (process.env.DATABASE_URL) {
