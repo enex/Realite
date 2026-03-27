@@ -17,6 +17,7 @@ import {
 } from "@/src/lib/event-presence";
 import { getCardSurfaceMeta } from "@/src/lib/card-system";
 import { type EventVisibility } from "@/src/lib/event-visibility";
+import { getPersonDisplayLabel } from "@/src/lib/person-display";
 
 type PresenceUser = {
   userId: string;
@@ -209,7 +210,11 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
             {checkedInUsers.map((user) => (
               <li key={user.userId}>
                 <span className="font-medium text-slate-900">
-                  {user.name ?? user.email}
+                  {getPersonDisplayLabel({
+                    name: user.name,
+                    email: user.email,
+                    allowEmail: false,
+                  })}
                 </span>{" "}
                 · sichtbar bis {formatEventPresenceTime(new Date(user.visibleUntilIso))}
               </li>

@@ -9,6 +9,7 @@ import { SharedEventContent } from "@/src/components/shared-event-content";
 import { SuggestionDecisionPanel } from "@/src/components/suggestion-decision-panel";
 import { getCardSurfaceMeta } from "@/src/lib/card-system";
 import { getEventShareCopy, getPublicEventSharePreviewByShortId } from "@/src/lib/event-share";
+import { getPersonDisplayLabel } from "@/src/lib/person-display";
 import {
   getAcceptedUsersForEventIds,
   getEventPresenceSummary,
@@ -172,7 +173,15 @@ export default async function EventShortcutPage({
         <section className={`mt-4 ${activityCard.insetClassName}`}>
           <p className="text-sm font-semibold text-slate-900">Zusagen</p>
           <p className="mt-1 text-sm text-slate-700">
-            Zugesagt: {acceptedBy.map((u) => u.name ?? u.email).join(", ")}
+            Zugesagt: {acceptedBy
+              .map((u) =>
+                getPersonDisplayLabel({
+                  name: u.name,
+                  email: u.email,
+                  allowEmail: false,
+                }),
+              )
+              .join(", ")}
           </p>
         </section>
       )}

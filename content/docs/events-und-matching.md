@@ -278,7 +278,7 @@ Damit springst du direkt zum Original-Termin in Google Kalender.
 
 Eingeladene Personen werden im zugehörigen Google-Kalender-Termin als Teilnehmer:innen ergänzt. Sie erhalten die Einladung per E-Mail von Google Kalender und können so den Termin sehen und zu-/absagen. Es werden nur Personen angezeigt, die noch nicht eingeladen wurden.
 
-**Zusagen:** Wer einem Event in Realite zugesagt hat, ist direkt sichtbar: auf der **Eventseite** (Block „Zusagen“ mit Namen), in der **Event-Übersicht** (Dashboard) und in der **Vorschlags-Übersicht** unter jedem Termin. So siehst du auf einen Blick, wer dabei ist. Als Event-Ersteller siehst du im Bereich **Jemanden einladen** zusätzlich die Antworten aus dem Google-Kalender (zugesagt, abgesagt, ausstehend). Bei Terminen, denen du selbst zugesagt hast, erscheint der Hinweis **Du hast zugesagt**.
+**Zusagen:** Wer einem Event in Realite zugesagt hat, ist direkt sichtbar: auf der **Eventseite** (Block „Zusagen“ mit Namen), in der **Event-Übersicht** (Dashboard) und in der **Vorschlags-Übersicht** unter jedem Termin. So siehst du auf einen Blick, wer dabei ist. Wenn für eine zugesagte Person kein Name gepflegt ist, zeigt Realite auf diesen Flächen bewusst keinen E-Mail-Fallback, sondern bleibt neutral. Als Event-Ersteller siehst du im Bereich **Jemanden einladen** zusätzlich die Antworten aus dem Google-Kalender (zugesagt, abgesagt, ausstehend). Bei Terminen, denen du selbst zugesagt hast, erscheint der Hinweis **Du hast zugesagt**.
 
 Wenn ein Ort hinterlegt ist, zeigt Realite zusätzlich:
 

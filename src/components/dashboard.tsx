@@ -32,6 +32,7 @@ import {
   sectionTitleClassName,
   surfaceShellClassName,
 } from "@/src/lib/page-hierarchy";
+import { getPersonDisplayLabel } from "@/src/lib/person-display";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
@@ -194,7 +195,13 @@ const emptyPayload: DashboardPayload = {
 };
 
 function getAcceptedDisplayNames(accepted: AcceptedUser[], limit = 3) {
-  return accepted.slice(0, limit).map((user) => user.name ?? user.email);
+  return accepted.slice(0, limit).map((user) =>
+    getPersonDisplayLabel({
+      name: user.name,
+      email: user.email,
+      allowEmail: false,
+    }),
+  );
 }
 
 function getAcceptedCountLabel(count: number) {

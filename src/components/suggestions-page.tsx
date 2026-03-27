@@ -9,6 +9,7 @@ import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { getSuggestionNextAction, getSuggestionStatusMeta } from "@/src/lib/activity-patterns";
 import { getCardSurfaceMeta } from "@/src/lib/card-system";
+import { getPersonDisplayLabel } from "@/src/lib/person-display";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
 import { getPageIntentMeta, pageLeadClassName, pageMetaClassName, pageShellClassName, pageTitleClassName } from "@/src/lib/page-hierarchy";
@@ -502,7 +503,18 @@ function SuggestionCard({
               {badge.description} · Score {suggestion.score.toFixed(2)}
             </p>
             {accepted.length > 0 ? (
-              <p className="mt-1 text-xs text-teal-700">Zugesagt: {accepted.map((u) => u.name ?? u.email).join(", ")}</p>
+              <p className="mt-1 text-xs text-teal-700">
+                Zugesagt:{" "}
+                {accepted
+                  .map((u) =>
+                    getPersonDisplayLabel({
+                      name: u.name,
+                      email: u.email,
+                      allowEmail: false,
+                    }),
+                  )
+                  .join(", ")}
+              </p>
             ) : null}
           </div>
         </div>

@@ -28,6 +28,7 @@ Wenn die Option aktiv ist:
 - dieser Schutz-Zustand bleibt auch nach einem späteren Neuladen der Eventseite erkennbar, bis du bewusst ein neues Zeitfenster setzt oder dich ausblendest
 - andere Personen mit Zugriff auf dieses Event sehen nur innerhalb dieses Event-Kontexts, wer sich aktiv sichtbar gemacht hat
 - der Bereich **Vor Ort Status** erklärt zusätzlich konkret, wer diesen Vor-Ort-Status je nach Event-Sichtbarkeit sehen kann, zum Beispiel nur eine Gruppe, nur Kontakte oder ein öffentliches Event-Publikum
+- wenn bei sichtbaren Personen kein Name hinterlegt ist, zeigt Realite dort bewusst keinen E-Mail-Fallback, sondern bleibt neutral
 - die normale Event-Sichtbarkeit bleibt unverändert
 
 Wenn die Option aus ist, zeigt Realite stattdessen **Vor Ort aus**.

@@ -33,6 +33,7 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- Zusagen- und Presence-Listen zeigen ohne gepflegten Namen jetzt bewusst neutrale Personenlabels statt E-Mail-Adressen offenzulegen
 - abgelaufene eigene Presence-Zeitfenster bleiben auf der Eventseite jetzt auch nach Reload/API-Roundtrip als Schutz-Zustand `Zeitfenster abgelaufen` erkennbar statt wie nie aktiviert zu wirken
 - öffentliche Event-Links geben in Gastansichten keine E-Mail-Adressen von Erstellern oder Kommentierenden mehr preis; Namen bleiben optional, sonst neutral
 - Presence-Panel erklärt jetzt direkt je Event-Sichtbarkeit, wer aktive Vor-Ort-Check-ins sehen kann, statt nur allgemein auf "Event-Zugriff" zu verweisen
@@ -298,6 +299,7 @@ Status: `planned`
 - [x] Presence-Zustände im UI klar erklären: noch geschlossen, eigenes Zeitfenster abgelaufen, Event beendet
 - [x] Presence-Panel erklärt je Event-Sichtbarkeit konkret, wer aktive Vor-Ort-Check-ins sehen kann
 - [x] abgelaufenes eigenes Presence-Zeitfenster nach Reload/API-Roundtrip weiter als Schutz-Zustand zeigen statt wie nie aktiviert
+- [x] Zusagen- und Presence-Listen privacy-härten: ohne gepflegten Namen keine E-Mail-Fallbacks in sichtbaren Personenlisten zeigen
 
 ## Konkret bekannte UX-/View-Aufgaben
 
