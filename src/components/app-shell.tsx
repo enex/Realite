@@ -7,6 +7,11 @@ import { useEffect } from "react";
 import posthog from "posthog-js";
 
 import { UserAvatar } from "@/src/components/user-avatar";
+import {
+  APP_SHELL_SECTIONS,
+  getCurrentAppShellSection,
+  isAppShellSectionActive,
+} from "@/src/lib/app-shell-navigation";
 import { eyebrowBaseClassName, getPageIntentMeta, type PageIntent } from "@/src/lib/page-hierarchy";
 
 type AppShellProps = {
@@ -18,31 +23,12 @@ type AppShellProps = {
   children: React.ReactNode;
 };
 
-const DESKTOP_ITEMS = [
-  { href: "/now", label: "Jetzt", intent: "Entdecken", description: "offene Aktivitäten & spontane Optionen" },
-  { href: "/suggestions", label: "Vorschläge", intent: "Reagieren", description: "offene Entscheidungen zuerst" },
-  { href: "/events", label: "Events", intent: "Verwalten", description: "Sozialkalender, Zusagen, Planung & Gruppen-Orga" },
-  { href: "/groups", label: "Gruppen", intent: "Verwalten", description: "Kontakte, Einladen & Sichtbarkeit" },
-];
-
 const MOBILE_ITEMS = [
   { href: "/now", label: "Jetzt", intent: "Entdecken", Icon: House },
   { href: "/suggestions", label: "Vorschläge", intent: "Reagieren", Icon: Sparkle },
   { href: "/events", label: "Events", intent: "Verwalten", Icon: CalendarBlank },
   { href: "/groups", label: "Gruppen", intent: "Verwalten", Icon: Users },
 ];
-
-function isItemActive(pathname: string, href: string) {
-  if (href.includes("#")) {
-    return false;
-  }
-
-  if (href === "/") {
-    return pathname === "/";
-  }
-
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
 
 function getIntentTone(intent: string): PageIntent {
   if (intent === "Entdecken") {
@@ -56,18 +42,25 @@ function getIntentTone(intent: string): PageIntent {
   return "manage";
 }
 
+function getSectionRailClassName(intent: string, active: boolean) {
+  if (!active) {
+    return "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50";
+  }
+
+  if (intent === "Reagieren") {
+    return "border-amber-200 bg-amber-50 text-amber-950 shadow-sm";
+  }
+
+  if (intent === "Verwalten") {
+    return "border-slate-300 bg-slate-100 text-slate-950 shadow-sm";
+  }
+
+  return "border-teal-200 bg-teal-50 text-teal-950 shadow-sm";
+}
+
 export function AppShell({ user, children }: AppShellProps) {
   const pathname = usePathname();
-  const currentSection =
-    DESKTOP_ITEMS.find((item) => isItemActive(pathname, item.href)) ??
-    (pathname.startsWith("/settings")
-      ? {
-          href: "/settings",
-          label: "Profil",
-          intent: "Verwalten",
-          description: "Konto, Sichtbarkeit und Integrationen"
-        }
-      : null);
+  const currentSection = getCurrentAppShellSection(pathname);
 
   useEffect(() => {
     if (!user.email) return;
@@ -94,8 +87,8 @@ export function AppShell({ user, children }: AppShellProps) {
           </a>
 
           <nav className="hidden items-center gap-1 md:flex" aria-label="Hauptnavigation">
-            {DESKTOP_ITEMS.map((item) => {
-              const active = isItemActive(pathname, item.href);
+            {APP_SHELL_SECTIONS.map((item) => {
+              const active = isAppShellSectionActive(pathname, item.href);
               return (
                 <a
                   key={item.href}
@@ -141,6 +134,31 @@ export function AppShell({ user, children }: AppShellProps) {
               Realite trennt bewusst zwischen entdecken, reagieren und verwalten.
             </div>
           </div>
+          <div className="mx-auto w-full max-w-6xl px-4 pb-3 sm:px-6 lg:px-8">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Bereichswechsel</p>
+            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pt-2 sm:mx-0 sm:px-0">
+              {APP_SHELL_SECTIONS.map((item) => {
+                const active = isAppShellSectionActive(pathname, item.href);
+                const intentMeta = getPageIntentMeta(getIntentTone(item.intent));
+
+                return (
+                  <a
+                    key={`section-rail-${item.href}`}
+                    href={item.href}
+                    aria-current={active ? "page" : undefined}
+                    className={`min-w-[13rem] flex-1 rounded-2xl border px-4 py-3 transition md:min-w-0 ${getSectionRailClassName(
+                      item.intent,
+                      active
+                    )}`}
+                  >
+                    <span className={`block ${intentMeta.eyebrowClassName}`}>{item.intent}</span>
+                    <span className="mt-1 block text-sm font-semibold">{item.label}</span>
+                    <span className="mt-1 block text-xs leading-5 text-slate-600">{item.description}</span>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
         </div>
       ) : null}
 
@@ -153,7 +171,7 @@ export function AppShell({ user, children }: AppShellProps) {
       >
         <div className="flex rounded-full border border-slate-200/80 bg-white/90 px-1 py-1 shadow-lg shadow-slate-200/50 backdrop-blur-xl">
           {MOBILE_ITEMS.map((item) => {
-            const active = isItemActive(pathname, item.href);
+            const active = isAppShellSectionActive(pathname, item.href);
             const Icon = item.Icon;
             return (
               <a

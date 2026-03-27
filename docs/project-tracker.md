@@ -33,6 +33,11 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- `Gruppen` rahmt die Verwaltungsansicht jetzt deutlicher als aktives Steuerpult statt als flache Liste: mit Fokusblock für den nächsten Pflege-Schritt, priorisiertem Überblick zu sichtbaren, synchronisierten und öffentlichen Kreisen sowie klarem Pflegebedarf
+- sichtbare Gruppen werden in `Gruppen` jetzt nach Verwaltungsrelevanz sortiert: erst aktiv genutzte Kreise, dann gepflegte Kontaktkreise, dann Gruppen mit offenem Pflegebedarf
+- die visuelle Sprache von `Gruppen` zieht Verwaltung, Sync-Zustand und Pflegebedarf damit klarer auseinander, ohne den Bereich in einen Discovery-Feed zu kippen
+- unter der Hauptnavigation gibt es jetzt auf allen Kernseiten einen kompakten Bereichswechsel, der `Jetzt`, `Vorschläge`, `Events` und `Gruppen` produktlogisch zusammenbindet statt nur als isolierte Tabs zu zeigen
+- die Sekundärnavigation hält damit Begriffe und Rollen über alle Hauptbereiche konsistenter: `Entdecken`, `Reagieren` und `Verwalten` bleiben nicht nur Seitenlabels, sondern auch direkte Wechsel- und Orientierungslogik
 - Smart-Treffen-Bereich in `Events` rahmt Gruppenkoordination jetzt noch expliziter als Orga-Flow statt als zweite Eventliste
 - jeder Smart-Treffen-Lauf zeigt jetzt einen klaren nächsten Orga-Schritt sowie Phasenlabels wie `Freigabe offen`, `Suche läuft`, `Warten auf Zusagen` oder `Gesichert`
 - Navigation und Nutzer-Doku benennen `Events`/`Smart Treffen` damit konsequenter als Sozialkalender plus Gruppen-Orga statt als Discovery-Fläche
@@ -300,6 +305,7 @@ Status: `planned`
 
 - [x] Navigation überprüfen: ob `Events`, `Vorschläge`, `Gruppen` die richtige Reihenfolge und Benennung haben
 - [x] unterscheiden zwischen `Entdecken`, `Reagieren`, `Verwalten`
+- [x] globale Bereichs-Navigation unter der Hauptnavigation ergänzen, damit Bereichswechsel zwischen `Jetzt`, `Vorschläge`, `Events` und `Gruppen` überall gleich gerahmt sind
 - [x] `Events` auch außerhalb leerer Zustände mit klaren Rückwegen nach `Jetzt`, `Vorschläge` und `Gruppen` in den Hauptfluss anbinden
 - [x] Copy und leere Zustände in `Vorschläge` klarer gegen `Jetzt` und `Events` trennen, inklusive direkter Rückwege bei leerer Handlungs-Queue
 - [x] Grenzfall-Copy in `Jetzt` schärfen: bei wenig neuem Momentum bestätigte Beteiligung und eigene Planung nicht generisch als offene Aktivität benennen
@@ -364,6 +370,7 @@ Status: `planned`
 
 - [x] Gruppen stärker als Relevanz- und Sichtbarkeitslayer erklären
 - [x] Gruppenverwaltung vom eigentlichen Aktivitätsfluss entkoppeln
+- [x] `Gruppen` als priorisierte Verwaltungsfläche schärfen: Fokus auf nächsten Pflege-Schritt, Sync-Überblick und Statuslabels statt flacher Gleichgewichtung aller Kreise
 
 ### Design System / UI
 

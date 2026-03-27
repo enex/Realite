@@ -52,6 +52,7 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 - Tippe auf eine Gruppe, um Details zu öffnen.
 - Dort kannst du Mitglieder einladen und Hashtags anpassen.
 - Auf dem Handy nutzt du unten die Navigation mit **Jetzt**, **Vorschläge**, **Events** und **Gruppen**. Über den kleinen Bereichshinweis siehst du zusätzlich, ob du gerade im Modus **Entdecken**, **Reagieren** oder **Verwalten** bist. Dein Profil erreichst du oben rechts.
+- Direkt unter der Hauptnavigation zeigt Realite jetzt auf allen Kernseiten zusätzlich einen kompakten Bereichswechsel. Dort siehst du immer, wie **Jetzt**, **Vorschläge**, **Events** und **Gruppen** produktlogisch zusammenhängen und kannst gezielt zwischen Entdecken, Reagieren und Verwalten wechseln.
 
 ## 5. Erstes Event erstellen
 
