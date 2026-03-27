@@ -33,6 +33,8 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- Eventkarten in `Jetzt` und `Events` sowie die Eventseite zeigen bei aktivierter Vor-Ort-Sichtbarkeit jetzt direkt, wer aktive Check-ins sehen kann
+- der Freigabekreis für Presence ist damit nicht mehr nur im separaten Vor-Ort-Panel versteckt, sondern schon vor dem eigentlichen Check-in-Flow sichtbar
 - Presence-Panel bleibt nach Ablauf des eigenen Vor-Ort-Zeitfensters jetzt auch im Hauptstatus konsistent: kein irreführendes `Du bist vor Ort sichtbar`, sondern klarer Schutz-Zustand mit bewusstem Neustart
 - Event-Erstellformular zeigt vor dem Speichern jetzt eine klare Sichtbarkeits-Vorschau: getrennt für Event-Freigabe und spätere aktive Vor-Ort-Check-ins
 - Trust-/Privacy-Regeln für neue Sichtbarkeit damit auch direkt im Erstellflow geschärft statt erst nach dem Speichern auf der Eventseite
@@ -305,6 +307,7 @@ Status: `planned`
 - [x] Presence-Check-in auf begrenzte Sichtbarkeitsdauer pro Eventseite erweitern
 - [x] Presence-Zustände im UI klar erklären: noch geschlossen, eigenes Zeitfenster abgelaufen, Event beendet
 - [x] Presence-Panel erklärt je Event-Sichtbarkeit konkret, wer aktive Vor-Ort-Check-ins sehen kann
+- [x] Eventkarten und Eventseite zeigen bei aktivierter Vor-Ort-Sichtbarkeit direkt, wer aktive Check-ins sehen kann
 - [x] abgelaufenes eigenes Presence-Zeitfenster nach Reload/API-Roundtrip weiter als Schutz-Zustand zeigen statt wie nie aktiviert
 - [x] Presence-Panel hält auch nach Ablauf des eigenen Zeitfensters Headline, CTA und Ausblend-Logik konsistent im Schutz-Zustand
 - [x] Zusagen- und Presence-Listen privacy-härten: ohne gepflegten Namen keine E-Mail-Fallbacks in sichtbaren Personenlisten zeigen

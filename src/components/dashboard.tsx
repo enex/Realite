@@ -9,7 +9,7 @@ import { EventImage } from "@/src/components/event-image";
 import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
 import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
 import { EVENT_JOIN_MODE_VALUES, getEventJoinModeMeta, type EventJoinMode } from "@/src/lib/event-join-modes";
-import { getEventPresenceAudienceRuleCopy } from "@/src/lib/event-presence";
+import { getEventPresenceAudienceHint, getEventPresenceAudienceRuleCopy } from "@/src/lib/event-presence";
 import { getEventOnSiteVisibilityMeta } from "@/src/lib/event-on-site";
 import { getEventPatternMeta } from "@/src/lib/activity-patterns";
 import {
@@ -1359,6 +1359,12 @@ export function Dashboard({
                         const borderColor = item.event.color ?? CATEGORY_COLORS[item.event.category ?? "default"];
                         const joinModeMeta = getEventJoinModeMeta(item.event.joinMode);
                         const onSiteMeta = getEventOnSiteVisibilityMeta(item.event.allowOnSiteVisibility);
+                        const onSiteAudienceHint = item.event.allowOnSiteVisibility
+                          ? getEventPresenceAudienceHint({
+                              visibility: item.event.visibility,
+                              groupName: item.event.groupName,
+                            })
+                          : null;
                         return (
                           <li key={`event-${item.eventId}`}>
                             <a
@@ -1396,6 +1402,9 @@ export function Dashboard({
                                 </p>
                                 <p className="mt-1 text-xs font-medium text-slate-600">Mitmachen: {joinModeMeta.shortLabel}</p>
                                 <p className="mt-1 text-xs font-medium text-slate-600">Vor Ort: {onSiteMeta.shortLabel}</p>
+                                {onSiteAudienceHint ? (
+                                  <p className="mt-1 text-xs text-slate-500">{onSiteAudienceHint}</p>
+                                ) : null}
                                 <div className={`mt-2 rounded-lg border px-3 py-2.5 ${getVisualPriorityMeta(eventPattern.priority).insetClassName}`}>
                                   <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                                     Wer ist dabei?
@@ -1742,6 +1751,12 @@ export function Dashboard({
                                 const eventPattern = getEventPatternMeta({ isOwnEvent, isAccepted });
                                 const joinModeMeta = getEventJoinModeMeta(event.joinMode);
                                 const onSiteMeta = getEventOnSiteVisibilityMeta(event.allowOnSiteVisibility);
+                                const onSiteAudienceHint = event.allowOnSiteVisibility
+                                  ? getEventPresenceAudienceHint({
+                                      visibility: event.visibility,
+                                      groupName: event.groupName,
+                                    })
+                                  : null;
                                 const contextLabel =
                                   section.id === "context" && event.sourceProvider
                                     ? "Aus deinem Kalenderkontext"
@@ -1796,6 +1811,9 @@ export function Dashboard({
                                           </p>
                                           <p className="mt-1 text-xs font-medium text-slate-600">Mitmachen: {joinModeMeta.shortLabel}</p>
                                           <p className="mt-1 text-xs font-medium text-slate-600">Vor Ort: {onSiteMeta.shortLabel}</p>
+                                          {onSiteAudienceHint ? (
+                                            <p className="mt-1 text-xs text-slate-500">{onSiteAudienceHint}</p>
+                                          ) : null}
                                           <div className={`mt-2 rounded-lg border px-3 py-2 ${getVisualPriorityMeta(eventPattern.priority).insetClassName}`}>
                                             <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                                               Wer ist dabei?

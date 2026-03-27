@@ -265,6 +265,31 @@ export function getEventPresenceAudienceRuleCopy(input: {
   };
 }
 
+export function getEventPresenceAudienceHint(input: {
+  visibility: EventVisibility;
+  groupName?: string | null;
+}) {
+  if (input.visibility === "group") {
+    return input.groupName
+      ? `Aktive Check-ins sehen nur Mitglieder von ${input.groupName}.`
+      : "Aktive Check-ins sehen nur Mitglieder der ausgewählten Gruppe.";
+  }
+
+  if (input.visibility === "friends") {
+    return "Aktive Check-ins sehen nur deine registrierten Kontakte.";
+  }
+
+  if (input.visibility === "friends_of_friends") {
+    return "Aktive Check-ins sehen nur deine Kontakte und deren Kontakte.";
+  }
+
+  if (input.visibility === "smart_date") {
+    return "Aktive Check-ins sehen nur gegenseitige Matches.";
+  }
+
+  return "Aktive Check-ins sehen nur Personen, die dieses Event sehen duerfen.";
+}
+
 export function isEventPresenceActive(
   status: EventPresenceStatus | null,
   visibleUntil: Date | null,

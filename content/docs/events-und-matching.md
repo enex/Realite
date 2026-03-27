@@ -48,6 +48,12 @@ Direkt im Erstellformular zeigt Realite dazu jetzt eine **Sichtbarkeits-Vorschau
 
 So musst du die Privacy-Auswirkung nicht erst nach dem Speichern auf der Eventseite prüfen.
 
+Auch nach dem Speichern bleibt der Kreis sichtbar:
+
+- auf Eventkarten steht bei aktivierter Vor-Ort-Sichtbarkeit direkt ein kurzer Hinweis, wer aktive Check-ins sehen kann
+- auf der Eventseite erscheint derselbe Hinweis zusätzlich im Bereich **Vor Ort**, noch bevor du den eigentlichen Bereich **Vor Ort Status** öffnest
+- so musst du nicht erst in den Check-in-Flow hineingehen, um den Freigabekreis wieder nachzulesen
+
 Mehr Details dazu findest du in **[Vor-Ort-Sichtbarkeit](/docs/vor-ort-sichtbarkeit)**.
 
 **Bilder:** Events können ein Vorschaubild anzeigen. Realite nutzt dafür:

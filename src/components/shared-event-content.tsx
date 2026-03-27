@@ -4,6 +4,7 @@ import { EventImage } from "@/src/components/event-image";
 import { EventLocationDetails } from "@/src/components/event-location-details";
 import { getEventJoinModeMeta, type EventJoinMode } from "@/src/lib/event-join-modes";
 import { getEventOnSiteVisibilityMeta } from "@/src/lib/event-on-site";
+import { getEventPresenceAudienceHint } from "@/src/lib/event-presence";
 import { getEventVisibilityMeta, type EventVisibility } from "@/src/lib/event-visibility";
 import { getPersonDisplayLabel } from "@/src/lib/person-display";
 import {
@@ -87,6 +88,12 @@ export function SharedEventContent(props: SharedEventContentProps) {
     : null;
   const managementPage = getPageIntentMeta("manage");
   const onSiteMeta = getEventOnSiteVisibilityMeta(Boolean(props.allowOnSiteVisibility));
+  const onSiteAudienceHint = props.allowOnSiteVisibility && props.visibility
+    ? getEventPresenceAudienceHint({
+        visibility: props.visibility,
+        groupName: props.groupName,
+      })
+    : null;
   const originalEditUrl = props.isOwnedByCurrentUser
     ? buildGoogleCalendarEditUrl(props.sourceProvider, props.sourceEventId)
     : null;
@@ -184,6 +191,12 @@ export function SharedEventContent(props: SharedEventContentProps) {
           <span className="font-medium text-slate-900">{onSiteMeta.label}</span> ·{" "}
           {onSiteMeta.description}
         </p>
+        {onSiteAudienceHint ? (
+          <p className={`mt-2 ${detailBodyClassName}`}>
+            <span className="font-medium text-slate-900">Wer sieht aktive Check-ins?</span> ·{" "}
+            {onSiteAudienceHint}
+          </p>
+        ) : null}
       </section>
 
       {location ? (

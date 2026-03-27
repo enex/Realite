@@ -4,6 +4,7 @@ import {
   EVENT_PRESENCE_CHECK_IN_LEAD_MINUTES,
   getDefaultEventPresenceVisibleUntil,
   getEventPresenceAudienceCopy,
+  getEventPresenceAudienceHint,
   getEventPresenceAudienceRuleCopy,
   getEventPresenceDisplayMeta,
   getEventPresenceDisplayState,
@@ -175,6 +176,27 @@ describe("event presence", () => {
       description:
         "Nur passende gegenseitige Matches sehen dieses Event im Dating-Kontext. Nur diese Personen sehen in diesem Event aktive Vor-Ort-Check-ins.",
     });
+  });
+
+  test("returns a compact audience hint for event cards and detail summaries", () => {
+    expect(
+      getEventPresenceAudienceHint({
+        visibility: "group",
+        groupName: "WG Freitag",
+      }),
+    ).toBe("Aktive Check-ins sehen nur Mitglieder von WG Freitag.");
+
+    expect(
+      getEventPresenceAudienceHint({
+        visibility: "friends_of_friends",
+      }),
+    ).toBe("Aktive Check-ins sehen nur deine Kontakte und deren Kontakte.");
+
+    expect(
+      getEventPresenceAudienceHint({
+        visibility: "public",
+      }),
+    ).toBe("Aktive Check-ins sehen nur Personen, die dieses Event sehen duerfen.");
   });
 
   test("treats expired presence windows as inactive", () => {
