@@ -33,6 +33,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- `Vorschläge` rahmt die Reaktionsansicht jetzt auch im normalen Flow explizit ein: mit eigenem Einordnungsblock statt direktem Sprung nur in Zahlen und Listen
+- klare Rückwege aus `Vorschläge` nach `Jetzt`, `Events` und `Gruppen` sind damit nicht mehr nur im Leerzustand sichtbar, sondern als dauerhafte Orientierung im Reaktionsfluss
+- die Trennung zwischen entdecken, reagieren und verwalten bleibt dadurch auch bei vorhandenen Empfehlungen im Seitenkopf konkret statt nur über die globale Navigation
 - `Jetzt` benennt die erste relevante Aktivität in ruhigen Phasen jetzt präziser: bestätigte eigene Beteiligung wird als Zusage, verbleibende eigene Termine als Planung statt generisch als offene Aktivität beschrieben
 - der Block `Nächster Schritt` und die Frage `Was passiert gerade?` laufen damit auch bei wenig neuem Momentum nicht mehr in eine Discovery-Sprache hinein, wenn real nur bestehende Beteiligung oder Verwaltung übrig ist
 - ruhige Dashboard-Zustände bleiben dadurch produktklarer getrennt: entdecken, bestehende Beteiligung prüfen und eigene Planung verwalten
@@ -352,6 +355,7 @@ Status: `planned`
 - [x] Suggestions stärker als Handlungs-Queue inszenieren
 - [x] Gründe, Relevanz und nächste Aktion schneller erfassbar machen
 - [x] accepted / pending / declined Zustände visueller differenzieren
+- [x] `Vorschläge` auch im normalen Flow mit eigener Reaktions-Einordnung und klaren Rückwegen nach `Jetzt`, `Events` und `Gruppen` rahmen
 
 ### Groups
 

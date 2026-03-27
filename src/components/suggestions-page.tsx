@@ -13,7 +13,17 @@ import { getCardSurfaceMeta } from "@/src/lib/card-system";
 import { getPersonDisplayLabel } from "@/src/lib/person-display";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
-import { getPageIntentMeta, pageLeadClassName, pageMetaClassName, pageShellClassName, pageTitleClassName } from "@/src/lib/page-hierarchy";
+import {
+  getPageIntentMeta,
+  pageLeadClassName,
+  pageMetaClassName,
+  pageShellClassName,
+  pageTitleClassName,
+  sectionBodyClassName,
+  sectionTitleClassName,
+  statLabelClassName,
+  statValueClassName,
+} from "@/src/lib/page-hierarchy";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
 type Suggestion = {
@@ -287,6 +297,56 @@ export function SuggestionsPage({
             />
           </div>
         </header>
+
+        <section className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <p className={reactionPage.eyebrowClassName}>Reaktionsfluss getrennt halten</p>
+              <h2 className={sectionTitleClassName}>Hier entscheidest du. Planung und Discovery bleiben bewusst separat.</h2>
+              <p className={sectionBodyClassName}>
+                Vorschläge sind deine Handlungs-Queue für bewusste Zu- und Absagen. Sie sollen nicht mit spontanen Aktivitäten,
+                deinem Sozialkalender oder Gruppenverwaltung vermischt werden.
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="rounded-xl bg-white px-3 py-3">
+                <p className={statLabelClassName}>Offen</p>
+                <p className={statValueClassName}>{actionableSuggestions.length}</p>
+              </div>
+              <div className="rounded-xl bg-white px-3 py-3">
+                <p className={statLabelClassName}>Zugesagt</p>
+                <p className={statValueClassName}>{acceptedCount}</p>
+              </div>
+              <div className="rounded-xl bg-white px-3 py-3">
+                <p className={statLabelClassName}>Abgelehnt</p>
+                <p className={statValueClassName}>{declinedCount}</p>
+              </div>
+            </div>
+          </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            <FlowCard
+              href="/now"
+              intent="discover"
+              eyebrow="Weiter in Jetzt"
+              title="Offene Aktivitäten prüfen"
+              description="Dort schaust du auf sichtbares Momentum, spontane Einstiege und die nächste relevante Aktivität."
+            />
+            <FlowCard
+              href="/events"
+              intent="manage"
+              eyebrow="Weiter in Events"
+              title="Planung getrennt verwalten"
+              description="Nutze Events für bestätigte Aktivitäten, eigenen Kalenderkontext und Smart Treffen statt für offene Entscheidungen."
+            />
+            <FlowCard
+              href="/groups"
+              intent="manage"
+              eyebrow="Weiter in Gruppen"
+              title="Freigabekreise vorbereiten"
+              description="Dort pflegst du Kontakte, Kreise und Sichtbarkeit, die spätere Vorschläge relevanter machen."
+            />
+          </div>
+        </section>
 
         {queryError || submitError ? (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

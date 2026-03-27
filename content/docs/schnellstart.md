@@ -68,6 +68,11 @@ Tipps:
 
 Starte dort das Matching und prüfe deine Vorschläge.
 
+- Ganz oben erklärt dir Realite jetzt zuerst, wofür diese Ansicht gedacht ist: **Reagieren** auf offene Empfehlungen, nicht Discovery und nicht Verwaltung.
+- Direkt darunter kommst du mit klaren Rückwegen weiter:
+- nach **Jetzt**, wenn du spontane sichtbare Aktivitäten prüfen willst
+- nach **Events**, wenn du bestätigte Planung und Sozialkalender verwalten willst
+- nach **Gruppen**, wenn du Kontakte, Kreise und Sichtbarkeit vorbereiten willst
 - Offene Vorschläge mit Handlungsbedarf stehen oben.
 - Status-Badges helfen dir beim schnellen Sortieren: **„Jetzt reagieren“** für offene Entscheidungen, **„Im Kalender vorgemerkt“** für bereits eingetragene Vorschläge, **„Zugesagt“** und **„Abgelehnt“** im Verlauf.
 - In **Jetzt** stehen offene Vorschläge zusätzlich im Bereich **„Reagieren zuerst“** oberhalb des offenen Aktivitäts-Feeds.
