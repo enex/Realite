@@ -33,6 +33,8 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- leerer `Events`-Sozialkalender trennt nächste Schritte jetzt explizit nach `Jetzt`, `Vorschläge`, `Gruppen` und eigener Planung statt nur generisch zum Erstellen zu drängen
+- die Informationsarchitektur bleibt damit auch ohne sichtbare Termine verständlich: entdecken, reagieren, verwalten und planen werden im leeren Zustand klar auseinandergezogen
 - Smart-Treffen-Bereich in `Events` jetzt deutlicher als Orga- und Planungsfläche statt Discovery-Feed markiert
 - eigener Statusüberblick für Freigaben, laufende Suchen, gesicherte Termine sowie pausierte/beendete Läufe ergänzt
 - direkte Rückwege aus dem Smart-Treffen-Bereich nach `Jetzt`, `Vorschläge` oder zurück in den Sozialkalender eingebaut, damit Verwaltungswege nicht hängen bleiben
@@ -327,6 +329,7 @@ Status: `planned`
 - [x] offene Aktivitäten mit vorhandenen Zusagen sichtbarer machen
 - [x] "Wer ist dabei?" prominenter machen
 - [x] `Events` als Sozialkalender klar definieren: eigene Pläne, bestätigte Aktivitäten, Kalenderkontext
+- [x] leeren `Events`-Sozialkalender mit klaren Wegen nach `Jetzt`, `Vorschläge`, `Gruppen` und zur eigenen Planung schärfen
 
 ### Smart Meetings
 

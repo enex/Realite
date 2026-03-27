@@ -227,6 +227,15 @@ Dort trennt Realite jetzt klar zwischen drei Bereichen:
 
 So wirkt **Events** nicht mehr wie eine ungeordnete Gesamtliste, sondern wie dein persönlicher Überblick über Teilnahme, eigene Planung und Umfeld.
 
+Wenn dein Sozialkalender in **Events** noch leer ist, bleibt die Seite nicht bei einem generischen Hinweis:
+
+- **Jetzt** ist der Weg für offene Aktivitäten und spontane Einstiege
+- **Vorschläge** ist der Weg für offene Entscheidungen
+- **Gruppen** ist der Weg für Kreise, Kontakte und Sichtbarkeitsrahmen
+- **Events** selbst bleibt der Ort, an dem du bewusst eigene Planung startest
+
+So ist auch im leeren Zustand klar, welche Ansicht wofür gedacht ist.
+
 Offene Aktivitäten mit bestehenden Zusagen werden in **Jetzt** und **Events** zusätzlich hervorgehoben. Du siehst dort direkt:
 
 - wie viele Personen schon zugesagt haben

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
 import { EventImage } from "@/src/components/event-image";
+import { FlowCard } from "@/src/components/flow-card";
 import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
 import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
 import { EVENT_JOIN_MODE_VALUES, getEventJoinModeMeta, type EventJoinMode } from "@/src/lib/event-join-modes";
@@ -1734,18 +1735,45 @@ export function Dashboard({
             </div>
             <div className="mt-4 space-y-6">
               {visibleEvents.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/80 p-5 text-center">
-                  <p className="text-sm font-medium text-slate-700">Noch keine Events? Los geht’s.</p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Lege ein Event an oder tritt <a href="/groups" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">Gruppen</a> bei – dann siehst du gemeinsame Aktivitäten und kannst Leute einladen.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setShowEventForm(true)}
-                    className="mt-3 rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
-                  >
-                    Erstes Event anlegen
-                  </button>
+                <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/80 p-5">
+                  <div className="max-w-2xl">
+                    <p className="text-sm font-medium text-slate-700">Dein Sozialkalender ist noch leer.</p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      In <span className="font-medium text-slate-700">Events</span> sammelst du bestätigte Aktivitäten, eigene Planung
+                      und sichtbaren Kalenderkontext. Wenn hier noch nichts auftaucht, hilft dir die nächste Aktion je nach Ziel:
+                      entdecken, reagieren, Kreise pflegen oder selbst starten.
+                    </p>
+                  </div>
+                  <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                    <FlowCard
+                      href="/now"
+                      intent="discover"
+                      eyebrow="Weiter in Jetzt"
+                      title="Offene Aktivitäten prüfen"
+                      description="Nutze Jetzt, wenn du sehen willst, was gerade relevant ist und wo du spontan einsteigen kannst."
+                    />
+                    <FlowCard
+                      href="/suggestions"
+                      intent="react"
+                      eyebrow="Weiter in Vorschläge"
+                      title="Offene Reaktionen prüfen"
+                      description="Dort beantwortest du Empfehlungen, bevor sie als Verlauf oder feste Planung bei dir landen."
+                    />
+                    <FlowCard
+                      href="/groups"
+                      intent="manage"
+                      eyebrow="Weiter in Gruppen"
+                      title="Kreise und Sichtbarkeit pflegen"
+                      description="Gruppen helfen dir, relevante Kontakte, Einladungen und Freigabekreise für spätere Events vorzubereiten."
+                    />
+                    <FlowCard
+                      intent="manage"
+                      eyebrow="Direkt in Events"
+                      title="Erstes Event anlegen"
+                      description="Starte eigene Planung hier, wenn du schon weißt, was du organisieren oder teilen willst."
+                      onClick={() => setShowEventForm(true)}
+                    />
+                  </div>
                 </div>
               ) : null}
               {eventSections.map((section) => {
