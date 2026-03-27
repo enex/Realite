@@ -6,13 +6,15 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "start:prod": "bun run db:migrate && next start",
+    "start:prod": "bun run db:migrate:locked && next start",
     "lint": "bun run typecheck",
     "typecheck": "./node_modules/.bin/next typegen && tsc --noEmit --incremental false",
     "test": "bun test",
     "check": "bun run typecheck && bun run test",
     "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
-    "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
+    "db:migrate": "bun run db:migrate:raw",
+    "db:migrate:locked": "bun run scripts/run-migrations.ts",
+    "db:migrate:raw": "drizzle-kit migrate --config=drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config=drizzle.config.ts"
   },
   "dependencies": {
