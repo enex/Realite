@@ -33,6 +33,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- `Jetzt` benennt die erste relevante Aktivität in ruhigen Phasen jetzt präziser: bestätigte eigene Beteiligung wird als Zusage, verbleibende eigene Termine als Planung statt generisch als offene Aktivität beschrieben
+- der Block `Nächster Schritt` und die Frage `Was passiert gerade?` laufen damit auch bei wenig neuem Momentum nicht mehr in eine Discovery-Sprache hinein, wenn real nur bestehende Beteiligung oder Verwaltung übrig ist
+- ruhige Dashboard-Zustände bleiben dadurch produktklarer getrennt: entdecken, bestehende Beteiligung prüfen und eigene Planung verwalten
 - `Events` führt jetzt nicht nur im Leerzustand, sondern auch im normalen Verwaltungsflow mit einem eigenen Rückwege-Block gezielt zurück nach `Jetzt`, `Vorschläge` und `Gruppen`
 - die persönliche Sozialkalender-Ansicht bleibt damit klar von Discovery getrennt: Planung, Kalenderkontext und Freigabepflege haben explizite Rückwege in den Hauptfluss
 - leerer `Events`-Sozialkalender trennt nächste Schritte jetzt explizit nach `Jetzt`, `Vorschläge`, `Gruppen` und eigener Planung statt nur generisch zum Erstellen zu drängen
@@ -294,6 +297,7 @@ Status: `planned`
 - [x] unterscheiden zwischen `Entdecken`, `Reagieren`, `Verwalten`
 - [x] `Events` auch außerhalb leerer Zustände mit klaren Rückwegen nach `Jetzt`, `Vorschläge` und `Gruppen` in den Hauptfluss anbinden
 - [x] Copy und leere Zustände in `Vorschläge` klarer gegen `Jetzt` und `Events` trennen, inklusive direkter Rückwege bei leerer Handlungs-Queue
+- [x] Grenzfall-Copy in `Jetzt` schärfen: bei wenig neuem Momentum bestätigte Beteiligung und eigene Planung nicht generisch als offene Aktivität benennen
 - [x] visuelle Patterns für offene Aktivitäten, persönliche Vorschläge, eigene Aktivitäten und Smart Meetings definieren
 - [x] Event-/Suggestion-Karten auf Scannability und Priorisierung überarbeiten
 - [x] leere Zustände produktnäher formulieren

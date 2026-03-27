@@ -23,6 +23,10 @@ import {
 import { getDashboardNextStep } from "@/src/lib/dashboard-next-step";
 import { DASHBOARD_QUERY_KEY, fetchDashboard as fetchDashboardApi } from "@/src/lib/dashboard-query";
 import {
+  getDashboardRelevantActivityKind,
+  getDashboardRelevantActivityMeta,
+} from "@/src/lib/dashboard-relevant-activity";
+import {
   CATEGORY_COLORS,
   CATEGORY_LABELS,
   EVENT_CATEGORY_VALUES,
@@ -687,6 +691,17 @@ export function Dashboard({
     [acceptedEventIds, data.me.id, visibleEvents]
   );
   const nextRelevantEvent = useMemo(() => nowFeedEvents[0] ?? null, [nowFeedEvents]);
+  const nextRelevantActivityKind = useMemo(
+    () =>
+      nextRelevantEvent
+        ? getDashboardRelevantActivityKind({
+            isOwnEvent: nextRelevantEvent.createdBy === data.me.id,
+            isAccepted: acceptedEventIds.has(nextRelevantEvent.id),
+          })
+        : "none",
+    [acceptedEventIds, data.me.id, nextRelevantEvent],
+  );
+  const nextRelevantActivityMeta = getDashboardRelevantActivityMeta(nextRelevantActivityKind);
   const joinableMomentumEvents = useMemo(
     () =>
       visibleEvents.filter((event) => {
@@ -773,17 +788,20 @@ export function Dashboard({
     if (nextStep.kind === "open-activity") {
       const event = nextStepEventMap.get(nextStep.eventId);
       if (event) {
-        const isOwnEvent = event.createdBy === data.me.id;
+        const activityKind = getDashboardRelevantActivityKind({
+          isOwnEvent: event.createdBy === data.me.id,
+          isAccepted: acceptedEventIds.has(event.id),
+        });
+        const activityMeta = getDashboardRelevantActivityMeta(activityKind);
+
         return {
           eyebrow: "Nächster Schritt",
-          title: isOwnEvent ? "Deine nächste Aktivität prüfen" : "Nächste relevante Aktivität öffnen",
+          title: activityMeta.nextStepTitle,
           value: `${event.title.replace(/#[^\s]+/gi, "").trim()} · ${formatQuestionTiming(event.startsAt, event.endsAt)}`,
-          description: isOwnEvent
-            ? "Hier liegt deine nächste sichtbare Aktivität mit Beteiligung oder Momentum. Prüfe Details, Zusagen und nächsten Kontext."
-            : "Im Moment wartet keine neue Reaktion auf dich. Öffne die nächste relevante Aktivität, um Timing, Personen und Sichtbarkeit im Blick zu behalten.",
+          description: activityMeta.nextStepDescription,
           href: `/e/${shortenUUID(event.id)}`,
-          actionLabel: "Aktivität öffnen",
-          priority: isOwnEvent ? ("planning" as VisualPriority) : ("activity" as VisualPriority),
+          actionLabel: activityMeta.nextStepActionLabel,
+          priority: activityMeta.nextStepPriority,
         };
       }
     }
@@ -915,19 +933,17 @@ export function Dashboard({
   const nowQuestionCards = [
     {
       eyebrow: "1. Was passiert gerade?",
-      title: "Was ist als Nächstes konkret relevant?",
+      title: nextRelevantActivityMeta.questionTitle,
       value: nextRelevantEvent
         ? `${nextRelevantEvent.title.replace(/#[^\s]+/gi, "").trim()} · ${formatQuestionTiming(
             nextRelevantEvent.startsAt,
             nextRelevantEvent.endsAt
           )}`
         : "Gerade keine offene Aktivität",
-      description: nextRelevantEvent
-        ? "Das ist die nächste sichtbare Aktivität aus deinem Jetzt-Feed."
-        : "Sobald etwas Sichtbares oder Joinbares auftaucht, erscheint es hier zuerst.",
+      description: nextRelevantActivityMeta.questionDescription,
       actionHref: nextRelevantEvent ? `/e/${shortenUUID(nextRelevantEvent.id)}` : "/events#events",
-      actionLabel: nextRelevantEvent ? "Aktivität öffnen" : "Events ansehen",
-      priority: "activity" as VisualPriority,
+      actionLabel: nextRelevantActivityMeta.questionActionLabel,
+      priority: nextRelevantActivityMeta.questionPriority,
     },
     {
       eyebrow: "2. Wo fehlt deine Reaktion?",

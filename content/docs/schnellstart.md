@@ -35,6 +35,7 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 - Offene Vorschläge mit Handlungsbedarf stehen dort in einem eigenen Bereich **„Reagieren zuerst“** ganz oben.
 - Vorschläge und Aktivitäten zeigen klare Muster-Badges, damit du schneller scannst, was gerade Sache ist: etwa **„Jetzt reagieren“**, **„Offene Aktivität“**, **„Deine Planung“** oder **„Du dabei“**.
 - Dieselbe Kartenlogik taucht jetzt auch in **Vorschläge**, **Smart Treffen**, auf der Eventseite und beim Bereich **Vor Ort Status** auf: wichtige Aktionen stehen in farblich stärkeren Karten, Kontext und Details in ruhigeren Inset-Flächen darunter.
+- Wenn in **Jetzt** gerade keine neue offene Aktivität vorne liegt, bleibt auch der obere Empfehlungsblock präziser: bestehende Zusagen werden ausdrücklich als Beteiligung benannt, eigene verbleibende Termine als Planung statt wie neue Discovery.
 - Eigene neue Events ohne Zusagen bleiben bewusst in **Events**, damit **Jetzt** nicht mit Verwaltung überladen wird.
 - Wenn in **Jetzt** gerade nichts Offenes auftaucht, erklärt Realite jetzt auch klar den Grund: etwa kein sichtbares Momentum, keine direkte Beteiligung oder nur eigene Planung in **Events**. Die vorgeschlagene nächste Aktion passt dazu direkt im leeren Zustand.
 - Der Sozialkalender erscheint in **Jetzt** nur noch als kurze Vorschau. Die ausführliche Aufteilung nach **Zugesagt**, **Deine Planung** und **Kalenderkontext** bleibt in **Events**.

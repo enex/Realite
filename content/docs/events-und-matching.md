@@ -225,6 +225,12 @@ Wenn in einem dieser Modi gerade nichts auftaucht, bleibt Realite nicht mehr bei
 - wenn in **Jetzt** nur noch deine eigene Planung existiert, verweist der leere Zustand bewusst nach **Events**
 - wenn weder Vorschläge noch joinbare Aktivitäten sichtbar sind, schlägt Realite direkt das Erstellen einer neuen Aktivität oder den Weg über **Gruppen** vor
 
+Auch oberhalb des Feeds bleibt die Copy jetzt genauer, wenn gerade wenig neue Aktivität sichtbar ist:
+
+- zeigt **Jetzt** als nächste relevante Sache nur noch eine bestehende Zusage, spricht die Startansicht ausdrücklich von deiner bestätigten Beteiligung statt generisch von einer offenen Aktivität
+- bleibt nur eigene sichtbare Planung übrig, wird das ebenfalls klar als Planung statt Discovery benannt
+- so wirkt der erste empfohlene Schritt auch in ruhigen Phasen nicht so, als gäbe es noch spontanes Momentum, obwohl real nur bestehende Beteiligung oder Verwaltung übrig ist
+
 Dort trennt Realite jetzt klar zwischen drei Bereichen:
 
 - **Zugesagt & bestätigt:** Aktivitäten, bei denen du schon dabei bist oder für die bereits Zusagen vorliegen
