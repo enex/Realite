@@ -27,6 +27,7 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 
 - Die Navigation trennt bewusst zwischen **Entdecken**, **Reagieren** und **Verwalten**.
 - **Jetzt** ist die Hauptansicht für „Was geht gerade?“
+- Ganz oben steht jetzt ein klarer Block **„Nächster Schritt“**. Er zeigt dir genau eine priorisierte Aktion: zuerst offene Vorschläge beantworten, sonst bei sichtbarem Momentum mitmachen, sonst die nächste relevante Aktivität öffnen oder selbst etwas starten.
 - Direkt unter dem Einstieg siehst du den Block **„Jetzt in 3 Fragen“**. Dort beantwortet Realite zuerst:
 - was als Nächstes konkret relevant ist
 - wo gerade deine Reaktion fehlt

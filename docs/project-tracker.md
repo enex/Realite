@@ -33,6 +33,8 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- `Jetzt` zeigt oberhalb der drei Orientierungsfragen jetzt einen dominanten Block `Nächster Schritt`, der bewusst genau eine priorisierte Aktion empfiehlt: zuerst reagieren, dann bei Momentum mitmachen, sonst nächste relevante Aktivität öffnen oder selbst starten
+- Milestone 1 ist damit vollständig erfüllt und nicht mehr nur geplant: Dashboard priorisiert relevante Aktivitäten, Vorschläge und spontane Einstiege jetzt inklusive klarer erster Aktion
 - `Jetzt` priorisiert offene Aktivitäten im Feed jetzt explizit nach Momentum statt nur nach Zeit und bietet dafür die Fokus-Modi `Priorisiert`, `Mit Momentum` und `Meine Beteiligung`
 - Zusagen- und Presence-Listen zeigen ohne gepflegten Namen jetzt bewusst neutrale Personenlabels statt E-Mail-Adressen offenzulegen
 - abgelaufene eigene Presence-Zeitfenster bleiben auf der Eventseite jetzt auch nach Reload/API-Roundtrip als Schutz-Zustand `Zeitfenster abgelaufen` erkennbar statt wie nie aktiviert zu wirken
@@ -112,7 +114,6 @@ Bereits vorhanden:
 
 Noch nicht sauber ausgearbeitet:
 
-- bessere Priorisierung der wichtigsten Aktionen beim Einstieg
 - explizite Join-Mechaniken jenseits von Vorschlagsentscheidung
 - feinere Sichtbarkeit wie optional vor Ort sichtbar weiter ausarbeiten
 - weitergehende Presence-Regeln über das Event-Zeitfenster hinaus
@@ -210,7 +211,7 @@ Definition of done:
 - Smart Meetings sind nicht mehr versteckt
 - wichtigste nächste Aktion ist auf den ersten Blick klar
 
-Status: `planned`
+Status: `done`
 
 ### Milestone 2: Informationsarchitektur vereinfachen
 
@@ -277,6 +278,7 @@ Status: `planned`
 - [x] `Smart Meetings` aus der Hauptansicht herauslösen und in einen sekundären Bereich verschieben
 - [x] klare CTA-Hierarchie definieren: zuerst reagieren, dann mitmachen, dann erstellen
 - [x] bestehende Hauptviews auf mobile und desktop Informationshierarchie prüfen
+- [x] in `Jetzt` einen dominanten Block `Nächster Schritt` ergänzen, damit die erste priorisierte Aktion ohne Scrollen klar ist
 
 ### P1
 

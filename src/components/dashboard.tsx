@@ -17,6 +17,7 @@ import {
   type DashboardFeedFocus,
   type DashboardFeedEvent,
 } from "@/src/lib/dashboard-feed";
+import { getDashboardNextStep } from "@/src/lib/dashboard-next-step";
 import { DASHBOARD_QUERY_KEY, fetchDashboard as fetchDashboardApi } from "@/src/lib/dashboard-query";
 import {
   CATEGORY_COLORS,
@@ -682,6 +683,127 @@ export function Dashboard({
   const joinCtaLabel = nextJoinableEvent ? "Mitmachen" : "Events ansehen";
   const joinCtaHint = nextJoinableEvent ? "eine sichtbare Aktivität öffnen" : "sichtbare Aktivitäten öffnen";
   const suggestionCtaLabel = pendingCount > 0 ? "Reagieren" : "Vorschläge prüfen";
+  const joinableMomentumEvent = joinableMomentumEvents[0] ?? null;
+  const nextStepEventMap = useMemo(
+    () => new Map(visibleEvents.map((event) => [event.id, event] as const)),
+    [visibleEvents],
+  );
+  const nextStep = useMemo(
+    () =>
+      getDashboardNextStep({
+        pendingSuggestionCount: pendingSuggestions.length,
+        joinableMomentumEventId: joinableMomentumEvent?.id ?? null,
+        nextJoinableEventId: nextJoinableEvent?.id ?? null,
+        nextRelevantEventId: nextRelevantEvent?.id ?? null,
+        hasHiddenOwnPlanningEvents: hiddenOwnPlanningEvents.length > 0,
+      }),
+    [hiddenOwnPlanningEvents.length, joinableMomentumEvent?.id, nextJoinableEvent?.id, nextRelevantEvent?.id, pendingSuggestions.length],
+  );
+  const nextStepCard = useMemo(() => {
+    if (nextStep.kind === "react") {
+      return {
+        eyebrow: "Nächster Schritt",
+        title: pendingSuggestions.length === 1 ? "Offenen Vorschlag beantworten" : "Offene Vorschläge beantworten",
+        value:
+          pendingSuggestions.length === 1
+            ? "1 Entscheidung wartet auf dich"
+            : `${pendingSuggestions.length} Entscheidungen warten auf dich`,
+        description:
+          "Reagiere zuerst auf offene Vorschläge. Danach bleibt der Feed für sichtbare Aktivitäten und spontanes Mitmachen frei.",
+        href: "/suggestions",
+        actionLabel: suggestionCtaLabel,
+        priority: "reaction" as VisualPriority,
+      };
+    }
+
+    if (nextStep.kind === "join-momentum") {
+      const event = nextStepEventMap.get(nextStep.eventId);
+      if (event) {
+        const acceptedCount = data.acceptedByEventId?.[event.id]?.length ?? 0;
+        return {
+          eyebrow: "Nächster Schritt",
+          title: "Bei Aktivität mit Momentum einsteigen",
+          value: `${event.title.replace(/#[^\s]+/gi, "").trim()} · ${formatQuestionTiming(event.startsAt, event.endsAt)}`,
+          description:
+            acceptedCount > 0
+              ? `${getAcceptedCountLabel(acceptedCount)} sind schon sichtbar. Du kannst direkt bei etwas einsteigen, das bereits trägt.`
+              : "Hier ist bereits Bewegung sichtbar. Du kannst ohne langen Abstimmungsweg direkt mitmachen.",
+          href: `/e/${shortenUUID(event.id)}`,
+          actionLabel: "Mitmachen",
+          priority: "momentum" as VisualPriority,
+        };
+      }
+    }
+
+    if (nextStep.kind === "join-first") {
+      const event = nextStepEventMap.get(nextStep.eventId);
+      if (event) {
+        return {
+          eyebrow: "Nächster Schritt",
+          title: "Erste Zusage für offene Aktivität setzen",
+          value: `${event.title.replace(/#[^\s]+/gi, "").trim()} · ${formatQuestionTiming(event.startsAt, event.endsAt)}`,
+          description:
+            "Gerade gibt es eine sichtbare Aktivität ohne Zusagen. Wenn sie passt, kannst du hier den ersten klaren Mitmach-Schritt setzen.",
+          href: `/e/${shortenUUID(event.id)}`,
+          actionLabel: "Aktivität öffnen",
+          priority: "activity" as VisualPriority,
+        };
+      }
+    }
+
+    if (nextStep.kind === "open-activity") {
+      const event = nextStepEventMap.get(nextStep.eventId);
+      if (event) {
+        const isOwnEvent = event.createdBy === data.me.id;
+        return {
+          eyebrow: "Nächster Schritt",
+          title: isOwnEvent ? "Deine nächste Aktivität prüfen" : "Nächste relevante Aktivität öffnen",
+          value: `${event.title.replace(/#[^\s]+/gi, "").trim()} · ${formatQuestionTiming(event.startsAt, event.endsAt)}`,
+          description: isOwnEvent
+            ? "Hier liegt deine nächste sichtbare Aktivität mit Beteiligung oder Momentum. Prüfe Details, Zusagen und nächsten Kontext."
+            : "Im Moment wartet keine neue Reaktion auf dich. Öffne die nächste relevante Aktivität, um Timing, Personen und Sichtbarkeit im Blick zu behalten.",
+          href: `/e/${shortenUUID(event.id)}`,
+          actionLabel: "Aktivität öffnen",
+          priority: isOwnEvent ? ("planning" as VisualPriority) : ("activity" as VisualPriority),
+        };
+      }
+    }
+
+    if (nextStep.kind === "review-planning") {
+      return {
+        eyebrow: "Nächster Schritt",
+        title: "Eigene Planung in Events prüfen",
+        value:
+          hiddenOwnPlanningEvents.length === 1
+            ? "1 eigenes Event wartet in deiner Planung"
+            : `${hiddenOwnPlanningEvents.length} eigene Events warten in deiner Planung`,
+        description:
+          "Im spontanen Feed ist gerade nichts Offenes vorn. Schau in deine Planungsansicht, bevor du etwas Neues erstellst.",
+        href: "/events#events",
+        actionLabel: "Planung öffnen",
+        priority: "planning" as VisualPriority,
+      };
+    }
+
+    return {
+      eyebrow: "Nächster Schritt",
+      title: "Neue Aktivität starten",
+      value: "Gerade gibt es nichts Offenes zu reagieren oder mitzunehmen",
+      description:
+        "Wenn weder offene Vorschläge noch passende Aktivitäten sichtbar sind, ist selbst erstellen der kürzeste nächste Schritt.",
+      href: "#create-event",
+      actionLabel: "Aktivität erstellen",
+      priority: "planning" as VisualPriority,
+    };
+  }, [
+    data.acceptedByEventId,
+    data.me.id,
+    hiddenOwnPlanningEvents.length,
+    nextStep,
+    nextStepEventMap,
+    pendingSuggestions.length,
+    suggestionCtaLabel,
+  ]);
   const focusOptions = useMemo(
     () => [
       {
@@ -845,6 +967,41 @@ export function Dashboard({
             </div>
           ) : null}
         </section>
+
+        {!isEventsView ? (
+          <section className="mt-5 md:mt-6" aria-label="Nächster Schritt">
+            <article className={`rounded-2xl p-4 md:p-5 ${getVisualPriorityMeta(nextStepCard.priority).sectionClassName}`}>
+              <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <div className="min-w-0">
+                  <p className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${getVisualPriorityMeta(nextStepCard.priority).eyebrowClassName}`}>
+                    {nextStepCard.eyebrow}
+                  </p>
+                  <h2 className="mt-2 text-lg font-semibold tracking-tight text-slate-900">{nextStepCard.title}</h2>
+                  <p className={`mt-3 text-xl font-bold tracking-tight ${getVisualPriorityMeta(nextStepCard.priority).accentTextClassName}`}>
+                    {nextStepCard.value}
+                  </p>
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{nextStepCard.description}</p>
+                </div>
+                {nextStepCard.href === "#create-event" ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowEventForm(true)}
+                    className={`inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-semibold transition ${getVisualPriorityMeta(nextStepCard.priority).itemClassName}`}
+                  >
+                    {nextStepCard.actionLabel}
+                  </button>
+                ) : (
+                  <a
+                    href={nextStepCard.href}
+                    className={`inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-semibold transition ${getVisualPriorityMeta(nextStepCard.priority).itemClassName}`}
+                  >
+                    {nextStepCard.actionLabel}
+                  </a>
+                )}
+              </div>
+            </article>
+          </section>
+        ) : null}
 
         {!isEventsView ? (
           <section className="mt-5 md:mt-6" aria-label="Jetzt in drei Fragen">
