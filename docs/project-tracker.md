@@ -33,6 +33,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- Bereichswechsel in App-Rahmen und öffentlicher Landing-Page erklärt die vier Kernansichten jetzt mit klarem Nutzungsfokus statt nur mit Bereichsname und Intent
+- `Events` und `Gruppen` bleiben dadurch im schnellen Wechsel klarer getrennt: Planung/Zusagen versus Kreise/Sichtbarkeit
+- die Produktlogik `Entdecken`, `Reagieren`, `Verwalten` wird damit auch vor dem Login konkreter und scanbarer vermittelt
 - `Gruppen` rahmt die Verwaltungsansicht jetzt deutlicher als aktives Steuerpult statt als flache Liste: mit Fokusblock für den nächsten Pflege-Schritt, priorisiertem Überblick zu sichtbaren, synchronisierten und öffentlichen Kreisen sowie klarem Pflegebedarf
 - sichtbare Gruppen werden in `Gruppen` jetzt nach Verwaltungsrelevanz sortiert: erst aktiv genutzte Kreise, dann gepflegte Kontaktkreise, dann Gruppen mit offenem Pflegebedarf
 - die visuelle Sprache von `Gruppen` zieht Verwaltung, Sync-Zustand und Pflegebedarf damit klarer auseinander, ohne den Bereich in einen Discovery-Feed zu kippen
@@ -306,6 +309,7 @@ Status: `planned`
 
 - [x] Navigation überprüfen: ob `Events`, `Vorschläge`, `Gruppen` die richtige Reihenfolge und Benennung haben
 - [x] unterscheiden zwischen `Entdecken`, `Reagieren`, `Verwalten`
+- [x] Bereichswechsel und öffentliche Produkt-Erklärung um klaren Nutzungsfokus pro Hauptansicht ergänzen, damit `Events` und `Gruppen` schneller unterscheidbar bleiben
 - [x] globale Bereichs-Navigation unter der Hauptnavigation ergänzen, damit Bereichswechsel zwischen `Jetzt`, `Vorschläge`, `Events` und `Gruppen` überall gleich gerahmt sind
 - [x] `Events` auch außerhalb leerer Zustände mit klaren Rückwegen nach `Jetzt`, `Vorschläge` und `Gruppen` in den Hauptfluss anbinden
 - [x] Copy und leere Zustände in `Vorschläge` klarer gegen `Jetzt` und `Events` trennen, inklusive direkter Rückwege bei leerer Handlungs-Queue

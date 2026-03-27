@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { EventImage } from "@/src/components/event-image";
 import { LandingDatingGate } from "@/src/components/landing-dating-gate";
 import { getAuthSession } from "@/src/lib/auth";
+import { APP_SHELL_SECTIONS } from "@/src/lib/app-shell-navigation";
 import { listPublicAlleEvents } from "@/src/lib/repository";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
@@ -39,6 +40,7 @@ export default async function HomePage({
           <ComparisonSection />
           <SolutionSection />
           <CoreConceptsSection />
+          <ProductFlowSection />
           <LandingDatingGate>
             <DatingSpotlightSection />
           </LandingDatingGate>
@@ -412,6 +414,52 @@ function CoreConceptsSection() {
           <li className="flex items-center gap-2"><span className="text-teal-400">✓</span> Volle Kontrolle über Sichtbarkeit.</li>
         </ul>
         <p className="mt-3 text-sm font-semibold text-teal-100">Du entscheidest, was sozial wird.</p>
+      </div>
+    </section>
+  );
+}
+
+function ProductFlowSection() {
+  return (
+    <section className="mt-14 sm:mt-16 lg:mt-20" aria-labelledby="produktfluss">
+      <div className="realite-reveal" style={{ animationDelay: "620ms" }}>
+        <p className="inline-flex rounded-full border border-amber-400/35 bg-amber-900/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-200">
+          Produktfluss statt Linkliste
+        </p>
+        <h2
+          id="produktfluss"
+          className="mt-3 text-2xl font-black text-white sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]"
+        >
+          Vier klare Wege statt einer chaotischen Eventliste.
+        </h2>
+        <p className="mt-3 max-w-3xl text-base leading-7 text-slate-200 sm:text-lg">
+          Nach dem Login trennt Realite bewusst zwischen entdecken, reagieren und verwalten. So bleibt sofort klar,
+          ob du gerade spontane Optionen prüfen, offene Empfehlungen beantworten oder deine Planung ordnen willst.
+        </p>
+      </div>
+      <div className="mt-6 grid gap-4 sm:mt-8 md:grid-cols-2 xl:grid-cols-4">
+        {APP_SHELL_SECTIONS.map((section, index) => (
+          <article
+            key={section.href}
+            className="realite-reveal rounded-2xl border border-white/[0.08] bg-white/[0.035] p-5 shadow-lg shadow-black/30 backdrop-blur-sm sm:rounded-3xl"
+            style={{ animationDelay: `${700 + index * 80}ms` }}
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-200/90">{section.intent}</p>
+            <h3 className="mt-3 text-lg font-bold text-white [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+              {section.label}
+            </h3>
+            <p className="mt-2 text-sm font-medium leading-6 text-white">{section.focus}</p>
+            <p className="mt-3 text-sm leading-6 text-slate-300">{section.whenToUse}</p>
+          </article>
+        ))}
+      </div>
+      <div
+        className="realite-reveal mt-6 rounded-2xl border border-white/[0.08] bg-black/20 p-5 text-sm leading-6 text-slate-200 sm:mt-8 sm:rounded-3xl sm:p-6"
+        style={{ animationDelay: "1060ms" }}
+      >
+        <span className="font-semibold text-white">Wichtig:</span> <strong>Events</strong> bleibt deine persönliche
+        Planungs- und Kalenderansicht. <strong>Gruppen</strong> bleibt der Ort für Kreise, Einladungen und
+        Sichtbarkeit. Realite trennt beides absichtlich, damit Verwaltung nicht wie Discovery aussieht.
       </div>
     </section>
   );

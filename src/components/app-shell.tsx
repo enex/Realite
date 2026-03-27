@@ -129,9 +129,10 @@ export function AppShell({ user, children }: AppShellProps) {
                 {" · "}
                 {currentSection.description}
               </p>
+              <p className="mt-1 text-sm font-medium text-slate-700">{currentSection.focus}</p>
             </div>
             <div className="hidden text-xs text-slate-500 md:block">
-              Realite trennt bewusst zwischen entdecken, reagieren und verwalten.
+              <span className="font-semibold text-slate-700">Hier jetzt:</span> {currentSection.whenToUse}
             </div>
           </div>
           <div className="mx-auto w-full max-w-6xl px-4 pb-3 sm:px-6 lg:px-8">
@@ -153,7 +154,8 @@ export function AppShell({ user, children }: AppShellProps) {
                   >
                     <span className={`block ${intentMeta.eyebrowClassName}`}>{item.intent}</span>
                     <span className="mt-1 block text-sm font-semibold">{item.label}</span>
-                    <span className="mt-1 block text-xs leading-5 text-slate-600">{item.description}</span>
+                    <span className="mt-1 block text-xs font-medium leading-5 text-slate-700">{item.focus}</span>
+                    <span className="mt-1 block text-xs leading-5 text-slate-500">{item.whenToUse}</span>
                   </a>
                 );
               })}
