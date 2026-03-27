@@ -9,6 +9,7 @@ import { EventImage } from "@/src/components/event-image";
 import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
 import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
 import { EVENT_JOIN_MODE_VALUES, getEventJoinModeMeta, type EventJoinMode } from "@/src/lib/event-join-modes";
+import { getEventPresenceAudienceRuleCopy } from "@/src/lib/event-presence";
 import { getEventOnSiteVisibilityMeta } from "@/src/lib/event-on-site";
 import { getEventPatternMeta } from "@/src/lib/activity-patterns";
 import {
@@ -334,6 +335,14 @@ export function Dashboard({
   });
 
   const visibleGroups = useMemo(() => data.groups.filter((group) => !group.isHidden), [data.groups]);
+  const eventFormHasDateTag = eventForm.tags.toLowerCase().includes("#date");
+  const eventFormSelectedGroupName =
+    visibleGroups.find((group) => group.id === eventForm.groupId)?.name ?? null;
+  const eventFormEffectiveVisibility = eventFormHasDateTag ? "smart_date" : eventForm.visibility;
+  const eventFormPresenceAudienceRule = getEventPresenceAudienceRuleCopy({
+    visibility: eventFormEffectiveVisibility,
+    groupName: eventFormSelectedGroupName,
+  });
   const acceptedEventIds = useMemo(
     () =>
       new Set(
@@ -1558,14 +1567,10 @@ export function Dashboard({
               <p className="text-xs text-slate-500">
                 Sichtbarkeit:{" "}
                 <span className="font-medium text-slate-700">
-                  {getEventVisibilityMeta(
-                    eventForm.tags.toLowerCase().includes("#date")
-                      ? "smart_date"
-                      : eventForm.visibility,
-                  ).label}
+                  {getEventVisibilityMeta(eventFormEffectiveVisibility).label}
                 </span>{" "}
                 ·{" "}
-                {eventForm.tags.toLowerCase().includes("#date")
+                {eventFormHasDateTag
                   ? getEventVisibilityMeta("smart_date").description
                   : getEventVisibilityMeta(eventForm.visibility).description}
               </p>
@@ -1574,7 +1579,7 @@ export function Dashboard({
               </p>
               <p className="text-xs text-slate-500">
                 Join-Modus: <span className="font-medium text-slate-700">{getEventJoinModeMeta(eventForm.joinMode).label}</span> ·{" "}
-                {eventForm.tags.toLowerCase().includes("#date")
+                {eventFormHasDateTag
                   ? "Bei #date nutzt Realite aus Privatsphäre-Gründen automatisch zuerst Interesse zeigen."
                   : getEventJoinModeMeta(eventForm.joinMode).description}
               </p>
@@ -1594,6 +1599,27 @@ export function Dashboard({
                   aus, und es wird nichts automatisch geteilt.
                 </span>
               </label>
+              <div className="rounded-xl border border-teal-200 bg-teal-50/70 px-4 py-3 text-sm text-slate-700">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-800">Sichtbarkeits-Vorschau</p>
+                <p className="mt-2">
+                  <span className="font-medium text-slate-900">Wer sieht das Event?</span>
+                  {" · "}
+                  {eventFormHasDateTag
+                    ? getEventVisibilityMeta("smart_date").description
+                    : getEventVisibilityMeta(eventForm.visibility).description}
+                </p>
+                <p className="mt-2">
+                  <span className="font-medium text-slate-900">Wer sieht später aktive Vor-Ort-Check-ins?</span>
+                  {" · "}
+                  {eventForm.allowOnSiteVisibility
+                    ? eventFormPresenceAudienceRule.description
+                    : "Niemand. Vor-Ort-Sichtbarkeit bleibt für dieses Event aus, bis du sie hier bewusst erlaubst."}
+                </p>
+                <p className="mt-2 text-xs text-slate-600">
+                  Realite veröffentlicht dabei nichts automatisch. Auch mit aktivierter Freigabe wird Vor-Ort-Sichtbarkeit erst
+                  später direkt auf der Eventseite bewusst und zeitlich begrenzt gesetzt.
+                </p>
+              </div>
               <div>
                 <label htmlFor="event-category" className="mb-1 block text-xs font-medium text-slate-600">
                   Kategorie (für Kalenderansicht)

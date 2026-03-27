@@ -33,6 +33,8 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- Event-Erstellformular zeigt vor dem Speichern jetzt eine klare Sichtbarkeits-Vorschau: getrennt für Event-Freigabe und spätere aktive Vor-Ort-Check-ins
+- Trust-/Privacy-Regeln für neue Sichtbarkeit damit auch direkt im Erstellflow geschärft statt erst nach dem Speichern auf der Eventseite
 - `Jetzt` zeigt oberhalb der drei Orientierungsfragen jetzt einen dominanten Block `Nächster Schritt`, der bewusst genau eine priorisierte Aktion empfiehlt: zuerst reagieren, dann bei Momentum mitmachen, sonst nächste relevante Aktivität öffnen oder selbst starten
 - Milestone 1 ist damit vollständig erfüllt und nicht mehr nur geplant: Dashboard priorisiert relevante Aktivitäten, Vorschläge und spontane Einstiege jetzt inklusive klarer erster Aktion
 - `Jetzt` priorisiert offene Aktivitäten im Feed jetzt explizit nach Momentum statt nur nach Zeit und bietet dafür die Fokus-Modi `Priorisiert`, `Mit Momentum` und `Meine Beteiligung`
@@ -290,6 +292,7 @@ Status: `planned`
 
 ### P2
 
+- [x] Event-Erstellformular zeigt vor dem Speichern klar, wer das Event und spätere aktive Vor-Ort-Check-ins je nach Sichtbarkeit sehen kann
 - [x] öffentliche Event-Links privacy-härten: in Gastansichten keine E-Mail-Adressen von Erstellern oder Kommentierenden zeigen
 - [x] explizite Join-Mechaniken modellieren: direkt beitreten, anfragen, Interesse zeigen
 - [x] Sichtbarkeitsstufen `Freunde` und `Freunde von Freunden` im Event-Modell, Formular und UI ergänzen

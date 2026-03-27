@@ -41,6 +41,13 @@ So bleibt klar, ob ein Event offen joinbar ist oder ob du erst Rückmeldung samm
 
 So bleibt klar: Erst legst du fest, wer das Event sehen darf. Danach entscheidest du separat, ob es für dieses Event überhaupt einen freiwilligen Vor-Ort-Layer geben darf.
 
+Direkt im Erstellformular zeigt Realite dazu jetzt eine **Sichtbarkeits-Vorschau**:
+
+- **Wer sieht das Event?** zeigt den aktuellen Freigabekreis
+- **Wer sieht später aktive Vor-Ort-Check-ins?** zeigt getrennt davon, ob aktive Check-ins später denselben Kreis erreichen oder komplett aus bleiben
+
+So musst du die Privacy-Auswirkung nicht erst nach dem Speichern auf der Eventseite prüfen.
+
 Mehr Details dazu findest du in **[Vor-Ort-Sichtbarkeit](/docs/vor-ort-sichtbarkeit)**.
 
 **Bilder:** Events können ein Vorschaubild anzeigen. Realite nutzt dafür:

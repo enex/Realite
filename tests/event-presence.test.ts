@@ -157,6 +157,16 @@ describe("event presence", () => {
       description:
         "Nur Mitglieder der Gruppe WG Freitag sehen in diesem Event-Kontext aktive Vor-Ort-Check-ins.",
     });
+
+    expect(
+      getEventPresenceAudienceRuleCopy({
+        visibility: "smart_date",
+      }),
+    ).toEqual({
+      title: "Wer sieht Vor-Ort-Status?",
+      description:
+        "Nur passende gegenseitige Matches sehen dieses Event im Dating-Kontext. Nur diese Personen sehen in diesem Event aktive Vor-Ort-Check-ins.",
+    });
   });
 
   test("treats expired presence windows as inactive", () => {
