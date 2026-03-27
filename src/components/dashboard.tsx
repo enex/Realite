@@ -11,6 +11,12 @@ import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
 import { EVENT_JOIN_MODE_VALUES, getEventJoinModeMeta, type EventJoinMode } from "@/src/lib/event-join-modes";
 import { getEventOnSiteVisibilityMeta } from "@/src/lib/event-on-site";
 import { getEventPatternMeta } from "@/src/lib/activity-patterns";
+import {
+  filterDashboardFeedEvents,
+  rankDashboardFeedEvents,
+  type DashboardFeedFocus,
+  type DashboardFeedEvent,
+} from "@/src/lib/dashboard-feed";
 import { DASHBOARD_QUERY_KEY, fetchDashboard as fetchDashboardApi } from "@/src/lib/dashboard-query";
 import {
   CATEGORY_COLORS,
@@ -309,6 +315,7 @@ export function Dashboard({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showEventForm, setShowEventForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [feedFocus, setFeedFocus] = useState<DashboardFeedFocus>("prioritized");
 
   const [eventForm, setEventForm] = useState({
     title: "",
@@ -406,9 +413,38 @@ export function Dashboard({
       }),
     [acceptedEventIds, data.acceptedByEventId, data.me.id, visibleEvents]
   );
+  const prioritizedNowFeedEvents = useMemo(
+    () =>
+      rankDashboardFeedEvents(
+        nowFeedEvents.map((event) => ({
+          id: event.id,
+          startsAt: event.startsAt,
+          createdBy: event.createdBy,
+          acceptedCount: data.acceptedByEventId?.[event.id]?.length ?? 0,
+          isAccepted: acceptedEventIds.has(event.id),
+          isOwnEvent: event.createdBy === data.me.id,
+        }) satisfies DashboardFeedEvent),
+      ),
+    [acceptedEventIds, data.acceptedByEventId, data.me.id, nowFeedEvents]
+  );
+  const focusedNowFeedEventIds = useMemo(
+    () => new Set(filterDashboardFeedEvents(prioritizedNowFeedEvents, feedFocus).map((event) => event.id)),
+    [feedFocus, prioritizedNowFeedEvents]
+  );
   const itemsByDay = useMemo(() => {
     const itemList: DayItem[] = [];
-    for (const event of nowFeedEvents) {
+    const nowFeedEventMap = new Map(nowFeedEvents.map((event) => [event.id, event] as const));
+
+    for (const prioritizedEvent of prioritizedNowFeedEvents) {
+      const event = nowFeedEventMap.get(prioritizedEvent.id);
+      if (!event) {
+        continue;
+      }
+
+      if (!focusedNowFeedEventIds.has(event.id)) {
+        continue;
+      }
+
       itemList.push({
         id: event.id,
         eventId: event.id,
@@ -418,7 +454,6 @@ export function Dashboard({
         event
       });
     }
-    itemList.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
     const byDay = new Map<string, { dayLabel: string; date: Date; items: DayItem[] }>();
     for (const item of itemList) {
       const d = new Date(item.startsAt);
@@ -434,7 +469,7 @@ export function Dashboard({
     return Array.from(byDay.entries())
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([dayKey, value]) => ({ dayKey, ...value }));
-  }, [nowFeedEvents]);
+  }, [focusedNowFeedEventIds, nowFeedEvents, prioritizedNowFeedEvents]);
 
   const filteredItemsByDay = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -647,6 +682,30 @@ export function Dashboard({
   const joinCtaLabel = nextJoinableEvent ? "Mitmachen" : "Events ansehen";
   const joinCtaHint = nextJoinableEvent ? "eine sichtbare Aktivität öffnen" : "sichtbare Aktivitäten öffnen";
   const suggestionCtaLabel = pendingCount > 0 ? "Reagieren" : "Vorschläge prüfen";
+  const focusOptions = useMemo(
+    () => [
+      {
+        id: "prioritized" as DashboardFeedFocus,
+        label: "Priorisiert",
+        description: "Offene Aktivitäten zuerst, nach Momentum sortiert",
+        count: prioritizedNowFeedEvents.length,
+      },
+      {
+        id: "momentum" as DashboardFeedFocus,
+        label: "Mit Momentum",
+        description: "Nur Aktivitäten, bei denen schon Zusagen sichtbar sind",
+        count: prioritizedNowFeedEvents.filter((event) => event.acceptedCount > 0).length,
+      },
+      {
+        id: "involved" as DashboardFeedFocus,
+        label: "Meine Beteiligung",
+        description: "Nur Aktivitäten, bei denen du schon beteiligt bist",
+        count: prioritizedNowFeedEvents.filter((event) => event.isAccepted || event.isOwnEvent).length,
+      },
+    ],
+    [prioritizedNowFeedEvents]
+  );
+  const activeFocusOption = focusOptions.find((option) => option.id === feedFocus) ?? focusOptions[0];
   const reactionPage = getPageIntentMeta("react");
   const managementPage = getPageIntentMeta("manage");
   const nowQuestionCards = [
@@ -897,6 +956,38 @@ export function Dashboard({
               </a>
             </div>
           </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {focusOptions.map((option) => {
+              const isActive = option.id === feedFocus;
+
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setFeedFocus(option.id)}
+                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold transition ${
+                    isActive
+                      ? "border-teal-300 bg-teal-50 text-teal-900"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                  }`}
+                  aria-pressed={isActive}
+                  title={option.description}
+                >
+                  <span>{option.label}</span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      isActive ? "bg-white text-teal-800 ring-1 ring-teal-200" : "bg-slate-100 text-slate-600"
+                    }`}
+                  >
+                    {option.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-2 text-sm text-slate-600">
+            Fokus: <span className="font-medium text-slate-900">{activeFocusOption.label}</span>. {activeFocusOption.description}.
+          </p>
           <div className={`mt-4 rounded-2xl p-4 md:p-5 ${getVisualPriorityMeta("reaction").sectionClassName}`}>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -1015,9 +1106,43 @@ export function Dashboard({
                 </>
               ) : (
                 <>
-                  <p className="text-sm font-medium text-slate-700">Noch nichts geplant?</p>
+                  <p className="text-sm font-medium text-slate-700">
+                    {feedFocus === "momentum"
+                      ? "Gerade noch kein sichtbares Momentum"
+                      : feedFocus === "involved"
+                        ? "Gerade keine direkte Beteiligung"
+                        : "Noch nichts geplant?"}
+                  </p>
                   <p className="mt-1 text-sm text-slate-500">
-                    Reagiere zuerst auf <a href="/suggestions" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">Vorschläge</a>, schau dann nach offenen Aktivitäten oder starte selbst etwas.
+                    {feedFocus === "momentum" ? (
+                      <>
+                        Sobald andere sichtbar zugesagt haben, tauchen Aktivitäten hier gesammelt auf. Bis dahin helfen dir{" "}
+                        <a href="/suggestions" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">
+                          Vorschläge
+                        </a>{" "}
+                        oder offene Aktivitäten im priorisierten Fokus.
+                      </>
+                    ) : feedFocus === "involved" ? (
+                      <>
+                        Hier erscheinen nur Aktivitäten, an denen du schon beteiligt bist. Wechsle zurück auf{" "}
+                        <button
+                          type="button"
+                          onClick={() => setFeedFocus("prioritized")}
+                          className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800"
+                        >
+                          Priorisiert
+                        </button>
+                        , um wieder offene Aktivitäten zum Reagieren und Mitmachen zu sehen.
+                      </>
+                    ) : (
+                      <>
+                        Reagiere zuerst auf{" "}
+                        <a href="/suggestions" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">
+                          Vorschläge
+                        </a>
+                        , schau dann nach offenen Aktivitäten oder starte selbst etwas.
+                      </>
+                    )}
                   </p>
                   <div className="mt-4 flex flex-wrap justify-center gap-2">
                     <a

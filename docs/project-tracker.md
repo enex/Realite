@@ -33,6 +33,7 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- `Jetzt` priorisiert offene Aktivitäten im Feed jetzt explizit nach Momentum statt nur nach Zeit und bietet dafür die Fokus-Modi `Priorisiert`, `Mit Momentum` und `Meine Beteiligung`
 - Zusagen- und Presence-Listen zeigen ohne gepflegten Namen jetzt bewusst neutrale Personenlabels statt E-Mail-Adressen offenzulegen
 - abgelaufene eigene Presence-Zeitfenster bleiben auf der Eventseite jetzt auch nach Reload/API-Roundtrip als Schutz-Zustand `Zeitfenster abgelaufen` erkennbar statt wie nie aktiviert zu wirken
 - öffentliche Event-Links geben in Gastansichten keine E-Mail-Adressen von Erstellern oder Kommentierenden mehr preis; Namen bleiben optional, sonst neutral
@@ -308,6 +309,7 @@ Status: `planned`
 - [x] Entscheidung: `/events` ist nicht die primäre Startansicht
 - [x] neue Startansicht für "Was geht gerade?" definieren
 - [x] die drei Kernfragen der Startansicht direkt in `Jetzt` als eigenen Orientierungsblock beantworten
+- [x] offenen Aktivitäten-Feed in `Jetzt` mit Fokus-Modi und Momentum-Priorisierung schärfen statt nur chronologisch zu sortieren
 - [x] prüfen, ob eigene Events zu viel Platz einnehmen
 - [x] Vorschläge mit Handlungsbedarf nach oben ziehen
 - [x] CTA-Reihenfolge in `Jetzt` sichtbar machen: reagieren, mitmachen, erstellen

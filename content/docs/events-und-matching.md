@@ -187,6 +187,12 @@ Event- und Vorschlagslisten in Realite verlinken direkt auf diese Seiten, damit 
 
 **Jetzt zuerst, Events als Verwaltung:** Nach dem Login landest du zuerst in **Jetzt**. Diese Ansicht bündelt spontane Optionen, offene Aktivitäten und schnelle Reaktionen. Die Navigation unter **Events** bleibt deine persönliche Kalender-/Sozialkalender-Ansicht.
 
+Der offene Feed in **Jetzt** hat dafür jetzt zusätzlich drei bewusste Fokus-Modi:
+
+- **Priorisiert:** offene Aktivitäten zuerst, mit sichtbarem Momentum vor reiner Chronologie
+- **Mit Momentum:** nur Aktivitäten, bei denen schon Zusagen sichtbar sind
+- **Meine Beteiligung:** nur Aktivitäten, bei denen du schon beteiligt bist oder selbst Gastgeber bist
+
 Dort trennt Realite jetzt klar zwischen drei Bereichen:
 
 - **Zugesagt & bestätigt:** Aktivitäten, bei denen du schon dabei bist oder für die bereits Zusagen vorliegen
