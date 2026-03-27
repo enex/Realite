@@ -28,6 +28,16 @@ Prüfe bitte:
 
 Wenn es weiter nicht klappt: einmal abmelden und neu anmelden.
 
+## Was bedeuten in den Einstellungen `Später verbinden` und `Kalenderzugriff prüfen`?
+
+Realite unterscheidet dort jetzt bewusst drei Zustände:
+
+- **Kalenderzugriff aktiv**: dein Kalender ist verbunden und nutzbar
+- **Später verbinden**: du nutzt Realite gerade ohne Kalender; Planung, Gruppen und Vorschläge laufen weiter manuell
+- **Kalenderzugriff prüfen**: Realite kennt zwar schon eine Kalender-Verbindung, kann sie aber gerade nicht mehr nutzen, etwa nach entzogener oder abgelaufener Berechtigung
+
+Im dritten Fall bleiben deine übrigen Flows nutzbar, aber Kalender-Vormerkungen und Verfügbarkeitsabgleich pausieren, bis du den Zugriff erneut freigibst.
+
 ## Warum erscheinen manche Termine doppelt?
 
 Das passiert oft, wenn mehrere sehr ähnliche Kalender gleichzeitig berücksichtigt werden.
@@ -169,7 +179,7 @@ Danach entfernt Realite:
 
 Diese Links findest du in von Realite angelegten Kalendereinträgen. Bei aus Google importierten Events ergänzt Realite den `/e/...`-Link in der Google-Beschreibung automatisch und ignoriert diesen Zusatztext beim erneuten Import in Realite.
 
-**Event-Link ohne Login:** Öffentliche Event-Links (`/e/...`) kannst du auch ohne Anmeldung öffnen. Zum Ansehen reicht der Link; für Zusagen, Absagen oder Kommentare musst du dich einmal mit Google anmelden. In dieser Gastansicht zeigt Realite keine E-Mail-Adressen von Erstellern oder Kommentierenden öffentlich an.
+**Event-Link ohne Login:** Öffentliche Event-Links (`/e/...`) kannst du auch ohne Anmeldung öffnen. Zum Ansehen reicht der Link; für Zusagen, Absagen oder Kommentare musst du dich einmal anmelden. Der aktuelle Login-Start läuft dabei über Google. In dieser Gastansicht zeigt Realite keine E-Mail-Adressen von Erstellern oder Kommentierenden öffentlich an.
 
 ## Warum sehe ich beim Teilen manchmal noch eine alte Link-Vorschau?
 

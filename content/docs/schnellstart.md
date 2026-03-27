@@ -1,8 +1,10 @@
 # Schnellstart
 
-## 1. Mit Google anmelden
+## 1. Anmelden
 
-Öffne Realite und klicke auf **„Jetzt kostenlos anmelden“** oder **„Kostenlos mit Google starten“**.
+Öffne Realite und klicke auf **„Jetzt kostenlos anmelden“** oder **„Kostenlos starten“**.
+
+Aktuell beginnt dieser Login-Pfad technisch noch über Google. Die Produktlogik in Realite bleibt davon getrennt: Events, Gruppen, Vorschläge und Sichtbarkeit sollen später auch weitere Login-Pfade gleichwertig tragen.
 
 Auf der Startseite siehst du direkt **„Was du bei Realite tun kannst“**: offene Events entdecken, eigenes Event anlegen, Gruppen nutzen & Leute einladen, Vorschläge bekommen. Alle Optionen führen dich nach dem Login in die passende Ansicht.
 
@@ -98,4 +100,7 @@ Starte dort das Matching und prüfe deine Vorschläge.
 - dass Vorschläge dann als Kalendereintrag mit Realite-Link erscheinen
 - welche Kalender für Verfügbarkeit und Vorschläge berücksichtigt werden, wenn du sie verbindest
 - ob Termine in deinem Kalender als **Beschäftigt** oder **Frei/Verfügbar** markiert sind (dies steuert, wann Realite Vorschläge macht)
+- welcher Kalenderstatus gerade gilt: **Kalenderzugriff aktiv**, **Später verbinden** oder **Kalenderzugriff prüfen**
 - ob dein Dating-Modus (`#date`) freigeschaltet ist und welche Kriterien für gegenseitige Matches gelten
+
+Wenn dort **Später verbinden** steht, ist noch kein Kalender verknüpft. Wenn dort **Kalenderzugriff prüfen** steht, kennt Realite zwar schon eine Verbindung, kann den Kalenderzugriff aber gerade nicht mehr nutzen, bis du ihn erneut freigibst.

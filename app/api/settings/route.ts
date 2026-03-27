@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { deriveCalendarConnectionState } from "@/src/lib/calendar-connection-state";
 import { ensureCalendarWatchesForUser, listReadableCalendars, listWritableCalendars } from "@/src/lib/google-calendar";
 import {
   getAutoInsertedSuggestionCountForUser,
@@ -89,6 +90,12 @@ export async function GET() {
   }
 
   const criteria = await getSuggestionLearningSummary(user.id);
+  const calendarConnectionState = deriveCalendarConnectionState({
+    hasConnection: Boolean(connection),
+    scope: connection?.scope ?? null,
+    writableCalendarCount: calendars.length,
+    readableCalendarCount: readableCalendars.length
+  });
 
   return NextResponse.json({
     settings,
@@ -98,7 +105,8 @@ export async function GET() {
     },
     calendars,
     readableCalendars,
-    calendarConnected: Boolean(connection)
+    calendarConnected: calendarConnectionState === "connected",
+    calendarConnectionState
   });
 }
 

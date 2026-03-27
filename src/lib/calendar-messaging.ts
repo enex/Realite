@@ -1,3 +1,5 @@
+import type { CalendarConnectionState } from "@/src/lib/calendar-connection-state";
+
 export function getEventsViewMessaging(calendarConnected: boolean) {
   if (calendarConnected) {
     return {
@@ -22,25 +24,42 @@ export function getEventsViewMessaging(calendarConnected: boolean) {
   };
 }
 
-export function getSuggestionSettingsMessaging(calendarConnected: boolean) {
-  if (calendarConnected) {
+export function getSuggestionSettingsMessaging(calendarConnectionState: CalendarConnectionState) {
+  if (calendarConnectionState === "connected") {
     return {
       lead: "Steuere hier Vorschlagslogik, manuelle Planung und deinen optionalen Kalenderkontext.",
       supportTitle: "Kalenderzugriff aktiv",
       supportBody:
         "Realite bleibt auch ohne Kalender nutzbar. Mit verbundenem Kalender kommen automatische Vormerkungen, Verfügbarkeitsabgleich und zusätzlicher Planungskontext dazu.",
       warning: null,
+      warningTone: null,
       autoInsertDescription: "Aktuell automatisch als Vorschlag in deinem Kalender vorgemerkt",
       disabledHint: null,
     };
   }
 
+  if (calendarConnectionState === "needs_reconnect") {
+    return {
+      lead: "Steuere hier Vorschlagslogik und manuelle Planung. Kalenderkontext wird wieder aktiv, sobald du den Zugriff erneuerst.",
+      supportTitle: "Kalenderzugriff prüfen",
+      supportBody:
+        "Realite sieht gerade keinen nutzbaren Kalenderzugriff. Das passiert typischerweise nach entzogener oder abgelaufener Berechtigung. Events, Gruppen und Vorschläge laufen bis dahin weiter ohne aktiven Kalenderkontext.",
+      warning:
+        "Kalenderoptionen sind gerade pausiert. Gib den Kalenderzugriff erneut frei, damit Vormerkungen und Verfügbarkeitsabgleich wieder laufen.",
+      warningTone: "rose",
+      autoInsertDescription: "Neue Kalender-Vormerkungen pausieren, bis dein Kalenderzugriff wieder aktiv ist",
+      disabledHint:
+        "Verbinde den Kalender erneut oder prüfe die freigegebene Berechtigung. Danach werden diese Kalender-Optionen wieder aktiv.",
+    };
+  }
+
   return {
     lead: "Steuere hier Vorschlagslogik und manuelle Planung. Kalenderkontext kannst du später optional ergänzen.",
-    supportTitle: "Ohne Kalender weiter nutzbar",
+    supportTitle: "Später verbinden",
     supportBody:
       "Events, Gruppen und Vorschläge funktionieren weiter auch ohne verbundenen Kalender. Sobald du später Kalenderzugriff freigibst, ergänzt Realite automatische Vormerkungen und Verfügbarkeitsabgleich.",
-    warning: "Aktuell ist kein Kalenderzugriff aktiv. Planung, Gruppen und Vorschläge laufen weiter manuell.",
+    warning: "Aktuell ist noch kein Kalender verbunden. Planung, Gruppen und Vorschläge laufen weiter manuell.",
+    warningTone: "amber",
     autoInsertDescription: "Automatische Kalender-Vormerkungen werden aktiv, sobald du später Kalenderzugriff freigibst",
     disabledHint:
       "Diese Kalender-Optionen werden aktiv, sobald du später einen Kalender verbindest. Deine übrigen Realite-Flows bleiben davon unberührt.",

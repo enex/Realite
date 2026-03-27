@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import type { CalendarConnectionState } from "@/src/lib/calendar-connection-state";
 import { getSuggestionSettingsMessaging } from "@/src/lib/calendar-messaging";
 
 type WritableCalendar = {
@@ -29,6 +30,7 @@ export type SuggestionSettingsForm = {
 
 type SuggestionSettingsCardProps = {
   calendarConnected: boolean;
+  calendarConnectionState: CalendarConnectionState;
   calendars: WritableCalendar[];
   readableCalendars: ReadableCalendar[];
   autoInsertedSuggestionCount: number;
@@ -41,6 +43,7 @@ type SuggestionSettingsCardProps = {
 
 export function SuggestionSettingsCard({
   calendarConnected,
+  calendarConnectionState,
   calendars,
   readableCalendars,
   autoInsertedSuggestionCount,
@@ -54,7 +57,11 @@ export function SuggestionSettingsCard({
     () => new Map(blockedPeople.map((entry) => [entry.id, entry.label])),
     [blockedPeople]
   );
-  const messaging = getSuggestionSettingsMessaging(calendarConnected);
+  const messaging = getSuggestionSettingsMessaging(calendarConnectionState);
+  const warningClassName =
+    messaging.warningTone === "rose"
+      ? "mt-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+      : "mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700";
 
   function toggleMatchingCalendar(calendarId: string) {
     const exists = form.matchingCalendarIds.includes(calendarId);
@@ -92,11 +99,7 @@ export function SuggestionSettingsCard({
         <p className="text-xs font-medium uppercase tracking-wide text-slate-600">{messaging.supportTitle}</p>
         <p className="mt-1 text-sm text-slate-700">{messaging.supportBody}</p>
       </div>
-      {!calendarConnected ? (
-        <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-          {messaging.warning}
-        </p>
-      ) : null}
+      {messaging.warning ? <p className={warningClassName}>{messaging.warning}</p> : null}
 
       <form onSubmit={onSubmit} className="mt-4 grid gap-3 sm:grid-cols-2">
         <label className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 sm:col-span-2">

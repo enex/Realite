@@ -9,6 +9,7 @@ import { DatingSettingsCard } from "@/src/components/settings/dating-settings-ca
 import { MpcSettingsCard } from "@/src/components/settings/mcp-settings-card";
 import { SuggestionLearningCard } from "@/src/components/settings/suggestion-learning-card";
 import { SuggestionSettingsCard, type SuggestionSettingsForm } from "@/src/components/settings/suggestion-settings-card";
+import type { CalendarConnectionState } from "@/src/lib/calendar-connection-state";
 import { getSuggestionSettingsMessaging } from "@/src/lib/calendar-messaging";
 import { getPageIntentMeta, pageLeadClassName, pageMetaClassName, pageShellClassName, pageTitleClassName } from "@/src/lib/page-hierarchy";
 import { useDatingSettings } from "@/src/components/settings/use-dating-settings";
@@ -40,6 +41,7 @@ type SettingsPayload = {
   calendars: WritableCalendar[];
   readableCalendars: ReadableCalendar[];
   calendarConnected: boolean;
+  calendarConnectionState: CalendarConnectionState;
   error?: string;
 };
 
@@ -66,7 +68,8 @@ const emptySettings: SettingsPayload = {
   },
   calendars: [],
   readableCalendars: [],
-  calendarConnected: false
+  calendarConnected: false,
+  calendarConnectionState: "not_connected"
 };
 
 const SETTINGS_QUERY_KEY = ["settings"] as const;
@@ -100,7 +103,7 @@ export function SettingsPage({
     queryFn: fetchSettings,
   });
   const data = queryData ?? emptySettings;
-  const settingsMessaging = getSuggestionSettingsMessaging(data.calendarConnected);
+  const settingsMessaging = getSuggestionSettingsMessaging(data.calendarConnectionState);
 
   const [busy, setBusy] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
@@ -220,6 +223,7 @@ export function SettingsPage({
 
         <SuggestionSettingsCard
           calendarConnected={data.calendarConnected}
+          calendarConnectionState={data.calendarConnectionState}
           calendars={data.calendars}
           readableCalendars={data.readableCalendars}
           autoInsertedSuggestionCount={data.suggestionStats.autoInsertedSuggestionCount}

@@ -33,8 +33,13 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 ## Aktueller Stand
 
-Zuletzt umgesetzt am 27.03.2026:
+Zuletzt umgesetzt am 28.03.2026:
 
+- Einstellungen unterscheiden Kalenderzustände jetzt explizit zwischen `Kalenderzugriff aktiv`, `Später verbinden` und `Kalenderzugriff prüfen`
+- pausierte Kalenderoptionen wirken dadurch nicht mehr wie ein normaler Zustand ohne Verbindung: fehlende oder entzogene Berechtigung wird separat erklärt
+- Schnellstart und FAQ dokumentieren die drei Kalenderzustände jetzt direkt im Nutzerfluss
+- Landingpage, öffentliche Event-CTAs und Nutzer-Doku benennen Anmeldung jetzt provider-neutraler und markieren Google nur noch dort explizit, wo der aktuelle technische Login-Start wirklich relevant ist
+- öffentliche Login-Hinweise erklären jetzt klarer: Produktfluss und Kernobjekte bleiben providerunabhängig, auch wenn der aktuelle Einstieg heute noch über Google läuft
 - `Events` rahmt die Verwaltungsansicht ohne verbundenen Kalender jetzt explizit als Planungs- und Zusagenfläche statt nur als Sozialkalender
 - Einstellungen erklären Kalenderzugriff jetzt klar als optionalen Verstärker: Vorschläge, Gruppen und manuelle Planung bleiben auch ohne Kalender nutzbar
 - Nutzer-Doku für Schnellstart und Events hält denselben no-calendar-Pfad jetzt ausdrücklich fest
@@ -387,9 +392,9 @@ Status: `planned`
 - [x] leere Zustände in `Jetzt` für kein Momentum, keine direkte Beteiligung, nur eigene Planung und komplett fehlende offene Aktivitäten explizit unterscheiden
 - [ ] Kernflows ohne Kalenderintegration definieren: Signup, erster Event, Gruppenbeitritt, Vorschläge, spätere Verbindung
 - [ ] UI-Copy systematisch prüfen, wo Kalender aktuell implizit als Default oder Voraussetzung klingt
-- [ ] leere Zustände und Settings-Zustände für "kein Kalender verbunden" vs. "Berechtigung verweigert" vs. "später verbinden" unterscheiden
+- [x] leere Zustände und Settings-Zustände für "kein Kalender verbunden" vs. "Berechtigung verweigert" vs. "später verbinden" unterscheiden
 - [ ] Login- und Onboarding-Flows für Google, Apple und E-Mail als gleichwertige Produktpfade definieren
-- [ ] prüfen, welche UI-Texte und Docs heute unnötig Google als einzigen Login- oder Kalenderpfad nennen
+- [x] prüfen, welche UI-Texte und Docs heute unnötig Google als einzigen Login- oder Kalenderpfad nennen
 
 ### P2
 
