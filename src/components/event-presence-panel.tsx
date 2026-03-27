@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import {
   getEventPresenceAudienceCopy,
+  getEventPresenceAudienceRuleCopy,
   getEventPresenceDisplayMeta,
   getEventPresenceDisplayState,
   formatEventPresenceTime,
@@ -15,6 +16,7 @@ import {
   type EventPresenceStatus,
 } from "@/src/lib/event-presence";
 import { getCardSurfaceMeta } from "@/src/lib/card-system";
+import { type EventVisibility } from "@/src/lib/event-visibility";
 
 type PresenceUser = {
   userId: string;
@@ -27,6 +29,8 @@ type EventPresencePanelProps = {
   eventId: string;
   startsAtIso: string;
   endsAtIso: string;
+  visibility: EventVisibility;
+  groupName?: string | null;
   initialStatus: EventPresenceStatus | null;
   initialVisibleUntilIso: string | null;
   initialCheckedInUsers: PresenceUser[];
@@ -65,6 +69,10 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
   const audienceCopy = getEventPresenceAudienceCopy({
     windowState: presenceWindow.state,
     checkedInCount: checkedInUsers.length,
+  });
+  const audienceRuleCopy = getEventPresenceAudienceRuleCopy({
+    visibility: props.visibility,
+    groupName: props.groupName,
   });
   const selectOptions =
     selectedVisibleUntilIso &&
@@ -191,6 +199,10 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
       </div>
 
       <div className={`mt-4 ${presenceCard.insetClassName}`}>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+          {audienceRuleCopy.title}
+        </p>
+        <p className="mt-2 text-sm text-slate-600">{audienceRuleCopy.description}</p>
         <p className="text-sm font-semibold text-slate-900">{audienceCopy.title}</p>
         {checkedInUsers.length > 0 ? (
           <ul className="mt-2 space-y-2 text-sm text-slate-700">

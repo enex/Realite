@@ -33,6 +33,7 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- Presence-Panel erklärt jetzt direkt je Event-Sichtbarkeit, wer aktive Vor-Ort-Check-ins sehen kann, statt nur allgemein auf "Event-Zugriff" zu verweisen
 - Presence-/Vor-Ort-Status auf der Eventseite um klarere Schutz-Zustände erweitert: vor dem Fenster, nach Eventende und nach abgelaufenem eigenem Zeitfenster wird jetzt explizit erklärt, warum niemand sichtbar ist
 - `Jetzt` beantwortet die drei Kernfragen jetzt direkt im UI: nächst relevante Aktivität, offene Reaktion und schnellster Mitmach-Einstieg stehen als eigener Orientierungsblock über dem Feed
 - Sichtbarkeitsmodell für V1.5/V2 explizit entschieden und zentralisiert: vier Kernstufen für normale Events, geschützte Sonderfälle separat
@@ -292,6 +293,7 @@ Status: `planned`
 - [x] Zeitfenster für Anwesenheit definieren und Vor-Ort-Sichtbarkeit an das Event koppeln
 - [x] Presence-Check-in auf begrenzte Sichtbarkeitsdauer pro Eventseite erweitern
 - [x] Presence-Zustände im UI klar erklären: noch geschlossen, eigenes Zeitfenster abgelaufen, Event beendet
+- [x] Presence-Panel erklärt je Event-Sichtbarkeit konkret, wer aktive Vor-Ort-Check-ins sehen kann
 
 ## Konkret bekannte UX-/View-Aufgaben
 

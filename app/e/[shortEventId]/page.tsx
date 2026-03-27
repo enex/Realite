@@ -180,6 +180,8 @@ export default async function EventShortcutPage({
           eventId={event.id}
           startsAtIso={event.startsAt.toISOString()}
           endsAtIso={event.endsAt.toISOString()}
+          visibility={event.visibility}
+          groupName={event.groupName}
           initialStatus={presenceSummary.currentUserStatus}
           initialVisibleUntilIso={
             presenceSummary.currentUserVisibleUntil?.toISOString() ?? null

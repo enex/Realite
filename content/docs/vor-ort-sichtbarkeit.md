@@ -26,6 +26,7 @@ Wenn die Option aktiv ist:
 - dieser Check-in ist erst **90 Minuten vor Eventbeginn** möglich und endet automatisch mit dem Event
 - wenn dein gewähltes Zeitfenster abläuft, zeigt Realite das auf der Eventseite ausdrücklich als **Zeitfenster abgelaufen** statt weiter so zu wirken, als wärst du noch sichtbar
 - andere Personen mit Zugriff auf dieses Event sehen nur innerhalb dieses Event-Kontexts, wer sich aktiv sichtbar gemacht hat
+- der Bereich **Vor Ort Status** erklärt zusätzlich konkret, wer diesen Vor-Ort-Status je nach Event-Sichtbarkeit sehen kann, zum Beispiel nur eine Gruppe, nur Kontakte oder ein öffentliches Event-Publikum
 - die normale Event-Sichtbarkeit bleibt unverändert
 
 Wenn die Option aus ist, zeigt Realite stattdessen **Vor Ort aus**.

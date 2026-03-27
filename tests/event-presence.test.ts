@@ -4,6 +4,7 @@ import {
   EVENT_PRESENCE_CHECK_IN_LEAD_MINUTES,
   getDefaultEventPresenceVisibleUntil,
   getEventPresenceAudienceCopy,
+  getEventPresenceAudienceRuleCopy,
   getEventPresenceDisplayMeta,
   getEventPresenceDisplayState,
   getEventPresenceStatusMeta,
@@ -132,6 +133,29 @@ describe("event presence", () => {
       title: "Vor-Ort-Sichtbarkeit ist beendet",
       description:
         "Mit dem Eventende verschwindet der Vor-Ort-Status automatisch. Danach bleibt niemand weiter sichtbar.",
+    });
+  });
+
+  test("explains which event audience can see active check-ins", () => {
+    expect(
+      getEventPresenceAudienceRuleCopy({
+        visibility: "friends",
+      }),
+    ).toEqual({
+      title: "Wer sieht Vor-Ort-Status?",
+      description:
+        "Nur deine registrierten Kontakte sehen dieses Event. Nur diese Personen sehen in diesem Event aktive Vor-Ort-Check-ins.",
+    });
+
+    expect(
+      getEventPresenceAudienceRuleCopy({
+        visibility: "group",
+        groupName: "WG Freitag",
+      }),
+    ).toEqual({
+      title: "Wer sieht Vor-Ort-Status?",
+      description:
+        "Nur Mitglieder der Gruppe WG Freitag sehen in diesem Event-Kontext aktive Vor-Ort-Check-ins.",
     });
   });
 

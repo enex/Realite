@@ -1,3 +1,5 @@
+import { getEventVisibilityMeta, type EventVisibility } from "@/src/lib/event-visibility";
+
 export const EVENT_PRESENCE_STATUS_VALUES = ["checked_in", "left"] as const;
 export const EVENT_PRESENCE_CHECK_IN_LEAD_MINUTES = 90;
 const EVENT_PRESENCE_PRESET_WINDOWS_MINUTES = [30, 60, 120] as const;
@@ -220,6 +222,27 @@ export function getEventPresenceAudienceCopy(input: {
         description:
           "Noch niemand hat sich für dieses Event aktiv vor Ort sichtbar gemacht.",
       };
+}
+
+export function getEventPresenceAudienceRuleCopy(input: {
+  visibility: EventVisibility;
+  groupName?: string | null;
+}) {
+  if (input.visibility === "group") {
+    return {
+      title: "Wer sieht Vor-Ort-Status?",
+      description: input.groupName
+        ? `Nur Mitglieder der Gruppe ${input.groupName} sehen in diesem Event-Kontext aktive Vor-Ort-Check-ins.`
+        : "Nur Mitglieder der ausgewählten Gruppe sehen in diesem Event-Kontext aktive Vor-Ort-Check-ins.",
+    };
+  }
+
+  const visibilityMeta = getEventVisibilityMeta(input.visibility);
+
+  return {
+    title: "Wer sieht Vor-Ort-Status?",
+    description: `${visibilityMeta.description} Nur diese Personen sehen in diesem Event aktive Vor-Ort-Check-ins.`,
+  };
 }
 
 export function isEventPresenceActive(
