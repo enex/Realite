@@ -2423,7 +2423,7 @@ export async function getEventPresenceSummary(input: {
   });
 }
 
-function buildEventPresenceSummary(input: {
+export function buildEventPresenceSummary(input: {
   rows: EventPresenceRow[];
   userId: string;
   startsAt: Date;
@@ -2452,14 +2452,8 @@ function buildEventPresenceSummary(input: {
     currentUserRow.visibleUntil.getTime() > referenceNow.getTime();
 
   return {
-    currentUserStatus: currentUserIsActive
-      ? "checked_in"
-      : currentUserRow?.status === "left"
-        ? "left"
-        : null,
-    currentUserVisibleUntil: currentUserIsActive
-      ? currentUserRow?.visibleUntil ?? null
-      : null,
+    currentUserStatus: currentUserRow?.status ?? null,
+    currentUserVisibleUntil: currentUserRow?.visibleUntil ?? null,
     checkedInUsers: input.rows
       .filter(
         (row) =>

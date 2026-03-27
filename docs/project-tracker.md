@@ -33,6 +33,7 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- abgelaufene eigene Presence-Zeitfenster bleiben auf der Eventseite jetzt auch nach Reload/API-Roundtrip als Schutz-Zustand `Zeitfenster abgelaufen` erkennbar statt wie nie aktiviert zu wirken
 - öffentliche Event-Links geben in Gastansichten keine E-Mail-Adressen von Erstellern oder Kommentierenden mehr preis; Namen bleiben optional, sonst neutral
 - Presence-Panel erklärt jetzt direkt je Event-Sichtbarkeit, wer aktive Vor-Ort-Check-ins sehen kann, statt nur allgemein auf "Event-Zugriff" zu verweisen
 - Presence-/Vor-Ort-Status auf der Eventseite um klarere Schutz-Zustände erweitert: vor dem Fenster, nach Eventende und nach abgelaufenem eigenem Zeitfenster wird jetzt explizit erklärt, warum niemand sichtbar ist
@@ -296,6 +297,7 @@ Status: `planned`
 - [x] Presence-Check-in auf begrenzte Sichtbarkeitsdauer pro Eventseite erweitern
 - [x] Presence-Zustände im UI klar erklären: noch geschlossen, eigenes Zeitfenster abgelaufen, Event beendet
 - [x] Presence-Panel erklärt je Event-Sichtbarkeit konkret, wer aktive Vor-Ort-Check-ins sehen kann
+- [x] abgelaufenes eigenes Presence-Zeitfenster nach Reload/API-Roundtrip weiter als Schutz-Zustand zeigen statt wie nie aktiviert
 
 ## Konkret bekannte UX-/View-Aufgaben
 
