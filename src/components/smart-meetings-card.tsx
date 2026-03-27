@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { getCardSurfaceMeta } from "@/src/lib/card-system";
+import { getPageIntentMeta } from "@/src/lib/page-hierarchy";
+import { getSmartMeetingOverview } from "@/src/lib/smart-meeting-overview";
 
 type Group = {
   id: string;
@@ -162,15 +164,20 @@ function SmartMeetingApprovalPanel({
 export function SmartMeetingsCard({
   groups,
   smartMeetings,
+  pendingSuggestionCount,
   onCreated,
   onError
 }: {
   groups: Group[];
   smartMeetings: SmartMeeting[];
+  pendingSuggestionCount: number;
   onCreated: () => Promise<void>;
   onError: (message: string) => void;
 }) {
   const smartMeetingCard = getCardSurfaceMeta("smart_meeting");
+  const discoverPage = getPageIntentMeta("discover");
+  const reactPage = getPageIntentMeta("react");
+  const managePage = getPageIntentMeta("manage");
   const [expanded, setExpanded] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const now = useMemo(() => new Date(), []);
@@ -191,6 +198,16 @@ export function SmartMeetingsCard({
   });
 
   const visibleGroups = useMemo(() => groups.filter((group) => !group.isHidden), [groups]);
+  const overview = useMemo(
+    () =>
+      getSmartMeetingOverview(
+        smartMeetings.map((meeting) => ({
+          status: meeting.status,
+          latestRunStatus: meeting.latestRun?.status ?? null
+        }))
+      ),
+    [smartMeetings]
+  );
 
   useEffect(() => {
     setApprovalSelections((current) => {
@@ -369,9 +386,7 @@ export function SmartMeetingsCard({
           <p className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${smartMeetingCard.eyebrowClassName}`}>Sekundärer Planungsbereich</p>
           <h2 className="text-lg font-semibold text-slate-900">Smart Treffen</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Realite sucht den besten Zeitpunkt in deinem Fenster. Der Bereich bleibt bewusst unterhalb des Sozialkalenders, damit
-            spontane Aktivitäten und offene Reaktionen in der Hauptnavigation Vorrang behalten. Kalendereinladungen gehen erst raus,
-            wenn du die Teilnehmerliste ausdrücklich freigibst.
+            {overview.description}
           </p>
         </div>
         <button
@@ -380,6 +395,75 @@ export function SmartMeetingsCard({
         >
           {expanded ? "Planer schließen" : "Smart Treffen planen"}
         </button>
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+        <div className={smartMeetingCard.insetClassName}>
+          <p className={managePage.eyebrowClassName}>Planen statt entdecken</p>
+          <h3 className="mt-2 text-base font-semibold text-slate-900">{overview.title}</h3>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Smart Treffen ordnet Gruppen-Orga, Suchfenster und Freigaben. Der spontane Einstieg bleibt bewusst in{" "}
+            <a href="/now" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">
+              Jetzt
+            </a>{" "}
+            und offene Reaktionen in{" "}
+            <a href="/suggestions" className="font-medium text-amber-700 underline underline-offset-2 hover:text-amber-800">
+              Vorschläge
+            </a>.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className={smartMeetingCard.statClassName}>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Freigabe</p>
+              <p className="mt-1 text-xl font-semibold text-slate-900">{overview.awaitingApprovalCount}</p>
+              <p className="mt-1 text-xs text-slate-500">Teilnehmerlisten warten auf deine bewusste Freigabe.</p>
+            </div>
+            <div className={smartMeetingCard.statClassName}>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Läuft</p>
+              <p className="mt-1 text-xl font-semibold text-slate-900">{overview.activeRunCount}</p>
+              <p className="mt-1 text-xs text-slate-500">Aktive Suchläufe oder offene Zusagefenster.</p>
+            </div>
+            <div className={smartMeetingCard.statClassName}>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Gesichert</p>
+              <p className="mt-1 text-xl font-semibold text-slate-900">{overview.securedCount}</p>
+              <p className="mt-1 text-xs text-slate-500">Gruppen-Termine mit erreichter Mindestzahl.</p>
+            </div>
+            <div className={smartMeetingCard.statClassName}>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Pausiert / beendet</p>
+              <p className="mt-1 text-xl font-semibold text-slate-900">{overview.pausedCount + overview.exhaustedCount}</p>
+              <p className="mt-1 text-xs text-slate-500">Läufe ohne aktiven Suchstand, aber mit sichtbarer Orga-Historie.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className={smartMeetingCard.mutedInsetClassName}>
+          <p className={managePage.eyebrowClassName}>Rückwege</p>
+          <h3 className="mt-2 text-base font-semibold text-slate-900">Von Planung zurück in den Aktivitätsfluss</h3>
+          <div className="mt-4 space-y-3">
+            <a href="/now" className="block rounded-xl border border-slate-200 bg-white p-4 transition hover:border-teal-300 hover:bg-teal-50">
+              <p className={discoverPage.eyebrowClassName}>Zurück zu Jetzt</p>
+              <p className="mt-2 text-base font-semibold text-slate-900">Spontane Aktivitäten prüfen</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Öffne wieder offene Aktivitäten, sichtbares Momentum und direkte Mitmach-Einstiege.
+              </p>
+            </a>
+            <a
+              href={pendingSuggestionCount > 0 ? "/suggestions" : "#events"}
+              className="block rounded-xl border border-slate-200 bg-white p-4 transition hover:border-amber-300 hover:bg-amber-50"
+            >
+              <p className={pendingSuggestionCount > 0 ? reactPage.eyebrowClassName : managePage.eyebrowClassName}>
+                {pendingSuggestionCount > 0 ? "Reagieren zuerst" : "Sozialkalender"}
+              </p>
+              <p className="mt-2 text-base font-semibold text-slate-900">
+                {pendingSuggestionCount > 0 ? "Offene Vorschläge klären" : "Bestätigte Planung im Blick behalten"}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {pendingSuggestionCount > 0
+                  ? `${pendingSuggestionCount} ${pendingSuggestionCount === 1 ? "Vorschlag wartet" : "Vorschläge warten"} auf deine Entscheidung, bevor mehr Gruppen-Orga nötig ist.`
+                  : "Springe zurück in den Sozialkalender mit Zusagen, eigener Planung und weiterem Kalenderkontext."}
+              </p>
+            </a>
+          </div>
+        </div>
       </div>
 
       {expanded ? (
@@ -538,7 +622,15 @@ export function SmartMeetingsCard({
       ) : null}
 
       <div className="mt-4 space-y-2">
-        {smartMeetings.length === 0 ? <p className="text-sm text-slate-500">Noch keine Smart Treffen vorhanden.</p> : null}
+        {smartMeetings.length === 0 ? (
+          <div className={smartMeetingCard.mutedInsetClassName}>
+            <p className="text-sm font-semibold text-slate-900">Noch keine Smart Treffen vorhanden.</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Lege hier nur dann einen Gruppenlauf an, wenn du aktiv einen gemeinsamen Termin finden willst. Für spontane offene
+              Aktivitäten bleibst du besser in <a href="/now" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">Jetzt</a>.
+            </p>
+          </div>
+        ) : null}
         {smartMeetings.map((meeting) => (
           <article key={meeting.id} className={smartMeetingCard.itemClassName}>
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">

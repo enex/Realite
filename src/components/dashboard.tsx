@@ -1139,7 +1139,7 @@ export function Dashboard({
                 <p className={sectionBodyClassName}>
                   {smartMeetingsNeedingApproval > 0
                     ? `${smartMeetingsNeedingApproval} ${smartMeetingsNeedingApproval === 1 ? "Lauf braucht" : "Läufe brauchen"} gerade deine Freigabe für Kalendereinladungen.`
-                    : "Hier planst du Gruppen-Termine, ohne die Hauptnavigation stärker aufzublähen."}
+                    : "Hier planst du Gruppen-Termine bewusst getrennt von Discovery, offenen Reaktionen und spontanen Mitmach-Einstiegen."}
                 </p>
               </div>
             </div>
@@ -1963,6 +1963,7 @@ export function Dashboard({
           <SmartMeetingsCard
             groups={visibleGroups}
             smartMeetings={data.smartMeetings}
+            pendingSuggestionCount={pendingCount}
             onCreated={() => queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY })}
             onError={(message) => setSubmitError(message)}
           />

@@ -70,6 +70,12 @@ Auf Eventkarten und auf der Eventseite siehst du den gewählten Mitmach-Modus eb
 
 Mit **Smart Treffen** sucht Realite automatisch den besten Zeitpunkt für eine Gruppe. Kalendereinladungen werden aber **nicht automatisch verschickt**: Vor jedem Versand prüfst du die vorgeschlagene Teilnehmerliste ausdrücklich selbst und gibst sie frei, passt sie an oder lehnst den Versand komplett ab. Bestehende Smart Treffen verwaltest du in **Events** im Bereich **Smart Treffen** über **Bearbeiten** (Titel, Gruppe, Suchfenster, Mindestzusagen usw.).
 
+Der Bereich in **Events** zeigt dabei bewusst:
+
+- einen kompakten Statusüberblick für **Freigabe**, **laufende Suche**, **gesicherte Termine** sowie **pausierte oder beendete Läufe**
+- klare Rückwege nach **Jetzt** und **Vorschläge**, damit Gruppen-Orga nicht wie ein spontaner Discovery-Feed wirkt
+- weiterhin den Hinweis, dass Kalendereinladungen erst nach deiner ausdrücklichen Freigabe verschickt werden
+
 Du legst fest:
 
 - welche Gruppe eingeladen wird

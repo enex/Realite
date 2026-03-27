@@ -33,6 +33,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- Smart-Treffen-Bereich in `Events` jetzt deutlicher als Orga- und Planungsfläche statt Discovery-Feed markiert
+- eigener Statusüberblick für Freigaben, laufende Suchen, gesicherte Termine sowie pausierte/beendete Läufe ergänzt
+- direkte Rückwege aus dem Smart-Treffen-Bereich nach `Jetzt`, `Vorschläge` oder zurück in den Sozialkalender eingebaut, damit Verwaltungswege nicht hängen bleiben
 - leere Zustände in `Vorschläge` führen jetzt klarer aus der reinen Reaktionsansicht heraus: mit getrennten nächsten Wegen nach `Jetzt`, `Events` oder direkt zu neuem Matching statt bloßer Statusmeldung
 - die Abgrenzung zwischen entdecken, reagieren und verwalten wird damit nicht nur in der Navigation, sondern auch im leeren Zustand der Vorschlags-Queue konkret
 - `Jetzt` erklärt leere Zustände jetzt gezielter statt generisch: getrennt nach fehlendem Momentum, fehlender eigener Beteiligung, nur eigener Planung in `Events` oder komplett ohne offene Aktivitäten
@@ -331,6 +334,7 @@ Status: `planned`
 - [x] bevorzugte Zielposition entscheiden: sekundärer Verwaltungsbereich unter `Events`
 - [x] Smart Meetings als Planungs-/Orga-Tool positionieren statt als primären Discovery-Feed
 - [x] prüfen, wie viel Prominenz Smart Meetings in der Navigation wirklich brauchen
+- [x] Smart-Treffen-Bereich in `Events` mit Statusüberblick und klaren Rückwegen nach `Jetzt`/`Vorschläge` als Orga-Fläche schärfen
 
 ### Suggestions
 
