@@ -66,10 +66,10 @@ Wichtig: Kontakte sind nicht dafür da, aggressiv Einladungen zu verschicken ode
 
 Realite arbeitet mit abgestufter Sichtbarkeit:
 
-- privat
+- nur Gruppe
 - Freunde
 - Freunde von Freunden
-- offen
+- öffentlich
 
 So kannst du selbst steuern, wie weit sich eine Aktivität in deinem sozialen Umfeld öffnet.
 

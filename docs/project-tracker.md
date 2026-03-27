@@ -33,6 +33,8 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- `Jetzt` erklärt leere Zustände jetzt gezielter statt generisch: getrennt nach fehlendem Momentum, fehlender eigener Beteiligung, nur eigener Planung in `Events` oder komplett ohne offene Aktivitäten
+- die vorgeschlagene nächste Aktion im leeren Zustand passt jetzt zum tatsächlichen Kontext: Fokus zurücksetzen, Planung öffnen, Gruppen öffnen oder direkt selbst etwas starten
 - Eventkarten in `Jetzt` und `Events` sowie die Eventseite zeigen bei aktivierter Vor-Ort-Sichtbarkeit jetzt direkt, wer aktive Check-ins sehen kann
 - der Freigabekreis für Presence ist damit nicht mehr nur im separaten Vor-Ort-Panel versteckt, sondern schon vor dem eigentlichen Check-in-Flow sichtbar
 - Presence-Panel bleibt nach Ablauf des eigenen Vor-Ort-Zeitfensters jetzt auch im Hauptstatus konsistent: kein irreführendes `Du bist vor Ort sichtbar`, sondern klarer Schutz-Zustand mit bewusstem Neustart
@@ -120,22 +122,20 @@ Bereits vorhanden:
 Noch nicht sauber ausgearbeitet:
 
 - explizite Join-Mechaniken jenseits von Vorschlagsentscheidung
-- feinere Sichtbarkeit wie optional vor Ort sichtbar weiter ausarbeiten
-- weitergehende Presence-Regeln über das Event-Zeitfenster hinaus
-- konsistente, starke UI-Sprache über alle Hauptviews
+- Presence über den aktuellen eventgebundenen Opt-in hinaus auf Folgefälle und Relevanzlogik weiter ausarbeiten
+- die visuelle Sprache nach der aktuellen Hierarchie-Arbeit weiter vereinheitlichen und mutiger machen
+- offene Vertrauens- und Safety-Regeln für spätere Socializing-/Festival-Kontexte konkretisieren
 
 ## Wichtigste Produktprobleme aktuell
 
 ### 1. Einstieg / Dashboard ist nicht klar genug
 
-Aktuell landet man zuerst in einer Struktur, in der eigene Events stark präsent sind, während wichtige Dinge wie:
+Die Kernhierarchie von `Jetzt` ist inzwischen deutlich klarer, aber zwei Punkte brauchen weiter Produktpflege:
 
-- relevante Vorschläge
-- spontane Möglichkeiten
-- Smart Activities / Smart Meetings
-- wer gerade dabei ist
+- Ranking und Copy für Grenzfälle mit wenig Aktivität oder wenig Momentum
+- klare leere Zustände, wenn weder Vorschläge noch joinbare Aktivitäten vorliegen
 
-nicht stark genug priorisiert sichtbar sind.
+Der Kernnutzen ist damit sichtbar, aber noch nicht in allen Tagesformen gleich stark.
 
 Das schwächt den Kernnutzen:
 
@@ -145,14 +145,13 @@ Das schwächt den Kernnutzen:
 
 ### 2. Informationsarchitektur ist noch nicht produktzentriert genug
 
-Die Hauptviews wirken eher wie einzelne Funktionsseiten als wie ein klar priorisierter Produktfluss.
+Die Hauptviews folgen jetzt weitgehend dem Produktfluss, aber die Sekundärnavigation und einige Begriffe sind noch nicht vollständig aus einem Guss.
 
-Es fehlt eine eindeutige Hierarchie:
+Weiter sauber zu schärfen:
 
-1. jetzt relevante Aktivitäten
-2. Vorschläge, die Reaktion brauchen
-3. spontane Optionen / offene Join-Möglichkeiten
-4. eigene Planung und Verwaltung
+1. wie Planungs- und Verwaltungswege in Randfällen zurück nach `Jetzt` führen
+2. wie Smart Meetings sprachlich dauerhaft als Orga-Tool und nicht als Discovery-Fläche erkennbar bleiben
+3. wie `Events`, `Vorschläge` und `Gruppen` in Copy und Empty States noch klarer getrennt werden
 
 ### Produktentscheidung festgehalten
 
@@ -161,13 +160,9 @@ Bereits entschieden:
 - `Events` soll nicht die primäre "Was geht gerade?"-Ansicht sein
 - `Events` ist eher die persönliche Kalender-/Sozialkalender-Ansicht
 - `Smart Meetings` sollen aus der zentralen Hauptansicht ausgegliedert werden
-- `Smart Meetings` passen eher in einen sekundären Bereich, z. B. Profil oder einen separaten Management-Kontext
+- `Smart Meetings` passen in einen sekundären Planungs-/Verwaltungsbereich unter `Events`
 
-Offen bleibt nur noch, ob `Smart Meetings` dauerhaft:
-
-- im Profil liegen
-- einen eigenen Top-Level-Bereich bekommen
-- oder in einem sekundären Planungs-/Verwaltungsbereich landen
+Offen bleibt nur noch, wie stark dieser Bereich künftig im UI hervorgehoben werden soll, ohne den Discovery-Flow wieder zu verwässern.
 
 ### 3. Visuelle Sprache ist noch nicht stark genug
 
@@ -183,13 +178,12 @@ Verbesserungsfelder:
 
 ### 4. Presence-/Vor-Ort-Layer fehlt noch
 
-Der zusätzliche Socializing-Use-Case auf Stadtfesten, Festivals oder ähnlichen Events ist noch nicht als echte Produktfunktion modelliert.
+Der eventgebundene Presence-Layer ist als Produktfunktion inzwischen vorhanden, aber der weitergehende Socializing-Use-Case ist noch nicht vollständig ausmodelliert.
 
 Es fehlt bisher:
 
-- opt-in Sichtbarkeit vor Ort
-- feinere Presence-Regeln innerhalb des vorhandenen Zeitfensters
-- Relevanzlogik für bekannte, interessante oder gegenseitig relevante Personen
+- Relevanzlogik für bekannte, interessante oder gegenseitig relevante Personen jenseits des aktuellen Event-Kontexts
+- Schutzregeln für spätere Festival-/On-Site-Szenarien, die über das heutige Check-in-Modell hinausgehen
 - sichere low-pressure Interaktion
 
 ## Priorisierungslogik
@@ -292,6 +286,7 @@ Status: `planned`
 - [x] visuelle Patterns für offene Aktivitäten, persönliche Vorschläge, eigene Aktivitäten und Smart Meetings definieren
 - [x] Event-/Suggestion-Karten auf Scannability und Priorisierung überarbeiten
 - [x] leere Zustände produktnäher formulieren
+- [x] leere Zustände in `Jetzt` für kein Momentum, keine direkte Beteiligung, nur eigene Planung und komplett fehlende offene Aktivitäten explizit unterscheiden
 
 ### P2
 

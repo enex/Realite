@@ -837,6 +837,68 @@ export function Dashboard({
     [prioritizedNowFeedEvents]
   );
   const activeFocusOption = focusOptions.find((option) => option.id === feedFocus) ?? focusOptions[0];
+  const nowFeedEmptyState = useMemo(() => {
+    if (searchQuery.trim()) {
+      return null;
+    }
+
+    if (feedFocus === "momentum") {
+      const hasJoinableActivity = prioritizedNowFeedEvents.some((event) => !event.isAccepted && !event.isOwnEvent);
+
+      return {
+        title: hasJoinableActivity ? "Gerade noch kein sichtbares Momentum" : "Gerade nichts Offenes mit Momentum",
+        description: hasJoinableActivity
+          ? "Sobald andere sichtbar zugesagt haben, tauchen Aktivitäten hier gesammelt auf. Bis dahin hilft dir der priorisierte Fokus für den ersten Mitmach-Schritt."
+          : "Aktuell gibt es weder sichtbare Zusagen noch offene Mitmach-Aktivitäten. Reagiere auf Vorschläge, prüfe später noch einmal oder starte selbst etwas.",
+        primaryLabel: "Priorisiert öffnen",
+        primaryHref: "/now",
+        primaryAction: () => setFeedFocus("prioritized"),
+        secondaryLabel: suggestionCtaLabel,
+        secondaryHref: "/suggestions",
+      };
+    }
+
+    if (feedFocus === "involved") {
+      return {
+        title: "Gerade keine direkte Beteiligung",
+        description:
+          "Hier erscheinen nur Aktivitäten, an denen du schon beteiligt bist oder die du selbst gestartet hast. Wechsle zurück auf Priorisiert, um wieder offene Aktivitäten zum Reagieren und Mitmachen zu sehen.",
+        primaryLabel: "Priorisiert öffnen",
+        primaryHref: "/now",
+        primaryAction: () => setFeedFocus("prioritized"),
+        secondaryLabel: "Events ansehen",
+        secondaryHref: "/events#events",
+      };
+    }
+
+    if (hiddenOwnPlanningEvents.length > 0) {
+      return {
+        title: "Gerade nichts Offenes zum Mitmachen",
+        description:
+          "In Jetzt wartet aktuell weder ein offener Vorschlag noch eine joinbare Aktivität. Deine eigene Planung liegt bewusst separat in Events, damit der Hauptfeed nicht nach Verwaltung aussieht.",
+        primaryLabel: "Planung öffnen",
+        primaryHref: "/events#events",
+        secondaryLabel: "Aktivität erstellen",
+        secondaryAction: () => setShowEventForm(true),
+      };
+    }
+
+    return {
+      title: "Gerade noch keine offenen Aktivitäten",
+      description:
+        "Im Moment gibt es weder offene Vorschläge noch sichtbare joinbare Aktivitäten. Wenn du etwas starten willst, ist ein eigenes Event jetzt der kürzeste Weg; sonst helfen Gruppen und Vorschläge, sobald neuer Kontext da ist.",
+      primaryLabel: "Aktivität erstellen",
+      primaryAction: () => setShowEventForm(true),
+      secondaryLabel: "Gruppen öffnen",
+      secondaryHref: "/groups",
+    };
+  }, [
+    feedFocus,
+    hiddenOwnPlanningEvents.length,
+    prioritizedNowFeedEvents,
+    searchQuery,
+    suggestionCtaLabel,
+  ]);
   const reactionPage = getPageIntentMeta("react");
   const managementPage = getPageIntentMeta("manage");
   const nowQuestionCards = [
@@ -1270,67 +1332,51 @@ export function Dashboard({
                     Suche zurücksetzen
                   </button>
                 </>
+              ) : nowFeedEmptyState ? (
+                <>
+                  <p className="text-sm font-medium text-slate-700">{nowFeedEmptyState.title}</p>
+                  <p className="mt-1 text-sm text-slate-500">{nowFeedEmptyState.description}</p>
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                    {nowFeedEmptyState.primaryHref ? (
+                      <a
+                        href={nowFeedEmptyState.primaryHref}
+                        onClick={nowFeedEmptyState.primaryAction}
+                        className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
+                      >
+                        {nowFeedEmptyState.primaryLabel}
+                      </a>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={nowFeedEmptyState.primaryAction}
+                        className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
+                      >
+                        {nowFeedEmptyState.primaryLabel}
+                      </button>
+                    )}
+                    {nowFeedEmptyState.secondaryHref ? (
+                      <a
+                        href={nowFeedEmptyState.secondaryHref}
+                        onClick={nowFeedEmptyState.secondaryAction}
+                        className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                      >
+                        {nowFeedEmptyState.secondaryLabel}
+                      </a>
+                    ) : nowFeedEmptyState.secondaryAction ? (
+                      <button
+                        type="button"
+                        onClick={nowFeedEmptyState.secondaryAction}
+                        className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                      >
+                        {nowFeedEmptyState.secondaryLabel}
+                      </button>
+                    ) : null}
+                  </div>
+                </>
               ) : (
                 <>
-                  <p className="text-sm font-medium text-slate-700">
-                    {feedFocus === "momentum"
-                      ? "Gerade noch kein sichtbares Momentum"
-                      : feedFocus === "involved"
-                        ? "Gerade keine direkte Beteiligung"
-                        : "Noch nichts geplant?"}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {feedFocus === "momentum" ? (
-                      <>
-                        Sobald andere sichtbar zugesagt haben, tauchen Aktivitäten hier gesammelt auf. Bis dahin helfen dir{" "}
-                        <a href="/suggestions" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">
-                          Vorschläge
-                        </a>{" "}
-                        oder offene Aktivitäten im priorisierten Fokus.
-                      </>
-                    ) : feedFocus === "involved" ? (
-                      <>
-                        Hier erscheinen nur Aktivitäten, an denen du schon beteiligt bist. Wechsle zurück auf{" "}
-                        <button
-                          type="button"
-                          onClick={() => setFeedFocus("prioritized")}
-                          className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800"
-                        >
-                          Priorisiert
-                        </button>
-                        , um wieder offene Aktivitäten zum Reagieren und Mitmachen zu sehen.
-                      </>
-                    ) : (
-                      <>
-                        Reagiere zuerst auf{" "}
-                        <a href="/suggestions" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">
-                          Vorschläge
-                        </a>
-                        , schau dann nach offenen Aktivitäten oder starte selbst etwas.
-                      </>
-                    )}
-                  </p>
-                  <div className="mt-4 flex flex-wrap justify-center gap-2">
-                    <a
-                      href="/suggestions"
-                      className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
-                    >
-                      {suggestionCtaLabel}
-                    </a>
-                    <a
-                      href={joinCtaHref}
-                      className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                    >
-                      {joinCtaLabel}
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => setShowEventForm(true)}
-                      className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                    >
-                      Erstellen
-                    </button>
-                  </div>
+                  <p className="text-sm font-medium text-slate-700">Gerade keine sichtbaren Aktivitäten</p>
+                  <p className="mt-1 text-sm text-slate-500">Sobald wieder offene Aktivitäten auftauchen, erscheinen sie hier.</p>
                 </>
               )}
             </div>

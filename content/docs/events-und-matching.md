@@ -206,6 +206,13 @@ Der offene Feed in **Jetzt** hat dafür jetzt zusätzlich drei bewusste Fokus-Mo
 - **Mit Momentum:** nur Aktivitäten, bei denen schon Zusagen sichtbar sind
 - **Meine Beteiligung:** nur Aktivitäten, bei denen du schon beteiligt bist oder selbst Gastgeber bist
 
+Wenn in einem dieser Modi gerade nichts auftaucht, bleibt Realite nicht mehr bei einem generischen Leerzustand:
+
+- bei **Mit Momentum** wird klar getrennt, ob es nur noch keine sichtbaren Zusagen gibt oder ob insgesamt nichts Offenes zum Mitmachen da ist
+- bei **Meine Beteiligung** wirst du direkt zurück zum priorisierten offenen Feed geführt
+- wenn in **Jetzt** nur noch deine eigene Planung existiert, verweist der leere Zustand bewusst nach **Events**
+- wenn weder Vorschläge noch joinbare Aktivitäten sichtbar sind, schlägt Realite direkt das Erstellen einer neuen Aktivität oder den Weg über **Gruppen** vor
+
 Dort trennt Realite jetzt klar zwischen drei Bereichen:
 
 - **Zugesagt & bestätigt:** Aktivitäten, bei denen du schon dabei bist oder für die bereits Zusagen vorliegen
