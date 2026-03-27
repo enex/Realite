@@ -36,6 +36,7 @@ Zuletzt umgesetzt am 27.03.2026:
 - `Gruppen` rahmt die Verwaltungsansicht jetzt deutlicher als aktives Steuerpult statt als flache Liste: mit Fokusblock für den nächsten Pflege-Schritt, priorisiertem Überblick zu sichtbaren, synchronisierten und öffentlichen Kreisen sowie klarem Pflegebedarf
 - sichtbare Gruppen werden in `Gruppen` jetzt nach Verwaltungsrelevanz sortiert: erst aktiv genutzte Kreise, dann gepflegte Kontaktkreise, dann Gruppen mit offenem Pflegebedarf
 - die visuelle Sprache von `Gruppen` zieht Verwaltung, Sync-Zustand und Pflegebedarf damit klarer auseinander, ohne den Bereich in einen Discovery-Feed zu kippen
+- Gruppenkarten in `Gruppen` tragen jetzt explizite Verwaltungszustände wie `Aktiv genutzt`, `Kreis steht` oder `Wartet auf Pflege`, damit Pflegebedarf nicht mehr zwischen allen Kreisen gleich aussieht
 - unter der Hauptnavigation gibt es jetzt auf allen Kernseiten einen kompakten Bereichswechsel, der `Jetzt`, `Vorschläge`, `Events` und `Gruppen` produktlogisch zusammenbindet statt nur als isolierte Tabs zu zeigen
 - die Sekundärnavigation hält damit Begriffe und Rollen über alle Hauptbereiche konsistenter: `Entdecken`, `Reagieren` und `Verwalten` bleiben nicht nur Seitenlabels, sondern auch direkte Wechsel- und Orientierungslogik
 - Smart-Treffen-Bereich in `Events` rahmt Gruppenkoordination jetzt noch expliziter als Orga-Flow statt als zweite Eventliste
@@ -371,6 +372,7 @@ Status: `planned`
 - [x] Gruppen stärker als Relevanz- und Sichtbarkeitslayer erklären
 - [x] Gruppenverwaltung vom eigentlichen Aktivitätsfluss entkoppeln
 - [x] `Gruppen` als priorisierte Verwaltungsfläche schärfen: Fokus auf nächsten Pflege-Schritt, Sync-Überblick und Statuslabels statt flacher Gleichgewichtung aller Kreise
+- [x] sichtbare Gruppenkarten nach Verwaltungszustand priorisieren und mit klaren Pflege-Labels markieren
 
 ### Design System / UI
 

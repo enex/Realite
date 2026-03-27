@@ -39,7 +39,10 @@ Die Hauptansichten **Jetzt** und **Vorschläge** bleiben dabei bewusst getrennt:
 Die Gruppenansicht ist deshalb bewusst als Verwaltungsbereich aufgebaut:
 
 - oben mit klaren Rückwegen in **Jetzt**, **Vorschläge** und **Events**
-- darunter mit Erklärungen zu Relevanz, Sichtbarkeit und Pflege
+- darunter mit einem kompakten Überblick zu sichtbaren Kreisen, Sync-Status, öffentlicher Reichweite und offenem Pflegebedarf
+- direkt daneben mit einem Fokusblock, der den nächsten sinnvollen Verwaltungsschritt benennt
+- sichtbare Gruppen danach bewusst nach Verwaltungsrelevanz sortiert: erst aktiv genutzte Kreise, dann gepflegte Kontaktkreise, dann Gruppen mit offenem Pflegebedarf
+- auf jeder Gruppenkarte mit einem klaren Statuslabel wie **Aktiv genutzt**, **Kreis steht** oder **Wartet auf Pflege**
 - erst danach mit den eigentlichen Gruppenlisten
 
 So bleiben spontane Entscheidungen und soziale Verwaltung getrennt.

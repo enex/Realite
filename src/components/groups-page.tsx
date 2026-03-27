@@ -10,6 +10,11 @@ import { UserAvatar } from "@/src/components/user-avatar";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
 import {
+  getGroupManagementFocus,
+  getGroupManagementState,
+  sortGroupsForManagement
+} from "@/src/lib/group-management";
+import {
   getPageIntentMeta,
   pageLeadClassName,
   pageMetaClassName,
@@ -139,6 +144,7 @@ export function GroupsPage({
   const discoveryPage = getPageIntentMeta("discover");
   const visibleGroups = useMemo(() => data.groups.filter((group) => !group.isHidden), [data.groups]);
   const hiddenGroups = useMemo(() => data.groups.filter((group) => group.isHidden), [data.groups]);
+  const orderedVisibleGroups = useMemo(() => sortGroupsForManagement(visibleGroups), [visibleGroups]);
   const managedContactCount = useMemo(
     () => visibleGroups.reduce((total, group) => total + group.contactCount, 0),
     [visibleGroups]
@@ -146,6 +152,22 @@ export function GroupsPage({
   const managedEventCount = useMemo(
     () => visibleGroups.reduce((total, group) => total + group.eventCount, 0),
     [visibleGroups]
+  );
+  const syncedVisibleGroupCount = useMemo(
+    () => visibleGroups.filter((group) => group.syncProvider === "google_contacts" && group.syncEnabled).length,
+    [visibleGroups]
+  );
+  const publicVisibleGroupCount = useMemo(
+    () => visibleGroups.filter((group) => group.visibility === "public").length,
+    [visibleGroups]
+  );
+  const setupGroupCount = useMemo(
+    () => visibleGroups.filter((group) => group.eventCount === 0 && group.contactCount === 0).length,
+    [visibleGroups]
+  );
+  const managementFocus = useMemo(
+    () => getGroupManagementFocus(visibleGroups, hiddenGroups.length),
+    [hiddenGroups.length, visibleGroups]
   );
 
   const profileName = data.me.name ?? userName;
@@ -258,27 +280,49 @@ export function GroupsPage({
         </header>
 
         <section className="mt-6 rounded-2xl border border-teal-200 bg-teal-50 p-6 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
-              <p className={discoveryPage.eyebrowClassName}>Aktivitätsfluss getrennt halten</p>
-              <h2 className={sectionTitleClassName}>Hier pflegst du Kreise. Entscheidungen triffst du anderswo.</h2>
-              <p className={sectionBodyClassName}>
-                Gruppen helfen Realite bei Relevanz, Sichtbarkeit und Einladungen. Sie sollen aber nicht mit spontanen Aktivitäten,
-                offenen Reaktionen oder deinem Sozialkalender konkurrieren.
-              </p>
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)]">
+            <div className="space-y-4">
+              <div className="max-w-2xl">
+                <p className={discoveryPage.eyebrowClassName}>Aktivitätsfluss getrennt halten</p>
+                <h2 className={sectionTitleClassName}>Hier pflegst du Kreise. Entscheidungen triffst du anderswo.</h2>
+                <p className={sectionBodyClassName}>
+                  Gruppen helfen Realite bei Relevanz, Sichtbarkeit und Einladungen. Sie sollen aber nicht mit spontanen Aktivitäten,
+                  offenen Reaktionen oder deinem Sozialkalender konkurrieren.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-teal-200 bg-white/80 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">Nächster Verwaltungsfokus</p>
+                <h3 className="mt-2 text-base font-semibold text-slate-900">{managementFocus.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{managementFocus.description}</p>
+              </div>
             </div>
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="rounded-xl bg-white px-3 py-3">
-                <p className={statLabelClassName}>Gruppen</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-white/80 bg-white px-4 py-4 shadow-sm">
+                <p className={statLabelClassName}>Aktiv sichtbar</p>
                 <p className={statValueClassName}>{visibleGroups.length}</p>
+                <p className="mt-2 text-xs text-slate-500">Kreise, die gerade als Relevanz- und Sichtbarkeitslayer aktiv sind.</p>
               </div>
-              <div className="rounded-xl bg-white px-3 py-3">
+              <div className="rounded-2xl border border-white/80 bg-white px-4 py-4 shadow-sm">
+                <p className={statLabelClassName}>Synchronisiert</p>
+                <p className={statValueClassName}>{syncedVisibleGroupCount}</p>
+                <p className="mt-2 text-xs text-slate-500">Google-Kontaktkreise, die gerade sichtbar mitlaufen.</p>
+              </div>
+              <div className="rounded-2xl border border-white/80 bg-white px-4 py-4 shadow-sm">
+                <p className={statLabelClassName}>Öffentlich</p>
+                <p className={statValueClassName}>{publicVisibleGroupCount}</p>
+                <p className="mt-2 text-xs text-slate-500">Bewusst geöffnete Kreise statt rein privater Abstimmung.</p>
+              </div>
+              <div className="rounded-2xl border border-white/80 bg-white px-4 py-4 shadow-sm">
+                <p className={statLabelClassName}>Wartet auf Pflege</p>
+                <p className={statValueClassName}>{setupGroupCount}</p>
+                <p className="mt-2 text-xs text-slate-500">Gruppen ohne Kontakte und ohne bisherige Aktivitäten.</p>
+              </div>
+              <div className="rounded-2xl border border-white/80 bg-white px-4 py-4 shadow-sm sm:col-span-2">
                 <p className={statLabelClassName}>Kontakte</p>
-                <p className={statValueClassName}>{managedContactCount}</p>
-              </div>
-              <div className="rounded-xl bg-white px-3 py-3">
-                <p className={statLabelClassName}>Events</p>
-                <p className={statValueClassName}>{managedEventCount}</p>
+                <div className="mt-1 flex items-end justify-between gap-4">
+                  <p className="text-xl font-semibold text-slate-900">{managedContactCount}</p>
+                  <p className="text-sm font-medium text-slate-600">{managedEventCount} Events im Gruppenkontext</p>
+                </div>
               </div>
             </div>
           </div>
@@ -462,62 +506,85 @@ export function GroupsPage({
         ) : null}
 
         <section id="gruppen" className="mt-8 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Sichtbare Gruppen</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Klick auf eine Gruppe für Mitglieder, Invite und Bearbeitung. Die Karten zeigen dir, welche Kreise du aktuell als
-            Relevanz- und Sichtbarkeitslayer pflegst.
-          </p>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Sichtbare Gruppen</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Klick auf eine Gruppe für Mitglieder, Invite und Bearbeitung. Die Karten zeigen dir, welche Kreise du aktuell als
+                Relevanz- und Sichtbarkeitslayer pflegst.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs font-medium text-slate-600">
+              <span className="rounded-full bg-slate-100 px-3 py-1">{publicVisibleGroupCount} öffentlich</span>
+              <span className="rounded-full bg-slate-100 px-3 py-1">{visibleGroups.length - publicVisibleGroupCount} privat</span>
+              <span className="rounded-full bg-slate-100 px-3 py-1">{setupGroupCount} wartet auf Pflege</span>
+            </div>
+          </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {visibleGroups.length === 0 ? <p className="text-sm text-slate-500">Noch keine sichtbaren Gruppen angelegt.</p> : null}
-            {visibleGroups.map((group) => (
-              <Link
-                key={group.id}
-                href={`/groups/${group.id}`}
-                className="rounded-lg border border-slate-200 p-4 transition hover:border-teal-300 hover:bg-teal-50"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="truncate text-base font-semibold text-slate-900">{group.name}</p>
-                  {group.syncProvider === "google_contacts" && group.syncEnabled ? (
-                    <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-semibold text-teal-700">Sync</span>
-                  ) : null}
-                </div>
-                <p className="mt-1 text-xs text-slate-500">{group.visibility === "public" ? "öffentlich" : "privat"}</p>
-                <div className="mt-3 flex items-center justify-between gap-2">
-                  <div className="flex -space-x-2">
-                    {group.contacts.slice(0, 3).map((contact) => (
-                      <UserAvatar
-                        key={`${group.id}:${contact.email}`}
-                        name={contact.name}
-                        email={contact.email}
-                        image={contact.image}
-                        size="xs"
-                        className="ring-2 ring-white"
-                      />
-                    ))}
-                    {group.contactCount > 3 ? (
-                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] font-semibold text-slate-600 ring-2 ring-white">
-                        +{group.contactCount - 3}
+            {orderedVisibleGroups.map((group) => {
+              const state = getGroupManagementState(group);
+
+              return (
+                <Link
+                  key={group.id}
+                  href={`/groups/${group.id}`}
+                  className={`rounded-2xl border p-4 transition ${state.cardClassName}`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="truncate text-base font-semibold text-slate-900">{group.name}</p>
+                      <p className="mt-1 text-xs text-slate-500">{group.visibility === "public" ? "öffentlich" : "privat"}</p>
+                    </div>
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${state.badgeClassName}`}>
+                        {state.label}
                       </span>
-                    ) : null}
+                      {group.syncProvider === "google_contacts" && group.syncEnabled ? (
+                        <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-teal-700 ring-1 ring-teal-200">
+                          Sync
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
-                  <p className="text-[11px] text-slate-500">{group.contactCount} Kontakte</p>
-                </div>
-                <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                  <div className="rounded-md bg-slate-100 px-2 py-2">
-                    <p className="text-[11px] text-slate-500">Events</p>
-                    <p className="text-sm font-semibold text-slate-800">{group.eventCount}</p>
+                  <p className="mt-3 text-sm text-slate-600">{state.description}</p>
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <div className="flex -space-x-2">
+                      {group.contacts.slice(0, 3).map((contact) => (
+                        <UserAvatar
+                          key={`${group.id}:${contact.email}`}
+                          name={contact.name}
+                          email={contact.email}
+                          image={contact.image}
+                          size="xs"
+                          className="ring-2 ring-white"
+                        />
+                      ))}
+                      {group.contactCount > 3 ? (
+                        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] font-semibold text-slate-600 ring-2 ring-white">
+                          +{group.contactCount - 3}
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="text-[11px] text-slate-500">{group.contactCount} Kontakte</p>
                   </div>
-                  <div className="rounded-md bg-slate-100 px-2 py-2">
-                    <p className="text-[11px] text-slate-500">Kontakte</p>
-                    <p className="text-sm font-semibold text-slate-800">{group.contactCount}</p>
+                  <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-md border border-white/80 bg-white/90 px-2 py-2">
+                      <p className="text-[11px] text-slate-500">Events</p>
+                      <p className="text-sm font-semibold text-slate-800">{group.eventCount}</p>
+                    </div>
+                    <div className="rounded-md border border-white/80 bg-white/90 px-2 py-2">
+                      <p className="text-[11px] text-slate-500">Kontakte</p>
+                      <p className="text-sm font-semibold text-slate-800">{group.contactCount}</p>
+                    </div>
+                    <div className="rounded-md border border-white/80 bg-white/90 px-2 py-2">
+                      <p className="text-[11px] text-slate-500">Tags</p>
+                      <p className="text-sm font-semibold text-slate-800">{group.hashtags.length}</p>
+                    </div>
                   </div>
-                  <div className="rounded-md bg-slate-100 px-2 py-2">
-                    <p className="text-[11px] text-slate-500">Tags</p>
-                    <p className="text-sm font-semibold text-slate-800">{group.hashtags.length}</p>
-                  </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </section>
 
