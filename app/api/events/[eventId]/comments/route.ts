@@ -7,6 +7,7 @@ import {
   getVisibleEventForUserById,
   listEventComments
 } from "@/src/lib/repository";
+import { getPersonDisplayLabel } from "@/src/lib/person-display";
 import { requireAppUser } from "@/src/lib/session";
 
 const MAX_BODY_LENGTH = 2000;
@@ -38,7 +39,17 @@ export async function GET(
   }
 
   const comments = await listEventComments(eventId);
-  return NextResponse.json({ comments });
+  const responseComments = user
+    ? comments
+    : comments.map((comment) => ({
+        ...comment,
+        authorName: getPersonDisplayLabel({
+          name: comment.authorName,
+          allowEmail: false,
+        }),
+        authorEmail: "",
+      }));
+  return NextResponse.json({ comments: responseComments });
 }
 
 export async function POST(

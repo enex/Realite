@@ -4,6 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
 
+import { getPersonDisplayLabel } from "@/src/lib/person-display";
+
 type Comment = {
   id: string;
   eventId: string;
@@ -114,7 +116,10 @@ export function EventComments({
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="font-medium text-slate-800">
-                    {c.authorName ?? c.authorEmail}
+                    {getPersonDisplayLabel({
+                      name: c.authorName,
+                      email: c.authorEmail,
+                    })}
                   </span>
                   <time
                     dateTime={c.createdAt}

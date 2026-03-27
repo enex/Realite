@@ -170,14 +170,14 @@ Kalenderlinks in Realite:
 - Neue Vorschläge im Kalender enthalten einen Link `realite.app/s/<shortUUID>` zur direkten Zu-/Absage.
 - Angenommene Vorschläge bzw. bestätigte Einträge enthalten einen Link `realite.app/e/<shortUUID>` zur Eventseite.
 
-**Event-Links ohne Anmeldung:** Öffentliche Events (`/e/...`) lassen sich auch ohne Konto öffnen. Du siehst Titel, Termin, Ort, Beschreibung und Ersteller sowie vorhandene Kommentare. Sobald du zusagen, absagen oder kommentieren willst, wirst du zur Anmeldung mit Google weitergeleitet und danach zurück auf die Eventseite gebracht.
+**Event-Links ohne Anmeldung:** Öffentliche Events (`/e/...`) lassen sich auch ohne Konto öffnen. Du siehst Titel, Termin, Ort, Beschreibung, den Erstellernamen (falls hinterlegt) sowie vorhandene Kommentare. E-Mail-Adressen von Erstellern und Kommentierenden werden auf dieser Gastansicht nicht öffentlich angezeigt. Sobald du zusagen, absagen oder kommentieren willst, wirst du zur Anmeldung mit Google weitergeleitet und danach zurück auf die Eventseite gebracht.
 - Titel von Realite-Kalendereinträgen enthalten keine Hashtags:  
   Bei neuen Vorschlägen `[Realite Vorschlag] <Titel ohne Hashtags>`, bei Zusage `[Realite] <Titel ohne Hashtags>`.
 - In der Beschreibung wird dafür eine einzelne Zeile ergänzt: `Realite-Link (automatisch ergänzt): <Link>`.
 - Wenn ein Event aus Google Kalender in Realite importiert wird, ergänzt Realite im Google-Termin automatisch einen `realite.app/e/...`-Link in der Beschreibung.
 - Dieser automatisch ergänzte Realite-Text wird beim Import in Realite ignoriert, damit Beschreibungen in Realite sauber bleiben.
 
-Wenn du einen `/e/...`-Link in Messenger-Apps oder Social-Feeds teilst, zeigt Realite jetzt ein Open-Graph-Vorschaubild mit Eventtitel, Termin und Ersteller.
+Wenn du einen `/e/...`-Link in Messenger-Apps oder Social-Feeds teilst, zeigt Realite jetzt ein Open-Graph-Vorschaubild mit Eventtitel, Termin und Erstellername.
 
 Wichtig: Aus Datenschutzgründen werden darin nur Daten für öffentliche Events angezeigt. Für nicht-öffentliche Events erscheint eine neutrale Vorschau ohne Eventdetails.
 
@@ -256,6 +256,8 @@ Auf der Eventseite (`/e/<shortUUID>`) siehst du jetzt alle wichtigen Event-Infor
 - Beschreibung
 - Ersteller
 
+Bei öffentlichen Event-Links ohne Login zeigt Realite beim Ersteller nur den Namen, falls einer gepflegt ist. Sonst bleibt die Ansicht bewusst neutral; E-Mail-Adressen werden dort nicht offengelegt.
+
 Die Beschreibung unterstützt einfache HTML-Formatierung. Erlaubt sind z. B.:
 
 - Absätze und Zeilenumbrüche (`<p>`, `<br>`)
@@ -290,6 +292,8 @@ Wenn ein Ort hinterlegt ist, zeigt Realite zusätzlich:
 - sich zu Ort, Ablauf oder sonstigen Details austauschen
 
 Die Kommentare sind an das Event gebunden: Ob du die Eventseite (`/e/...`) oder die Vorschlagsseite (`/s/...`) öffnest – es ist dieselbe Unterhaltung.
+
+Auf öffentlichen Gastansichten zeigt Realite Kommentare ebenfalls ohne öffentliche E-Mail-Adressen. Wenn bei einem Kommentar kein Name hinterlegt ist, erscheint stattdessen nur ein neutraler Hinweis auf ein Realite-Mitglied.
 
 ## Profilseiten von Nutzern
 

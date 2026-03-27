@@ -1,4 +1,8 @@
 import { type PublicEventSharePreview, getPublicEventSharePreviewById } from "@/src/lib/repository";
+import {
+  PUBLIC_MEMBER_FALLBACK_LABEL,
+  getPersonDisplayLabel,
+} from "@/src/lib/person-display";
 import { enlargeUUID } from "@/src/lib/utils/short-uuid";
 
 export const EVENT_SHARE_FALLBACK_TITLE = "Event auf Realite";
@@ -37,8 +41,12 @@ export function formatEventShareSchedule(event: Pick<PublicEventSharePreview, "s
 }
 
 export function formatEventShareOwner(preview: PublicEventSharePreview) {
-  const creator = preview.createdByName?.trim() || preview.createdByEmail?.trim();
-  if (!creator) {
+  const creator = getPersonDisplayLabel({
+    name: preview.createdByName,
+    email: preview.createdByEmail,
+    allowEmail: false,
+  });
+  if (creator === PUBLIC_MEMBER_FALLBACK_LABEL) {
     return "Von einem Realite Mitglied";
   }
 

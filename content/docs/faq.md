@@ -169,7 +169,7 @@ Danach entfernt Realite:
 
 Diese Links findest du in von Realite angelegten Kalendereinträgen. Bei aus Google importierten Events ergänzt Realite den `/e/...`-Link in der Google-Beschreibung automatisch und ignoriert diesen Zusatztext beim erneuten Import in Realite.
 
-**Event-Link ohne Login:** Öffentliche Event-Links (`/e/...`) kannst du auch ohne Anmeldung öffnen. Zum Ansehen reicht der Link; für Zusagen, Absagen oder Kommentare musst du dich einmal mit Google anmelden.
+**Event-Link ohne Login:** Öffentliche Event-Links (`/e/...`) kannst du auch ohne Anmeldung öffnen. Zum Ansehen reicht der Link; für Zusagen, Absagen oder Kommentare musst du dich einmal mit Google anmelden. In dieser Gastansicht zeigt Realite keine E-Mail-Adressen von Erstellern oder Kommentierenden öffentlich an.
 
 ## Warum sehe ich beim Teilen manchmal noch eine alte Link-Vorschau?
 

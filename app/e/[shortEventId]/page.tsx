@@ -96,6 +96,7 @@ export default async function EventShortcutPage({
           linkPreviewImageUrl={preview.linkPreviewImageUrl}
           createdByName={preview.createdByName}
           createdByEmail={preview.createdByEmail}
+          showCreatorEmail={false}
         />
 
         <section className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-5">
@@ -162,6 +163,7 @@ export default async function EventShortcutPage({
         createdByName={event.createdByName}
         createdByEmail={event.createdByEmail}
         isOwnedByCurrentUser={event.createdBy === user.id}
+        showCreatorEmail
         sourceProvider={event.sourceProvider}
         sourceEventId={event.sourceEventId}
       />

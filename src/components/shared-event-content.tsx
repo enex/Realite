@@ -5,6 +5,7 @@ import { EventLocationDetails } from "@/src/components/event-location-details";
 import { getEventJoinModeMeta, type EventJoinMode } from "@/src/lib/event-join-modes";
 import { getEventOnSiteVisibilityMeta } from "@/src/lib/event-on-site";
 import { getEventVisibilityMeta, type EventVisibility } from "@/src/lib/event-visibility";
+import { getPersonDisplayLabel } from "@/src/lib/person-display";
 import {
   detailBodyClassName,
   detailLabelClassName,
@@ -35,6 +36,7 @@ type SharedEventContentProps = {
   createdByName?: string | null;
   createdByEmail?: string | null;
   isOwnedByCurrentUser?: boolean;
+  showCreatorEmail?: boolean;
   sourceProvider?: string | null;
   sourceEventId?: string | null;
 };
@@ -88,6 +90,15 @@ export function SharedEventContent(props: SharedEventContentProps) {
   const originalEditUrl = props.isOwnedByCurrentUser
     ? buildGoogleCalendarEditUrl(props.sourceProvider, props.sourceEventId)
     : null;
+  const creatorLabel = getPersonDisplayLabel({
+    name: props.createdByName,
+    email: props.createdByEmail,
+    allowEmail: props.showCreatorEmail ?? true,
+  });
+  const showCreatorLine = Boolean(props.createdByName?.trim() || props.createdByEmail?.trim());
+  const showCreatorEmailSuffix =
+    (props.showCreatorEmail ?? true) &&
+    Boolean(props.createdByName?.trim() && props.createdByEmail?.trim());
 
   return (
     <section className={`${surfaceShellClassName} p-5 sm:p-6`}>
@@ -134,17 +145,17 @@ export function SharedEventContent(props: SharedEventContentProps) {
         {endsAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
       </p>
 
-      {props.createdByEmail ? (
+      {showCreatorLine ? (
         <p className={pageMetaClassName}>
           Von{" "}
           {props.createdByShortId ? (
             <a href={`/u/${props.createdByShortId}`} className="font-medium text-teal-700 hover:text-teal-800">
-              {props.createdByName ?? props.createdByEmail}
+              {creatorLabel}
             </a>
           ) : (
-            props.createdByName ?? props.createdByEmail
+            creatorLabel
           )}
-          {props.createdByName ? ` (${props.createdByEmail})` : ""}
+          {showCreatorEmailSuffix ? ` (${props.createdByEmail})` : ""}
         </p>
       ) : null}
 
