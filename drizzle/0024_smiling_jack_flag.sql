@@ -76,6 +76,8 @@ CREATE TABLE "oauth_refresh_token" (
 	"scopes" text[] NOT NULL
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX "oauth_client_client_id_index" ON "oauth_client" USING btree ("client_id");--> statement-breakpoint
+CREATE INDEX "oauth_client_user_id_index" ON "oauth_client" USING btree ("user_id");--> statement-breakpoint
 ALTER TABLE "oauth_access_token" ADD CONSTRAINT "oauth_access_token_client_id_oauth_client_client_id_fk" FOREIGN KEY ("client_id") REFERENCES "public"."oauth_client"("client_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "oauth_access_token" ADD CONSTRAINT "oauth_access_token_session_id_auth_session_id_fk" FOREIGN KEY ("session_id") REFERENCES "public"."auth_session"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "oauth_access_token" ADD CONSTRAINT "oauth_access_token_user_id_auth_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."auth_user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -90,8 +92,6 @@ CREATE UNIQUE INDEX "oauth_access_token_token_index" ON "oauth_access_token" USI
 CREATE INDEX "oauth_access_token_client_id_index" ON "oauth_access_token" USING btree ("client_id");--> statement-breakpoint
 CREATE INDEX "oauth_access_token_session_id_index" ON "oauth_access_token" USING btree ("session_id");--> statement-breakpoint
 CREATE INDEX "oauth_access_token_user_id_index" ON "oauth_access_token" USING btree ("user_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "oauth_client_client_id_index" ON "oauth_client" USING btree ("client_id");--> statement-breakpoint
-CREATE INDEX "oauth_client_user_id_index" ON "oauth_client" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "oauth_consent_client_id_index" ON "oauth_consent" USING btree ("client_id");--> statement-breakpoint
 CREATE INDEX "oauth_consent_user_id_index" ON "oauth_consent" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "oauth_refresh_token_client_id_index" ON "oauth_refresh_token" USING btree ("client_id");--> statement-breakpoint
