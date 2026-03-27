@@ -20,6 +20,8 @@ Der Kern bleibt:
 - explizite Freigabe
 - Privatsphäre zuerst
 - Kontakte für Relevanz, nicht für Spam
+- Kalender ist optionaler Kontext, keine Zugangsvoraussetzung
+- Login- und Kalenderanbieter sind austauschbare Integrationen, nicht das Produktmodell
 
 Ein sekundärer Use Case ist On-Site-Socializing auf bestehenden Veranstaltungen:
 
@@ -152,6 +154,8 @@ Noch nicht sauber ausgearbeitet:
 - Presence über den aktuellen eventgebundenen Opt-in hinaus auf Folgefälle und Relevanzlogik weiter ausarbeiten
 - die visuelle Sprache nach der aktuellen Hierarchie-Arbeit weiter vereinheitlichen und mutiger machen
 - offene Vertrauens- und Safety-Regeln für spätere Socializing-/Festival-Kontexte konkretisieren
+- gleichwertige Kernflows für Nutzer ohne Kalenderintegration definieren: E-Mail-Login, später verbinden, Berechtigung bewusst verweigern
+- providerunabhängige Login- und Kalenderarchitektur sauber ausarbeiten: Google, Apple, Microsoft als Adapter statt Sonderfälle
 
 ## Wichtigste Produktprobleme aktuell
 
@@ -211,6 +215,36 @@ Es fehlt bisher:
 - Relevanzlogik für bekannte, interessante oder gegenseitig relevante Personen jenseits des aktuellen Event-Kontexts
 - Schutzregeln für spätere Festival-/On-Site-Szenarien, die über das heutige Check-in-Modell hinausgehen
 - sichere low-pressure Interaktion
+
+### 5. Produktfluss ist noch zu stark an Kalenderintegration gekoppelt
+
+Realite erklärt Kalender heute schon als optionalen Kontext, aber der Produktplan behandelt den Pfad ohne Kalender noch nicht als erstklassigen Standardfall.
+
+Das betrifft mindestens zwei Nutzergruppen:
+
+- Nutzer, die sich nur per E-Mail anmelden
+- Nutzer, die Google-Login nutzen, aber keine Kalenderberechtigung geben oder sie später entziehen
+
+Für diese Nutzer muss der Kernnutzen trotzdem funktionieren:
+
+- Aktivitäten erstellen und teilen
+- Einladungen, Sichtbarkeit und Join-Mechaniken nutzen
+- Gruppen und Kontakte pflegen
+- Vorschläge und Reaktionsflows mit geringerem Kontext weiter nutzen
+
+Kalenderintegration bleibt ein Verstärker für Verfügbarkeit, Timing und Vorschläge, aber nicht die Voraussetzung dafür, dass Realite sinnvoll benutzbar ist.
+
+### 6. Provider-Strategie ist noch zu stark auf Google verengt
+
+Realite nutzt heute an mehreren Stellen implizit Google als Standard für Anmeldung, Kalender und teils auch Folgeflüsse.
+
+Produktseitig muss klarer werden:
+
+- Login darf nicht nur als Google-Pfad gedacht sein, sondern auch Apple Login und E-Mail sauber tragen
+- Kalenderkontext darf nicht nur aus Google Kalender kommen, sondern perspektivisch auch aus Apple Kalender und Microsoft Kalender
+- Business-Logik, Copy und UI-Flows dürfen nicht so modelliert sein, dass ein einzelner Provider das Produkt definiert
+
+Google kann weiterhin zuerst oder am tiefsten integriert sein, aber der Plan muss explizit offen halten, wie Apple und Microsoft anschließen, ohne Kernlogik und UX neu zu verdrahten.
 
 ## Priorisierungslogik
 
@@ -293,6 +327,36 @@ Definition of done:
 
 Status: `planned`
 
+### Milestone 6: Kalenderloser Kernflow
+
+Ziel:
+Realite funktioniert als Aktivitäts- und Koordinationsprodukt auch ohne verbundene Kalender verlässlich und verständlich.
+
+Definition of done:
+
+- Onboarding und Settings behandeln Kalender als klar optionalen Schritt
+- E-Mail-Login ohne Kalenderberechtigung führt in einen brauchbaren Kernflow statt in Sackgassen
+- Events, Gruppen, Join-Mechaniken und Reaktionspfade funktionieren ohne Kalenderkontext verständlich
+- leere Zustände, Hinweise und CTAs unterscheiden sauber zwischen "noch kein Kalender verbunden" und echten Datenlücken
+- spätere Kalenderverbindung ist als Upgrade-Pfad klar, aber nicht aufdringlich
+
+Status: `planned`
+
+### Milestone 7: Multi-Provider Login und Kalender
+
+Ziel:
+Realite unterstützt mehrere Identitäts- und Kalenderanbieter, ohne Produktlogik, UI oder Datenmodell auf Google zu verengen.
+
+Definition of done:
+
+- Login-Flows für Google, Apple und E-Mail sind produktseitig klar eingeordnet
+- Kalenderanbindung ist als Provider-Schicht modelliert, sodass Google, Apple und Microsoft anschließbar bleiben
+- Nutzer-Copy unterscheidet sauber zwischen Kernprodukt, optionaler Kalenderverbindung und providerspezifischen Extras
+- Settings, Empty States und Upgrade-Pfade funktionieren auch mit unterschiedlichen Provider-Kombinationen
+- Business-Logik für Vorschläge, Planung und Sichtbarkeit hängt nicht direkt an Google-spezifischen Konzepten
+
+Status: `planned`
+
 ## Task Backlog
 
 ### P0
@@ -318,6 +382,11 @@ Status: `planned`
 - [x] Event-/Suggestion-Karten auf Scannability und Priorisierung überarbeiten
 - [x] leere Zustände produktnäher formulieren
 - [x] leere Zustände in `Jetzt` für kein Momentum, keine direkte Beteiligung, nur eigene Planung und komplett fehlende offene Aktivitäten explizit unterscheiden
+- [ ] Kernflows ohne Kalenderintegration definieren: Signup, erster Event, Gruppenbeitritt, Vorschläge, spätere Verbindung
+- [ ] UI-Copy systematisch prüfen, wo Kalender aktuell implizit als Default oder Voraussetzung klingt
+- [ ] leere Zustände und Settings-Zustände für "kein Kalender verbunden" vs. "Berechtigung verweigert" vs. "später verbinden" unterscheiden
+- [ ] Login- und Onboarding-Flows für Google, Apple und E-Mail als gleichwertige Produktpfade definieren
+- [ ] prüfen, welche UI-Texte und Docs heute unnötig Google als einzigen Login- oder Kalenderpfad nennen
 
 ### P2
 
@@ -337,6 +406,11 @@ Status: `planned`
 - [x] abgelaufenes eigenes Presence-Zeitfenster nach Reload/API-Roundtrip weiter als Schutz-Zustand zeigen statt wie nie aktiviert
 - [x] Presence-Panel hält auch nach Ablauf des eigenen Zeitfensters Headline, CTA und Ausblend-Logik konsistent im Schutz-Zustand
 - [x] Zusagen- und Presence-Listen privacy-härten: ohne gepflegten Namen keine E-Mail-Fallbacks in sichtbaren Personenlisten zeigen
+- [ ] Ranking- und Vorschlagslogik für Nutzer ohne Kalenderkontext bewusst degradieren statt brechen
+- [ ] Event- und Sozialkalender-Ansichten für Nutzer ohne Kalender so formulieren, dass Planung auch manuell verständlich bleibt
+- [ ] Adaptergrenzen für Login und Kalender konkretisieren: Google, Apple und Microsoft dürfen in der Kernlogik keine Sonderbehandlung erzwingen
+- [ ] Capability-Matrix festhalten: Welche Produktfunktionen hängen an Login, welche an Kalenderzugriff und welche an einzelnen Providern
+- [ ] Apple Kalender und Microsoft Kalender als nächste konkrete Integrationspfade im Plan verankern, inklusive erwarteter Unterschiede bei Sync, Einladungen und Bearbeiten-im-Kalender-Links
 
 ## Konkret bekannte UX-/View-Aufgaben
 
@@ -418,6 +492,10 @@ Status: `planned`
 - [x] `Smart Meetings` bleiben nicht Teil der primären Hauptaktivitätsansicht
 - [x] Die primäre Home-/Now-Ansicht priorisiert Reaktion und offene Aktivitäten vor Verwaltung
 - [x] Smart Meetings bleiben als sekundärer Verwaltungsbereich unter `Events`
+- [ ] wie stark der Kernflow ohne Kalender schon im Onboarding sichtbar erklärt werden soll, ohne die spätere Verbindung zu verstecken
+- [ ] welche Vorschlags- und Ranking-Signale ohne Kalender zuerst genutzt werden sollen: Gruppen, Zusagen, Tags, manuelle Verfügbarkeit oder explizite Interessen
+- [ ] ob Apple Login im Onboarding als gleichwertige Standardoption neben Google und E-Mail erscheint oder zuerst sekundär gestartet wird
+- [ ] welche Kalenderfeatures providerübergreifend als gemeinsamer Kern gelten und was zunächst Google-, Apple- oder Microsoft-spezifisch bleiben darf
 - [x] Eigene Events ohne Zusagen bleiben in `Events`; relevante fremde Aktivitäten und offene Reaktionen stehen in `Jetzt` vorn
 - [x] Wie wird Presence vor Ort dargestellt, ohne creepy oder zu offen zu wirken?
 - [x] Welche Sichtbarkeitsstufen sind wirklich nötig für V1.5 / V2?

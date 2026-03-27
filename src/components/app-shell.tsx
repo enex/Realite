@@ -61,6 +61,8 @@ function getSectionRailClassName(intent: string, active: boolean) {
 export function AppShell({ user, children }: AppShellProps) {
   const pathname = usePathname();
   const currentSection = getCurrentAppShellSection(pathname);
+  const showSectionContext =
+    currentSection !== null && pathname !== currentSection.href;
 
   useEffect(() => {
     if (!user.email) return;
@@ -117,7 +119,7 @@ export function AppShell({ user, children }: AppShellProps) {
         </div>
       </header>
 
-      {currentSection ? (
+      {currentSection && showSectionContext ? (
         <div className="border-b border-slate-200 bg-white/80 backdrop-blur">
           <div className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-2 sm:px-6 lg:px-8 md:flex-row md:items-center md:justify-between">
             <div>
