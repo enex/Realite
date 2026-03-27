@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { getSuggestionSettingsMessaging } from "@/src/lib/calendar-messaging";
 
 type WritableCalendar = {
   id: string;
@@ -53,6 +54,7 @@ export function SuggestionSettingsCard({
     () => new Map(blockedPeople.map((entry) => [entry.id, entry.label])),
     [blockedPeople]
   );
+  const messaging = getSuggestionSettingsMessaging(calendarConnected);
 
   function toggleMatchingCalendar(calendarId: string) {
     const exists = form.matchingCalendarIds.includes(calendarId);
@@ -82,13 +84,17 @@ export function SuggestionSettingsCard({
     <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <h2 className="text-lg font-semibold text-slate-900">Vorschlags-Einstellungen</h2>
       <div className="mt-3 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3">
-        <p className="text-xs font-medium uppercase tracking-wide text-teal-700">Automatisch erstellt</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-teal-700">Automatisch vorgemerkt</p>
         <p className="mt-1 text-2xl font-semibold text-teal-900">{autoInsertedSuggestionCount}</p>
-        <p className="text-xs text-teal-700">Aktuell automatisch als Vorschlag in deinen Kalender eingetragen</p>
+        <p className="text-xs text-teal-700">{messaging.autoInsertDescription}</p>
+      </div>
+      <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-600">{messaging.supportTitle}</p>
+        <p className="mt-1 text-sm text-slate-700">{messaging.supportBody}</p>
       </div>
       {!calendarConnected ? (
         <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-          Google Kalender ist aktuell nicht verbunden.
+          {messaging.warning}
         </p>
       ) : null}
 
@@ -109,7 +115,8 @@ export function SuggestionSettingsCard({
         </label>
 
         <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 sm:col-span-2">
-          Vorschläge werden als Kalendereintrag mit einem Realite-Link erstellt. Zu-/Absage läuft direkt über die Realite-Seite.
+          Vorschläge werden als Kalendereintrag mit einem Realite-Link erstellt. Zu-/Absage läuft direkt über die
+          Realite-Seite.
         </div>
 
         <select
@@ -179,6 +186,7 @@ export function SuggestionSettingsCard({
               </label>
             ))}
           </div>
+          {messaging.disabledHint ? <p className="mt-3 text-xs text-slate-500">{messaging.disabledHint}</p> : null}
         </div>
 
         <div className="rounded-lg border border-slate-200 p-3 text-sm">

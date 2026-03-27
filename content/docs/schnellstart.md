@@ -15,6 +15,7 @@ Wichtig:
 - Kalender und Kontakte dienen als Input und Kontext.
 - Es wird nichts automatisch veröffentlicht.
 - Du gibst Aktivitäten immer selbst frei.
+- Auch ohne Kalenderzugriff kannst du Events anlegen, Gruppen nutzen und Vorschläge in Realite beantworten.
 
 Hinweis:
 
@@ -39,6 +40,7 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 - Eigene neue Events ohne Zusagen bleiben bewusst in **Events**, damit **Jetzt** nicht mit Verwaltung überladen wird.
 - Wenn in **Jetzt** gerade nichts Offenes auftaucht, erklärt Realite jetzt auch klar den Grund: etwa kein sichtbares Momentum, keine direkte Beteiligung oder nur eigene Planung in **Events**. Die vorgeschlagene nächste Aktion passt dazu direkt im leeren Zustand.
 - Der Sozialkalender erscheint in **Jetzt** nur noch als kurze Vorschau. Die ausführliche Aufteilung nach **Zugesagt**, **Deine Planung** und **Kalenderkontext** bleibt in **Events**.
+- Auch ohne verbundenen Kalender bleibt **Events** deine Planungs- und Zusagenansicht. Kalenderkontext kommt nur optional dazu.
 - Die Reihenfolge der nächsten Aktion ist dort klar: **zuerst reagieren**, **dann mitmachen**, **danach selbst erstellen**
 - **Vorschläge** gehört zu **Reagieren** und ist deine Handlungs-Queue für offene Entscheidungen
 - **Events** gehört zu **Verwalten** und ist deine persönliche Kalender- und Verwaltungsansicht für sichtbare Aktivitäten und Zusagen
@@ -91,8 +93,9 @@ Starte dort das Matching und prüfe deine Vorschläge.
 
 - dein eigenes Profil öffnen
 - deine Kontodaten sehen
-- ob Vorschläge automatisch in deinem Kalender erscheinen
-- dass Vorschläge als Kalendereintrag mit Realite-Link erscheinen
-- welche Kalender für Verfügbarkeit und Vorschläge berücksichtigt werden
+- wie Vorschläge auch ohne Kalender manuell weiterlaufen
+- ob Vorschläge automatisch in deinem Kalender erscheinen, sobald du Kalenderzugriff freigibst
+- dass Vorschläge dann als Kalendereintrag mit Realite-Link erscheinen
+- welche Kalender für Verfügbarkeit und Vorschläge berücksichtigt werden, wenn du sie verbindest
 - ob Termine in deinem Kalender als **Beschäftigt** oder **Frei/Verfügbar** markiert sind (dies steuert, wann Realite Vorschläge macht)
 - ob dein Dating-Modus (`#date`) freigeschaltet ist und welche Kriterien für gegenseitige Matches gelten

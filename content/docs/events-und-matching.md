@@ -64,6 +64,8 @@ Das Bild erscheint auf der Event-Detailseite, in Event-Listen (Dashboard, Gruppe
 
 **Wichtig für die Hauptansichten:** Eigene neu angelegte Events ohne Zusagen bleiben in **Events** unter deiner Planung. In **Jetzt** zeigt Realite stattdessen vor allem offene Aktivitäten, Vorschläge mit Handlungsbedarf und Termine mit erkennbarem Momentum. Deinen Sozialkalender siehst du dort nur als kompakte Vorschau; die vollständige Struktur nach Zusagen, eigener Planung und Kalenderkontext bleibt in **Events**.
 
+**Auch ohne Kalender verständlich:** Wenn du noch keinen Kalender verbunden hast, bleibt **Events** trotzdem die gleiche Planungs- und Zusagenansicht. Du kannst dort eigene Aktivitäten anlegen, sichtbar teilen und Zusagen verwalten. Der zusätzliche Kalenderkontext kommt nur dazu, wenn du ihn später bewusst verbindest.
+
 Darum bleibt auch die Navigation in **Events** bewusst rückführend:
 
 - oben findest du nicht nur die Event-Bereiche selbst, sondern auch direkte Rückwege in **Jetzt**, **Vorschläge** und **Gruppen**

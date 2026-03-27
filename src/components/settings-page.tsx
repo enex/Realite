@@ -9,6 +9,7 @@ import { DatingSettingsCard } from "@/src/components/settings/dating-settings-ca
 import { MpcSettingsCard } from "@/src/components/settings/mcp-settings-card";
 import { SuggestionLearningCard } from "@/src/components/settings/suggestion-learning-card";
 import { SuggestionSettingsCard, type SuggestionSettingsForm } from "@/src/components/settings/suggestion-settings-card";
+import { getSuggestionSettingsMessaging } from "@/src/lib/calendar-messaging";
 import { getPageIntentMeta, pageLeadClassName, pageMetaClassName, pageShellClassName, pageTitleClassName } from "@/src/lib/page-hierarchy";
 import { useDatingSettings } from "@/src/components/settings/use-dating-settings";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
@@ -99,6 +100,7 @@ export function SettingsPage({
     queryFn: fetchSettings,
   });
   const data = queryData ?? emptySettings;
+  const settingsMessaging = getSuggestionSettingsMessaging(data.calendarConnected);
 
   const [busy, setBusy] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
@@ -196,8 +198,8 @@ export function SettingsPage({
                 <p className={pageMetaClassName}>{userEmail}</p>
                 <p className={pageLeadClassName}>
                   {datingModeEnabled
-                    ? "Steuere hier Vorschlagslogik, Kalenderverhalten und den Dating-Modus für die Smart Group `#date`."
-                    : "Steuere hier Vorschlagslogik und Kalenderverhalten."}
+                    ? `${settingsMessaging.lead} Den Dating-Modus für die Smart Group #date steuerst du ebenfalls hier.`
+                    : settingsMessaging.lead}
                 </p>
               </div>
             </div>

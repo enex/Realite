@@ -35,6 +35,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- `Events` rahmt die Verwaltungsansicht ohne verbundenen Kalender jetzt explizit als Planungs- und Zusagenfläche statt nur als Sozialkalender
+- Einstellungen erklären Kalenderzugriff jetzt klar als optionalen Verstärker: Vorschläge, Gruppen und manuelle Planung bleiben auch ohne Kalender nutzbar
+- Nutzer-Doku für Schnellstart und Events hält denselben no-calendar-Pfad jetzt ausdrücklich fest
 - Bereichswechsel in App-Rahmen und öffentlicher Landing-Page erklärt die vier Kernansichten jetzt mit klarem Nutzungsfokus statt nur mit Bereichsname und Intent
 - `Events` und `Gruppen` bleiben dadurch im schnellen Wechsel klarer getrennt: Planung/Zusagen versus Kreise/Sichtbarkeit
 - die Produktlogik `Entdecken`, `Reagieren`, `Verwalten` wird damit auch vor dem Login konkreter und scanbarer vermittelt
@@ -407,7 +410,7 @@ Status: `planned`
 - [x] Presence-Panel hält auch nach Ablauf des eigenen Zeitfensters Headline, CTA und Ausblend-Logik konsistent im Schutz-Zustand
 - [x] Zusagen- und Presence-Listen privacy-härten: ohne gepflegten Namen keine E-Mail-Fallbacks in sichtbaren Personenlisten zeigen
 - [ ] Ranking- und Vorschlagslogik für Nutzer ohne Kalenderkontext bewusst degradieren statt brechen
-- [ ] Event- und Sozialkalender-Ansichten für Nutzer ohne Kalender so formulieren, dass Planung auch manuell verständlich bleibt
+- [x] Event- und Sozialkalender-Ansichten für Nutzer ohne Kalender so formulieren, dass Planung auch manuell verständlich bleibt
 - [ ] Adaptergrenzen für Login und Kalender konkretisieren: Google, Apple und Microsoft dürfen in der Kernlogik keine Sonderbehandlung erzwingen
 - [ ] Capability-Matrix festhalten: Welche Produktfunktionen hängen an Login, welche an Kalenderzugriff und welche an einzelnen Providern
 - [ ] Apple Kalender und Microsoft Kalender als nächste konkrete Integrationspfade im Plan verankern, inklusive erwarteter Unterschiede bei Sync, Einladungen und Bearbeiten-im-Kalender-Links
