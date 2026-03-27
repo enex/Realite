@@ -13,6 +13,7 @@ describe("smart meeting overview", () => {
     expect(overview.activeRunCount).toBe(2);
     expect(overview.title).toBe("1 Lauf wartet auf deine Freigabe");
     expect(overview.description).toContain("erst danach gehen Kalendereinladungen raus");
+    expect(overview.nextStepTitle).toBe("Teilnehmerliste prüfen und bewusst freigeben");
   });
 
   test("keeps empty state focused on planning instead of discovery", () => {
@@ -21,6 +22,7 @@ describe("smart meeting overview", () => {
     expect(overview.totalCount).toBe(0);
     expect(overview.title).toBe("Noch kein Smart Treffen im Planungsbereich");
     expect(overview.description).toContain("Für spontane Aktivitäten");
+    expect(overview.nextStepDescription).toContain("konkrete Gruppe");
   });
 
   test("summarizes active planning runs when no approval is pending", () => {
@@ -33,5 +35,6 @@ describe("smart meeting overview", () => {
     expect(overview.activeRunCount).toBe(2);
     expect(overview.pausedCount).toBe(1);
     expect(overview.title).toBe("2 Smart Treffen suchen gerade passende Termine");
+    expect(overview.nextStepTitle).toBe("Lauf beobachten, dann auf Freigabe umschalten");
   });
 });

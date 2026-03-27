@@ -33,6 +33,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- Smart-Treffen-Bereich in `Events` rahmt Gruppenkoordination jetzt noch expliziter als Orga-Flow statt als zweite Eventliste
+- jeder Smart-Treffen-Lauf zeigt jetzt einen klaren nächsten Orga-Schritt sowie Phasenlabels wie `Freigabe offen`, `Suche läuft`, `Warten auf Zusagen` oder `Gesichert`
+- Navigation und Nutzer-Doku benennen `Events`/`Smart Treffen` damit konsequenter als Sozialkalender plus Gruppen-Orga statt als Discovery-Fläche
 - `Vorschläge` rahmt die Reaktionsansicht jetzt auch im normalen Flow explizit ein: mit eigenem Einordnungsblock statt direktem Sprung nur in Zahlen und Listen
 - klare Rückwege aus `Vorschläge` nach `Jetzt`, `Events` und `Gruppen` sind damit nicht mehr nur im Leerzustand sichtbar, sondern als dauerhafte Orientierung im Reaktionsfluss
 - die Trennung zwischen entdecken, reagieren und verwalten bleibt dadurch auch bei vorhandenen Empfehlungen im Seitenkopf konkret statt nur über die globale Navigation
@@ -165,8 +168,7 @@ Die Hauptviews folgen jetzt weitgehend dem Produktfluss, aber die Sekundärnavig
 Weiter sauber zu schärfen:
 
 1. wie Planungs- und Verwaltungswege in Randfällen zurück nach `Jetzt` führen
-2. wie Smart Meetings sprachlich dauerhaft als Orga-Tool und nicht als Discovery-Fläche erkennbar bleiben
-3. wie `Events`, `Vorschläge` und `Gruppen` in Copy und Empty States noch klarer getrennt werden
+2. wie `Events`, `Vorschläge` und `Gruppen` in Copy und Empty States noch klarer getrennt werden
 
 ### Produktentscheidung festgehalten
 
@@ -349,6 +351,7 @@ Status: `planned`
 - [x] Smart Meetings als Planungs-/Orga-Tool positionieren statt als primären Discovery-Feed
 - [x] prüfen, wie viel Prominenz Smart Meetings in der Navigation wirklich brauchen
 - [x] Smart-Treffen-Bereich in `Events` mit Statusüberblick und klaren Rückwegen nach `Jetzt`/`Vorschläge` als Orga-Fläche schärfen
+- [x] Smart-Treffen-Läufe mit klaren Orga-Phasen und nächstem Schritt kennzeichnen statt wie eine zweite Eventliste darzustellen
 
 ### Suggestions
 

@@ -81,6 +81,7 @@ Der Bereich in **Events** zeigt dabei bewusst:
 - einen kompakten Statusüberblick für **Freigabe**, **laufende Suche**, **gesicherte Termine** sowie **pausierte oder beendete Läufe**
 - klare Rückwege nach **Jetzt** und **Vorschläge**, damit Gruppen-Orga nicht wie ein spontaner Discovery-Feed wirkt
 - weiterhin den Hinweis, dass Kalendereinladungen erst nach deiner ausdrücklichen Freigabe verschickt werden
+- pro Lauf einen expliziten **nächsten Orga-Schritt**, damit der Bereich wie ein Status- und Freigabeboard funktioniert statt wie eine weitere Eventliste
 
 Du legst fest:
 
@@ -100,6 +101,14 @@ So läuft es:
 6. Wenn du den Versand ablehnst, werden keine Kalendereinladungen verschickt.
 7. Wird die Mindestzahl bis zur Frist nicht erreicht (oder alle sagen ab), entfernt Realite den Termin wieder.
 8. Danach erzeugt Realite automatisch einen neuen Vorschlag. Auch dieser wartet wieder auf deine ausdrückliche Freigabe, bevor Einladungen verschickt werden.
+
+Die sichtbaren Phasen im Bereich **Smart Treffen** sind deshalb bewusst von spontanen Aktivitäten getrennt:
+
+- **Suche läuft:** Realite prüft mögliche Slots
+- **Freigabe offen:** du prüfst die Teilnehmerliste vor dem Versand
+- **Warten auf Zusagen:** die Gruppe reagiert auf den vorgeschlagenen Termin
+- **Gesichert:** die Mindestzahl ist erreicht und der Termin bleibt als Planungsstand sichtbar
+- **Pausiert / beendet:** der Lauf bleibt als Verlauf oder Bearbeitungsstand erhalten, ohne den Discovery-Flow zu stören
 
 Lernen über Zeit:
 
@@ -270,6 +279,7 @@ In **Events** bleibt **Smart Treffen** bewusst ein nachgelagerter Bereich unterh
 - kein eigener Hauptnavigationspunkt
 - über einen Bereichslink in **Events** schnell erreichbar
 - klar getrennt von zugesagten Aktivitäten, eigener Planung und Kalenderkontext
+- in der Navigation und Bereichs-Copy ausdrücklich als **Gruppen-Orga** statt als Discovery-Fläche benannt
 
 So bleibt die globale Navigation schlank, während der Planungs-Flow für Gruppen trotzdem direkt auffindbar bleibt.
 

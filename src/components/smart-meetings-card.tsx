@@ -85,6 +85,62 @@ function runStatusLabel(status: NonNullable<SmartMeeting["latestRun"]>["status"]
   return "Abgelaufen";
 }
 
+function getMeetingStage(meeting: SmartMeeting) {
+  const latestRunStatus = meeting.latestRun?.status;
+
+  if (latestRunStatus === "awaiting_approval") {
+    return {
+      badge: "Freigabe offen",
+      eyebrow: "Nächster Orga-Schritt",
+      title: "Teilnehmerliste prüfen",
+      description: "Wähle bewusst aus, wer die Kalendereinladung wirklich bekommen soll."
+    };
+  }
+
+  if (latestRunStatus === "pending") {
+    return {
+      badge: "Warten auf Zusagen",
+      eyebrow: "Nächster Orga-Schritt",
+      title: "Auf Antworten der Gruppe warten",
+      description: "Der Lauf sammelt gerade Zu- und Absagen im offenen Zeitfenster."
+    };
+  }
+
+  if (meeting.status === "secured" || latestRunStatus === "secured") {
+    return {
+      badge: "Gesichert",
+      eyebrow: "Planungsstand",
+      title: "Termin steht",
+      description: "Die Mindestzahl ist erreicht. Der Gruppen-Termin bleibt hier als bestätigter Orga-Stand sichtbar."
+    };
+  }
+
+  if (meeting.status === "paused") {
+    return {
+      badge: "Pausiert",
+      eyebrow: "Planungsstand",
+      title: "Lauf bewusst angehalten",
+      description: "Der Suchlauf ruht, bleibt aber als Orga-Verlauf und Bearbeitungsstand erhalten."
+    };
+  }
+
+  if (meeting.status === "exhausted") {
+    return {
+      badge: "Beendet",
+      eyebrow: "Planungsstand",
+      title: "Kein weiterer Suchlauf aktiv",
+      description: "Der bisherige Lauf ist abgeschlossen. Starte nur dann neu, wenn die Gruppe einen weiteren Versuch braucht."
+    };
+  }
+
+  return {
+    badge: "Suche läuft",
+    eyebrow: "Nächster Orga-Schritt",
+    title: "Suchlauf beobachten",
+    description: "Realite prüft gerade passende Slots. Deine aktive Entscheidung kommt erst bei Freigabe oder Bearbeitung dazu."
+  };
+}
+
 function arraysEqual(left: string[], right: string[]) {
   return left.length === right.length && left.every((entry, index) => entry === right[index]);
 }
@@ -383,23 +439,23 @@ export function SmartMeetingsCard({
     <section id="smart-meetings" className={`mt-8 scroll-mt-24 ${smartMeetingCard.sectionClassName}`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${smartMeetingCard.eyebrowClassName}`}>Sekundärer Planungsbereich</p>
-          <h2 className="text-lg font-semibold text-slate-900">Smart Treffen</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            {overview.description}
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${smartMeetingCard.eyebrowClassName}`}>
+            Gruppen-Orga unter Events
           </p>
+          <h2 className="text-lg font-semibold text-slate-900">Smart Treffen</h2>
+          <p className="mt-1 text-sm text-slate-600">{overview.description}</p>
         </div>
         <button
           onClick={() => setExpanded((current) => !current)}
           className={smartMeetingCard.actionClassName}
         >
-          {expanded ? "Planer schließen" : "Smart Treffen planen"}
+          {expanded ? "Planer schließen" : "Orga-Lauf anlegen"}
         </button>
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
         <div className={smartMeetingCard.insetClassName}>
-          <p className={managePage.eyebrowClassName}>Planen statt entdecken</p>
+          <p className={managePage.eyebrowClassName}>Orga-Ablauf statt Discovery</p>
           <h3 className="mt-2 text-base font-semibold text-slate-900">{overview.title}</h3>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Smart Treffen ordnet Gruppen-Orga, Suchfenster und Freigaben. Der spontane Einstieg bleibt bewusst in{" "}
@@ -411,6 +467,11 @@ export function SmartMeetingsCard({
               Vorschläge
             </a>.
           </p>
+          <div className="mt-4 rounded-xl border border-slate-200 bg-white/80 p-4">
+            <p className={managePage.eyebrowClassName}>Jetzt hier sinnvoll</p>
+            <p className="mt-2 text-sm font-semibold text-slate-900">{overview.nextStepTitle}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">{overview.nextStepDescription}</p>
+          </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <div className={smartMeetingCard.statClassName}>
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Freigabe</p>
@@ -418,9 +479,9 @@ export function SmartMeetingsCard({
               <p className="mt-1 text-xs text-slate-500">Teilnehmerlisten warten auf deine bewusste Freigabe.</p>
             </div>
             <div className={smartMeetingCard.statClassName}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Läuft</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Suche / Zusagen</p>
               <p className="mt-1 text-xl font-semibold text-slate-900">{overview.activeRunCount}</p>
-              <p className="mt-1 text-xs text-slate-500">Aktive Suchläufe oder offene Zusagefenster.</p>
+              <p className="mt-1 text-xs text-slate-500">Läufe mit aktiver Terminprüfung oder offenem Antwortfenster.</p>
             </div>
             <div className={smartMeetingCard.statClassName}>
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Gesichert</p>
@@ -468,6 +529,13 @@ export function SmartMeetingsCard({
 
       {expanded ? (
         <form onSubmit={submitSmartMeeting} className={`mt-4 grid gap-3 ${smartMeetingCard.insetClassName}`}>
+          <div className="rounded-xl border border-slate-200 bg-white/80 p-4">
+            <p className={managePage.eyebrowClassName}>Neuer Orga-Lauf</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Nutze Smart Treffen nur für planbare Gruppenkoordination: Suchfenster festlegen, Mindestzahl definieren und
+              spätere Kalendereinladungen bewusst freigeben.
+            </p>
+          </div>
           <input
             value={form.title}
             onChange={(event) => setForm((state) => ({ ...state, title: event.target.value }))}
@@ -602,7 +670,7 @@ export function SmartMeetingsCard({
               disabled={busy}
               className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
             >
-              {editingId ? "Speichern" : "Smart Treffen starten"}
+              {editingId ? "Änderungen speichern" : "Orga-Lauf starten"}
             </button>
             {editingId ? (
               <button
@@ -624,18 +692,27 @@ export function SmartMeetingsCard({
       <div className="mt-4 space-y-2">
         {smartMeetings.length === 0 ? (
           <div className={smartMeetingCard.mutedInsetClassName}>
-            <p className="text-sm font-semibold text-slate-900">Noch keine Smart Treffen vorhanden.</p>
+            <p className="text-sm font-semibold text-slate-900">Noch kein Smart-Treffen-Lauf vorhanden.</p>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Lege hier nur dann einen Gruppenlauf an, wenn du aktiv einen gemeinsamen Termin finden willst. Für spontane offene
-              Aktivitäten bleibst du besser in <a href="/now" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">Jetzt</a>.
+              Lege hier nur dann einen Gruppenlauf an, wenn du aktiv einen gemeinsamen Termin koordinieren willst. Für spontane
+              offene Aktivitäten bleibst du besser in{" "}
+              <a href="/now" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">
+                Jetzt
+              </a>.
             </p>
           </div>
         ) : null}
-        {smartMeetings.map((meeting) => (
+        {smartMeetings.map((meeting) => {
+          const stage = getMeetingStage(meeting);
+
+          return (
           <article key={meeting.id} className={smartMeetingCard.itemClassName}>
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm font-semibold text-slate-900">{meeting.title}</p>
               <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                  {stage.badge}
+                </span>
                 <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${smartMeetingCard.badgeClassName}`}>
                   {statusLabel(meeting.status)}
                 </span>
@@ -659,6 +736,11 @@ export function SmartMeetingsCard({
             ) : (
               <p className="mt-1 text-xs text-slate-600">Noch kein aktiver Terminversuch.</p>
             )}
+            <div className="mt-3 rounded-xl border border-slate-200 bg-white/80 p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">{stage.eyebrow}</p>
+              <p className="mt-2 text-sm font-semibold text-slate-900">{stage.title}</p>
+              <p className="mt-1 text-sm leading-6 text-slate-600">{stage.description}</p>
+            </div>
             {meeting.latestRun?.statusReason ? (
               <p className="mt-1 text-xs text-amber-700">{meeting.latestRun.statusReason}</p>
             ) : null}
@@ -674,7 +756,8 @@ export function SmartMeetingsCard({
               />
             ) : null}
           </article>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
