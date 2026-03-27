@@ -23,4 +23,11 @@ describe("visual priority", () => {
     expect(meta.sectionClassName).toContain("white");
     expect(meta.badgeClassName).toContain("slate");
   });
+
+  test("falls back to neutral styling for unexpected priorities", () => {
+    const meta = getVisualPriorityMeta("activity" as never);
+
+    expect(meta.sectionClassName).toContain("slate");
+    expect(meta.badgeClassName).toContain("slate");
+  });
 });

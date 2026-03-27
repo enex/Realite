@@ -1,5 +1,17 @@
 export type VisualPriority = "reaction" | "momentum" | "planning" | "neutral";
 
+const NEUTRAL_VISUAL_PRIORITY_META = {
+  sectionClassName: "border-slate-200 bg-slate-50/60 shadow-sm",
+  itemClassName: "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50",
+  insetClassName: "border-slate-200 bg-white/80",
+  mutedInsetClassName: "border-dashed border-slate-200 bg-white/80",
+  badgeClassName: "bg-white text-slate-700 ring-1 ring-slate-200",
+  eyebrowClassName: "text-slate-500",
+  accentTextClassName: "text-slate-700",
+  actionRowClassName: "border-slate-200 bg-white text-slate-700",
+  statClassName: "border-slate-200 bg-white",
+};
+
 export function getVisualPriorityMeta(priority: VisualPriority) {
   switch (priority) {
     case "reaction":
@@ -39,16 +51,8 @@ export function getVisualPriorityMeta(priority: VisualPriority) {
         statClassName: "border-slate-200 bg-slate-50",
       };
     case "neutral":
-      return {
-        sectionClassName: "border-slate-200 bg-slate-50/60 shadow-sm",
-        itemClassName: "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50",
-        insetClassName: "border-slate-200 bg-white/80",
-        mutedInsetClassName: "border-dashed border-slate-200 bg-white/80",
-        badgeClassName: "bg-white text-slate-700 ring-1 ring-slate-200",
-        eyebrowClassName: "text-slate-500",
-        accentTextClassName: "text-slate-700",
-        actionRowClassName: "border-slate-200 bg-white text-slate-700",
-        statClassName: "border-slate-200 bg-white",
-      };
+      return NEUTRAL_VISUAL_PRIORITY_META;
+    default:
+      return NEUTRAL_VISUAL_PRIORITY_META;
   }
 }

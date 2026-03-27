@@ -780,7 +780,7 @@ export function Dashboard({
             "Gerade gibt es eine sichtbare Aktivität ohne Zusagen. Wenn sie passt, kannst du hier den ersten klaren Mitmach-Schritt setzen.",
           href: `/e/${shortenUUID(event.id)}`,
           actionLabel: "Aktivität öffnen",
-          priority: "activity" as VisualPriority,
+          priority: "reaction" as VisualPriority,
         };
       }
     }
