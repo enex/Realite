@@ -257,6 +257,12 @@ So bleibt die globale Navigation schlank, während der Planungs-Flow für Gruppe
 
 Bereits entschiedene Vorschläge rutschen in einen separaten Verlauf. So bleibt die Hauptfläche auf Reaktion statt Verwaltung fokussiert.
 
+Wenn die Handlungs-Queue leer ist, zeigt Realite in **Vorschläge** jetzt außerdem bewusst drei getrennte nächste Wege:
+
+- **Jetzt**, wenn du offene Aktivitäten oder sichtbares Momentum prüfen willst
+- **Events**, wenn du bestätigte Pläne, eigene Planung oder Smart Treffen brauchst
+- **Neues Matching**, wenn du frische Empfehlungen für freie Zeitfenster anstoßen willst
+
 Die Statuslabels sind dabei absichtlich konsistent:
 
 - **Jetzt reagieren:** Vorschlag wartet noch auf deine Entscheidung

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
+import { FlowCard } from "@/src/components/flow-card";
 import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { getSuggestionNextAction, getSuggestionStatusMeta } from "@/src/lib/activity-patterns";
@@ -317,8 +318,35 @@ export function SuggestionsPage({
             </div>
 
             {actionableSuggestions.length === 0 ? (
-              <div className={`mt-4 text-sm text-slate-600 ${suggestionCard.mutedInsetClassName}`}>
-                Im Moment gibt es nichts zu entscheiden. Starte neues Matching oder schau in den Verlauf, welche Aktivitäten du bereits bestätigt oder abgelehnt hast.
+              <div className={`mt-4 space-y-4 text-sm text-slate-600 ${suggestionCard.mutedInsetClassName}`}>
+                <p>
+                  Im Moment gibt es nichts zu entscheiden. Wenn du trotzdem weitermachen willst, trenne bewusst zwischen
+                  Entdecken, eigener Planung und neuem Matching.
+                </p>
+                <div className="grid gap-3 md:grid-cols-3">
+                  <FlowCard
+                    href="/now"
+                    intent="discover"
+                    eyebrow="Weiter in Jetzt"
+                    title="Offene Aktivitäten prüfen"
+                    description="Dort siehst du, was gerade sichtbar ist, Momentum hat oder direkt einen Einstieg erlaubt."
+                  />
+                  <FlowCard
+                    href="/events"
+                    intent="manage"
+                    eyebrow="Weiter in Events"
+                    title="Eigene Planung prüfen"
+                    description="Nutze Events für bestätigte Aktivitäten, deine Planung und Smart Treffen statt für offene Reaktionen."
+                  />
+                  <FlowCard
+                    intent="react"
+                    eyebrow="Neues Matching"
+                    title="Neue Vorschläge anstoßen"
+                    description="Starte den Matching-Lauf neu, wenn du frische Empfehlungen für freie Zeitfenster brauchst."
+                    onClick={runSuggestions}
+                    disabled={busy}
+                  />
+                </div>
               </div>
             ) : (
               <div className="mt-4 space-y-3">
@@ -348,7 +376,10 @@ export function SuggestionsPage({
             </div>
             <div className="mt-4 space-y-3">
               {historySuggestionsByDay.length === 0 ? (
-                <p className="text-sm text-slate-500">Sobald du auf Vorschläge reagierst, erscheint dein Verlauf hier.</p>
+                <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-500">
+                  Sobald du auf Vorschläge reagierst, erscheint dein Verlauf hier. Bis dahin bleibt diese Ansicht bewusst auf
+                  aktuelle Reaktionen statt auf Verwaltung fokussiert.
+                </div>
               ) : null}
               {historySuggestionsByDay.map((dayGroup) => (
                 <div key={dayGroup.dayKey} className="space-y-3">

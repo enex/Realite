@@ -33,6 +33,8 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- leere Zustände in `Vorschläge` führen jetzt klarer aus der reinen Reaktionsansicht heraus: mit getrennten nächsten Wegen nach `Jetzt`, `Events` oder direkt zu neuem Matching statt bloßer Statusmeldung
+- die Abgrenzung zwischen entdecken, reagieren und verwalten wird damit nicht nur in der Navigation, sondern auch im leeren Zustand der Vorschlags-Queue konkret
 - `Jetzt` erklärt leere Zustände jetzt gezielter statt generisch: getrennt nach fehlendem Momentum, fehlender eigener Beteiligung, nur eigener Planung in `Events` oder komplett ohne offene Aktivitäten
 - die vorgeschlagene nächste Aktion im leeren Zustand passt jetzt zum tatsächlichen Kontext: Fokus zurücksetzen, Planung öffnen, Gruppen öffnen oder direkt selbst etwas starten
 - Eventkarten in `Jetzt` und `Events` sowie die Eventseite zeigen bei aktivierter Vor-Ort-Sichtbarkeit jetzt direkt, wer aktive Check-ins sehen kann
@@ -283,6 +285,7 @@ Status: `planned`
 
 - [x] Navigation überprüfen: ob `Events`, `Vorschläge`, `Gruppen` die richtige Reihenfolge und Benennung haben
 - [x] unterscheiden zwischen `Entdecken`, `Reagieren`, `Verwalten`
+- [x] Copy und leere Zustände in `Vorschläge` klarer gegen `Jetzt` und `Events` trennen, inklusive direkter Rückwege bei leerer Handlungs-Queue
 - [x] visuelle Patterns für offene Aktivitäten, persönliche Vorschläge, eigene Aktivitäten und Smart Meetings definieren
 - [x] Event-/Suggestion-Karten auf Scannability und Priorisierung überarbeiten
 - [x] leere Zustände produktnäher formulieren

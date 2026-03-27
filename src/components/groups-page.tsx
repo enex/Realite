@@ -2,10 +2,10 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import type { Route } from "next";
 import { useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
+import { FlowCard } from "@/src/components/flow-card";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
@@ -84,29 +84,6 @@ const emptyPayload: GroupsPayload = {
   },
   groups: []
 };
-
-function FlowLink({
-  href,
-  eyebrow,
-  title,
-  description
-}: {
-  href: Route;
-  eyebrow: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-teal-300 hover:bg-teal-50"
-    >
-      <p className={getPageIntentMeta("manage").eyebrowClassName}>{eyebrow}</p>
-      <h3 className={sectionTitleClassName}>{title}</h3>
-      <p className={sectionBodyClassName}>{description}</p>
-    </Link>
-  );
-}
 
 function ManagementCard({
   eyebrow,
@@ -306,20 +283,23 @@ export function GroupsPage({
             </div>
           </div>
           <div className="mt-5 grid gap-3 md:grid-cols-3">
-            <FlowLink
+            <FlowCard
               href="/now"
+              intent="discover"
               eyebrow="Zurück zu Jetzt"
               title="Spontane Aktivitäten sehen"
               description="Wechsle dorthin, wenn du wissen willst, was gerade relevant ist und wo du direkt mitmachen kannst."
             />
-            <FlowLink
+            <FlowCard
               href="/suggestions"
+              intent="react"
               eyebrow="Zurück zu Vorschlägen"
               title="Offene Reaktionen priorisieren"
               description="Nutze Vorschläge für Empfehlungen, auf die du antworten, zusagen oder bewusst ablehnen willst."
             />
-            <FlowLink
+            <FlowCard
               href="/events"
+              intent="manage"
               eyebrow="Zurück zu Events"
               title="Planung und Sozialkalender prüfen"
               description="Dort siehst du bestätigte Aktivitäten, eigene Planung und Smart Treffen im laufenden Kontext."
