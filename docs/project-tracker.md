@@ -33,6 +33,8 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 27.03.2026:
 
+- `Events` führt jetzt nicht nur im Leerzustand, sondern auch im normalen Verwaltungsflow mit einem eigenen Rückwege-Block gezielt zurück nach `Jetzt`, `Vorschläge` und `Gruppen`
+- die persönliche Sozialkalender-Ansicht bleibt damit klar von Discovery getrennt: Planung, Kalenderkontext und Freigabepflege haben explizite Rückwege in den Hauptfluss
 - leerer `Events`-Sozialkalender trennt nächste Schritte jetzt explizit nach `Jetzt`, `Vorschläge`, `Gruppen` und eigener Planung statt nur generisch zum Erstellen zu drängen
 - die Informationsarchitektur bleibt damit auch ohne sichtbare Termine verständlich: entdecken, reagieren, verwalten und planen werden im leeren Zustand klar auseinandergezogen
 - Smart-Treffen-Bereich in `Events` jetzt deutlicher als Orga- und Planungsfläche statt Discovery-Feed markiert
@@ -290,6 +292,7 @@ Status: `planned`
 
 - [x] Navigation überprüfen: ob `Events`, `Vorschläge`, `Gruppen` die richtige Reihenfolge und Benennung haben
 - [x] unterscheiden zwischen `Entdecken`, `Reagieren`, `Verwalten`
+- [x] `Events` auch außerhalb leerer Zustände mit klaren Rückwegen nach `Jetzt`, `Vorschläge` und `Gruppen` in den Hauptfluss anbinden
 - [x] Copy und leere Zustände in `Vorschläge` klarer gegen `Jetzt` und `Events` trennen, inklusive direkter Rückwege bei leerer Handlungs-Queue
 - [x] visuelle Patterns für offene Aktivitäten, persönliche Vorschläge, eigene Aktivitäten und Smart Meetings definieren
 - [x] Event-/Suggestion-Karten auf Scannability und Priorisierung überarbeiten
@@ -330,6 +333,7 @@ Status: `planned`
 - [x] "Wer ist dabei?" prominenter machen
 - [x] `Events` als Sozialkalender klar definieren: eigene Pläne, bestätigte Aktivitäten, Kalenderkontext
 - [x] leeren `Events`-Sozialkalender mit klaren Wegen nach `Jetzt`, `Vorschläge`, `Gruppen` und zur eigenen Planung schärfen
+- [x] normalen `Events`-Verwaltungsflow ebenfalls mit klaren Rückwegen in `Jetzt`, `Vorschläge` und `Gruppen` ergänzen
 
 ### Smart Meetings
 

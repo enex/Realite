@@ -64,6 +64,12 @@ Das Bild erscheint auf der Event-Detailseite, in Event-Listen (Dashboard, Gruppe
 
 **Wichtig für die Hauptansichten:** Eigene neu angelegte Events ohne Zusagen bleiben in **Events** unter deiner Planung. In **Jetzt** zeigt Realite stattdessen vor allem offene Aktivitäten, Vorschläge mit Handlungsbedarf und Termine mit erkennbarem Momentum. Deinen Sozialkalender siehst du dort nur als kompakte Vorschau; die vollständige Struktur nach Zusagen, eigener Planung und Kalenderkontext bleibt in **Events**.
 
+Darum bleibt auch die Navigation in **Events** bewusst rückführend:
+
+- oben findest du nicht nur die Event-Bereiche selbst, sondern auch direkte Rückwege in **Jetzt**, **Vorschläge** und **Gruppen**
+- so musst du aus Planung oder Kalenderkontext nicht erst wieder über die Hauptnavigation überlegen, wo du spontan weitermachen solltest
+- **Events** bleibt damit die Verwaltungs- und Sozialkalenderfläche, während **Jetzt** weiter der schnellste Einstieg für spontane Aktivität bleibt
+
 Auf Eventkarten und auf der Eventseite siehst du den gewählten Mitmach-Modus ebenfalls direkt. Realite veröffentlicht dabei nichts automatisch: Der Modus beschreibt nur, wie sichtbar berechtigte Personen reagieren sollen.
 
 ## Smart Treffen (automatische Terminfindung)

@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { List, Sparkle } from "@phosphor-icons/react";
+import type { Route } from "next";
 import { useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
@@ -169,6 +170,14 @@ type DashboardQuestionCardProps = {
   actionHref: string;
   actionLabel: string;
   priority: VisualPriority;
+};
+
+type EventsReturnCard = {
+  href: Route;
+  intent: "discover" | "react" | "manage";
+  eyebrow: string;
+  title: string;
+  description: string;
 };
 
 async function fetchDashboard(): Promise<DashboardPayload> {
@@ -900,6 +909,7 @@ export function Dashboard({
     searchQuery,
     suggestionCtaLabel,
   ]);
+  const discoverPage = getPageIntentMeta("discover");
   const reactionPage = getPageIntentMeta("react");
   const managementPage = getPageIntentMeta("manage");
   const nowQuestionCards = [
@@ -952,6 +962,40 @@ export function Dashboard({
       actionHref: joinCtaHref,
       actionLabel: joinCtaLabel,
       priority: "momentum" as VisualPriority,
+    },
+  ];
+  const eventsReturnCards: EventsReturnCard[] = [
+    {
+      href: "/now",
+      intent: "discover" as const,
+      eyebrow: "Zurück in Jetzt",
+      title: "Spontane nächste Schritte prüfen",
+      description:
+        joinableMomentumEvents.length > 0
+          ? `${joinableMomentumEvents.length} Aktivität${joinableMomentumEvents.length === 1 ? "" : "en"} mit Momentum warten dort auf schnellen Einstieg.`
+          : nextJoinableEvent
+            ? "Dort prüfst du die nächste sichtbare Aktivität, bei der du ohne viel Abstimmung direkt einsteigen kannst."
+            : "Wenn du wieder aus Planung in den offenen Hauptfluss wechseln willst, bündelt Jetzt die relevantesten spontanen Optionen.",
+    },
+    {
+      href: "/suggestions",
+      intent: "react" as const,
+      eyebrow: "Weiter in Vorschläge",
+      title: pendingCount > 0 ? "Offene Reaktionen beantworten" : "Reaktions-Queue prüfen",
+      description:
+        pendingCount > 0
+          ? `${pendingCount} offene Entscheidung${pendingCount === 1 ? "" : "en"} warten dort getrennt vom Sozialkalender auf eine bewusste Antwort.`
+          : "Wenn neue Empfehlungen auftauchen, beantwortest du sie dort gesammelt, statt sie zwischen Planung und Kalenderkontext zu suchen.",
+    },
+    {
+      href: "/groups",
+      intent: "manage" as const,
+      eyebrow: "Weiter in Gruppen",
+      title: "Sichtbarkeit und Kreise pflegen",
+      description:
+        visibleGroups.length > 0
+          ? `${visibleGroups.length} sichtbare Gruppe${visibleGroups.length === 1 ? "" : "n"} helfen dir dort bei Freigabekreisen, Relevanz und Einladungen.`
+          : "Wenn du den sozialen Rahmen zuerst vorbereiten willst, pflegst du dort Gruppen, Kontakte und Freigabekreise getrennt vom Aktivitätsfluss.",
     },
   ];
 
@@ -1143,6 +1187,39 @@ export function Dashboard({
                     : "Hier planst du Gruppen-Termine bewusst getrennt von Discovery, offenen Reaktionen und spontanen Mitmach-Einstiegen."}
                 </p>
               </div>
+            </div>
+          </section>
+        ) : null}
+
+        {isEventsView ? (
+          <section className="mt-5 md:mt-6" aria-label="Rückwege in den Hauptfluss">
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className={discoverPage.eyebrowClassName}>Rückwege in den Hauptfluss</p>
+                <h2 className={sectionTitleClassName}>Events bleibt Verwaltung, nicht dein Discovery-Feed</h2>
+                <p className={sectionBodyClassName}>
+                  Auch wenn du hier planst oder Kalenderkontext prüfst, kommst du mit einem Schritt zurück zu spontanen
+                  Aktivitäten, offenen Reaktionen oder deinen Freigabekreisen.
+                </p>
+              </div>
+              <a
+                href="/now"
+                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Jetzt priorisiert öffnen
+              </a>
+            </div>
+            <div className="mt-4 grid gap-3 xl:grid-cols-3">
+              {eventsReturnCards.map((card) => (
+                <FlowCard
+                  key={card.href}
+                  href={card.href}
+                  intent={card.intent}
+                  eyebrow={card.eyebrow}
+                  title={card.title}
+                  description={card.description}
+                />
+              ))}
             </div>
           </section>
         ) : null}
