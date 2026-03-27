@@ -159,6 +159,26 @@ export function getEventPresenceToggleCopy(hasCheckedIn: boolean) {
   };
 }
 
+export function getEventPresencePanelCopy(
+  state: EventPresenceDisplayState | null,
+) {
+  if (state === "checked_in") {
+    return getEventPresenceToggleCopy(true);
+  }
+
+  if (state === "expired") {
+    return {
+      title: "Dein Vor-Ort-Zeitfenster ist abgelaufen",
+      description:
+        "Du bist für dieses Event aktuell nicht mehr sichtbar. Solange das Eventfenster noch offen ist, kannst du direkt ein neues Zeitfenster starten.",
+      actionLabel: "Neues Zeitfenster starten",
+      successMessage: "Du bist für dieses Event jetzt wieder vor Ort sichtbar.",
+    };
+  }
+
+  return getEventPresenceToggleCopy(false);
+}
+
 export function getEventPresenceWindowOptions(
   eventEndsAt: Date,
   now: Date = new Date(),

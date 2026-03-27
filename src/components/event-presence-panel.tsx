@@ -9,6 +9,7 @@ import {
   getEventPresenceDisplayState,
   formatEventPresenceTime,
   getDefaultEventPresenceVisibleUntil,
+  getEventPresencePanelCopy,
   getEventPresenceToggleCopy,
   getEventPresenceWindow,
   getEventPresenceWindowOptions,
@@ -60,12 +61,12 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
       "",
   );
 
-  const hasCheckedIn = status === "checked_in";
-  const toggleCopy = getEventPresenceToggleCopy(hasCheckedIn);
   const displayState = getEventPresenceDisplayState({
     status,
     visibleUntil: currentVisibleUntilIso ? new Date(currentVisibleUntilIso) : null,
   });
+  const hasCheckedIn = displayState === "checked_in";
+  const panelCopy = getEventPresencePanelCopy(displayState);
   const statusMeta = getEventPresenceDisplayMeta(displayState);
   const audienceCopy = getEventPresenceAudienceCopy({
     windowState: presenceWindow.state,
@@ -132,7 +133,9 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
       if (payload.summary.currentUserVisibleUntilIso) {
         setSelectedVisibleUntilIso(payload.summary.currentUserVisibleUntilIso);
       }
-      setSavedMessage(getEventPresenceToggleCopy(nextStatus === "checked_in").successMessage);
+      setSavedMessage(
+        getEventPresenceToggleCopy(nextStatus === "checked_in").successMessage,
+      );
     } catch (requestError) {
       setError(
         requestError instanceof Error ? requestError.message : "Unbekannter Fehler",
@@ -145,8 +148,8 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
   return (
     <section className={`mt-4 ${presenceCard.sectionClassName} sm:p-6`}>
       <p className={`text-sm font-semibold ${presenceCard.accentTextClassName}`}>Vor Ort Status</p>
-      <h2 className="mt-1 text-lg font-semibold text-slate-900">{toggleCopy.title}</h2>
-      <p className="mt-2 text-sm text-slate-700">{toggleCopy.description}</p>
+      <h2 className="mt-1 text-lg font-semibold text-slate-900">{panelCopy.title}</h2>
+      <p className="mt-2 text-sm text-slate-700">{panelCopy.description}</p>
       <p className="mt-3 text-sm text-slate-600">
         <span className="font-medium text-slate-900">{statusMeta.label}</span> ·{" "}
         {activeVisibleUntilLabel
@@ -187,7 +190,7 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
           onClick={() => updateStatus("checked_in")}
           className={presenceCard.actionClassName}
         >
-          {presenceWindow.canCheckIn ? toggleCopy.actionLabel : windowCopy.actionLabel}
+          {presenceWindow.canCheckIn ? panelCopy.actionLabel : windowCopy.actionLabel}
         </button>
         <button
           type="button"

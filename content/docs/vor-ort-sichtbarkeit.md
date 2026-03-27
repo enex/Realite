@@ -25,6 +25,7 @@ Wenn die Option aktiv ist:
 - dort kannst du dich bewusst mit einem begrenzten Zeitfenster auf **Jetzt vor Ort sichtbar sein** setzen oder wieder ausblenden
 - dieser Check-in ist erst **90 Minuten vor Eventbeginn** möglich und endet automatisch mit dem Event
 - wenn dein gewähltes Zeitfenster abläuft, zeigt Realite das auf der Eventseite ausdrücklich als **Zeitfenster abgelaufen** statt weiter so zu wirken, als wärst du noch sichtbar
+- der Hauptstatus im Bereich **Vor Ort Status** kippt dann ebenfalls auf den Schutz-Zustand und bietet erst danach wieder bewusst ein neues Zeitfenster an
 - dieser Schutz-Zustand bleibt auch nach einem späteren Neuladen der Eventseite erkennbar, bis du bewusst ein neues Zeitfenster setzt oder dich ausblendest
 - andere Personen mit Zugriff auf dieses Event sehen nur innerhalb dieses Event-Kontexts, wer sich aktiv sichtbar gemacht hat
 - der Bereich **Vor Ort Status** erklärt zusätzlich konkret, wer diesen Vor-Ort-Status je nach Event-Sichtbarkeit sehen kann, zum Beispiel nur eine Gruppe, nur Kontakte oder ein öffentliches Event-Publikum

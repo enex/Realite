@@ -7,6 +7,7 @@ import {
   getEventPresenceAudienceRuleCopy,
   getEventPresenceDisplayMeta,
   getEventPresenceDisplayState,
+  getEventPresencePanelCopy,
   getEventPresenceStatusMeta,
   getEventPresenceToggleCopy,
   getEventPresenceWindow,
@@ -50,6 +51,13 @@ describe("event presence", () => {
       label: "Zeitfenster abgelaufen",
       description:
         "Dein gewähltes Vor-Ort-Zeitfenster ist vorbei. Du bist für dieses Event aktuell nicht mehr sichtbar.",
+    });
+    expect(getEventPresencePanelCopy(expiredState)).toEqual({
+      title: "Dein Vor-Ort-Zeitfenster ist abgelaufen",
+      description:
+        "Du bist für dieses Event aktuell nicht mehr sichtbar. Solange das Eventfenster noch offen ist, kannst du direkt ein neues Zeitfenster starten.",
+      actionLabel: "Neues Zeitfenster starten",
+      successMessage: "Du bist für dieses Event jetzt wieder vor Ort sichtbar.",
     });
   });
 
