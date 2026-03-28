@@ -37,6 +37,7 @@ Zuletzt umgesetzt am 28.03.2026:
 
 - neue Nutzer-Doku **Sicherheit bei Vor-Ort- und Festival-Kontexten** konkretisiert jetzt die offenen Trust-/Safety-Regeln fuer spaetere On-Site-Socializing-Faelle
 - Vor-Ort-Sichtbarkeit, Sichtbarkeit/Relevanz und FAQ verlinken diese Leitplanken jetzt direkt, damit spaetere Festival-Kontexte klar als geschuetzter Zusatz statt People-Browsing gerahmt bleiben
+- auch die Grundsatz-Doku **Was ist Realite?** verweist jetzt direkt auf diese Leitplanken, damit der Produktkern schon in der Einstiegserklaerung nicht in offene Nearby-Discovery kippt
 - der offene P2-Task zu Trust- und Safety-Leitplanken fuer spaetere Vor-Ort-/Festival-Kontexte ist damit im aktuellen Doku-Stand abgehakt
 - `Jetzt` unterscheidet komplett leere Hauptfeed-Zustände jetzt explizit zwischen fehlendem Relevanzkontext, fehlendem Timing-Kontext ohne Kalender und vorhandenem Kontext ohne offene Aktivität
 - der leere Hauptfeed führt dadurch gezielter weiter: erst Gruppen für sozialen Kontext, optional Einstellungen für mehr Zeitkontext, sonst direkt Aktivität erstellen oder Planung in `Events` prüfen

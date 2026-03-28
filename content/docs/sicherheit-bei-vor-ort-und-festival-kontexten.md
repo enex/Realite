@@ -100,6 +100,17 @@ Auch mit spaeteren Festival- oder Socializing-Funktionen soll Realite nicht zu d
 - automatische Freigabe fuer Kontakte oder Freunde von Freunden
 - Discovery nur ueber Personen statt ueber Aktivitaeten
 
+## Wenn du unsicher bist
+
+Wenn ein spaeterer Vor-Ort-Flow sich fuer dich eher wie Beobachtung als wie Koordination anfuehlt, ist das ein Warnsignal.
+
+Dann sollte Realite den Schritt kleiner oder klarer machen, zum Beispiel:
+
+- erst eine Aktivitaet statt eine Person in den Mittelpunkt stellen
+- erst gegenseitige Offenheit bestaetigen
+- erst einen klaren Sichtbarkeitskreis nennen
+- erst eine kurze, begrenzte Freigabe statt offener Dauer-Sichtbarkeit erlauben
+
 ## Kurz gesagt
 
 Fuer spaetere Vor-Ort- und Festival-Kontexte gilt in Realite derselbe Kern wie heute:
