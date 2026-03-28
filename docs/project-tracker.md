@@ -35,6 +35,10 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 28.03.2026:
 
+- MCP-Login-/Onboarding-Seite zeigt jetzt explizit den kalenderlosen Kernflow vor dem technischen Google-Login: Events, Gruppen und Vorschläge bleiben direkt nutzbar
+- der spätere Upgrade-Pfad für Kalender und Kontakte ist auf derselben Einstiegsfläche jetzt bewusst sichtbar, aber klar als optionaler Ausbau gerahmt
+- Nutzer-Doku zu Login-/Onboarding-Pfaden hält diese Produktentscheidung jetzt explizit fest: kalenderloser Kern zuerst, Kalenderkontext später
+- die offene Entscheidungsfrage, wie stark der Kernflow ohne Kalender schon im Onboarding sichtbar erklärt werden soll, ist damit für den aktuellen Einstieg beantwortet
 - Login- und Kalender-Providergrenzen jetzt als zentrale Adapter-Definition im Code verankert: Auth-Scopes, Kalender-Scope-Prüfung und geplante Providerpfade hängen nicht mehr an verstreuten Google-Strings
 - die Kalender-Verbindungslogik liest erforderliche Rechte jetzt providerbasiert statt hart auf Google zu prüfen; geplante Apple-/Microsoft-Pfade bleiben damit als Adaptergrenze explizit vorbereitet
 - Tests decken die neue Adapter-Definition und den generischen Kalender-Verbindungszustand ab
@@ -549,7 +553,7 @@ Damit Milestone 7 nicht nur abstrakt bleibt, gelten für die nächsten Kalender-
 - [x] `Smart Meetings` bleiben nicht Teil der primären Hauptaktivitätsansicht
 - [x] Die primäre Home-/Now-Ansicht priorisiert Reaktion und offene Aktivitäten vor Verwaltung
 - [x] Smart Meetings bleiben als sekundärer Verwaltungsbereich unter `Events`
-- [ ] wie stark der Kernflow ohne Kalender schon im Onboarding sichtbar erklärt werden soll, ohne die spätere Verbindung zu verstecken
+- [x] wie stark der Kernflow ohne Kalender schon im Onboarding sichtbar erklärt werden soll, ohne die spätere Verbindung zu verstecken
 - [ ] welche Vorschlags- und Ranking-Signale ohne Kalender zuerst genutzt werden sollen: Gruppen, Zusagen, Tags, manuelle Verfügbarkeit oder explizite Interessen
 - [ ] ob Apple Login im Onboarding als gleichwertige Standardoption neben Google und E-Mail erscheint oder zuerst sekundär gestartet wird
 - [ ] welche Kalenderfeatures providerübergreifend als gemeinsamer Kern gelten und was zunächst Google-, Apple- oder Microsoft-spezifisch bleiben darf

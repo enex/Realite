@@ -27,6 +27,28 @@ Wichtig ist dabei:
 
 Wenn du den kompletten Standardfall ohne Kalender sehen willst, hilft dir zusätzlich **[Ohne Kalender starten](/docs/ohne-kalender-starten)**.
 
+## Wie der Einstieg das schon im Onboarding zeigen soll
+
+Der Einstieg soll den kalenderlosen Kernflow frueh sichtbar machen, ohne den spaeteren Nutzen einer Verbindung kleinzureden.
+
+Darum ist die Reihenfolge im Onboarding bewusst:
+
+1. zuerst klar sagen: Realite funktioniert bereits mit Aktivitaet, Sichtbarkeit, Gruppen und Vorschlaegen
+2. danach den technischen Login-Schritt zeigen
+3. erst anschliessend Kalender und Kontakte als optionalen Ausbau erklaeren
+
+Das bedeutet fuer die Copy:
+
+- kein Einstiegstext darf so klingen, als waere Kalenderzugriff Voraussetzung fuer den ersten Nutzen
+- gleichzeitig soll sichtbar bleiben, dass Kalender spaeter mehr Timing-, Verfuegbarkeits- und Planungs-Kontext geben kann
+- der spaetere Upgrade-Pfad wird erklaert, aber nicht als Huerde vor den ersten Event-, Gruppen- oder Vorschlags-Flow gesetzt
+
+So bleibt der Onboarding-Pfad ehrlich:
+
+- du kannst sofort starten
+- du kannst spaeter bewusst mehr Kontext verbinden
+- nichts davon passiert automatisch
+
 ## Google
 
 Der heutige technisch ausgebaute Einstieg läuft über Google.

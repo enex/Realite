@@ -34,5 +34,7 @@ describe("docs pages", () => {
     expect(rendered?.html).toContain("Google");
     expect(rendered?.html).toContain("E-Mail");
     expect(rendered?.html).toContain("providerunabhängig");
+    expect(rendered?.html).toContain("Wie der Einstieg das schon im Onboarding zeigen soll");
+    expect(rendered?.html).toContain("du kannst sofort starten");
   });
 });
