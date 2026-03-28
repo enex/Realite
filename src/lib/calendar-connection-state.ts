@@ -1,5 +1,8 @@
+import { hasRequiredCalendarScopes } from "@/src/lib/provider-adapters";
+
 type CalendarConnectionInput = {
   hasConnection: boolean;
+  providerId?: string | null;
   scope: string | null | undefined;
   writableCalendarCount: number;
   readableCalendarCount: number;
@@ -7,24 +10,12 @@ type CalendarConnectionInput = {
 
 export type CalendarConnectionState = "connected" | "not_connected" | "needs_reconnect";
 
-function hasCalendarScope(scope: string | null | undefined) {
-  if (!scope) {
-    return false;
-  }
-
-  return scope
-    .split(/\s+/)
-    .map((entry) => entry.trim())
-    .filter(Boolean)
-    .some((entry) => entry === "https://www.googleapis.com/auth/calendar");
-}
-
 export function deriveCalendarConnectionState(input: CalendarConnectionInput): CalendarConnectionState {
   if (!input.hasConnection) {
     return "not_connected";
   }
 
-  if (!hasCalendarScope(input.scope)) {
+  if (!hasRequiredCalendarScopes(input.scope, input.providerId ?? "google")) {
     return "needs_reconnect";
   }
 

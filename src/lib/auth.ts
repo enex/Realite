@@ -7,6 +7,7 @@ import { headers } from "next/headers";
 
 import * as authSchema from "@/src/db/auth-schema";
 import { getDb } from "@/src/db/client";
+import { GOOGLE_AUTH_PROVIDER } from "@/src/lib/provider-adapters";
 
 const authBaseUrl = process.env.BETTER_AUTH_URL ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 const authSecret = process.env.BETTER_AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
@@ -60,14 +61,7 @@ function createAuth() {
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID ?? "",
         clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-        scope: [
-          "openid",
-          "email",
-          "profile",
-          "https://www.googleapis.com/auth/calendar",
-          "https://www.googleapis.com/auth/contacts",
-          "https://www.googleapis.com/auth/contacts.readonly"
-        ],
+        scope: [...GOOGLE_AUTH_PROVIDER.scopes],
         accessType: "offline",
         prompt: "consent"
       }

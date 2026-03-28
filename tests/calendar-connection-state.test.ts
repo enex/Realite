@@ -18,6 +18,7 @@ describe("deriveCalendarConnectionState", () => {
     expect(
       deriveCalendarConnectionState({
         hasConnection: true,
+        providerId: "google",
         scope: "openid email https://www.googleapis.com/auth/calendar",
         writableCalendarCount: 1,
         readableCalendarCount: 2
@@ -29,9 +30,22 @@ describe("deriveCalendarConnectionState", () => {
     expect(
       deriveCalendarConnectionState({
         hasConnection: true,
+        providerId: "google",
         scope: "openid email profile",
         writableCalendarCount: 0,
         readableCalendarCount: 0
+      })
+    ).toBe("needs_reconnect");
+  });
+
+  test("returns needs_reconnect for planned providers without a scope contract", () => {
+    expect(
+      deriveCalendarConnectionState({
+        hasConnection: true,
+        providerId: "apple",
+        scope: "openid email profile",
+        writableCalendarCount: 1,
+        readableCalendarCount: 1
       })
     ).toBe("needs_reconnect");
   });

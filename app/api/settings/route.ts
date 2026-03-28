@@ -92,6 +92,7 @@ export async function GET() {
   const criteria = await getSuggestionLearningSummary(user.id);
   const calendarConnectionState = deriveCalendarConnectionState({
     hasConnection: Boolean(connection),
+    providerId: connection?.provider ?? null,
     scope: connection?.scope ?? null,
     writableCalendarCount: calendars.length,
     readableCalendarCount: readableCalendars.length

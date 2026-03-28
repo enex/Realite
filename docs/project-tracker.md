@@ -35,6 +35,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 28.03.2026:
 
+- Login- und Kalender-Providergrenzen jetzt als zentrale Adapter-Definition im Code verankert: Auth-Scopes, Kalender-Scope-Prüfung und geplante Providerpfade hängen nicht mehr an verstreuten Google-Strings
+- die Kalender-Verbindungslogik liest erforderliche Rechte jetzt providerbasiert statt hart auf Google zu prüfen; geplante Apple-/Microsoft-Pfade bleiben damit als Adaptergrenze explizit vorbereitet
+- Tests decken die neue Adapter-Definition und den generischen Kalender-Verbindungszustand ab
 - Matcher-Fallback für fehlenden Kalenderabgleich umgesetzt: Vorschläge ohne FreeBusy-/Kalenderkontext brechen nicht mehr weg, sondern werden bewusst vorsichtiger priorisiert
 - Vorschlagsbegründungen markieren diesen Zustand jetzt explizit als Schätzung ohne Kalenderabgleich; automatische Kalender-Vormerkungen pausieren dabei
 - Nutzer-Doku für Matching, FAQ und den Flow ohne Kalender erklärt den degradierten Vorschlagsmodus jetzt direkt im selben Produktpfad
@@ -432,7 +435,7 @@ Status: `planned`
 - [x] Zusagen- und Presence-Listen privacy-härten: ohne gepflegten Namen keine E-Mail-Fallbacks in sichtbaren Personenlisten zeigen
 - [x] Ranking- und Vorschlagslogik für Nutzer ohne Kalenderkontext bewusst degradieren statt brechen
 - [x] Event- und Sozialkalender-Ansichten für Nutzer ohne Kalender so formulieren, dass Planung auch manuell verständlich bleibt
-- [ ] Adaptergrenzen für Login und Kalender konkretisieren: Google, Apple und Microsoft dürfen in der Kernlogik keine Sonderbehandlung erzwingen
+- [x] Adaptergrenzen für Login und Kalender konkretisieren: Google, Apple und Microsoft dürfen in der Kernlogik keine Sonderbehandlung erzwingen
 - [x] Capability-Matrix festhalten: Welche Produktfunktionen hängen an Login, welche an Kalenderzugriff und welche an einzelnen Providern
 - [ ] Apple Kalender und Microsoft Kalender als nächste konkrete Integrationspfade im Plan verankern, inklusive erwarteter Unterschiede bei Sync, Einladungen und Bearbeiten-im-Kalender-Links
 
