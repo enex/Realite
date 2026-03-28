@@ -122,4 +122,46 @@ describe("matcher service", () => {
     ]);
     expect(repository.listSuggestionsForUser("viewer").map((entry) => entry.eventId)).toEqual(["good-event"]);
   });
+
+  test("degrades suggestions without calendar context instead of dropping them", async () => {
+    const repository = new InMemoryRepository();
+    const calendar = new InMemoryCalendarProvider();
+    const service = createMatcherService({
+      repository,
+      calendar,
+      now: () => new Date("2026-03-01T12:00:00.000Z"),
+    });
+
+    repository.setSuggestionSettings("viewer", {
+      autoInsertSuggestions: true,
+      suggestionCalendarId: "suggestions",
+      suggestionLimitPerDay: 5,
+      suggestionLimitPerWeek: 10,
+    });
+    repository.setTagPreferences(
+      "viewer",
+      new Map([["#tennis", { weight: 0.8, votes: 4 }]]),
+    );
+    repository.setVisibleEvents("viewer", [
+      buildEvent({
+        id: "calendarless-event",
+        title: "Padel Abend",
+        startsAt: new Date("2026-03-01T15:00:00.000Z"),
+        endsAt: new Date("2026-03-01T16:00:00.000Z"),
+      }),
+    ]);
+    calendar.busyWindowsByUser.set("viewer", null);
+
+    const suggestions = await service.generateSuggestions("viewer");
+
+    expect(suggestions).toHaveLength(1);
+    expect(suggestions[0]?.eventId).toBe("calendarless-event");
+    expect(suggestions[0]?.status).toBe("pending");
+    expect(suggestions[0]?.calendarEventId).toBe(null);
+    expect(suggestions[0]?.score).toBe(1.6);
+    expect(suggestions[0]?.reason).toContain(
+      "Verfügbarkeit gerade ohne Kalenderabgleich geschätzt.",
+    );
+    expect(calendar.insertedSuggestions).toHaveLength(0);
+  });
 });

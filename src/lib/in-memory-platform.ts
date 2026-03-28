@@ -70,7 +70,11 @@ export class InMemoryCalendarProvider implements CalendarProvider {
     timeMin: Date;
     timeMax: Date;
   }) {
-    return this.busyWindowsByUser.get(input.userId) ?? [];
+    if (!this.busyWindowsByUser.has(input.userId)) {
+      return [];
+    }
+
+    return this.busyWindowsByUser.get(input.userId) ?? null;
   }
 
   async insertSuggestionIntoCalendar(input: {

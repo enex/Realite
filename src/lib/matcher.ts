@@ -25,6 +25,8 @@ type ScoreContribution = {
   value: number;
 };
 
+type AvailabilityStatus = "available" | "unavailable" | "unknown";
+
 export type MatcherSuggestionState = {
   id: string;
   eventId: string;
@@ -130,14 +132,24 @@ function formatContributionLabel(tag: string) {
   return "passendes Signal";
 }
 
-function buildSuggestionReason(contributions: ScoreContribution[]) {
+function buildSuggestionReason(
+  contributions: ScoreContribution[],
+  availabilityStatus: AvailabilityStatus,
+) {
   const topPositive = contributions
     .filter((contribution) => contribution.value > 0.15)
     .sort((a, b) => b.value - a.value)
     .slice(0, 3);
 
+  const availabilitySuffix =
+    availabilityStatus === "unknown"
+      ? " Verfügbarkeit gerade ohne Kalenderabgleich geschätzt."
+      : "";
+
   if (!topPositive.length) {
-    return "Match basierend auf deinen bisherigen Entscheidungen und freier Zeit im Kalender";
+    return availabilityStatus === "unknown"
+      ? "Match basierend auf deinen bisherigen Entscheidungen. Verfügbarkeit gerade ohne Kalenderabgleich geschätzt."
+      : "Match basierend auf deinen bisherigen Entscheidungen und freier Zeit im Kalender";
   }
 
   const details = topPositive
@@ -146,7 +158,7 @@ function buildSuggestionReason(contributions: ScoreContribution[]) {
         `${contribution.label} (+${contribution.value.toFixed(2)})`,
     )
     .join(", ");
-  return `Top-Faktoren: ${details}`;
+  return `Top-Faktoren: ${details}.${availabilitySuffix}`;
 }
 
 function getUtcDayKey(date: Date) {
@@ -167,7 +179,12 @@ function getUtcWeekKey(date: Date) {
 }
 
 function applySuggestionLimits(
-  candidates: Array<{ event: VisibleEvent; score: number; reason: string }>,
+  candidates: Array<{
+    event: VisibleEvent;
+    score: number;
+    reason: string;
+    availabilityStatus: AvailabilityStatus;
+  }>,
   limitPerDay: number,
   limitPerWeek: number,
 ) {
@@ -177,6 +194,7 @@ function applySuggestionLimits(
     event: VisibleEvent;
     score: number;
     reason: string;
+    availabilityStatus: AvailabilityStatus;
   }>;
 
   for (const candidate of candidates) {
@@ -200,6 +218,7 @@ function applySuggestionLimits(
 function scoreEvent(
   event: VisibleEvent,
   preferences: Map<string, { weight: number; votes: number }>,
+  availabilityStatus: AvailabilityStatus,
 ) {
   let score = 1;
   const contributions = [] as ScoreContribution[];
@@ -238,9 +257,13 @@ function scoreEvent(
     }
   }
 
+  if (availabilityStatus === "unknown") {
+    score -= 0.2;
+  }
+
   return {
-    score: Number(score.toFixed(2)),
-    reason: buildSuggestionReason(contributions),
+    score: Number(Math.max(0, score).toFixed(2)),
+    reason: buildSuggestionReason(contributions, availabilityStatus),
   };
 }
 
@@ -258,7 +281,7 @@ const defaultMatcherRepository: MatcherRepository = {
 export function createMatcherService(dependencies: MatcherDependencies) {
   async function buildAvailabilityMap(userId: string, events: VisibleEvent[]) {
     if (!events.length) {
-      return new Map<string, boolean>();
+      return new Map<string, AvailabilityStatus>();
     }
 
     const sorted = [...events].sort(
@@ -273,14 +296,14 @@ export function createMatcherService(dependencies: MatcherDependencies) {
     });
 
     if (busyWindows === null) {
-      const map = new Map<string, boolean>();
+      const map = new Map<string, AvailabilityStatus>();
       for (const event of events) {
-        map.set(event.id, false);
+        map.set(event.id, "unknown");
       }
       return map;
     }
 
-    const map = new Map<string, boolean>();
+    const map = new Map<string, AvailabilityStatus>();
 
     for (const event of events) {
       const conflict = busyWindows.some((window) =>
@@ -292,7 +315,7 @@ export function createMatcherService(dependencies: MatcherDependencies) {
         ),
       );
 
-      map.set(event.id, !conflict);
+      map.set(event.id, conflict ? "unavailable" : "available");
     }
 
     return map;
@@ -333,15 +356,16 @@ export function createMatcherService(dependencies: MatcherDependencies) {
       event: VisibleEvent;
       score: number;
       reason: string;
+      availabilityStatus: AvailabilityStatus;
     }>;
 
     for (const event of blockFilteredEvents) {
-      const isAvailable = availabilityMap.get(event.id) ?? true;
-      if (!isAvailable) {
+      const availabilityStatus = availabilityMap.get(event.id) ?? "available";
+      if (availabilityStatus === "unavailable") {
         continue;
       }
 
-      const scored = scoreEvent(event, preferences);
+      const scored = scoreEvent(event, preferences, availabilityStatus);
       if (scored.score < SCORE_THRESHOLD) {
         continue;
       }
@@ -350,6 +374,7 @@ export function createMatcherService(dependencies: MatcherDependencies) {
         event,
         score: scored.score,
         reason: scored.reason,
+        availabilityStatus,
       });
     }
 
@@ -422,6 +447,7 @@ export function createMatcherService(dependencies: MatcherDependencies) {
       if (
         settings.autoInsertSuggestions &&
         candidate.score >= AUTO_INSERT_MIN_SCORE &&
+        candidate.availabilityStatus === "available" &&
         !existing?.calendarEventId
       ) {
         const sourceCalendarId = parseSourceCalendarId(
