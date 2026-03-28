@@ -55,6 +55,9 @@ Die folgende Übersicht trennt bewusst zwischen Konto, Kalenderzugriff und heuti
 | Kalendertermine nach Realite übernehmen | Ja | Ja | aktuell Google Kalender |
 | Smart-Treffen per Kalendereinladung verschicken | Ja | Ja | aktuell Google Kalender |
 
+Den gleichen Unterschied zwischen gemeinsamem Kalender-Kern und provider-spezifischen Extras siehst du auch unter
+**Profil & Einstellungen** direkt in der Karte **Kalender-Kern und Provider-Pfade**.
+
 ## Gemeinsamer Kalender-Kern
 
 Damit mehrere Kalenderanbieter später anschließen können, behandelt Realite diese drei Bausteine als gemeinsamen Kern aller Kalenderadapter:

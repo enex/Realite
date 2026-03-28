@@ -35,6 +35,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 28.03.2026:
 
+- die Provider-Capability-Matrix in `Profil & Einstellungen` startet jetzt mit einer kompakten Kurzlogik: gemeinsamer Kalender-Kern getrennt von provider-spezifischen Extras
+- die Nutzer-Doku zu Login, Kalender und Providern verweist jetzt direkt auf diesen Produktort, damit der Capability-Unterschied nicht nur in tieferer Hintergrunddoku steckt
+- Regressionstests sichern die Layer jetzt explizit ab: `shared_core` bleibt bei Verfuegbarkeit, Kalenderkopien und Import; Einladungen und Kalender-Links bleiben Provider-Extras
 - neue Nutzer-Doku **Sicherheit bei Vor-Ort- und Festival-Kontexten** konkretisiert jetzt die offenen Trust-/Safety-Regeln fuer spaetere On-Site-Socializing-Faelle
 - Vor-Ort-Sichtbarkeit, Sichtbarkeit/Relevanz und FAQ verlinken diese Leitplanken jetzt direkt, damit spaetere Festival-Kontexte klar als geschuetzter Zusatz statt People-Browsing gerahmt bleiben
 - auch die Grundsatz-Doku **Was ist Realite?** verweist jetzt direkt auf diese Leitplanken, damit der Produktkern schon in der Einstiegserklaerung nicht in offene Nearby-Discovery kippt

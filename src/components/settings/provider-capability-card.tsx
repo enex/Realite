@@ -47,6 +47,19 @@ const SECTION_COPY: Record<
   },
 };
 
+const SUMMARY_ITEMS = [
+  {
+    title: "Gemeinsamer Kern",
+    description:
+      "Verfuegbarkeitsabgleich, Kalenderkopien und Import bleiben dieselben Produktpfade, auch wenn sie technisch je Provider unterschiedlich weit sind.",
+  },
+  {
+    title: "Provider-Extras",
+    description:
+      "Einladungsversand und Bearbeiten-im-Kalender-Links duerfen abweichen. Wenn sie fehlen, faellt Realite auf Links, Sichtbarkeit und Join-Flow zurueck.",
+  },
+] as const;
+
 function CapabilityRow({ capability }: { capability: CalendarCapabilityDefinition }) {
   return (
     <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -94,6 +107,14 @@ export function ProviderCapabilityCard() {
         klar, welche Kalenderfunktionen spaeter fuer Apple und Microsoft anschliessen sollen und wo Realite im Zweifel
         immer auf den Link-, Sichtbarkeits- und Join-Flow zurueckfaellt.
       </p>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        {SUMMARY_ITEMS.map((item) => (
+          <article key={item.title} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <h3 className="text-sm font-semibold text-slate-900">{item.title}</h3>
+            <p className="mt-1 text-sm leading-6 text-slate-700">{item.description}</p>
+          </article>
+        ))}
+      </div>
 
       {[sharedCore, providerExtras].map((sectionCapabilities) => {
         const layer = sectionCapabilities[0]?.layer;
