@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/src/components/app-shell";
 import { EventImage } from "@/src/components/event-image";
 import { UserAvatar } from "@/src/components/user-avatar";
+import { buildLoginPath } from "@/src/lib/provider-adapters";
 import { getUserProfileOverview, type UserProfileEvent, type UserProfileVisibility } from "@/src/lib/repository";
 import { requireAppUser } from "@/src/lib/session";
 import { enlargeUUID, shortenUUID } from "@/src/lib/utils/short-uuid";
@@ -197,7 +198,7 @@ export default async function UserProfilePage({
           </div>
           {!viewer ? (
             <a
-              href={`/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+              href={buildLoginPath(callbackUrl)}
               className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white"
             >
               Für Matches anmelden

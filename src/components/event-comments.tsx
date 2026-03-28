@@ -1,10 +1,10 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 import { useState } from "react";
 
 import { getPersonDisplayLabel } from "@/src/lib/person-display";
+import { buildLoginPath } from "@/src/lib/provider-adapters";
 
 type Comment = {
   id: string;
@@ -139,12 +139,9 @@ export function EventComments({
 
       {allowGuestView ? (
         <p className="mt-4 text-sm text-slate-600">
-          <Link
-            href={`/api/auth/signin/google?callbackUrl=${encodeURIComponent(signInCallbackPath)}`}
-            className="font-medium text-teal-700 hover:text-teal-800"
-          >
+          <a href={buildLoginPath(signInCallbackPath)} className="font-medium text-teal-700 hover:text-teal-800">
             Melde dich an
-          </Link>
+          </a>
           , um zu kommentieren.
         </p>
       ) : (

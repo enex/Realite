@@ -187,7 +187,7 @@ Danach entfernt Realite:
 
 Diese Links findest du in von Realite angelegten Kalendereinträgen. Bei aus Google importierten Events ergänzt Realite den `/e/...`-Link in der Google-Beschreibung automatisch und ignoriert diesen Zusatztext beim erneuten Import in Realite.
 
-**Event-Link ohne Login:** Öffentliche Event-Links (`/e/...`) kannst du auch ohne Anmeldung öffnen. Zum Ansehen reicht der Link; für Zusagen, Absagen oder Kommentare musst du dich einmal anmelden. Der aktuelle Login-Start läuft dabei über Google. In dieser Gastansicht zeigt Realite keine E-Mail-Adressen von Erstellern oder Kommentierenden öffentlich an.
+**Event-Link ohne Login:** Öffentliche Event-Links (`/e/...`) kannst du auch ohne Anmeldung öffnen. Zum Ansehen reicht der Link; für Zusagen, Absagen oder Kommentare musst du dich einmal anmelden. Danach wählst du den verfügbaren Login für dieses Deployment selbst aus. In dieser Gastansicht zeigt Realite keine E-Mail-Adressen von Erstellern oder Kommentierenden öffentlich an.
 
 ## Warum sehe ich beim Teilen manchmal noch eine alte Link-Vorschau?
 
@@ -214,7 +214,7 @@ Weil Realite den Produktkern und die heutige Technik bewusst trennt.
 
 Heute gilt:
 
-- der Login-Start läuft sichtbar noch über Google
+- der Kontologin haengt vom aktuell konfigurierten Deployment ab
 - Kalenderkontext und Kontakte-Sync hängen aktuell an Google-Verbindungen
 - der eigentliche Kernflow mit Events, Gruppen, Sichtbarkeit und Vorschlägen bleibt davon im Produkt getrennt
 

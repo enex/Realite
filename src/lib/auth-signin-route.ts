@@ -1,0 +1,128 @@
+import { splitSetCookieHeader } from "better-auth/cookies";
+
+import { getAuth } from "@/src/lib/auth";
+import { isDevelopmentAuthMode } from "@/src/lib/provider-adapters";
+
+function createRedirectResponse(location: string, setCookieHeader: string | null) {
+  const headers = new Headers({ Location: location });
+
+  if (setCookieHeader) {
+    for (const value of splitSetCookieHeader(setCookieHeader)) {
+      headers.append("set-cookie", value);
+    }
+  }
+
+  return new Response(null, {
+    status: 302,
+    headers
+  });
+}
+
+async function toRedirectResponse(signInResponse: Response, requestUrl: URL) {
+  const locationHeader = signInResponse.headers.get("location");
+  if (locationHeader) {
+    return createRedirectResponse(
+      new URL(locationHeader, requestUrl.origin).toString(),
+      signInResponse.headers.get("set-cookie")
+    );
+  }
+
+  try {
+    const payload = (await signInResponse.clone().json()) as { url?: string };
+    if (payload.url) {
+      return createRedirectResponse(
+        new URL(payload.url, requestUrl.origin).toString(),
+        signInResponse.headers.get("set-cookie")
+      );
+    }
+  } catch {
+    // Fallback: return original response if provider response is not JSON.
+  }
+
+  return signInResponse;
+}
+
+function getCallbackUrl(requestUrl: URL) {
+  return requestUrl.searchParams.get("callbackURL") ?? requestUrl.searchParams.get("callbackUrl") ?? "/";
+}
+
+export async function handleSocialSignInRequest(request: Request, provider: "google" | "apple" | "microsoft") {
+  const auth = getAuth();
+  const requestUrl = new URL(request.url);
+  const callbackURL = getCallbackUrl(requestUrl);
+
+  const signInResponse = await auth.api.signInSocial({
+    body: {
+      provider,
+      callbackURL
+    },
+    headers: new Headers(request.headers),
+    asResponse: true
+  });
+
+  return toRedirectResponse(signInResponse, requestUrl);
+}
+
+function createDevAuthHeaders(request: Request, requestUrl: URL) {
+  const headers = new Headers(request.headers);
+
+  if (!headers.has("origin")) {
+    headers.set("origin", requestUrl.origin);
+  }
+
+  if (!headers.has("referer")) {
+    headers.set("referer", requestUrl.origin);
+  }
+
+  return headers;
+}
+
+export async function handleDevSignInRequest(request: Request) {
+  if (!isDevelopmentAuthMode()) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  const auth = getAuth();
+  const requestUrl = new URL(request.url);
+  const callbackURL = getCallbackUrl(requestUrl);
+  const email = process.env.DEV_LOGIN_EMAIL?.trim() || "dev-login@realite.local";
+  const password = process.env.DEV_LOGIN_PASSWORD?.trim() || "realite-dev-login";
+  const name = process.env.DEV_LOGIN_NAME?.trim() || "Realite Dev";
+  const headers = createDevAuthHeaders(request, requestUrl);
+
+  const signIn = async () =>
+    auth.api.signInEmail({
+      body: {
+        email,
+        password,
+        callbackURL,
+        rememberMe: true
+      },
+      headers,
+      asResponse: true
+    });
+
+  let signInResponse = await signIn();
+
+  if (!signInResponse.ok) {
+    const signUpResponse = await auth.api.signUpEmail({
+      body: {
+        email,
+        password,
+        name,
+        callbackURL,
+        rememberMe: true
+      },
+      headers,
+      asResponse: true
+    });
+
+    if (!signUpResponse.ok && signUpResponse.status !== 422) {
+      return signUpResponse;
+    }
+
+    signInResponse = await signIn();
+  }
+
+  return toRedirectResponse(signInResponse, requestUrl);
+}

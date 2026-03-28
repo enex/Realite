@@ -29,7 +29,7 @@ export default function DatenschutzPage() {
       <section>
         <h2>2. Welche Daten wir verarbeiten</h2>
         <ul>
-          <li>Kontodaten aus dem Google-Login (Name, E-Mail-Adresse, Profilbild)</li>
+          <li>Kontodaten aus dem jeweils genutzten Login-Provider (z. B. Name, E-Mail-Adresse, Profilbild)</li>
           <li>Kalenderdaten, die für Event-Matching und Vorschläge benötigt werden</li>
           <li>Kontaktdaten aus Google Contacts, wenn die Kontakte-Synchronisierung aktiv ist</li>
           <li>Inhalte, die du in Realite anlegst (Gruppen, Events, Tags, Vorschlags-Feedback)</li>
@@ -53,17 +53,18 @@ export default function DatenschutzPage() {
         <h2>4. Rechtsgrundlagen (Art. 6 DSGVO)</h2>
         <ul>
           <li>Art. 6 Abs. 1 lit. b DSGVO für die Vertragserfüllung (Nutzung der App)</li>
-          <li>Art. 6 Abs. 1 lit. a DSGVO für freiwillige Freigaben (z. B. zusätzliche Google-Berechtigungen)</li>
+          <li>Art. 6 Abs. 1 lit. a DSGVO für freiwillige Freigaben (z. B. zusätzliche Kalender- oder Kontakte-Berechtigungen)</li>
           <li>Art. 6 Abs. 1 lit. f DSGVO für berechtigte Interessen (Sicherheit, Stabilität, Missbrauchsschutz)</li>
         </ul>
       </section>
 
       <section>
-        <h2>5. Google-Integration</h2>
+        <h2>5. Login- und Provider-Integration</h2>
         <p>
-          Für Login und Kernfunktionen nutzt Realite Google OAuth sowie Google APIs (u. a. Kalender und Kontakte). Dabei
-          werden nur die Daten verarbeitet, die für die jeweilige Funktion erforderlich sind. Berechtigungen können in deinem
-          Google-Konto jederzeit eingeschränkt oder widerrufen werden.
+          Fuer den Kontozugang nutzt Realite den jeweils angebotenen Login-Provider, aktuell z. B. Google, Apple oder
+          Microsoft. Fuer Kalender- und Kontakte-Kontext werden heute Google APIs genutzt. Es werden nur die Daten
+          verarbeitet, die fuer die jeweilige Funktion erforderlich sind. Berechtigungen koennen in deinem jeweiligen
+          Anbieter-Konto jederzeit eingeschraenkt oder widerrufen werden.
         </p>
       </section>
 
@@ -71,7 +72,7 @@ export default function DatenschutzPage() {
         <h2>6. Empfänger und Auftragsverarbeitung</h2>
         <p>
           Daten werden nur an Dienstleister weitergegeben, die für den Betrieb notwendig sind (z. B. Hosting, Datenbank,
-          Authentifizierung, Google APIs, PostHog für Analytics/Feature Flags/Session Replay). Eine Nutzung zu
+          Authentifizierung, Login-Provider, Google APIs, PostHog für Analytics/Feature Flags/Session Replay). Eine Nutzung zu
           Werbezwecken durch uns findet nicht statt.
         </p>
       </section>

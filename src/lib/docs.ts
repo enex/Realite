@@ -38,7 +38,7 @@ const DOCS_PAGES: DocsPage[] = [
   {
     slug: "login-und-onboarding-pfade",
     title: "Login- und Onboarding-Pfade",
-    description: "Wie Google, Apple und E-Mail denselben Realite-Kernflow tragen sollen.",
+    description: "Wie Google, Apple, Microsoft und der dev-only Testzugang denselben Realite-Kernflow tragen.",
     fileName: "login-und-onboarding-pfade.md"
   },
   {

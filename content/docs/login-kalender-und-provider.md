@@ -61,7 +61,8 @@ Produktlogisch ist Realite schon breiter gedacht. Technisch gibt es heute aber n
 
 Aktuell gilt:
 
-- der sichtbare Login-Start läuft heute noch über Google
+- der sichtbare Standard-Login laeuft heute ueber Google
+- in lokaler Entwicklung gibt es zusaetzlich einen dev-only Test-Login
 - Kalenderkontext ist heute an Google Kalender angebunden
 - Kontakte-Sync ist heute an Google Kontakte angebunden
 
@@ -73,10 +74,10 @@ Wichtig dabei:
 
 ## Was bewusst noch nicht aktiv ist
 
-Diese Pfade sind im aktuellen Produkt noch **nicht** gleichwertig verfügbar:
+Diese Pfade sind im aktuellen Produkt noch **nicht** allgemein freigeschaltet:
 
-- Apple Login als voll ausgebauter Einstieg
-- E-Mail-Login als gleichwertiger Standardpfad
+- Apple Login ausserhalb interner Tests
+- Microsoft Login ausserhalb interner Tests
 - Apple Kalender als angebundener Planungskontext
 - Microsoft Kalender als angebundener Planungskontext
 

@@ -6,6 +6,7 @@ import { EventInviteSection } from "@/src/components/event-invite-section";
 import { SharedEventContent } from "@/src/components/shared-event-content";
 import { SuggestionDecisionPanel } from "@/src/components/suggestion-decision-panel";
 import { getAuthSession } from "@/src/lib/auth";
+import { buildLoginPath } from "@/src/lib/provider-adapters";
 import { stripRealiteCalendarMetadata } from "@/src/lib/realite-calendar-links";
 import { getSuggestionForUser, getUserByEmail } from "@/src/lib/repository";
 import { requireAppUser } from "@/src/lib/session";
@@ -93,7 +94,7 @@ export default async function SuggestionShortcutPage({
   const user = await requireAppUser();
   if (!user) {
     const callbackUrl = `/s/${encodeURIComponent(shortSuggestionId)}`;
-    redirect(`/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+    redirect(buildLoginPath(callbackUrl) as never);
   }
 
   const suggestion = await getSuggestionForUser(suggestionId, user.id);

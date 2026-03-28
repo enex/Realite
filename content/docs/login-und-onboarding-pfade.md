@@ -51,13 +51,13 @@ So bleibt der Onboarding-Pfad ehrlich:
 
 ## Google
 
-Der heutige technisch ausgebaute Einstieg läuft über Google.
+Google ist ein voll unterstuetzter Login-Pfad und heute auch der einzige ausgebaute Kalender- und Kontakte-Kontext.
 
 Das bedeutet aktuell:
 
-- Google ist heute der sichtbare Login-Start in der App
+- Google kann als Login genutzt werden
 - Google Kalender kann optional als Planungskontext verbunden werden
-- Google Kontakte können als Relevanz- und Gruppenkontext synchronisiert werden
+- Google Kontakte koennen als Relevanz- und Gruppenkontext synchronisiert werden
 
 Produktlogisch bleibt aber auch hier derselbe Kern:
 
@@ -66,14 +66,14 @@ Produktlogisch bleibt aber auch hier derselbe Kern:
 
 ## Apple
 
-Apple ist als gleichwertiger Produktpfad vorgesehen, aber im aktuellen Stand noch nicht fertig ausgebaut.
+Apple ist als interner Testpfad vorbereitet, aber noch nicht allgemein im Login freigeschaltet.
 
-Sobald dieser Pfad aktiv ist, soll er denselben Kern tragen:
+Sobald dieser Pfad oeffentlich aktiviert wird, soll er denselben Kern tragen:
 
 - mit Apple anmelden
 - direkt in Realite starten
 - Events, Gruppen und Vorschläge ohne Pflicht-Kalender nutzen
-- Apple Kalender später optional als Planungskontext verbinden
+- Apple Kalender spaeter optional als Planungskontext verbinden
 
 Was sich dabei **nicht** ändern soll:
 
@@ -81,25 +81,30 @@ Was sich dabei **nicht** ändern soll:
 - kein anderer Sichtbarkeits- oder Teilnahmefluss
 - kein impliziter Veröffentlichungs-Schritt
 
-## E-Mail
+## Microsoft
 
-Auch E-Mail ist als gleichwertiger Standardpfad gedacht, gerade für Menschen, die bewusst ohne Provider-Kopplung starten wollen.
+Microsoft ist als interner Testpfad vorbereitet, aber noch nicht allgemein im Login freigeschaltet.
 
-Der gewünschte Flow ist:
+Sobald dieser Pfad oeffentlich aktiviert wird, soll derselbe Kern gelten:
 
-- per E-Mail anmelden
-- direkt erste Aktivität oder ersten Kreis anlegen
-- Vorschläge und Join-Mechaniken ohne Kalender nutzen
-- Kalenderverbindung nur später und bewusst ergänzen
+- mit Microsoft anmelden
+- direkt erste Aktivitaet oder ersten Kreis anlegen
+- Vorschlaege und Join-Mechaniken ohne Pflicht-Kalender nutzen
+- Microsoft Kalender spaeter optional als Planungskontext verbinden
 
-Dieser Pfad ist besonders wichtig für den klaren Standardfall:
+## Dev-Login
 
-- Realite funktioniert auch ohne Kalenderzugriff
-- ein Provider darf nicht wie eine Zugangsvoraussetzung wirken
+In lokaler Entwicklung gibt es zusaetzlich einen speziellen Dev-Login.
+
+Er ist nur fuer Entwicklung, E2E-Tests und Agent-Arbeit gedacht:
+
+- nur ausserhalb von Production sichtbar
+- legt bei Bedarf automatisch einen lokalen Testnutzer an
+- darf nicht als normaler Nutzerpfad verstanden werden
 
 ## Was über alle Pfade gleich bleiben muss
 
-Diese Regeln gelten unabhängig davon, ob du über Google, Apple oder E-Mail startest:
+Diese Regeln gelten unabhaengig davon, ob du ueber Google startest oder spaeter ueber Apple oder Microsoft:
 
 - Events anlegen, teilen und verwalten
 - Sichtbarkeit wählen
@@ -127,12 +132,12 @@ Der Produktkern darunter bleibt gleich:
 
 ## Woran du den aktuellen Stand erkennst
 
-Wenn ein Pfad noch nicht vollständig aktiv ist, sollte Realite das als Technikstand markieren und nicht als fehlenden Produktzugang.
+Wenn ein Pfad noch nicht vollstaendig aktiv ist, sollte Realite das als Technikstand markieren und nicht als fehlenden Produktzugang.
 
-Das heißt:
+Das heisst:
 
-- Google kann heute technisch weiter ausgebaut sein als Apple oder E-Mail
-- der Kernflow bleibt trotzdem providerunabhängig beschrieben
+- Google ist heute technisch und in der Sichtbarkeit weiter ausgebaut als Apple oder Microsoft
+- der Kernflow bleibt trotzdem providerunabhaengig beschrieben
 - fehlende Kalenderverbindung ist ein optionaler Upgrade-Unterschied, kein Produktbruch
 
 Für die aktuelle Trennung zwischen Konto, Kalenderzugriff und heutigem Technikstand hilft auch **[Login, Kalender und Provider](/docs/login-kalender-und-provider)**.

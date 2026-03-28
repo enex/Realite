@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { getAuthSession } from "@/src/lib/auth";
+import { buildLoginPath } from "@/src/lib/provider-adapters";
 import { toQueryString } from "@/src/lib/utils/query-string";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ export default async function MpcOAuthConsentPage({
   const callbackPath = queryString ? `/mcp/oauth/consent?${queryString}` : "/mcp/oauth/consent";
 
   if (!session?.user.email) {
-    redirect(`/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackPath)}`);
+    redirect(buildLoginPath(callbackPath) as never);
   }
 
   const clientId = typeof params.client_id === "string" ? params.client_id : "Unbekannter Client";

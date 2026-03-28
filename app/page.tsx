@@ -4,6 +4,7 @@ import { EventImage } from "@/src/components/event-image";
 import { LandingDatingGate } from "@/src/components/landing-dating-gate";
 import { getAuthSession } from "@/src/lib/auth";
 import { APP_SHELL_SECTIONS } from "@/src/lib/app-shell-navigation";
+import { buildLoginPath, isDevelopmentAuthMode } from "@/src/lib/provider-adapters";
 import { listPublicAlleEvents } from "@/src/lib/repository";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
@@ -25,7 +26,7 @@ export default async function HomePage({
   }
 
   const callbackUrl = query.toString() ? `/?${query.toString()}` : "/";
-  const signInHref = `/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+  const signInHref = buildLoginPath(callbackUrl);
 
   if (!session?.user.email) {
     const publicAlleEvents = await listPublicAlleEvents(8);
@@ -122,7 +123,7 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
           <span className="flex items-center gap-1.5"><span className="text-emerald-700">✓</span> In 30 Sekunden dabei</span>
         </div>
         <p className="mt-3 text-xs text-slate-500">
-          Aktuell startet die Anmeldung über Google. Weitere Login-Pfade sollen später gleichwertig anschließen.
+          Anmeldung aktuell ueber Google. {isDevelopmentAuthMode() ? "Lokal gibt es zusaetzlich einen Dev-Login fuer Entwicklung und E2E." : "Kalender bleibt spaeter optional."}
         </p>
       </div>
 
@@ -686,7 +687,7 @@ function HowItWorksSection({ signInHref }: { signInHref: string }) {
             <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2 text-xs text-emerald-50/80">
               <span>Keine Kreditkarte</span>
               <span>Kein Spam</span>
-              <span>Google-Login jetzt, Kalender später optional</span>
+              <span>Google-Login jetzt, Kalender spaeter optional</span>
             </div>
           </div>
 

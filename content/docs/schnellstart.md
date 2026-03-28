@@ -4,7 +4,7 @@
 
 Öffne Realite und klicke auf **„Jetzt kostenlos anmelden“** oder **„Kostenlos starten“**.
 
-Aktuell beginnt dieser Login-Pfad technisch noch über Google. Die Produktlogik in Realite bleibt davon getrennt: Events, Gruppen, Vorschläge und Sichtbarkeit sollen später auch weitere Login-Pfade gleichwertig tragen.
+Der Login kann je nach Deployment technisch ueber Google, Apple oder Microsoft starten. In lokaler Entwicklung gibt es zusaetzlich einen dev-only Testzugang. Die Produktlogik in Realite bleibt davon getrennt: Events, Gruppen, Vorschlaege und Sichtbarkeit laufen ueber denselben Kernflow.
 
 Auf der Startseite siehst du direkt **„Was du bei Realite tun kannst“**: offene Events entdecken, eigenes Event anlegen, Gruppen nutzen & Leute einladen, Vorschläge bekommen. Alle Optionen führen dich nach dem Login in die passende Ansicht.
 

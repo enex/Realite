@@ -211,7 +211,7 @@ Kalenderlinks in Realite:
 - Neue Vorschläge im Kalender enthalten einen Link `realite.app/s/<shortUUID>` zur direkten Zu-/Absage.
 - Angenommene Vorschläge bzw. bestätigte Einträge enthalten einen Link `realite.app/e/<shortUUID>` zur Eventseite.
 
-**Event-Links ohne Anmeldung:** Öffentliche Events (`/e/...`) lassen sich auch ohne Konto öffnen. Du siehst Titel, Termin, Ort, Beschreibung, den Erstellernamen (falls hinterlegt) sowie vorhandene Kommentare. E-Mail-Adressen von Erstellern und Kommentierenden werden auf dieser Gastansicht nicht öffentlich angezeigt. Sobald du zusagen, absagen oder kommentieren willst, wirst du zur Anmeldung weitergeleitet und danach zurück auf die Eventseite gebracht. Der aktuelle Login-Start läuft dabei über Google.
+**Event-Links ohne Anmeldung:** Öffentliche Events (`/e/...`) lassen sich auch ohne Konto öffnen. Du siehst Titel, Termin, Ort, Beschreibung, den Erstellernamen (falls hinterlegt) sowie vorhandene Kommentare. E-Mail-Adressen von Erstellern und Kommentierenden werden auf dieser Gastansicht nicht öffentlich angezeigt. Sobald du zusagen, absagen oder kommentieren willst, wirst du zur Anmeldung weitergeleitet und danach zurück auf die Eventseite gebracht. Dort waehlt du den verfuegbaren Login fuer dieses Deployment selbst aus.
 - Titel von Realite-Kalendereinträgen enthalten keine Hashtags:  
   Bei neuen Vorschlägen `[Realite Vorschlag] <Titel ohne Hashtags>`, bei Zusage `[Realite] <Titel ohne Hashtags>`.
 - In der Beschreibung wird dafür eine einzelne Zeile ergänzt: `Realite-Link (automatisch ergänzt): <Link>`.

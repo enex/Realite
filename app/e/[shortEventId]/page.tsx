@@ -10,6 +10,7 @@ import { SuggestionDecisionPanel } from "@/src/components/suggestion-decision-pa
 import { getCardSurfaceMeta } from "@/src/lib/card-system";
 import { getEventShareCopy, getPublicEventSharePreviewByShortId } from "@/src/lib/event-share";
 import { getPersonDisplayLabel } from "@/src/lib/person-display";
+import { buildLoginPath } from "@/src/lib/provider-adapters";
 import {
   getAcceptedUsersForEventIds,
   getEventPresenceSummary,
@@ -75,7 +76,7 @@ export default async function EventShortcutPage({
     if (!preview) {
       notFound();
     }
-    const signInUrl = `/api/auth/signin/google?callbackUrl=${encodeURIComponent(`/e/${encodeURIComponent(shortEventId)}`)}`;
+    const signInUrl = buildLoginPath(`/e/${encodeURIComponent(shortEventId)}`);
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm">
@@ -110,7 +111,7 @@ export default async function EventShortcutPage({
           >
             Jetzt anmelden
           </a>
-          <p className="mt-2 text-xs text-slate-500">Der aktuelle Login-Start läuft über Google.</p>
+          <p className="mt-2 text-xs text-slate-500">Du waehlst den verfuegbaren Login danach selbst aus.</p>
         </section>
 
         <EventComments
