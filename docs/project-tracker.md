@@ -580,6 +580,13 @@ Damit Milestone 7 nicht nur abstrakt bleibt, gelten für die nächsten Kalender-
 - [x] Wie wird Presence vor Ort dargestellt, ohne creepy oder zu offen zu wirken?
 - [x] Welche Sichtbarkeitsstufen sind wirklich nötig für V1.5 / V2?
 
+Für den aktuellen Produktstand gilt damit als erste No-Calendar-Reihenfolge im Matching:
+1. gemeinsame Kreise und Gruppen
+2. explizite Interessen aus Tags und bisherigen Entscheidungen
+3. klare Aktivitätssignale aus dem Event selbst
+
+Sichtbares Momentum über Zusagen und manuelle Verfügbarkeit bleiben bewusst Folgearbeit, bis diese Signale stabil genug im gemeinsamen Kernmodell hängen.
+
 ## Empfohlene Reihenfolge
 
 1. Dashboard / Startansicht neu priorisieren
