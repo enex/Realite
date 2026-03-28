@@ -25,6 +25,7 @@ import {
   type DashboardFeedFocus,
   type DashboardFeedEvent,
 } from "@/src/lib/dashboard-feed";
+import { getDashboardNowEmptyState } from "@/src/lib/dashboard-now-empty-state";
 import { getDashboardNextStep } from "@/src/lib/dashboard-next-step";
 import { DASHBOARD_QUERY_KEY, fetchDashboard as fetchDashboardApi } from "@/src/lib/dashboard-query";
 import type { CalendarConnectionState } from "@/src/lib/calendar-connection-state";
@@ -1186,66 +1187,54 @@ export function Dashboard({
   );
   const activeFocusOption = focusOptions.find((option) => option.id === feedFocus) ?? focusOptions[0];
   const nowFeedEmptyState = useMemo(() => {
-    if (searchQuery.trim()) {
+    const helperState = getDashboardNowEmptyState({
+      calendarConnectionState: data.me.calendarConnectionState,
+      feedFocus,
+      hasHiddenOwnPlanningEvents: hiddenOwnPlanningEvents.length > 0,
+      hasJoinableActivity: prioritizedNowFeedEvents.some((event) => !event.isAccepted && !event.isOwnEvent),
+      searchQuery,
+      suggestionCtaLabel,
+      visibleGroupCount: visibleGroups.length,
+    });
+
+    if (!helperState) {
       return null;
     }
 
-    if (feedFocus === "momentum") {
-      const hasJoinableActivity = prioritizedNowFeedEvents.some((event) => !event.isAccepted && !event.isOwnEvent);
+    const resolveAction = (action?: { label: string; href?: string; action?: "set-prioritized" | "show-create" }) => {
+      if (!action) {
+        return undefined;
+      }
 
-      return {
-        title: hasJoinableActivity ? "Gerade noch kein sichtbares Momentum" : "Gerade nichts Offenes mit Momentum",
-        description: hasJoinableActivity
-          ? "Sobald andere sichtbar zugesagt haben, tauchen Aktivitäten hier gesammelt auf. Bis dahin hilft dir der priorisierte Fokus für den ersten Mitmach-Schritt."
-          : "Aktuell gibt es weder sichtbare Zusagen noch offene Mitmach-Aktivitäten. Reagiere auf Vorschläge, prüfe später noch einmal oder starte selbst etwas.",
-        primaryLabel: "Priorisiert öffnen",
-        primaryHref: "/now",
-        primaryAction: () => setFeedFocus("prioritized"),
-        secondaryLabel: suggestionCtaLabel,
-        secondaryHref: "/suggestions",
-      };
-    }
+      if (action.action === "set-prioritized") {
+        return () => setFeedFocus("prioritized");
+      }
 
-    if (feedFocus === "involved") {
-      return {
-        title: "Gerade keine direkte Beteiligung",
-        description:
-          "Hier erscheinen nur Aktivitäten, an denen du schon beteiligt bist oder die du selbst gestartet hast. Wechsle zurück auf Priorisiert, um wieder offene Aktivitäten zum Reagieren und Mitmachen zu sehen.",
-        primaryLabel: "Priorisiert öffnen",
-        primaryHref: "/now",
-        primaryAction: () => setFeedFocus("prioritized"),
-        secondaryLabel: "Events ansehen",
-        secondaryHref: "/events#events",
-      };
-    }
+      if (action.action === "show-create") {
+        return () => setShowEventForm(true);
+      }
 
-    if (hiddenOwnPlanningEvents.length > 0) {
-      return {
-        title: "Gerade nichts Offenes zum Mitmachen",
-        description:
-          "In Jetzt wartet aktuell weder ein offener Vorschlag noch eine joinbare Aktivität. Deine eigene Planung liegt bewusst separat in Events, damit der Hauptfeed nicht nach Verwaltung aussieht.",
-        primaryLabel: "Planung öffnen",
-        primaryHref: "/events#events",
-        secondaryLabel: "Aktivität erstellen",
-        secondaryAction: () => setShowEventForm(true),
-      };
-    }
+      return undefined;
+    };
 
     return {
-      title: "Gerade noch keine offenen Aktivitäten",
-      description:
-        "Im Moment gibt es weder offene Vorschläge noch sichtbare joinbare Aktivitäten. Wenn du etwas starten willst, ist ein eigenes Event jetzt der kürzeste Weg; sonst helfen Gruppen und Vorschläge, sobald neuer Kontext da ist.",
-      primaryLabel: "Aktivität erstellen",
-      primaryAction: () => setShowEventForm(true),
-      secondaryLabel: "Gruppen öffnen",
-      secondaryHref: "/groups",
+      title: helperState.title,
+      description: helperState.description,
+      primaryLabel: helperState.primary.label,
+      primaryHref: helperState.primary.href,
+      primaryAction: resolveAction(helperState.primary),
+      secondaryLabel: helperState.secondary?.label,
+      secondaryHref: helperState.secondary?.href,
+      secondaryAction: resolveAction(helperState.secondary),
     };
   }, [
+    data.me.calendarConnectionState,
     feedFocus,
     hiddenOwnPlanningEvents.length,
     prioritizedNowFeedEvents,
     searchQuery,
     suggestionCtaLabel,
+    visibleGroups.length,
   ]);
   const discoverPage = getPageIntentMeta("discover");
   const reactionPage = getPageIntentMeta("react");

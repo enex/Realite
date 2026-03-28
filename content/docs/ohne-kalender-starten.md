@@ -24,6 +24,12 @@ Wenn dein Kalender noch nicht verbunden ist, landest du trotzdem im normalen Pro
 - **Events** bleibt deine Planungs- und Zusagenansicht
 - **Gruppen** bleibt dein Bereich für Kreise, Kontakte und Sichtbarkeit
 
+Wenn in **Jetzt** gerade weder Vorschläge noch joinbare Aktivitäten sichtbar sind, unterscheidet Realite den leeren Hauptfeed jetzt bewusster:
+
+- ohne vorbereitete Kreise zuerst über **Gruppen**, damit du Relevanzkontext aufbauen kannst
+- mit vorhandenen Kreisen, aber ohne Kalender weiter über denselben Kernflow, optional mit zusätzlichem Timing-Kontext aus **Einstellungen**
+- mit vorhandenem Kontext ohne offene Aktivität über **Aktivität erstellen** oder den Rückweg in **Events**
+
 ## 2. Erstes Event anlegen
 
 Öffne **Events** und erstelle dort deine erste Aktivität.

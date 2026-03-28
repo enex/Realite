@@ -35,6 +35,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 28.03.2026:
 
+- `Jetzt` unterscheidet komplett leere Hauptfeed-Zustände jetzt explizit zwischen fehlendem Relevanzkontext, fehlendem Timing-Kontext ohne Kalender und vorhandenem Kontext ohne offene Aktivität
+- der leere Hauptfeed führt dadurch gezielter weiter: erst Gruppen für sozialen Kontext, optional Einstellungen für mehr Zeitkontext, sonst direkt Aktivität erstellen oder Planung in `Events` prüfen
+- Nutzer-Doku für den kalenderlosen Kernflow hält diese differenzierten Empty States jetzt direkt in derselben Einstiegserklärung fest
 - Kalender-Kern und provider-spezifische Extras jetzt als explizite Source-of-Truth im Adapter-Layer verankert statt nur lose in Doku und Tracker beschrieben
 - Profil & Einstellungen zeigt diese Trennung jetzt direkt im Produkt: gemeinsamer Kalender-Kern versus providergebundene Extras mit Status fuer Google, Apple und Microsoft
 - Nutzer-Doku zu Login, Kalender und Providern erklaert jetzt explizit, welche Kalenderfaehigkeiten kuenftig fuer alle Adapter gleich gedacht bleiben und wo bewusste Fallbacks auf Event-Link und Join-Flow gelten
@@ -455,6 +458,7 @@ Damit Milestone 7 nicht nur abstrakt bleibt, gelten für die nächsten Kalender-
 - [x] Event-/Suggestion-Karten auf Scannability und Priorisierung überarbeiten
 - [x] leere Zustände produktnäher formulieren
 - [x] leere Zustände in `Jetzt` für kein Momentum, keine direkte Beteiligung, nur eigene Planung und komplett fehlende offene Aktivitäten explizit unterscheiden
+- [x] komplett leeren `Jetzt`-Hauptfeed zusätzlich nach fehlendem Gruppenkontext, fehlendem Timing-Kontext ohne Kalender und vorhandenem Kontext ohne offene Aktivität staffeln
 - [x] Kernflows ohne Kalenderintegration definieren: Signup, erster Event, Gruppenbeitritt, Vorschläge, spätere Verbindung
 - [x] UI-Copy systematisch prüfen, wo Kalender aktuell implizit als Default oder Voraussetzung klingt
 - [x] leere Zustände und Settings-Zustände für "kein Kalender verbunden" vs. "Berechtigung verweigert" vs. "später verbinden" unterscheiden
