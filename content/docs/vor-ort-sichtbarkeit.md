@@ -87,6 +87,9 @@ Diese Trennung reduziert Überraschungen:
 - eine spätere Vor-Ort-Funktion würde nur innerhalb des erlaubten Event-Kontexts stattfinden
 - Dating- oder Festival-Kontexte bleiben damit ein Zusatzfall derselben Schutzlogik
 
+Welche Leitplanken fuer spaetere Festival- oder On-Site-Faelle gelten sollen, steht gesammelt unter
+**[Sicherheit bei Vor-Ort- und Festival-Kontexten](/docs/sicherheit-bei-vor-ort-und-festival-kontexten)**.
+
 ## So nutzt du es
 
 1. Öffne ein Event, bei dem **Vor Ort sichtbar möglich** angezeigt wird.

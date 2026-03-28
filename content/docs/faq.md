@@ -117,6 +117,20 @@ Wichtig:
 
 Mehr dazu steht unter **[Vor-Ort-Sichtbarkeit](/docs/vor-ort-sichtbarkeit)**.
 
+## Welche Regeln wuerden spaeter fuer Festival- oder Vor-Ort-Socializing gelten?
+
+Realite soll auch dann kein offener Personenradar werden.
+
+Darum gilt produktseitig schon jetzt:
+
+- keine allgemeine Nearby-Personensuche ohne Anlass
+- keine automatische Live-Sichtbarkeit
+- Sichtbarkeit nur mit klarem Event- oder Kontextbezug
+- low-pressure Interaktion vor direkter Offenlegung
+
+Die ausfuehrliche Leitlinie steht unter
+**[Sicherheit bei Vor-Ort- und Festival-Kontexten](/docs/sicherheit-bei-vor-ort-und-festival-kontexten)**.
+
 ## Warum fragt Realite bei Absage nach Gründen?
 
 Du kannst mehrere Gründe angeben (z. B. keine Zeit und zu weit entfernt).

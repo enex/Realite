@@ -122,9 +122,6 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
           <span className="flex items-center gap-1.5"><span className="text-emerald-700">✓</span> Kein Spam an Kontakte</span>
           <span className="flex items-center gap-1.5"><span className="text-emerald-700">✓</span> In 30 Sekunden dabei</span>
         </div>
-        <p className="mt-3 text-xs text-slate-500">
-          Anmeldung aktuell ueber Google. {isDevelopmentAuthMode() ? "Lokal gibt es zusaetzlich einen Dev-Login fuer Entwicklung und E2E." : "Kalender bleibt spaeter optional."}
-        </p>
       </div>
 
       <aside
@@ -313,37 +310,37 @@ function SolutionSection() {
   return (
     <section className="mt-14 sm:mt-16 lg:mt-20">
       <div className="rounded-[32px] border border-white/50 bg-white/38 px-4 py-6 shadow-[0_30px_80px_-48px_rgba(15,23,42,0.18)] backdrop-blur-[2px] sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="realite-reveal" style={{ animationDelay: "300ms" }}>
-        <p className="inline-flex rounded-full border border-emerald-900/10 bg-white/82 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900">
-          Die Lösung
-        </p>
-        <h2 className="mt-3 text-2xl font-black text-slate-950 sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
-          Aus Plänen werden echte Erlebnisse.
-        </h2>
-        <p className="mt-3 max-w-3xl text-base leading-7 text-slate-700 sm:text-lg">
-          Nicht noch eine Social-App. Realite aktiviert bestehende Kontakte, macht spontane Chancen sichtbar und senkt die Hürde, wirklich loszugehen.
-        </p>
-      </div>
-      <div className="mt-6 grid gap-5 sm:mt-8 sm:gap-6 md:grid-cols-3">
-        {SOLUTION_CARDS.map((card, index) => (
-          <article
-            key={card.title}
-            className="realite-reveal overflow-hidden rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.35)] backdrop-blur-sm sm:rounded-3xl sm:p-5"
-            style={{ animationDelay: `${380 + index * 100}ms` }}
-          >
-            <div className="relative overflow-hidden rounded-[22px] border border-emerald-950/10 bg-[#efe8da]">
-              <img src={card.image} alt={card.imageAlt} className="h-44 w-full object-cover sm:h-48" loading="lazy" />
-              <span className={`absolute left-4 top-4 flex h-11 w-11 items-center justify-center rounded-2xl border text-2xl shadow-sm ${card.iconBg}`} aria-hidden="true">
-                {card.icon}
-              </span>
-            </div>
-            <h3 className="mt-4 text-lg font-bold text-slate-950 [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
-              {card.title}
-            </h3>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{card.text}</p>
-          </article>
-        ))}
-      </div>
+        <div className="realite-reveal" style={{ animationDelay: "300ms" }}>
+          <p className="inline-flex rounded-full border border-emerald-900/10 bg-white/82 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900">
+            Die Lösung
+          </p>
+          <h2 className="mt-3 text-2xl font-black text-slate-950 sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+            Aus Plänen werden echte Erlebnisse.
+          </h2>
+          <p className="mt-3 max-w-3xl text-base leading-7 text-slate-700 sm:text-lg">
+            Nicht noch eine Social-App. Realite aktiviert bestehende Kontakte, macht spontane Chancen sichtbar und senkt die Hürde, wirklich loszugehen.
+          </p>
+        </div>
+        <div className="mt-6 grid gap-5 sm:mt-8 sm:gap-6 md:grid-cols-3">
+          {SOLUTION_CARDS.map((card, index) => (
+            <article
+              key={card.title}
+              className="realite-reveal overflow-hidden rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.35)] backdrop-blur-sm sm:rounded-3xl sm:p-5"
+              style={{ animationDelay: `${380 + index * 100}ms` }}
+            >
+              <div className="relative overflow-hidden rounded-[22px] border border-emerald-950/10 bg-[#efe8da]">
+                <img src={card.image} alt={card.imageAlt} className="h-44 w-full object-cover sm:h-48" loading="lazy" />
+                <span className={`absolute left-4 top-4 flex h-11 w-11 items-center justify-center rounded-2xl border text-2xl shadow-sm ${card.iconBg}`} aria-hidden="true">
+                  {card.icon}
+                </span>
+              </div>
+              <h3 className="mt-4 text-lg font-bold text-slate-950 [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+                {card.title}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">{card.text}</p>
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -432,44 +429,44 @@ function ProductFlowSection() {
   return (
     <section className="mt-14 sm:mt-16 lg:mt-20" aria-labelledby="produktfluss">
       <div className="rounded-[32px] border border-emerald-950/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.5),rgba(237,246,241,0.72))] px-4 py-6 shadow-[0_28px_70px_-48px_rgba(15,23,42,0.16)] sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="realite-reveal" style={{ animationDelay: "620ms" }}>
-        <p className="inline-flex rounded-full border border-amber-900/10 bg-white/82 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-800">
-          Produktfluss statt Linkliste
-        </p>
-        <h2
-          id="produktfluss"
-          className="mt-3 text-2xl font-black text-slate-950 sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]"
-        >
-          Vier klare Wege statt einer chaotischen Eventliste.
-        </h2>
-        <p className="mt-3 max-w-3xl text-base leading-7 text-slate-700 sm:text-lg">
-          Nach dem Login trennt Realite bewusst zwischen entdecken, reagieren und verwalten. So bleibt sofort klar, was gerade dran ist.
-        </p>
-      </div>
-      <div className="mt-6 grid gap-4 sm:mt-8 md:grid-cols-2 xl:grid-cols-4">
-        {APP_SHELL_SECTIONS.map((section, index) => (
-          <article
-            key={section.href}
-            className="realite-reveal rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.30)] backdrop-blur-sm sm:rounded-3xl"
-            style={{ animationDelay: `${700 + index * 80}ms` }}
+        <div className="realite-reveal" style={{ animationDelay: "620ms" }}>
+          <p className="inline-flex rounded-full border border-amber-900/10 bg-white/82 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-800">
+            Produktfluss statt Linkliste
+          </p>
+          <h2
+            id="produktfluss"
+            className="mt-3 text-2xl font-black text-slate-950 sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800/80">{section.intent}</p>
-            <h3 className="mt-3 text-lg font-bold text-slate-950 [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
-              {section.label}
-            </h3>
-            <p className="mt-2 text-sm font-medium leading-6 text-slate-900">{section.focus}</p>
-            <p className="mt-2.5 text-sm leading-6 text-slate-600">{section.whenToUse}</p>
-          </article>
-        ))}
-      </div>
-      <div
-        className="realite-reveal mt-6 rounded-2xl border border-slate-200 bg-white/72 p-5 text-sm leading-6 text-slate-700 sm:mt-8 sm:rounded-3xl sm:p-6"
-        style={{ animationDelay: "1060ms" }}
-      >
-        <span className="font-semibold text-slate-950">Wichtig:</span> <strong>Events</strong> bleibt deine persönliche
-        Planungs- und Kalenderansicht. <strong>Gruppen</strong> bleibt der Ort für Kreise, Einladungen und
-        Sichtbarkeit. Realite trennt beides absichtlich, damit Verwaltung nicht wie Discovery aussieht.
-      </div>
+            Vier klare Wege statt einer chaotischen Eventliste.
+          </h2>
+          <p className="mt-3 max-w-3xl text-base leading-7 text-slate-700 sm:text-lg">
+            Nach dem Login trennt Realite bewusst zwischen entdecken, reagieren und verwalten. So bleibt sofort klar, was gerade dran ist.
+          </p>
+        </div>
+        <div className="mt-6 grid gap-4 sm:mt-8 md:grid-cols-2 xl:grid-cols-4">
+          {APP_SHELL_SECTIONS.map((section, index) => (
+            <article
+              key={section.href}
+              className="realite-reveal rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.30)] backdrop-blur-sm sm:rounded-3xl"
+              style={{ animationDelay: `${700 + index * 80}ms` }}
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800/80">{section.intent}</p>
+              <h3 className="mt-3 text-lg font-bold text-slate-950 [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+                {section.label}
+              </h3>
+              <p className="mt-2 text-sm font-medium leading-6 text-slate-900">{section.focus}</p>
+              <p className="mt-2.5 text-sm leading-6 text-slate-600">{section.whenToUse}</p>
+            </article>
+          ))}
+        </div>
+        <div
+          className="realite-reveal mt-6 rounded-2xl border border-slate-200 bg-white/72 p-5 text-sm leading-6 text-slate-700 sm:mt-8 sm:rounded-3xl sm:p-6"
+          style={{ animationDelay: "1060ms" }}
+        >
+          <span className="font-semibold text-slate-950">Wichtig:</span> <strong>Events</strong> bleibt deine persönliche
+          Planungs- und Kalenderansicht. <strong>Gruppen</strong> bleibt der Ort für Kreise, Einladungen und
+          Sichtbarkeit. Realite trennt beides absichtlich, damit Verwaltung nicht wie Discovery aussieht.
+        </div>
       </div>
     </section>
   );

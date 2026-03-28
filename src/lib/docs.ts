@@ -66,6 +66,12 @@ const DOCS_PAGES: DocsPage[] = [
     fileName: "vor-ort-sichtbarkeit.md"
   },
   {
+    slug: "sicherheit-bei-vor-ort-und-festival-kontexten",
+    title: "Sicherheit bei Vor-Ort- und Festival-Kontexten",
+    description: "Welche Schutzregeln fuer spaetere On-Site- und Socializing-Faelle gelten sollen.",
+    fileName: "sicherheit-bei-vor-ort-und-festival-kontexten.md"
+  },
+  {
     slug: "faq",
     title: "FAQ",
     description: "Häufige Fragen, Fehlerbilder und schnelle Lösungen.",

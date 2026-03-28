@@ -35,6 +35,9 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 28.03.2026:
 
+- neue Nutzer-Doku **Sicherheit bei Vor-Ort- und Festival-Kontexten** konkretisiert jetzt die offenen Trust-/Safety-Regeln fuer spaetere On-Site-Socializing-Faelle
+- Vor-Ort-Sichtbarkeit, Sichtbarkeit/Relevanz und FAQ verlinken diese Leitplanken jetzt direkt, damit spaetere Festival-Kontexte klar als geschuetzter Zusatz statt People-Browsing gerahmt bleiben
+- der offene P2-Task zu Trust- und Safety-Leitplanken fuer spaetere Vor-Ort-/Festival-Kontexte ist damit im aktuellen Doku-Stand abgehakt
 - `Jetzt` unterscheidet komplett leere Hauptfeed-Zustände jetzt explizit zwischen fehlendem Relevanzkontext, fehlendem Timing-Kontext ohne Kalender und vorhandenem Kontext ohne offene Aktivität
 - der leere Hauptfeed führt dadurch gezielter weiter: erst Gruppen für sozialen Kontext, optional Einstellungen für mehr Zeitkontext, sonst direkt Aktivität erstellen oder Planung in `Events` prüfen
 - Nutzer-Doku für den kalenderlosen Kernflow hält diese differenzierten Empty States jetzt direkt in derselben Einstiegserklärung fest
@@ -202,7 +205,6 @@ Noch nicht sauber ausgearbeitet:
 - explizite Join-Mechaniken jenseits von Vorschlagsentscheidung
 - Presence über den aktuellen eventgebundenen Opt-in hinaus auf Folgefälle und Relevanzlogik weiter ausarbeiten
 - die visuelle Sprache nach der aktuellen Hierarchie-Arbeit weiter vereinheitlichen und mutiger machen
-- offene Vertrauens- und Safety-Regeln für spätere Socializing-/Festival-Kontexte konkretisieren
 - gleichwertige Kernflows für Nutzer ohne Kalenderintegration definieren: E-Mail-Login, später verbinden, Berechtigung bewusst verweigern
 - providerunabhängige Login- und Kalenderarchitektur sauber ausarbeiten: Google, Apple, Microsoft als Adapter statt Sonderfälle
 
@@ -488,6 +490,7 @@ Damit Milestone 7 nicht nur abstrakt bleibt, gelten für die nächsten Kalender-
 - [x] Adaptergrenzen für Login und Kalender konkretisieren: Google, Apple und Microsoft dürfen in der Kernlogik keine Sonderbehandlung erzwingen
 - [x] Capability-Matrix festhalten: Welche Produktfunktionen hängen an Login, welche an Kalenderzugriff und welche an einzelnen Providern
 - [x] Apple Kalender und Microsoft Kalender als nächste konkrete Integrationspfade im Plan verankern, inklusive erwarteter Unterschiede bei Sync, Einladungen und Bearbeiten-im-Kalender-Links
+- [x] Trust- und Safety-Leitplanken fuer spaetere Vor-Ort-/Festival-Kontexte in der Nutzer-Doku konkretisieren, statt den Zusatzfall nur implizit mitzudenken
 
 ## Konkret bekannte UX-/View-Aufgaben
 
