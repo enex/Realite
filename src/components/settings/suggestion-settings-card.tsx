@@ -53,6 +53,7 @@ export function SuggestionSettingsCard({
   onFormChange,
   onSubmit
 }: SuggestionSettingsCardProps) {
+  const reconnectHref = "/api/auth/signin/google?callbackUrl=%2Fsettings";
   const blockedPeopleById = useMemo(
     () => new Map(blockedPeople.map((entry) => [entry.id, entry.label])),
     [blockedPeople]
@@ -99,7 +100,22 @@ export function SuggestionSettingsCard({
         <p className="text-xs font-medium uppercase tracking-wide text-slate-600">{messaging.supportTitle}</p>
         <p className="mt-1 text-sm text-slate-700">{messaging.supportBody}</p>
       </div>
-      {messaging.warning ? <p className={warningClassName}>{messaging.warning}</p> : null}
+      {messaging.warning ? (
+        <div className={warningClassName}>
+          <p>{messaging.warning}</p>
+          {calendarConnectionState === "needs_reconnect" ? (
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <a
+                href={reconnectHref}
+                className="inline-flex items-center justify-center rounded-md bg-rose-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-rose-700"
+              >
+                Kalenderzugriff erneut freigeben
+              </a>
+              <p className="text-xs text-rose-600">Führt über Google und bringt dich danach wieder hierher.</p>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       <form onSubmit={onSubmit} className="mt-4 grid gap-3 sm:grid-cols-2">
         <label className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 sm:col-span-2">

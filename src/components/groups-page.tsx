@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
+import { CalendarReconnectBanner } from "@/src/components/calendar-reconnect-banner";
 import { FlowCard } from "@/src/components/flow-card";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
+import type { CalendarConnectionState } from "@/src/lib/calendar-connection-state";
 import {
   getGroupManagementFocus,
   getGroupManagementState,
@@ -59,6 +61,7 @@ type GroupsPayload = {
     email: string;
     name: string | null;
     image: string | null;
+    calendarConnectionState: CalendarConnectionState;
   };
   sync: {
     warning: string | null;
@@ -76,7 +79,8 @@ const emptyPayload: GroupsPayload = {
   me: {
     email: "",
     name: null,
-    image: null
+    image: null,
+    calendarConnectionState: "not_connected"
   },
   sync: {
     warning: null,
@@ -374,6 +378,7 @@ export function GroupsPage({
             {submitError ?? (queryError instanceof Error ? queryError.message : String(queryError))}
           </div>
         ) : null}
+        <CalendarReconnectBanner calendarConnectionState={data.me.calendarConnectionState} />
         {data.sync.warning ? (
           <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
             Kalender-Sync Warnung: {data.sync.warning}

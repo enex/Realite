@@ -260,6 +260,10 @@ function titleContainsKontakteTag(title: string) {
   return /(^|\s)#kontakte(\b|$)/iu.test(title);
 }
 
+function titleContainsFriendsPlusTag(title: string) {
+  return /(^|\s)#freunde\+(\b|$)/iu.test(title);
+}
+
 function isAlleGroupName(name: string) {
   return name.trim().toLowerCase() === "#alle";
 }
@@ -1782,9 +1786,12 @@ export async function createEvent(input: {
   const normalizedTags = normalizeTags(input.tags);
   const hasAlleInTitle = titleContainsAlleTag(input.title);
   const hasKontakteInTitle = titleContainsKontakteTag(input.title);
+  const hasFriendsPlusInTitle = titleContainsFriendsPlusTag(input.title);
   const hasDateInTitle = titleContainsDateTag(input.title);
   const hasDateTag =
     hasDateInTitle || normalizedTags.some((tag) => isDateTag(tag));
+  const hasFriendsOfFriendsTag =
+    hasFriendsPlusInTitle || normalizedTags.includes("#freunde+");
   const alleGroup = await ensureAlleGroupForUser(input.userId);
   const kontakteGroup = await ensureKontakteGroupForUser(input.userId);
   const targetsAlleGroup = input.groupId === alleGroup.id;
@@ -1834,6 +1841,7 @@ export async function createEvent(input: {
     requestedVisibility: input.visibility,
     hasDateTag,
     isGlobalAlleEvent,
+    hasFriendsOfFriendsTag,
     targetsKontakteGroup,
   });
   const finalJoinMode: EventJoinMode = hasDateTag ? "interest" : input.joinMode;

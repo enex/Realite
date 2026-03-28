@@ -72,6 +72,7 @@ Tipps:
 
 - Nutze `#alle`, wenn der Termin für alle sichtbar sein soll.
 - Nutze `#kontakte`, wenn der Termin für dein Netzwerk gedacht ist.
+- Nutze `#freunde+`, wenn dein Netzwerk plus Freunde deiner Kontakte das Event sehen dürfen soll.
 
 ## 6. Vorschläge prüfen
 
@@ -107,7 +108,7 @@ Starte dort das Matching und prüfe deine Vorschläge.
 - welcher Kalenderstatus gerade gilt: **Kalenderzugriff aktiv**, **Später verbinden** oder **Kalenderzugriff prüfen**
 - ob dein Dating-Modus (`#date`) freigeschaltet ist und welche Kriterien für gegenseitige Matches gelten
 
-Wenn dort **Später verbinden** steht, ist noch kein Kalender verknüpft. Wenn dort **Kalenderzugriff prüfen** steht, kennt Realite zwar schon eine Verbindung, kann den Kalenderzugriff aber gerade nicht mehr nutzen, bis du ihn erneut freigibst.
+Wenn dort **Später verbinden** steht, ist noch kein Kalender verknüpft. Wenn dort **Kalenderzugriff prüfen** steht, kennt Realite zwar schon eine Verbindung, kann den Kalenderzugriff aber gerade nicht mehr nutzen, bis du ihn erneut freigibst. In diesem Fall zeigt Realite den Button **Kalenderzugriff erneut freigeben** nicht nur in den Vorschlags-Einstellungen, sondern auch auf den wichtigsten Arbeitsflächen wie **Jetzt**, **Vorschläge** und **Gruppen**.
 
 Für den kompletten Flow ohne Kalender hilft außerdem die Seite **[Ohne Kalender starten](/docs/ohne-kalender-starten)**.
 

@@ -71,6 +71,7 @@ export function resolveEventVisibility(input: {
   requestedVisibility: EventCreationVisibility;
   hasDateTag: boolean;
   isGlobalAlleEvent: boolean;
+  hasFriendsOfFriendsTag: boolean;
   targetsKontakteGroup: boolean;
 }): EventVisibility {
   if (input.hasDateTag) {
@@ -79,6 +80,10 @@ export function resolveEventVisibility(input: {
 
   if (input.isGlobalAlleEvent) {
     return "public";
+  }
+
+  if (input.hasFriendsOfFriendsTag) {
+    return "friends_of_friends";
   }
 
   if (input.targetsKontakteGroup) {

@@ -23,6 +23,7 @@ describe("event visibility", () => {
         requestedVisibility: "group",
         hasDateTag: false,
         isGlobalAlleEvent: false,
+        hasFriendsOfFriendsTag: false,
         targetsKontakteGroup: true,
       }),
     ).toBe("friends");
@@ -34,9 +35,22 @@ describe("event visibility", () => {
         requestedVisibility: "friends_of_friends",
         hasDateTag: true,
         isGlobalAlleEvent: false,
+        hasFriendsOfFriendsTag: true,
         targetsKontakteGroup: false,
       }),
     ).toBe("smart_date");
+  });
+
+  test("maps #freunde+ shortcut to friends-of-friends visibility only", () => {
+    expect(
+      resolveEventVisibility({
+        requestedVisibility: "group",
+        hasDateTag: false,
+        isGlobalAlleEvent: false,
+        hasFriendsOfFriendsTag: true,
+        targetsKontakteGroup: false,
+      }),
+    ).toBe("friends_of_friends");
   });
 
   test("returns stable labels for friend-based visibilities", () => {

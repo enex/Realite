@@ -36,7 +36,7 @@ Realite unterscheidet dort jetzt bewusst drei Zustände:
 - **Später verbinden**: du nutzt Realite gerade ohne Kalender; Planung, Gruppen und Vorschläge laufen weiter manuell
 - **Kalenderzugriff prüfen**: Realite kennt zwar schon eine Kalender-Verbindung, kann sie aber gerade nicht mehr nutzen, etwa nach entzogener oder abgelaufener Berechtigung
 
-Im dritten Fall bleiben deine übrigen Flows nutzbar, aber Kalender-Vormerkungen und Verfügbarkeitsabgleich pausieren, bis du den Zugriff erneut freigibst.
+Im dritten Fall bleiben deine übrigen Flows nutzbar, aber Kalender-Vormerkungen und Verfügbarkeitsabgleich pausieren, bis du den Zugriff erneut freigibst. Dafür zeigt Realite auf den betroffenen Hauptflächen direkt den Button **Kalenderzugriff erneut freigeben**, zusätzlich in den **Vorschlags-Einstellungen**.
 
 Wenn du Realite bewusst ohne Kalender nutzen willst, findest du die einzelnen Schritte unter **[Ohne Kalender starten](/docs/ohne-kalender-starten)**.
 

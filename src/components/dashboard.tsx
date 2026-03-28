@@ -6,6 +6,7 @@ import type { Route } from "next";
 import { useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
+import { CalendarReconnectBanner } from "@/src/components/calendar-reconnect-banner";
 import { EventImage } from "@/src/components/event-image";
 import { FlowCard } from "@/src/components/flow-card";
 import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
@@ -22,6 +23,7 @@ import {
 } from "@/src/lib/dashboard-feed";
 import { getDashboardNextStep } from "@/src/lib/dashboard-next-step";
 import { DASHBOARD_QUERY_KEY, fetchDashboard as fetchDashboardApi } from "@/src/lib/dashboard-query";
+import type { CalendarConnectionState } from "@/src/lib/calendar-connection-state";
 import {
   getDashboardRelevantActivityKind,
   getDashboardRelevantActivityMeta,
@@ -136,6 +138,7 @@ type DashboardPayload = {
     name: string | null;
     image: string | null;
     calendarConnected: boolean;
+    calendarConnectionState: CalendarConnectionState;
     calendarScope: string | null;
   };
   sync: {
@@ -196,6 +199,7 @@ const emptyPayload: DashboardPayload = {
     name: null,
     image: null,
     calendarConnected: false,
+    calendarConnectionState: "not_connected",
     calendarScope: null
   },
   sync: {
@@ -351,9 +355,14 @@ export function Dashboard({
 
   const visibleGroups = useMemo(() => data.groups.filter((group) => !group.isHidden), [data.groups]);
   const eventFormHasDateTag = eventForm.tags.toLowerCase().includes("#date");
+  const eventFormHasFriendsPlusTag = eventForm.tags.toLowerCase().includes("#freunde+");
   const eventFormSelectedGroupName =
     visibleGroups.find((group) => group.id === eventForm.groupId)?.name ?? null;
-  const eventFormEffectiveVisibility = eventFormHasDateTag ? "smart_date" : eventForm.visibility;
+  const eventFormEffectiveVisibility = eventFormHasDateTag
+    ? "smart_date"
+    : eventFormHasFriendsPlusTag
+      ? "friends_of_friends"
+      : eventForm.visibility;
   const eventFormPresenceAudienceRule = getEventPresenceAudienceRuleCopy({
     visibility: eventFormEffectiveVisibility,
     groupName: eventFormSelectedGroupName,
@@ -1606,6 +1615,7 @@ export function Dashboard({
             {submitError ?? (queryError instanceof Error ? queryError.message : String(queryError))}
           </div>
         ) : null}
+        <CalendarReconnectBanner calendarConnectionState={data.me.calendarConnectionState} />
         {data.sync.warning ? (
           <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
             Kalender-Sync Warnung: {data.sync.warning}
@@ -1653,7 +1663,7 @@ export function Dashboard({
               <input
                 value={eventForm.tags}
                 onChange={(event) => setEventForm((state) => ({ ...state, tags: event.target.value }))}
-                placeholder={datingModeEnabled ? "#alle, #kontakte, #date" : "#alle, #kontakte"}
+                placeholder={datingModeEnabled ? "#alle, #kontakte, #freunde+, #date" : "#alle, #kontakte, #freunde+"}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               />
               {datingModeEnabled ? (
@@ -1662,6 +1672,10 @@ export function Dashboard({
                   `#alle` oder `#kontakte` kombiniert werden.
                 </p>
               ) : null}
+              <p className="text-xs text-slate-500">
+                Shortcut: `#freunde+` erweitert die Sichtbarkeit auf Freunde von Freunden. Das ändert nur den sichtbaren Kreis,
+                nicht Einladungen oder automatische Reichweite.
+              </p>
               <p className="text-xs text-slate-500">
                 Smart-Treffen-Shortcut im Titel: `!min=3 !frist=24h !fenster=24h` (setzt Mindestzusagen, Frist und Suchfenster).
               </p>
@@ -1721,9 +1735,7 @@ export function Dashboard({
                   {getEventVisibilityMeta(eventFormEffectiveVisibility).label}
                 </span>{" "}
                 ·{" "}
-                {eventFormHasDateTag
-                  ? getEventVisibilityMeta("smart_date").description
-                  : getEventVisibilityMeta(eventForm.visibility).description}
+                {getEventVisibilityMeta(eventFormEffectiveVisibility).description}
               </p>
               <p className="text-xs text-slate-500">
                 {visibilityRoadmap.headline} {visibilityRoadmap.description}
@@ -1755,9 +1767,7 @@ export function Dashboard({
                 <p className="mt-2">
                   <span className="font-medium text-slate-900">Wer sieht das Event?</span>
                   {" · "}
-                  {eventFormHasDateTag
-                    ? getEventVisibilityMeta("smart_date").description
-                    : getEventVisibilityMeta(eventForm.visibility).description}
+                  {getEventVisibilityMeta(eventFormEffectiveVisibility).description}
                 </p>
                 <p className="mt-2">
                   <span className="font-medium text-slate-900">Wer sieht später aktive Vor-Ort-Check-ins?</span>

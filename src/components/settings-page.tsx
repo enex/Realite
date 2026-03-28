@@ -219,8 +219,6 @@ export function SettingsPage({
         ) : null}
         {loading ? <p className="mt-6 text-slate-600">Lade Einstellungen...</p> : null}
 
-        <MpcSettingsCard />
-
         <SuggestionSettingsCard
           calendarConnected={data.calendarConnected}
           calendarConnectionState={data.calendarConnectionState}
@@ -250,6 +248,8 @@ export function SettingsPage({
             onSubmit={saveDatingSettings}
           />
         ) : null}
+
+        <MpcSettingsCard />
 
         <AccountDeleteCard busy={deleteBusy} error={deleteError} onDelete={deleteAccount} />
       </main>

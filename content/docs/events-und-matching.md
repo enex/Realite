@@ -20,7 +20,7 @@ Ein Event besteht aus:
 - **Freunde:** nur für deine registrierten Kontakte
 - **Freunde von Freunden:** für deine registrierten Kontakte und deren Kontakte
 
-Wenn du `#kontakte` nutzt oder direkt die Kontakte-Gruppe auswählst, behandelt Realite das Event automatisch als **Freunde** statt als allgemeines Gruppen-Event. Bei `#date` überschreibt Realite die normale Auswahl weiterhin mit einem separaten, geschützten Sichtbarkeitsmodus.
+Wenn du `#kontakte` nutzt oder direkt die Kontakte-Gruppe auswählst, behandelt Realite das Event automatisch als **Freunde** statt als allgemeines Gruppen-Event. Mit `#freunde+` erweiterst du den sichtbaren Kreis bewusst auf **Freunde von Freunden**. Das verändert nur die Sichtbarkeit des Events, nicht Einladungen oder automatische Reichweite. Bei `#date` überschreibt Realite die normale Auswahl weiterhin mit einem separaten, geschützten Sichtbarkeitsmodus.
 
 **Kategorien:** Events werden auf dem Dashboard nach Kategorie gruppiert angezeigt (ähnlich wie in Google Kalender). Beim Anlegen schlägt Realite eine Kategorie anhand von Titel, Beschreibung und Tags vor; du kannst sie im Formular anpassen. Verfügbare Kategorien sind u. a. Sonstiges, Besprechung, Arbeit, Privat, Sport, Soziales, Geburtstag, Verabredung.
 
@@ -143,6 +143,7 @@ Wichtig: Auch bei einem per Shortcut angelegten Smart Treffen werden Kalenderein
 
 - `#alle`: Event ist allgemein sichtbar
 - `#kontakte`: Event richtet sich an deine Kontakte
+- `#freunde+`: Event ist für deine Kontakte und deren Kontakte sichtbar
 - `#date`: Event für gegenseitig passende Dating-Matches als geschützter Unterfall normaler Aktivitätssichtbarkeit
 
 Du kannst mehrere Hashtags nutzen.

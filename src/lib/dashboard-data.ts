@@ -1,5 +1,6 @@
 import { getDashboardSyncSnapshot, triggerDashboardBackgroundSync } from "@/src/lib/background-sync";
-import { ensureCalendarWatchesForUser } from "@/src/lib/google-calendar";
+import { deriveCalendarConnectionState } from "@/src/lib/calendar-connection-state";
+import { ensureCalendarWatchesForUser, listReadableCalendars, listWritableCalendars } from "@/src/lib/google-calendar";
 import {
   getAcceptedUsersForEventIds,
   getDateHashtagStatus,
@@ -25,15 +26,24 @@ export async function buildDashboardPayload(user: DashboardUser) {
   });
   const syncState = getDashboardSyncSnapshot(user.id);
 
-  const [groups, events, suggestions, connection, groupContacts, dating, smartMeetings] = await Promise.all([
+  const [groups, events, suggestions, connection, groupContacts, dating, smartMeetings, writableCalendars, readableCalendars] = await Promise.all([
     listGroupsForUser(user.id),
     listVisibleEventsForUser(user.id),
     listSuggestionsForUser(user.id),
     getGoogleConnection(user.id),
     listGroupContactsForUser(user.id),
     getDateHashtagStatus(user.id),
-    listSmartMeetingsForUser(user.id)
+    listSmartMeetingsForUser(user.id),
+    listWritableCalendars(user.id),
+    listReadableCalendars(user.id)
   ]);
+  const calendarConnectionState = deriveCalendarConnectionState({
+    hasConnection: Boolean(connection),
+    providerId: connection?.provider ?? null,
+    scope: connection?.scope ?? null,
+    writableCalendarCount: writableCalendars.length,
+    readableCalendarCount: readableCalendars.length
+  });
 
   const acceptedByEventId = await getAcceptedUsersForEventIds(events.map((event) => event.id));
   const acceptedByEventIdJson: Record<string, { name: string | null; email: string }[]> = {};
@@ -71,7 +81,8 @@ export async function buildDashboardPayload(user: DashboardUser) {
       email: user.email,
       name: user.name,
       image: user.image,
-      calendarConnected: Boolean(connection),
+      calendarConnected: calendarConnectionState === "connected",
+      calendarConnectionState,
       calendarScope: connection?.scope ?? null
     },
     sync: {

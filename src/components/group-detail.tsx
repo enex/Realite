@@ -3,9 +3,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/components/app-shell";
+import { CalendarReconnectBanner } from "@/src/components/calendar-reconnect-banner";
 import { EventImage } from "@/src/components/event-image";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
+import type { CalendarConnectionState } from "@/src/lib/calendar-connection-state";
 import { type EventVisibility } from "@/src/lib/event-visibility";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
@@ -54,6 +56,9 @@ type EventItem = {
 };
 
 type DashboardPayload = {
+  me: {
+    calendarConnectionState: CalendarConnectionState;
+  };
   sync: {
     warning: string | null;
     contactsWarning: string | null;
@@ -64,6 +69,9 @@ type DashboardPayload = {
 };
 
 const emptyPayload: DashboardPayload = {
+  me: {
+    calendarConnectionState: "not_connected"
+  },
   sync: {
     warning: null,
     contactsWarning: null,
@@ -325,11 +333,12 @@ export function GroupDetail({
       }}
     >
       <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
-      {(queryError || submitError) ? (
+        {(queryError || submitError) ? (
         <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {submitError ?? (queryError instanceof Error ? queryError.message : String(queryError))}
         </div>
       ) : null}
+        <CalendarReconnectBanner calendarConnectionState={data.me.calendarConnectionState} />
       {data.sync.warning ? (
         <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
           Kalender-Sync Warnung: {data.sync.warning}
