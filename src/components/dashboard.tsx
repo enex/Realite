@@ -25,6 +25,7 @@ import {
   type DashboardFeedFocus,
   type DashboardFeedEvent,
 } from "@/src/lib/dashboard-feed";
+import { getDashboardJoinFirstCopy } from "@/src/lib/dashboard-join-copy";
 import { getDashboardNowEmptyState } from "@/src/lib/dashboard-now-empty-state";
 import { getDashboardNextStep } from "@/src/lib/dashboard-next-step";
 import { DASHBOARD_QUERY_KEY, fetchDashboard as fetchDashboardApi } from "@/src/lib/dashboard-query";
@@ -1034,6 +1035,12 @@ export function Dashboard({
       }),
     [acceptedEventIds, data.acceptedByEventId, data.me.id, visibleEvents]
   );
+  const nextJoinableCopy = nextJoinableEvent
+    ? getDashboardJoinFirstCopy({
+        groupName: nextJoinableEvent.groupName,
+        visibility: nextJoinableEvent.visibility,
+      })
+    : null;
   const joinCtaHref = nextJoinableEvent ? `/e/${shortenUUID(nextJoinableEvent.id)}` : "/events#events";
   const joinCtaLabel = nextJoinableEvent ? "Mitmachen" : "Events ansehen";
   const joinCtaHint = nextJoinableEvent ? "eine sichtbare Aktivität öffnen" : "sichtbare Aktivitäten öffnen";
@@ -1095,9 +1102,10 @@ export function Dashboard({
       if (event) {
         return {
           eyebrow: "Nächster Schritt",
-          title: "Erste Zusage für offene Aktivität setzen",
+          title: nextJoinableCopy?.nextStepTitle ?? "Erste Zusage für offene Aktivität setzen",
           value: `${event.title.replace(/#[^\s]+/gi, "").trim()} · ${formatQuestionTiming(event.startsAt, event.endsAt)}`,
           description:
+            nextJoinableCopy?.nextStepDescription ??
             "Gerade gibt es eine sichtbare Aktivität ohne Zusagen. Wenn sie passt, kannst du hier den ersten klaren Mitmach-Schritt setzen.",
           href: `/e/${shortenUUID(event.id)}`,
           actionLabel: "Aktivität öffnen",
@@ -1159,6 +1167,7 @@ export function Dashboard({
     hiddenOwnPlanningEvents.length,
     nextStep,
     nextStepEventMap,
+    nextJoinableCopy,
     pendingSuggestions.length,
     suggestionCtaLabel,
   ]);
@@ -1276,13 +1285,14 @@ export function Dashboard({
         joinableMomentumEvents.length > 0
           ? `${joinableMomentumEvents.length} Aktivität${joinableMomentumEvents.length === 1 ? "" : "en"} mit Zusagen`
           : nextJoinableEvent
-            ? "1 sichtbare Aktivität zum Mitmachen"
+            ? (nextJoinableCopy?.questionValue ?? "1 sichtbare Aktivität zum Mitmachen")
             : "Gerade nichts Joinbares offen",
       description:
         joinableMomentumEvents.length > 0
           ? "Hier ist schon Bewegung drin. Du kannst direkt in eine laufende Aktivität einsteigen."
           : nextJoinableEvent
-            ? "Es gibt eine sichtbare Aktivität ohne Zusagen. Du könntest den ersten Schritt machen."
+            ? (nextJoinableCopy?.questionDescription ??
+              "Es gibt eine sichtbare Aktivität ohne Zusagen. Du könntest den ersten Schritt machen.")
             : "Wenn neue offene Aktivitäten auftauchen, findest du sie hier mit dem kürzesten Weg zum Mitmachen.",
       actionHref: joinCtaHref,
       actionLabel: joinCtaLabel,
@@ -1299,7 +1309,8 @@ export function Dashboard({
         joinableMomentumEvents.length > 0
           ? `${joinableMomentumEvents.length} Aktivität${joinableMomentumEvents.length === 1 ? "" : "en"} mit Momentum warten dort auf schnellen Einstieg.`
           : nextJoinableEvent
-            ? "Dort prüfst du die nächste sichtbare Aktivität, bei der du ohne viel Abstimmung direkt einsteigen kannst."
+            ? (nextJoinableCopy?.eventsReturnDescription ??
+              "Dort prüfst du die nächste sichtbare Aktivität, bei der du ohne viel Abstimmung direkt einsteigen kannst.")
             : "Wenn du wieder aus Planung in den offenen Hauptfluss wechseln willst, bündelt Jetzt die relevantesten spontanen Optionen.",
     },
     {

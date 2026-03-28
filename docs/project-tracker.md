@@ -35,6 +35,8 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 28.03.2026:
 
+- Grenzfall-Copy in `Jetzt` ist bei wenig Aktivität jetzt noch konkreter: wenn nur eine offene Aktivität ohne sichtbares Momentum übrig bleibt, unterscheidet der Hauptflow explizit zwischen Kreis-/Gruppenkontext und allgemein offener Aktivität
+- `Nächster Schritt`, die dritte Leitfrage in `Jetzt` und die Rückführung aus `Events` greifen jetzt dieselbe Low-Momentum-Logik auf statt in ruhigen Phasen generisch von irgendeiner offenen Aktivität zu sprechen
 - die Provider-Capability-Matrix in `Profil & Einstellungen` startet jetzt mit einer kompakten Kurzlogik: gemeinsamer Kalender-Kern getrennt von provider-spezifischen Extras
 - die Nutzer-Doku zu Login, Kalender und Providern verweist jetzt direkt auf diesen Produktort, damit der Capability-Unterschied nicht nur in tieferer Hintergrunddoku steckt
 - Regressionstests sichern die Layer jetzt explizit ab: `shared_core` bleibt bei Verfuegbarkeit, Kalenderkopien und Import; Einladungen und Kalender-Links bleiben Provider-Extras
@@ -464,6 +466,7 @@ Damit Milestone 7 nicht nur abstrakt bleibt, gelten für die nächsten Kalender-
 - [x] Event-/Suggestion-Karten auf Scannability und Priorisierung überarbeiten
 - [x] leere Zustände produktnäher formulieren
 - [x] leere Zustände in `Jetzt` für kein Momentum, keine direkte Beteiligung, nur eigene Planung und komplett fehlende offene Aktivitäten explizit unterscheiden
+- [x] Grenzfall-Copy bei wenig Aktivität weiter schärfen: einzelne offene Aktivität ohne Momentum in `Jetzt` explizit als Kreis-Kontext oder allgemein offene Aktivität benennen
 - [x] komplett leeren `Jetzt`-Hauptfeed zusätzlich nach fehlendem Gruppenkontext, fehlendem Timing-Kontext ohne Kalender und vorhandenem Kontext ohne offene Aktivität staffeln
 - [x] Kernflows ohne Kalenderintegration definieren: Signup, erster Event, Gruppenbeitritt, Vorschläge, spätere Verbindung
 - [x] UI-Copy systematisch prüfen, wo Kalender aktuell implizit als Default oder Voraussetzung klingt
