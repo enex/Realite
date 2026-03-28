@@ -17,6 +17,13 @@ Der aktuelle Produktgrundsatz ist:
 
 Beim Erstellen eines Events kannst du die Option **Vor Ort sichtbar erlauben** aktivieren.
 
+Zusätzlich gibt es in **Jetzt** jetzt einen kompakten Schnellzugriff **„Hier & jetzt teilen“**:
+
+- dort kannst du mobil direkt sagen, was du gerade machst und wo du bist oder wohin du gehst
+- Realite erstellt daraus ebenfalls ein normales Event mit bewusst gewähltem Sichtbarkeitskreis
+- wenn du **„Ich bin gerade hier“** nutzt, startet Realite direkt für dieses neue Event einen aktiven Vor-Ort-Status
+- auch dieser Schnellzugriff bleibt eventgebunden und veröffentlicht nichts außerhalb des gewählten Kreises
+
 Wenn die Option aktiv ist:
 
 - dieses Event darf grundsätzlich einen freiwilligen Vor-Ort-Layer haben

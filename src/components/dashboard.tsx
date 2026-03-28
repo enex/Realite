@@ -12,7 +12,11 @@ import { FlowCard } from "@/src/components/flow-card";
 import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
 import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
 import { EVENT_JOIN_MODE_VALUES, getEventJoinModeMeta, type EventJoinMode } from "@/src/lib/event-join-modes";
-import { getEventPresenceAudienceHint, getEventPresenceAudienceRuleCopy } from "@/src/lib/event-presence";
+import {
+  getDefaultEventPresenceVisibleUntil,
+  getEventPresenceAudienceHint,
+  getEventPresenceAudienceRuleCopy,
+} from "@/src/lib/event-presence";
 import { getEventOnSiteVisibilityMeta } from "@/src/lib/event-on-site";
 import { getEventPatternMeta } from "@/src/lib/activity-patterns";
 import {
@@ -188,6 +192,27 @@ type EventsReturnCard = {
   description: string;
 };
 
+type QuickShareMode = "here_now" | "going";
+
+type QuickShareAudience = EventCreationVisibility;
+
+type QuickShareCardProps = {
+  activity: string;
+  location: string;
+  durationMinutes: number;
+  mode: QuickShareMode;
+  audience: QuickShareAudience;
+  groupId: string;
+  groups: Group[];
+  busy: boolean;
+  error: string | null;
+  onFieldChange: (field: "activity" | "location" | "groupId", value: string) => void;
+  onModeChange: (mode: QuickShareMode) => void;
+  onAudienceChange: (audience: QuickShareAudience) => void;
+  onDurationChange: (durationMinutes: number) => void;
+  onSubmit: (event: React.FormEvent) => void;
+};
+
 async function fetchDashboard(): Promise<DashboardPayload> {
   return fetchDashboardApi() as Promise<DashboardPayload>;
 }
@@ -307,6 +332,186 @@ function DashboardQuestionCard({
   );
 }
 
+function QuickShareCard({
+  activity,
+  location,
+  durationMinutes,
+  mode,
+  audience,
+  groupId,
+  groups,
+  busy,
+  error,
+  onFieldChange,
+  onModeChange,
+  onAudienceChange,
+  onDurationChange,
+  onSubmit,
+}: QuickShareCardProps) {
+  const audienceMeta = getEventVisibilityMeta(audience);
+  const selectedGroupName =
+    audience === "group"
+      ? groups.find((group) => group.id === groupId)?.name ?? null
+      : null;
+  const audienceRule = getEventPresenceAudienceRuleCopy({
+    visibility: audience,
+    groupName: selectedGroupName,
+  });
+
+  return (
+    <section className="mt-5 md:mt-6" aria-label="Hier und jetzt teilen">
+      <article className="rounded-2xl border border-teal-200 bg-gradient-to-br from-white via-teal-50/70 to-emerald-50/60 p-4 shadow-sm md:p-5">
+        <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">Hier & jetzt teilen</p>
+            <h2 className="mt-2 text-lg font-semibold tracking-tight text-slate-900">
+              Kurz sagen, wo du bist oder wohin du gehst
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+              Realite erstellt daraus eine normale Aktivität mit bewusstem Freigabekreis. Bei
+              <span className="font-medium text-slate-900"> Ich bin gerade hier</span> wird dein Vor-Ort-Status direkt für dieses Event aktiviert.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => onModeChange("here_now")}
+              className={`inline-flex items-center justify-center rounded-full border px-3 py-2 text-sm font-semibold transition ${
+                mode === "here_now"
+                  ? "border-teal-300 bg-teal-600 text-white shadow-sm"
+                  : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              Ich bin gerade hier
+            </button>
+            <button
+              type="button"
+              onClick={() => onModeChange("going")}
+              className={`inline-flex items-center justify-center rounded-full border px-3 py-2 text-sm font-semibold transition ${
+                mode === "going"
+                  ? "border-teal-300 bg-teal-600 text-white shadow-sm"
+                  : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              Ich gehe hin
+            </button>
+          </div>
+        </div>
+
+        <form onSubmit={onSubmit} className="mt-4 grid gap-3">
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="grid gap-1 text-sm text-slate-700">
+              <span className="font-medium text-slate-900">Was machst du?</span>
+              <input
+                value={activity}
+                onChange={(event) => onFieldChange("activity", event.target.value)}
+                placeholder={mode === "here_now" ? "z. B. beim Stadtfest" : "z. B. gehe zum Stadtfest"}
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm"
+                required
+              />
+            </label>
+            <label className="grid gap-1 text-sm text-slate-700">
+              <span className="font-medium text-slate-900">Wo?</span>
+              <input
+                value={location}
+                onChange={(event) => onFieldChange("location", event.target.value)}
+                placeholder="z. B. Stadtfest Aachen"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm"
+                required
+              />
+            </label>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Wer sieht das?</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {(["friends", "friends_of_friends", "group", "public"] as const).map((option) => {
+                  const optionMeta = getEventVisibilityMeta(option);
+                  const isActive = audience === option;
+
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => onAudienceChange(option)}
+                      className={`inline-flex items-center justify-center rounded-full border px-3 py-2 text-sm font-semibold transition ${
+                        isActive
+                          ? "border-teal-300 bg-teal-100 text-teal-900"
+                          : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                      }`}
+                    >
+                      {optionMeta.shortLabel}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-3 text-sm text-slate-600">{audienceMeta.description}</p>
+              {audience === "group" ? (
+                <label className="mt-3 grid gap-1 text-sm text-slate-700">
+                  <span className="font-medium text-slate-900">Welche Gruppe?</span>
+                  <select
+                    value={groupId}
+                    onChange={(event) => onFieldChange("groupId", event.target.value)}
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm"
+                    required
+                  >
+                    <option value="">Gruppe wählen</option>
+                    {groups.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-3">
+              <label className="grid gap-1 text-sm text-slate-700">
+                <span className="font-medium text-slate-900">Noch etwa</span>
+                <select
+                  value={String(durationMinutes)}
+                  onChange={(event) => onDurationChange(Number(event.target.value))}
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm"
+                >
+                  <option value="30">30 Minuten</option>
+                  <option value="60">1 Stunde</option>
+                  <option value="120">2 Stunden</option>
+                  <option value="180">3 Stunden</option>
+                </select>
+              </label>
+              <p className="mt-3 text-sm text-slate-600">
+                Andere sehen keinen allgemeinen Live-Standort, sondern nur dieses konkrete Event im gewählten Kreis.
+              </p>
+              <p className="mt-3 text-xs text-slate-500">
+                Vor Ort sichtbar: {audienceRule.description}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-slate-500">
+              Andere können danach direkt reagieren und auf der Eventseite ebenfalls signalisieren, dass sie da sind oder hingehen.
+            </p>
+            <button
+              type="submit"
+              disabled={busy}
+              className="inline-flex items-center justify-center rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:opacity-50"
+            >
+              {mode === "here_now" ? "Jetzt sichtbar teilen" : "Hinweg teilen"}
+            </button>
+          </div>
+
+          {error ? (
+            <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+          ) : null}
+        </form>
+      </article>
+    </section>
+  );
+}
+
 export function Dashboard({
   view = "now",
   userName,
@@ -334,9 +539,18 @@ export function Dashboard({
 
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [quickShareError, setQuickShareError] = useState<string | null>(null);
   const [showEventForm, setShowEventForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [feedFocus, setFeedFocus] = useState<DashboardFeedFocus>("prioritized");
+  const [quickShareForm, setQuickShareForm] = useState({
+    activity: "",
+    location: "",
+    durationMinutes: 120,
+    mode: "here_now" as QuickShareMode,
+    audience: "friends" as QuickShareAudience,
+    groupId: "",
+  });
 
   const [eventForm, setEventForm] = useState({
     title: "",
@@ -631,6 +845,101 @@ export function Dashboard({
       await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Unbekannter Fehler");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function createQuickShare(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setQuickShareError(null);
+
+    const now = new Date();
+    const endsAt = new Date(now.getTime() + quickShareForm.durationMinutes * 60_000);
+
+    if (quickShareForm.audience === "group" && !quickShareForm.groupId) {
+      setQuickShareError("Bitte wähle eine Gruppe für diesen Sichtbarkeitskreis.");
+      setBusy(false);
+      return;
+    }
+
+    try {
+      const createResponse = await fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: quickShareForm.activity.trim(),
+          location: quickShareForm.location.trim(),
+          startsAt: now.toISOString(),
+          endsAt: endsAt.toISOString(),
+          visibility: quickShareForm.audience,
+          joinMode: "direct",
+          allowOnSiteVisibility: true,
+          groupId: quickShareForm.audience === "group" ? quickShareForm.groupId : null,
+          tags: [],
+          color: null,
+          category: "default",
+        }),
+      });
+
+      const createPayload = (await createResponse.json()) as {
+        error?: string;
+        event?: {
+          id: string;
+          visibility: EventVisibility;
+        };
+      };
+
+      if (!createResponse.ok || !createPayload.event) {
+        throw new Error(createPayload.error ?? "Kurzstatus konnte nicht erstellt werden");
+      }
+
+      if (quickShareForm.mode === "here_now") {
+        const visibleUntil = getDefaultEventPresenceVisibleUntil(endsAt, now);
+
+        if (!visibleUntil) {
+          throw new Error("Für dieses Zeitfenster konnte keine Vor-Ort-Sichtbarkeit gestartet werden.");
+        }
+
+        const presenceResponse = await fetch(`/api/events/${createPayload.event.id}/presence`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            status: "checked_in",
+            visibleUntilIso: visibleUntil.toISOString(),
+          }),
+        });
+
+        const presencePayload = (await presenceResponse.json()) as { error?: string };
+
+        if (!presenceResponse.ok) {
+          throw new Error(presencePayload.error ?? "Vor-Ort-Status konnte nicht gestartet werden");
+        }
+      }
+
+      captureProductEvent("event_created", {
+        event_id: createPayload.event.id,
+        visibility: createPayload.event.visibility,
+        join_mode: "direct",
+        allow_on_site_visibility: true,
+        has_group: quickShareForm.audience === "group",
+        tag_count: 0,
+        creation_surface: "now_quick_share",
+        quick_share_mode: quickShareForm.mode,
+      });
+
+      setQuickShareForm({
+        activity: "",
+        location: "",
+        durationMinutes: 120,
+        mode: quickShareForm.mode,
+        audience: quickShareForm.audience,
+        groupId: "",
+      });
+      await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+    } catch (err) {
+      setQuickShareError(err instanceof Error ? err.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -1067,7 +1376,7 @@ export function Dashboard({
                 <>
                   <a
                     href="/suggestions"
-                    className="inline-flex items-center justify-center rounded-xl bg-white px-3 py-2 text-sm font-bold text-teal-900 shadow-md transition hover:bg-teal-50 active:bg-teal-100"
+                    className="inline-flex w-full items-center justify-center rounded-xl bg-white px-3 py-2 text-sm font-bold text-teal-900 shadow-md transition hover:bg-teal-50 active:bg-teal-100 sm:w-auto"
                   >
                     {suggestionCtaLabel}
                     {pendingCount > 0 ? (
@@ -1078,7 +1387,7 @@ export function Dashboard({
                   </a>
                   <a
                     href={joinCtaHref}
-                    className="inline-flex items-center justify-center rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                    className="inline-flex w-full items-center justify-center rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/20 sm:w-auto"
                   >
                     {joinCtaLabel}
                   </a>
@@ -1087,7 +1396,7 @@ export function Dashboard({
               <button
                 type="button"
                 onClick={() => setShowEventForm((v) => !v)}
-                className="inline-flex items-center justify-center rounded-xl border border-white/35 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
+                className="inline-flex w-full items-center justify-center rounded-xl border border-white/35 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/15 sm:w-auto"
               >
                 {showEventForm ? "Schließen" : "Erstellen"}
               </button>
@@ -1110,6 +1419,37 @@ export function Dashboard({
             </div>
           ) : null}
         </section>
+
+        {!isEventsView ? (
+          <QuickShareCard
+            activity={quickShareForm.activity}
+            location={quickShareForm.location}
+            durationMinutes={quickShareForm.durationMinutes}
+            mode={quickShareForm.mode}
+            audience={quickShareForm.audience}
+            groupId={quickShareForm.groupId}
+            groups={visibleGroups}
+            busy={busy}
+            error={quickShareError}
+            onFieldChange={(field, value) =>
+              setQuickShareForm((state) => ({ ...state, [field]: value }))
+            }
+            onModeChange={(mode) =>
+              setQuickShareForm((state) => ({ ...state, mode }))
+            }
+            onAudienceChange={(audience) =>
+              setQuickShareForm((state) => ({
+                ...state,
+                audience,
+                groupId: audience === "group" ? state.groupId : "",
+              }))
+            }
+            onDurationChange={(durationMinutes) =>
+              setQuickShareForm((state) => ({ ...state, durationMinutes }))
+            }
+            onSubmit={createQuickShare}
+          />
+        ) : null}
 
         {!isEventsView ? (
           <section className="mt-5 md:mt-6" aria-label="Nächster Schritt">

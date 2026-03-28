@@ -11,3 +11,6 @@ tsconfig.tsbuildinfo
 # Serwist (generated at build)
 public/sw*
 public/swe-worker*
+.playwright-cli
+/tmp
+/output

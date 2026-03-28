@@ -151,6 +151,16 @@ Before finalizing implementation work, run the smallest command set that proves 
 
 Prefer `bun run check` as the default quick validation pass when it covers the change.
 
+### Playwright CLI Notes
+
+When using `playwright-cli` against the local app, note these repo-specific quirks:
+
+- In this environment, `playwright-cli` often needs execution outside the sandbox because it writes session/cache files under `~/Library/Caches/ms-playwright/daemon`.
+- Use a named session such as `playwright-cli -s=realite open http://localhost:3000` if you want the browser state to persist across commands. The default session was not reliably reusable across separate calls here.
+- For visual review, combine Playwright MCP screenshots with `playwright-cli` only when needed: MCP screenshots can save directly to absolute workspace paths, while `playwright-cli screenshot` worked reliably for quick viewport captures.
+- `playwright-cli screenshot --fullPage` was not supported in this setup. Use the Playwright MCP screenshot tool with `fullPage: true` for full-page captures instead.
+- For UI changes, `bun run typecheck` plus fresh Playwright screenshots on both desktop and mobile was the most reliable lightweight validation loop in this repo.
+
 ### Documentation Workflow
 
 There are two different documentation audiences in this repository:
