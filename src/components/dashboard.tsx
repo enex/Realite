@@ -1902,7 +1902,7 @@ export function Dashboard({
                               <h4 className="text-sm font-semibold text-slate-700">{CATEGORY_LABELS[category]}</h4>
                               <span className="text-xs text-slate-500">({events.length})</span>
                             </div>
-                            <div className="space-y-2">
+                            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                               {events.map((event) => {
                                 const accepted = data.acceptedByEventId?.[event.id] ?? [];
                                 const acceptedNames = getAcceptedDisplayNames(accepted);
@@ -1930,37 +1930,39 @@ export function Dashboard({
                                 return (
                                   <article
                                     key={event.id}
-                                    className={`overflow-hidden rounded-md border ${getVisualPriorityMeta(eventPattern.priority).itemClassName}`}
+                                    className={`h-full overflow-hidden rounded-md border ${getVisualPriorityMeta(eventPattern.priority).itemClassName}`}
                                     style={{ borderLeftWidth: "4px", borderLeftColor: borderColor }}
                                   >
-                                    <div className="flex">
+                                    <div className="flex h-full">
                                       {coverUrl ? (
                                         <a
                                           href={`/e/${shortenUUID(event.id)}`}
-                                          className="relative block h-20 w-24 shrink-0 bg-slate-100 sm:h-24 sm:w-28"
+                                          className="relative block h-auto w-20 shrink-0 bg-slate-100 sm:w-24"
                                         >
                                           <EventImage src={coverUrl} className="h-full w-full object-cover" />
                                         </a>
                                       ) : null}
-                                      <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-2 p-3">
-                                        <div>
-                                          <div className="mb-1 flex flex-wrap items-center gap-2">
+                                      <div className="flex min-w-0 flex-1 flex-col gap-2 p-3">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          <span
+                                            className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${eventPattern.badgeClassName}`}
+                                          >
+                                            {eventPattern.label}
+                                          </span>
+                                          {accepted.length > 0 ? (
                                             <span
-                                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${eventPattern.badgeClassName}`}
+                                              className="inline-flex items-center rounded-full bg-teal-100 px-2.5 py-1 text-[11px] font-semibold text-teal-800"
                                             >
-                                              {eventPattern.label}
+                                              {getAcceptedCountLabel(accepted.length)}
                                             </span>
-                                            {accepted.length > 0 ? (
-                                              <span className="inline-flex items-center rounded-full bg-teal-100 px-2.5 py-1 text-[11px] font-semibold text-teal-800">
-                                                {getAcceptedCountLabel(accepted.length)}
-                                              </span>
-                                            ) : null}
-                                            {contextLabel ? (
-                                              <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200">
-                                                {contextLabel}
-                                              </span>
-                                            ) : null}
-                                          </div>
+                                          ) : null}
+                                          {contextLabel ? (
+                                            <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200">
+                                              {contextLabel}
+                                            </span>
+                                          ) : null}
+                                        </div>
+                                        <div className="min-w-0">
                                           <a
                                             href={`/e/${shortenUUID(event.id)}`}
                                             className="break-words text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
@@ -1972,24 +1974,38 @@ export function Dashboard({
                                             {new Date(event.endsAt).toLocaleTimeString("de-DE")}
                                             {event.tags.length > 0 ? ` · ${event.tags.join(" · ")}` : ""}
                                           </p>
-                                          <p className="mt-1 text-xs font-medium text-slate-600">Mitmachen: {joinModeMeta.shortLabel}</p>
-                                          <p className="mt-1 text-xs font-medium text-slate-600">Vor Ort: {onSiteMeta.shortLabel}</p>
-                                          {onSiteAudienceHint ? (
-                                            <p className="mt-1 text-xs text-slate-500">{onSiteAudienceHint}</p>
-                                          ) : null}
-                                          <div className={`mt-2 rounded-lg border px-3 py-2 ${getVisualPriorityMeta(eventPattern.priority).insetClassName}`}>
+                                        </div>
+                                        <div className="flex flex-wrap gap-1.5 text-[11px] font-medium">
+                                          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-slate-700">
+                                            Mitmachen: {joinModeMeta.shortLabel}
+                                          </span>
+                                          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-slate-700">
+                                            Vor Ort: {onSiteMeta.shortLabel}
+                                          </span>
+                                        </div>
+                                        {onSiteAudienceHint ? (
+                                          <p className="text-xs text-slate-500">{onSiteAudienceHint}</p>
+                                        ) : null}
+                                        <div className={`mt-auto flex items-center justify-between gap-3 rounded-lg border px-3 py-2 ${getVisualPriorityMeta(eventPattern.priority).insetClassName}`}>
+                                          <div className="min-w-0">
                                             <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                                               Wer ist dabei?
                                             </p>
                                             {accepted.length > 0 ? (
-                                              <p className="mt-1 text-xs font-medium text-teal-800">
+                                              <p className="truncate text-xs font-medium text-teal-800">
                                                 {acceptedNames.join(", ")}
                                                 {remainingAccepted > 0 ? ` +${remainingAccepted}` : ""}
                                               </p>
                                             ) : (
-                                              <p className="mt-1 text-xs text-slate-500">Noch niemand zugesagt</p>
+                                              <p className="text-xs text-slate-500">Noch niemand zugesagt</p>
                                             )}
                                           </div>
+                                          <a
+                                            href={`/e/${shortenUUID(event.id)}`}
+                                            className="shrink-0 text-xs font-semibold text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-teal-700 hover:decoration-teal-500"
+                                          >
+                                            Öffnen
+                                          </a>
                                         </div>
                                       </div>
                                     </div>
