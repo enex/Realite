@@ -38,6 +38,9 @@ Zuletzt umgesetzt am 28.03.2026:
 - Login- und Kalender-Providergrenzen jetzt als zentrale Adapter-Definition im Code verankert: Auth-Scopes, Kalender-Scope-Prüfung und geplante Providerpfade hängen nicht mehr an verstreuten Google-Strings
 - die Kalender-Verbindungslogik liest erforderliche Rechte jetzt providerbasiert statt hart auf Google zu prüfen; geplante Apple-/Microsoft-Pfade bleiben damit als Adaptergrenze explizit vorbereitet
 - Tests decken die neue Adapter-Definition und den generischen Kalender-Verbindungszustand ab
+- Apple Kalender und Microsoft Kalender jetzt als konkrete nächste Integrationspfade im Plan verankert, statt nur als abstrakte Provider-Optionen
+- der Tracker hält die erwarteten Unterschiede bei Sync, Einladungen und Bearbeiten-im-Kalender-Links jetzt je Provider fest, damit Folgearbeit nicht wieder implizit von Google ausgeht
+- der offene P2-Task zur Provider-Roadmap ist damit im internen Produktplan abgeschlossen
 - Matcher-Fallback für fehlenden Kalenderabgleich umgesetzt: Vorschläge ohne FreeBusy-/Kalenderkontext brechen nicht mehr weg, sondern werden bewusst vorsichtiger priorisiert
 - Vorschlagsbegründungen markieren diesen Zustand jetzt explizit als Schätzung ohne Kalenderabgleich; automatische Kalender-Vormerkungen pausieren dabei
 - Nutzer-Doku für Matching, FAQ und den Flow ohne Kalender erklärt den degradierten Vorschlagsmodus jetzt direkt im selben Produktpfad
@@ -384,6 +387,33 @@ Definition of done:
 
 Status: `planned`
 
+### Konkrete nächste Providerpfade
+
+Damit Milestone 7 nicht nur abstrakt bleibt, gelten für die nächsten Kalender-Integrationen diese konkreten Produkt- und Technikpfade:
+
+#### Apple Kalender
+
+- **Zielrolle im Produkt:** optionaler Planungskontext für Apple-orientierte Nutzer, ohne eigenen Produktkern
+- **Sync-Pfad zuerst:** ausgewählte Kalender für Verfügbarkeitsabgleich lesen und Realite-Events als eigene Kalendereinträge zurückschreiben
+- **Einladungen:** Smart-Treffen und manuelle Einladungen dürfen nicht voraussetzen, dass Apple dieselbe Teilnehmerpflege wie Google anbietet; im Zweifel bleibt Realite-Link plus normale Event-Freigabe der gemeinsame Fallback
+- **Bearbeiten-im-Kalender-Link:** erwartbar eher Deep-Link in den nativen Kalender oder ICS-/Kalender-URL-Fallback statt derselbe Web-Edit-Link wie bei Google
+- **Adaptergrenze:** kein Apple-spezifischer Sonderzustand in Matching, Sichtbarkeit oder Join-Logik; Unterschiede bleiben auf Login-, Kalender- und Link-Ebene
+
+#### Microsoft Kalender
+
+- **Zielrolle im Produkt:** optionaler Planungskontext für Nutzer mit Outlook-/Microsoft-365-Kalendern, ohne Änderung des Realite-Kernflows
+- **Sync-Pfad zuerst:** FreeBusy-/Terminabgleich plus Schreiben von Realite-Ereignissen in verbundene Outlook-Kalender
+- **Einladungen:** Outlook-/Graph-basierte Teilnehmerverwaltung kann näher am heutigen Google-Flow liegen; trotzdem muss Einladungsversand als Provider-Feature modelliert bleiben, nicht als allgemeine Event-Voraussetzung
+- **Bearbeiten-im-Kalender-Link:** Outlook-Web-Link oder Deep-Link pro Event-Referenz, getrennt von Google-spezifischen Bearbeitungs-URLs
+- **Adaptergrenze:** gemeinsame Produktzustände bleiben `Kalenderzugriff aktiv`, `Später verbinden`, `Kalenderzugriff prüfen`; Microsoft-spezifische Unterschiede dürfen nur Capability- und Fehlermeldungsebene betreffen
+
+#### Providerübergreifender Kern
+
+- Verfügbarkeitsabgleich, Vorschlagskontext und optionale Kalenderkopien bleiben der gemeinsame Kern aller Kalenderadapter
+- Kontakte-Sync, Teilnehmerpflege und Bearbeiten-im-Kalender-Links dürfen providerabhängig unterschiedlich tief sein
+- Wenn ein Provider Einladungen oder Edit-Links nicht gleichwertig tragen kann, muss Realite auf Event-Link, Sichtbarkeit und Join-Mechaniken zurückfallen statt den Flow zu blockieren
+- Folgearbeit soll deshalb immer zuerst prüfen: Was ist gemeinsamer Kern? Was ist nur Provider-Capability?
+
 ## Task Backlog
 
 ### P0
@@ -437,7 +467,7 @@ Status: `planned`
 - [x] Event- und Sozialkalender-Ansichten für Nutzer ohne Kalender so formulieren, dass Planung auch manuell verständlich bleibt
 - [x] Adaptergrenzen für Login und Kalender konkretisieren: Google, Apple und Microsoft dürfen in der Kernlogik keine Sonderbehandlung erzwingen
 - [x] Capability-Matrix festhalten: Welche Produktfunktionen hängen an Login, welche an Kalenderzugriff und welche an einzelnen Providern
-- [ ] Apple Kalender und Microsoft Kalender als nächste konkrete Integrationspfade im Plan verankern, inklusive erwarteter Unterschiede bei Sync, Einladungen und Bearbeiten-im-Kalender-Links
+- [x] Apple Kalender und Microsoft Kalender als nächste konkrete Integrationspfade im Plan verankern, inklusive erwarteter Unterschiede bei Sync, Einladungen und Bearbeiten-im-Kalender-Links
 
 ## Konkret bekannte UX-/View-Aufgaben
 
