@@ -19,6 +19,10 @@ Wichtig:
 - Du gibst Aktivitäten immer selbst frei.
 - Auch ohne Kalenderzugriff kannst du Events anlegen, Gruppen nutzen und Vorschläge in Realite beantworten.
 
+Wenn du genau diesen Pfad suchst, findest du den vollständigen Ablauf unter **[Ohne Kalender starten](/docs/ohne-kalender-starten)**.
+
+Wenn du genauer verstehen willst, welche Funktionen nur ein Konto brauchen, welche einen Kalenderzugriff und was heute technisch noch an Google hängt, findest du die Übersicht unter **[Login, Kalender und Provider](/docs/login-kalender-und-provider)**.
+
 Hinweis:
 
 - Auf der Startseite siehst du direkt öffentliche Events als Beispiel, bevor du dich anmeldest.
@@ -104,3 +108,7 @@ Starte dort das Matching und prüfe deine Vorschläge.
 - ob dein Dating-Modus (`#date`) freigeschaltet ist und welche Kriterien für gegenseitige Matches gelten
 
 Wenn dort **Später verbinden** steht, ist noch kein Kalender verknüpft. Wenn dort **Kalenderzugriff prüfen** steht, kennt Realite zwar schon eine Verbindung, kann den Kalenderzugriff aber gerade nicht mehr nutzen, bis du ihn erneut freigibst.
+
+Für den kompletten Flow ohne Kalender hilft außerdem die Seite **[Ohne Kalender starten](/docs/ohne-kalender-starten)**.
+
+Für die getrennte Übersicht zwischen Konto, Kalenderzugriff und aktuellem Provider-Stand hilft zusätzlich **[Login, Kalender und Provider](/docs/login-kalender-und-provider)**.

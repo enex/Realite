@@ -35,6 +35,22 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 28.03.2026:
 
+- Matcher-Fallback für fehlenden Kalenderabgleich umgesetzt: Vorschläge ohne FreeBusy-/Kalenderkontext brechen nicht mehr weg, sondern werden bewusst vorsichtiger priorisiert
+- Vorschlagsbegründungen markieren diesen Zustand jetzt explizit als Schätzung ohne Kalenderabgleich; automatische Kalender-Vormerkungen pausieren dabei
+- Nutzer-Doku für Matching, FAQ und den Flow ohne Kalender erklärt den degradierten Vorschlagsmodus jetzt direkt im selben Produktpfad
+- der offene P2-Task zur degradierten Vorschlagslogik ohne Kalenderkontext ist damit im aktuellen Produkt- und Doku-Stand abgeschlossen
+- neue Nutzer-Doku **Login- und Onboarding-Pfade** definiert Google, Apple und E-Mail jetzt als gleichwertige Produktpfade mit gemeinsamem Kernflow
+- `/docs` listet diese Onboarding-Übersicht jetzt direkt als eigene Seite, statt den Pfad nur implizit in Provider-Hinweisen mitzuerklären
+- der offene P1-Task zur Definition gleichwertiger Login- und Onboarding-Flows ist damit im aktuellen Doku- und Produktstand abgehakt
+- neue Nutzer-Doku **Login, Kalender und Provider** trennt jetzt ausdrücklich zwischen Realite-Konto, optionalem Kalenderzugriff und heutigem Technikstand einzelner Provider
+- Schnellstart und FAQ verlinken diese Capability-Übersicht jetzt direkt, damit der kalenderlose Kernflow und die aktuelle Google-Kopplung sauber auseinandergehalten werden
+- der offene P2-Task zur Capability-Matrix ist damit im Produkt- und Doku-Stand abgeschlossen
+- öffentliche Meta-, Landing- und Settings-Copy rahmt Kalender jetzt konsequenter als optionalen Kontext statt als Produktvoraussetzung
+- Landingpage startet den Kernflow jetzt sprachlich mit `Loslegen` statt implizit mit `Verbinden`; Meta-/OG-Texte definieren Realite nicht mehr primär über den Kalender
+- der offene P1-Task zur systematischen Kalender-Default-Copy ist damit im aktuellen UI- und Doku-Stand abgeschlossen
+- neue Nutzer-Doku **Ohne Kalender starten** definiert den Kernflow jetzt ausdrücklich als brauchbaren Standardfall: Anmeldung, erstes Event, Gruppen, Vorschläge und spätere Verbindung
+- Schnellstart und FAQ verlinken den kalenderlosen Pfad jetzt direkt, statt ihn nur nebenbei zu erwähnen
+- Milestone 6 ist damit in der Nutzer-Doku konkreter verankert: Kalenderzugriff bleibt klar optionaler Upgrade-Pfad statt Zugangsvoraussetzung
 - Einstellungen unterscheiden Kalenderzustände jetzt explizit zwischen `Kalenderzugriff aktiv`, `Später verbinden` und `Kalenderzugriff prüfen`
 - pausierte Kalenderoptionen wirken dadurch nicht mehr wie ein normaler Zustand ohne Verbindung: fehlende oder entzogene Berechtigung wird separat erklärt
 - Schnellstart und FAQ dokumentieren die drei Kalenderzustände jetzt direkt im Nutzerfluss
@@ -390,10 +406,10 @@ Status: `planned`
 - [x] Event-/Suggestion-Karten auf Scannability und Priorisierung überarbeiten
 - [x] leere Zustände produktnäher formulieren
 - [x] leere Zustände in `Jetzt` für kein Momentum, keine direkte Beteiligung, nur eigene Planung und komplett fehlende offene Aktivitäten explizit unterscheiden
-- [ ] Kernflows ohne Kalenderintegration definieren: Signup, erster Event, Gruppenbeitritt, Vorschläge, spätere Verbindung
-- [ ] UI-Copy systematisch prüfen, wo Kalender aktuell implizit als Default oder Voraussetzung klingt
+- [x] Kernflows ohne Kalenderintegration definieren: Signup, erster Event, Gruppenbeitritt, Vorschläge, spätere Verbindung
+- [x] UI-Copy systematisch prüfen, wo Kalender aktuell implizit als Default oder Voraussetzung klingt
 - [x] leere Zustände und Settings-Zustände für "kein Kalender verbunden" vs. "Berechtigung verweigert" vs. "später verbinden" unterscheiden
-- [ ] Login- und Onboarding-Flows für Google, Apple und E-Mail als gleichwertige Produktpfade definieren
+- [x] Login- und Onboarding-Flows für Google, Apple und E-Mail als gleichwertige Produktpfade definieren
 - [x] prüfen, welche UI-Texte und Docs heute unnötig Google als einzigen Login- oder Kalenderpfad nennen
 
 ### P2
@@ -414,10 +430,10 @@ Status: `planned`
 - [x] abgelaufenes eigenes Presence-Zeitfenster nach Reload/API-Roundtrip weiter als Schutz-Zustand zeigen statt wie nie aktiviert
 - [x] Presence-Panel hält auch nach Ablauf des eigenen Zeitfensters Headline, CTA und Ausblend-Logik konsistent im Schutz-Zustand
 - [x] Zusagen- und Presence-Listen privacy-härten: ohne gepflegten Namen keine E-Mail-Fallbacks in sichtbaren Personenlisten zeigen
-- [ ] Ranking- und Vorschlagslogik für Nutzer ohne Kalenderkontext bewusst degradieren statt brechen
+- [x] Ranking- und Vorschlagslogik für Nutzer ohne Kalenderkontext bewusst degradieren statt brechen
 - [x] Event- und Sozialkalender-Ansichten für Nutzer ohne Kalender so formulieren, dass Planung auch manuell verständlich bleibt
 - [ ] Adaptergrenzen für Login und Kalender konkretisieren: Google, Apple und Microsoft dürfen in der Kernlogik keine Sonderbehandlung erzwingen
-- [ ] Capability-Matrix festhalten: Welche Produktfunktionen hängen an Login, welche an Kalenderzugriff und welche an einzelnen Providern
+- [x] Capability-Matrix festhalten: Welche Produktfunktionen hängen an Login, welche an Kalenderzugriff und welche an einzelnen Providern
 - [ ] Apple Kalender und Microsoft Kalender als nächste konkrete Integrationspfade im Plan verankern, inklusive erwarteter Unterschiede bei Sync, Einladungen und Bearbeiten-im-Kalender-Links
 
 ## Konkret bekannte UX-/View-Aufgaben

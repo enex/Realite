@@ -107,7 +107,7 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
             href={signInHref}
             className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-white px-6 py-3.5 text-base font-bold text-slate-950 transition hover:-translate-y-0.5 hover:bg-slate-100 active:translate-y-0 sm:min-h-0 sm:py-3 sm:text-sm"
           >
-            Kostenlos mit Google starten
+            Kostenlos starten
           </a>
           <a
             href="#so-funktioniert-es"
@@ -121,6 +121,9 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
           <span className="flex items-center gap-1.5"><span className="text-teal-400">✓</span> Kein Spam an Kontakte</span>
           <span className="flex items-center gap-1.5"><span className="text-teal-400">✓</span> In 30 Sekunden dabei</span>
         </div>
+        <p className="mt-3 text-xs text-slate-400">
+          Aktuell startet die Anmeldung über Google. Weitere Login-Pfade sollen später gleichwertig anschließen.
+        </p>
       </div>
 
       <aside
@@ -203,7 +206,7 @@ const PROBLEM_POINTS = [
   {
     icon: "📱",
     title: "Viele Kontakte, aber wenig echte Erlebnisse",
-    text: "Du kennst genug Leute. Dein Kalender steckt voller freier Abende. Was fehlt, ist die Koordinationsschicht dazwischen.",
+    text: "Du kennst genug Leute. Zwischen freien Abenden, Gruppen und Ideen fehlt oft nur die Koordinationsschicht dazwischen.",
     cta: "Mehr Erlebnisse →",
     href: "#",
     useSignIn: true
@@ -568,9 +571,9 @@ function AudienceSection() {
 const HOW_IT_WORKS_STEPS = [
   {
     step: "01",
-    title: "Verbinden",
-    badge: "Optional",
-    text: "Kalender verbinden für bessere Vorschläge, Kontakte nutzen für relevante Leute. Beides optional – du behältst die Kontrolle."
+    title: "Loslegen",
+    badge: "Kalender optional",
+    text: "Starte direkt mit Aktivität, Gruppen und Vorschlägen. Kalender und Kontakte ergänzen später mehr Kontext, bleiben aber deine bewusste Entscheidung."
   },
   {
     step: "02",
@@ -638,7 +641,7 @@ function HowItWorksSection({ signInHref }: { signInHref: string }) {
             href={signInHref}
             className="inline-flex min-h-[52px] items-center justify-center rounded-xl bg-amber-500 px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-amber-900/40 transition hover:-translate-y-0.5 hover:bg-amber-400 active:translate-y-0 active:bg-amber-600 sm:min-h-0 sm:py-3.5"
           >
-            Kostenlos mit Google starten →
+            Kostenlos starten →
           </a>
           <a
             href="/docs/schnellstart"
@@ -647,9 +650,7 @@ function HowItWorksSection({ signInHref }: { signInHref: string }) {
             Schnellstart lesen
           </a>
         </div>
-        <p className="mt-5 text-xs text-slate-400">
-          Keine Kreditkarte · Kein Spam · Jederzeit kündbar
-        </p>
+        <p className="mt-5 text-xs text-slate-400">Keine Kreditkarte · Kein Spam · Aktuell per Google-Login, Kalender später optional</p>
       </div>
     </section>
   );

@@ -24,6 +24,24 @@ const DOCS_PAGES: DocsPage[] = [
     fileName: "schnellstart.md"
   },
   {
+    slug: "ohne-kalender-starten",
+    title: "Ohne Kalender starten",
+    description: "Wie Realite ohne verbundenen Kalender sinnvoll nutzbar bleibt.",
+    fileName: "ohne-kalender-starten.md"
+  },
+  {
+    slug: "login-kalender-und-provider",
+    title: "Login, Kalender und Provider",
+    description: "Welche Funktionen sofort laufen und wo Realite heute noch an einzelne Verbindungen gebunden ist.",
+    fileName: "login-kalender-und-provider.md"
+  },
+  {
+    slug: "login-und-onboarding-pfade",
+    title: "Login- und Onboarding-Pfade",
+    description: "Wie Google, Apple und E-Mail denselben Realite-Kernflow tragen sollen.",
+    fileName: "login-und-onboarding-pfade.md"
+  },
+  {
     slug: "gruppen-und-kontakte",
     title: "Gruppen und Kontakte",
     description: "Gruppenlogik, Kontaktverwaltung und Google-Kontakte-Sync.",

@@ -7,7 +7,7 @@ import { Toaster } from "@/src/components/toaster";
 
 import "./globals.css";
 
-const SITE_DESCRIPTION = "Gruppenbasierte Event-Matches auf Basis deines Kalenders";
+const SITE_DESCRIPTION = "Gruppenbasierte Event-Matches für echte Treffen mit optionalem Kalenderkontext";
 const DEFAULT_OG_IMAGE_PATH = "/opengraph-image";
 const DEFAULT_OG_IMAGE_ALT = "Realite - Weniger Scrollen. Mehr echte Momente.";
 

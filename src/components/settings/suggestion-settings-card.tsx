@@ -114,12 +114,12 @@ export function SuggestionSettingsCard({
             }
             disabled={busy}
           />
-          <span className="text-sm text-slate-700">Potenzielle Events automatisch in meinen Kalender eintragen</span>
+          <span className="text-sm text-slate-700">Potenzielle Events zusätzlich in meinen Kalender eintragen</span>
         </label>
 
         <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 sm:col-span-2">
-          Vorschläge werden als Kalendereintrag mit einem Realite-Link erstellt. Zu-/Absage läuft direkt über die
-          Realite-Seite.
+          Wenn Kalenderzugriff aktiv ist, werden Vorschläge als Kalendereintrag mit Realite-Link erstellt. Zu-/Absage
+          läuft weiterhin direkt über die Realite-Seite.
         </div>
 
         <select
@@ -142,7 +142,7 @@ export function SuggestionSettingsCard({
         </select>
 
         <div className="rounded-lg border border-slate-200 p-3 text-sm sm:col-span-2">
-          <p className="font-medium text-slate-800">Kalender für Matching und Event-Fund</p>
+          <p className="font-medium text-slate-800">Optionaler Kalenderkontext für Matching und Event-Fund</p>
           <p className="mt-1 text-xs text-slate-600">
             Nur diese Kalender werden für Verfügbarkeit und #alle-Sync des aktuellen Nutzers verwendet.
           </p>
@@ -194,7 +194,7 @@ export function SuggestionSettingsCard({
 
         <div className="rounded-lg border border-slate-200 p-3 text-sm">
           <p className="font-medium text-slate-800">Maximal pro Tag</p>
-          <p className="mt-1 text-xs text-slate-600">Wie viele Vorschläge an einem Kalendertag höchstens bleiben.</p>
+          <p className="mt-1 text-xs text-slate-600">Wie viele Vorschläge an einem Tag höchstens bleiben.</p>
           <input
             type="number"
             min={1}
@@ -213,7 +213,7 @@ export function SuggestionSettingsCard({
 
         <div className="rounded-lg border border-slate-200 p-3 text-sm">
           <p className="font-medium text-slate-800">Maximal pro Woche</p>
-          <p className="mt-1 text-xs text-slate-600">Wie viele Vorschläge in einer Kalenderwoche höchstens bleiben.</p>
+          <p className="mt-1 text-xs text-slate-600">Wie viele Vorschläge in einer Woche höchstens bleiben.</p>
           <input
             type="number"
             min={1}

@@ -176,6 +176,10 @@ Realite macht Vorschläge nur dann, wenn du im betreffenden Zeitraum verfügbar 
 Für `#date`-Events gilt zusätzlich: beide Seiten müssen sich gegenseitig matchen. Auch hier bleibt die Aktivität der Kern,
 nicht das reine Durchsuchen von Personen.
 
+Wenn Realite gerade keinen nutzbaren Kalenderabgleich hat, bricht der Vorschlagsfluss nicht ab. Passende Aktivitäten
+bleiben sichtbar, werden aber vorsichtiger priorisiert und ausdrücklich als Schätzung ohne Kalenderabgleich markiert.
+Automatische Kalender-Vormerkungen pausieren in diesem Zustand, bis wieder echter Zeitkontext verfügbar ist.
+
 Hinweis zum Datenschutz:
 
 - Hashtags werden in Event- und Vorschlagsansichten nicht offen angezeigt.
@@ -206,7 +210,7 @@ Kalenderlinks in Realite:
 - Neue Vorschläge im Kalender enthalten einen Link `realite.app/s/<shortUUID>` zur direkten Zu-/Absage.
 - Angenommene Vorschläge bzw. bestätigte Einträge enthalten einen Link `realite.app/e/<shortUUID>` zur Eventseite.
 
-**Event-Links ohne Anmeldung:** Öffentliche Events (`/e/...`) lassen sich auch ohne Konto öffnen. Du siehst Titel, Termin, Ort, Beschreibung, den Erstellernamen (falls hinterlegt) sowie vorhandene Kommentare. E-Mail-Adressen von Erstellern und Kommentierenden werden auf dieser Gastansicht nicht öffentlich angezeigt. Sobald du zusagen, absagen oder kommentieren willst, wirst du zur Anmeldung mit Google weitergeleitet und danach zurück auf die Eventseite gebracht.
+**Event-Links ohne Anmeldung:** Öffentliche Events (`/e/...`) lassen sich auch ohne Konto öffnen. Du siehst Titel, Termin, Ort, Beschreibung, den Erstellernamen (falls hinterlegt) sowie vorhandene Kommentare. E-Mail-Adressen von Erstellern und Kommentierenden werden auf dieser Gastansicht nicht öffentlich angezeigt. Sobald du zusagen, absagen oder kommentieren willst, wirst du zur Anmeldung weitergeleitet und danach zurück auf die Eventseite gebracht. Der aktuelle Login-Start läuft dabei über Google.
 - Titel von Realite-Kalendereinträgen enthalten keine Hashtags:  
   Bei neuen Vorschlägen `[Realite Vorschlag] <Titel ohne Hashtags>`, bei Zusage `[Realite] <Titel ohne Hashtags>`.
 - In der Beschreibung wird dafür eine einzelne Zeile ergänzt: `Realite-Link (automatisch ergänzt): <Link>`.

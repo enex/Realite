@@ -45,7 +45,7 @@ export default function OpenGraphImage() {
           <div style={{ fontSize: 80, fontWeight: 800, lineHeight: 1.05 }}>Weniger Scrollen.</div>
           <div style={{ fontSize: 80, fontWeight: 800, lineHeight: 1.05 }}>Mehr echte Momente.</div>
           <div style={{ fontSize: 32, lineHeight: 1.35, color: "#d1fae5" }}>
-            Gruppenbasierte Event-Matches auf Basis deines Kalenders.
+            Gruppenbasierte Event-Matches mit optionalem Kalenderkontext.
           </div>
         </div>
 

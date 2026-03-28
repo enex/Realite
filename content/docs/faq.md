@@ -38,6 +38,10 @@ Realite unterscheidet dort jetzt bewusst drei Zustände:
 
 Im dritten Fall bleiben deine übrigen Flows nutzbar, aber Kalender-Vormerkungen und Verfügbarkeitsabgleich pausieren, bis du den Zugriff erneut freigibst.
 
+Wenn du Realite bewusst ohne Kalender nutzen willst, findest du die einzelnen Schritte unter **[Ohne Kalender starten](/docs/ohne-kalender-starten)**.
+
+Wenn du genauer trennen willst, welche Funktionen nur dein Realite-Konto brauchen und welche heute zusätzlichen Kalenderzugriff oder einen bestimmten Provider voraussetzen, hilft **[Login, Kalender und Provider](/docs/login-kalender-und-provider)**.
+
 ## Warum erscheinen manche Termine doppelt?
 
 Das passiert oft, wenn mehrere sehr ähnliche Kalender gleichzeitig berücksichtigt werden.
@@ -62,6 +66,10 @@ Wichtig:
 - Termine mit **Frei/Verfügbar** blockieren Zeitfenster nicht.
 
 Wenn Vorschläge fehlen, prüfe deshalb direkt im Kalender, ob die Verfügbarkeit für betroffene Termine korrekt gesetzt ist.
+
+Wenn dein Kalender gerade gar nicht verbunden oder nicht mehr lesbar ist, bleiben Vorschläge in Realite trotzdem möglich.
+Sie werden dann nur vorsichtiger priorisiert, als Schätzung ohne Kalenderabgleich markiert und nicht automatisch in deinen
+Kalender übernommen.
 
 ## Warum sehe ich den Dating-Modus / #date gar nicht?
 
@@ -199,6 +207,18 @@ Realite setzt im Kalendereintrag einen einzelnen Link auf die passende Realite-S
 Zu- und Absage laufen zentral über diese Seite, damit der Entscheidungs-Flow einheitlich bleibt.
 Außerdem entfernt Realite Hashtags aus dem Kalendertitel und nutzt klare Präfixe:
 `[Realite Vorschlag] ...` vor Zusage, `[Realite] ...` nach Zusage.
+
+## Warum spricht die Doku von Providerunabhängigkeit, obwohl ich aktuell nur Google sehe?
+
+Weil Realite den Produktkern und die heutige Technik bewusst trennt.
+
+Heute gilt:
+
+- der Login-Start läuft sichtbar noch über Google
+- Kalenderkontext und Kontakte-Sync hängen aktuell an Google-Verbindungen
+- der eigentliche Kernflow mit Events, Gruppen, Sichtbarkeit und Vorschlägen bleibt davon im Produkt getrennt
+
+Wenn du die einzelnen Abhängigkeiten sauber nachlesen willst, findest du die aktuelle Übersicht unter **[Login, Kalender und Provider](/docs/login-kalender-und-provider)**.
 
 ## Warum kann ich manche Gruppen nicht löschen?
 

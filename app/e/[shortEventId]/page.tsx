@@ -108,8 +108,9 @@ export default async function EventShortcutPage({
             href={signInUrl}
             className="mt-3 inline-flex rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800"
           >
-            Mit Google anmelden
+            Jetzt anmelden
           </a>
+          <p className="mt-2 text-xs text-slate-500">Der aktuelle Login-Start läuft über Google.</p>
         </section>
 
         <EventComments
