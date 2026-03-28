@@ -158,10 +158,61 @@ describe("matcher service", () => {
     expect(suggestions[0]?.eventId).toBe("calendarless-event");
     expect(suggestions[0]?.status).toBe("pending");
     expect(suggestions[0]?.calendarEventId).toBe(null);
-    expect(suggestions[0]?.score).toBe(1.6);
+    expect(suggestions[0]?.score).toBe(1.85);
     expect(suggestions[0]?.reason).toContain(
       "Verfügbarkeit gerade ohne Kalenderabgleich geschätzt.",
     );
+    expect(suggestions[0]?.reason).toContain(
+      "explizite Interessen aus deinem Matching",
+    );
     expect(calendar.insertedSuggestions).toHaveLength(0);
+  });
+
+  test("prioritizes group context before generic public matches when calendar context is missing", async () => {
+    const repository = new InMemoryRepository();
+    const calendar = new InMemoryCalendarProvider();
+    const service = createMatcherService({
+      repository,
+      calendar,
+      now: () => new Date("2026-03-01T12:00:00.000Z"),
+    });
+
+    repository.setSuggestionSettings("viewer", {
+      autoInsertSuggestions: false,
+      suggestionCalendarId: "suggestions",
+      suggestionLimitPerDay: 5,
+      suggestionLimitPerWeek: 10,
+    });
+    repository.setVisibleEvents("viewer", [
+      buildEvent({
+        id: "group-event",
+        title: "Padel im Freundeskreis",
+        startsAt: new Date("2026-03-01T15:00:00.000Z"),
+        endsAt: new Date("2026-03-01T16:00:00.000Z"),
+        groupId: "group-1",
+        groupName: "Padel",
+        tags: ["#padel"],
+      }),
+      buildEvent({
+        id: "public-event",
+        title: "Offene Laufrunde",
+        startsAt: new Date("2026-03-01T14:00:00.000Z"),
+        endsAt: new Date("2026-03-01T15:00:00.000Z"),
+        tags: ["#laufen"],
+      }),
+    ]);
+    calendar.busyWindowsByUser.set("viewer", null);
+
+    const suggestions = await service.generateSuggestions("viewer");
+
+    expect(suggestions).toHaveLength(2);
+    expect(suggestions[0]?.eventId).toBe("group-event");
+    expect((suggestions[0]?.score ?? 0) > (suggestions[1]?.score ?? 0)).toBe(
+      true,
+    );
+    expect(suggestions[0]?.score).toBe(1.55);
+    expect(suggestions[1]?.score).toBe(1.25);
+    expect(suggestions[0]?.reason).toContain("gemeinsamer Kreis");
+    expect(suggestions[1]?.reason).toContain("Aktivität laufen");
   });
 });

@@ -132,6 +132,15 @@ function formatContributionLabel(tag: string) {
   return "passendes Signal";
 }
 
+function addContribution(
+  contributions: ScoreContribution[],
+  label: string,
+  value: number,
+) {
+  contributions.push({ label, value });
+  return value;
+}
+
 function buildSuggestionReason(
   contributions: ScoreContribution[],
   availabilityStatus: AvailabilityStatus,
@@ -222,22 +231,21 @@ function scoreEvent(
 ) {
   let score = 1;
   const contributions = [] as ScoreContribution[];
+  let matchedInterestSignal = false;
 
   for (const tag of event.tags) {
     const preference = preferences.get(tag);
     const label = formatContributionLabel(tag);
     if (preference) {
-      score += preference.weight;
-      contributions.push({ label, value: preference.weight });
+      score += addContribution(contributions, label, preference.weight);
+      matchedInterestSignal = true;
     } else {
-      score += 0.35;
-      contributions.push({ label, value: 0.35 });
+      score += addContribution(contributions, label, 0.35);
     }
   }
 
   if (event.tags.some((tag) => tag.includes("#alle"))) {
-    score += 0.2;
-    contributions.push({ label: "öffentliche Gruppe alle", value: 0.2 });
+    score += addContribution(contributions, "öffentliche Gruppe alle", 0.2);
   }
 
   const contextTags = getEventPreferenceTags({
@@ -249,15 +257,34 @@ function scoreEvent(
   for (const tag of contextTags) {
     const preference = preferences.get(tag);
     if (preference) {
-      score += preference.weight;
-      contributions.push({
-        label: formatContributionLabel(tag),
-        value: preference.weight,
-      });
+      score += addContribution(
+        contributions,
+        formatContributionLabel(tag),
+        preference.weight,
+      );
+      matchedInterestSignal = true;
     }
   }
 
   if (availabilityStatus === "unknown") {
+    if (event.groupId) {
+      score += addContribution(contributions, "gemeinsamer Kreis", 0.3);
+    }
+
+    if (matchedInterestSignal) {
+      score += addContribution(
+        contributions,
+        "explizite Interessen aus deinem Matching",
+        0.25,
+      );
+    } else if (event.tags.length > 0) {
+      score += addContribution(
+        contributions,
+        "klare Aktivität auch ohne Kalenderkontext",
+        0.1,
+      );
+    }
+
     score -= 0.2;
   }
 

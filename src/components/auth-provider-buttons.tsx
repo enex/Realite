@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
-
-import { APPLE_AUTH_FLAG, MICROSOFT_AUTH_FLAG } from "@/src/lib/auth-provider-flags";
+import { MICROSOFT_AUTH_FLAG } from "@/src/lib/auth-provider-flags";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
-import { buildAuthStartPath, type AuthProviderDefinition } from "@/src/lib/provider-adapters";
+import {
+  buildAuthStartPath,
+  getVisibleAuthProviders,
+  type AuthProviderDefinition,
+} from "@/src/lib/provider-adapters";
 
 type AuthProviderButtonsProps = {
   callbackUrl: string;
@@ -57,23 +59,10 @@ function ProviderIcon({ providerId }: { providerId: AuthProviderDefinition["id"]
 }
 
 export function AuthProviderButtons({ callbackUrl, providers }: AuthProviderButtonsProps) {
-  const appleEnabled = useRealiteFeatureFlag(APPLE_AUTH_FLAG, false);
   const microsoftEnabled = useRealiteFeatureFlag(MICROSOFT_AUTH_FLAG, false);
-  const visibleProviders = useMemo(
-    () =>
-      providers.filter((provider) => {
-        if (provider.id === "apple") {
-          return appleEnabled;
-        }
-
-        if (provider.id === "microsoft") {
-          return microsoftEnabled;
-        }
-
-        return true;
-      }),
-    [appleEnabled, microsoftEnabled, providers]
-  );
+  const visibleProviders = getVisibleAuthProviders(providers, {
+    microsoftEnabled,
+  });
 
   if (visibleProviders.length === 0) {
     return (
@@ -101,9 +90,7 @@ export function AuthProviderButtons({ callbackUrl, providers }: AuthProviderButt
                 </span>
               ) : null}
             </div>
-            <p className="mt-0.5 text-xs text-slate-500">
-              {provider.id === "dev" ? "Lokaler Testzugang" : "Sicher anmelden"}
-            </p>
+            <p className="mt-0.5 text-xs text-slate-500">{provider.description}</p>
           </div>
           <svg
             viewBox="0 0 24 24"

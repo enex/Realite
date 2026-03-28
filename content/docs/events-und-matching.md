@@ -181,6 +181,17 @@ Wenn Realite gerade keinen nutzbaren Kalenderabgleich hat, bricht der Vorschlags
 bleiben sichtbar, werden aber vorsichtiger priorisiert und ausdrücklich als Schätzung ohne Kalenderabgleich markiert.
 Automatische Kalender-Vormerkungen pausieren in diesem Zustand, bis wieder echter Zeitkontext verfügbar ist.
 
+Für diese erste Stufe ohne Kalender nutzt Realite im Ranking jetzt vor allem die Signale, die schon ohne Zeitabgleich
+sauber und privacy-sicher verfügbar sind:
+
+- **gemeinsame Kreise und Gruppen**, wenn ein Event aus einem sichtbaren sozialen Kontext kommt
+- **explizite Interessen aus deinem Matching**, also Hashtags und bereits gelernte Vorlieben aus früheren Entscheidungen
+- **klare Aktivitätssignale** aus dem Event selbst, wenn zwar kein Kalenderkontext, aber immerhin ein verständlicher Aktivitätstyp vorliegt
+
+Noch nicht gleich stark in diesem Fallback berücksichtigt sind dagegen manuelle Verfügbarkeiten oder sichtbares Momentum
+über Zusagen. Diese Folge-Signale kommen erst dann tiefer ins Ranking, wenn sie im Produktfluss stabil und
+providerunabhängig verfügbar sind.
+
 Hinweis zum Datenschutz:
 
 - Hashtags werden in Event- und Vorschlagsansichten nicht offen angezeigt.

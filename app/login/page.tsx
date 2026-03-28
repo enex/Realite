@@ -26,7 +26,9 @@ export default async function LoginPage({
       <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-[0_30px_80px_-48px_rgba(15,23,42,0.45)]">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-700">Realite</p>
         <h1 className="mt-3 text-3xl font-bold tracking-tight">Anmelden</h1>
-        <p className="mt-3 text-base leading-7 text-slate-600">Mit welchem Konto willst du weitermachen?</p>
+        <p className="mt-3 text-base leading-7 text-slate-600">
+          Wähle den Kontopfad, der für dich passt. Events, Gruppen und Vorschläge laufen danach im selben Realite-Kern weiter.
+        </p>
         <div className="mt-7">
           {providers.length > 0 ? (
             <AuthProviderButtons callbackUrl={callbackUrl} providers={providers} />
@@ -36,7 +38,9 @@ export default async function LoginPage({
             </p>
           )}
         </div>
-        <p className="mt-6 text-xs text-slate-500">Mehr erklaeren wir dir erst danach. Kalender und weitere Verbindungen kommen spaeter.</p>
+        <p className="mt-6 text-xs text-slate-500">
+          Kalender, Kontakte und weitere Verbindungen sind weiterhin nur optionaler Kontext und kommen erst später.
+        </p>
       </div>
     </main>
   );

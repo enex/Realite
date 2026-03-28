@@ -35,6 +35,18 @@ Dieser Use Case ist **Zusatz**, nicht Produktzentrum.
 
 Zuletzt umgesetzt am 28.03.2026:
 
+- Kalender-Kern und provider-spezifische Extras jetzt als explizite Source-of-Truth im Adapter-Layer verankert statt nur lose in Doku und Tracker beschrieben
+- Profil & Einstellungen zeigt diese Trennung jetzt direkt im Produkt: gemeinsamer Kalender-Kern versus providergebundene Extras mit Status fuer Google, Apple und Microsoft
+- Nutzer-Doku zu Login, Kalender und Providern erklaert jetzt explizit, welche Kalenderfaehigkeiten kuenftig fuer alle Adapter gleich gedacht bleiben und wo bewusste Fallbacks auf Event-Link und Join-Flow gelten
+- die offene Entscheidungsfrage, welche Kalenderfeatures provideruebergreifend gemeinsamer Kern sind und was vorerst providerspezifisch bleibt, ist damit fuer den aktuellen Produktstand beantwortet
+- Apple Login erscheint jetzt als normaler Kontopfad im Login, sobald Apple technisch konfiguriert ist, statt weiter hinter einem separaten UI-Gate zu verschwinden
+- Login-CTAs erklären den gemeinsamen Kernflow jetzt direkter pro Provider: gleicher Einstieg in Events, Gruppen und Vorschläge, Kalender bleibt optionaler Kontext
+- Nutzer-Doku zu Onboarding, Providern und Schnellstart hält diese Entscheidung jetzt explizit fest: Apple ist im Login gleichwertig sichtbar, Microsoft bleibt vorerst separat freizuschalten
+- der offene Entscheidungs-Task, ob Apple Login im Onboarding gleichwertig sichtbar oder nur sekundär gestartet wird, ist damit für den aktuellen Produktstand beantwortet
+- Matcher priorisiert Vorschläge ohne Kalenderkontext jetzt bewusst zuerst über gemeinsame Kreise, explizite Interessen und klare Aktivitätssignale statt nur über eine generische Degradierung
+- Nutzer-Doku zu Matching ohne Kalender erklärt diese erste Fallback-Reihenfolge jetzt ausdrücklich und grenzt ab, welche stärkeren Signale erst in Folgearbeit kommen
+- die offene Entscheidungsfrage, welche Vorschlags- und Ranking-Signale ohne Kalender zuerst gelten, ist damit für den aktuellen Produktstand beantwortet
+- Tests decken die neue Reihenfolge ohne Kalenderkontext jetzt explizit ab: Gruppenkontext vor generischem Public-Match, Interessen-Signal bleibt nachvollziehbar im Reason-Text
 - MCP-Login-/Onboarding-Seite zeigt jetzt explizit den kalenderlosen Kernflow vor dem technischen Google-Login: Events, Gruppen und Vorschläge bleiben direkt nutzbar
 - der spätere Upgrade-Pfad für Kalender und Kontakte ist auf derselben Einstiegsfläche jetzt bewusst sichtbar, aber klar als optionaler Ausbau gerahmt
 - Nutzer-Doku zu Login-/Onboarding-Pfaden hält diese Produktentscheidung jetzt explizit fest: kalenderloser Kern zuerst, Kalenderkontext später
@@ -554,9 +566,9 @@ Damit Milestone 7 nicht nur abstrakt bleibt, gelten für die nächsten Kalender-
 - [x] Die primäre Home-/Now-Ansicht priorisiert Reaktion und offene Aktivitäten vor Verwaltung
 - [x] Smart Meetings bleiben als sekundärer Verwaltungsbereich unter `Events`
 - [x] wie stark der Kernflow ohne Kalender schon im Onboarding sichtbar erklärt werden soll, ohne die spätere Verbindung zu verstecken
-- [ ] welche Vorschlags- und Ranking-Signale ohne Kalender zuerst genutzt werden sollen: Gruppen, Zusagen, Tags, manuelle Verfügbarkeit oder explizite Interessen
-- [ ] ob Apple Login im Onboarding als gleichwertige Standardoption neben Google und E-Mail erscheint oder zuerst sekundär gestartet wird
-- [ ] welche Kalenderfeatures providerübergreifend als gemeinsamer Kern gelten und was zunächst Google-, Apple- oder Microsoft-spezifisch bleiben darf
+- [x] welche Vorschlags- und Ranking-Signale ohne Kalender zuerst genutzt werden sollen: Gruppen, Zusagen, Tags, manuelle Verfügbarkeit oder explizite Interessen
+- [x] ob Apple Login im Onboarding als gleichwertige Standardoption neben Google und E-Mail erscheint oder zuerst sekundär gestartet wird
+- [x] welche Kalenderfeatures providerübergreifend als gemeinsamer Kern gelten und was zunächst Google-, Apple- oder Microsoft-spezifisch bleiben darf
 - [x] Eigene Events ohne Zusagen bleiben in `Events`; relevante fremde Aktivitäten und offene Reaktionen stehen in `Jetzt` vorn
 - [x] Wie wird Presence vor Ort dargestellt, ohne creepy oder zu offen zu wirken?
 - [x] Welche Sichtbarkeitsstufen sind wirklich nötig für V1.5 / V2?

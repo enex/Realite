@@ -34,6 +34,7 @@ describe("docs pages", () => {
     expect(rendered?.html).toContain("Google");
     expect(rendered?.html).toContain("Microsoft");
     expect(rendered?.html).toContain("Dev-Login");
+    expect(rendered?.html).toContain("Apple erscheint jetzt als normaler Login-Pfad");
     expect(rendered?.html).toContain("providerunabhaengig");
     expect(rendered?.html).toContain("Wie der Einstieg das schon im Onboarding zeigen soll");
     expect(rendered?.html).toContain("du kannst sofort starten");

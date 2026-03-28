@@ -66,9 +66,15 @@ Produktlogisch bleibt aber auch hier derselbe Kern:
 
 ## Apple
 
-Apple ist als interner Testpfad vorbereitet, aber noch nicht allgemein im Login freigeschaltet.
+Apple erscheint jetzt als normaler Login-Pfad, sobald dieses Deployment Apple-Anmeldung technisch freigeschaltet hat.
 
-Sobald dieser Pfad oeffentlich aktiviert wird, soll er denselben Kern tragen:
+Das heißt im Einstieg bewusst:
+
+- Apple steht dann direkt neben anderen verfügbaren Kontopfaden
+- Apple ist kein versteckter Upgrade- oder Beta-Knopf
+- nach dem Login gilt derselbe Kernflow wie bei Google oder später anderen Providern
+
+Auch über Apple trägt der Pfad denselben Kern:
 
 - mit Apple anmelden
 - direkt in Realite starten

@@ -55,13 +55,40 @@ Die folgende Übersicht trennt bewusst zwischen Konto, Kalenderzugriff und heuti
 | Kalendertermine nach Realite übernehmen | Ja | Ja | aktuell Google Kalender |
 | Smart-Treffen per Kalendereinladung verschicken | Ja | Ja | aktuell Google Kalender |
 
+## Gemeinsamer Kalender-Kern
+
+Damit mehrere Kalenderanbieter später anschließen können, behandelt Realite diese drei Bausteine als gemeinsamen Kern aller Kalenderadapter:
+
+1. **Verfügbarkeits- und Timing-Kontext** für Vorschläge und Planung
+2. **Kalenderkopien von Realite-Aktivitäten** zurück in deinen verbundenen Kalender
+3. **Import relevanter Kalendereignisse nach Realite** als zusätzlicher Planungskontext
+
+Wichtig dabei:
+
+- wenn ein Provider diesen Kern noch nicht technisch anbietet, bleibt Realite trotzdem nutzbar
+- dann fällt der Flow auf Realite selbst zurück: Event-Link, Sichtbarkeit, Join-Mechaniken und manuelle Planung
+- der Produktkern wird dadurch nicht neu verdrahtet, nur der zusätzliche Kalenderkontext fehlt
+
+## Was bewusst Provider-Capability bleibt
+
+Nicht jede Kalenderfunktion muss bei allen Providern gleich aussehen. Diese Punkte bleiben bewusst an der Provider-Schicht:
+
+- **Kalendereinladungen und Teilnehmerpflege** über den externen Kalender
+- **Bearbeiten-im-Kalender-Links** oder Deep-Links zurück in den Quellkalender
+
+Heute heißt das konkret:
+
+- Google trägt beide Pfade bereits
+- Apple soll bei fehlender Gleichwertigkeit zuerst sauber auf Event-Link und Realite-Join-Flow zurückfallen
+- Microsoft darf Einladungen oder Edit-Links später tiefer integrieren, aber nicht als Produktvoraussetzung erzwingen
+
 ## Was heute noch providergebunden ist
 
 Produktlogisch ist Realite schon breiter gedacht. Technisch gibt es heute aber noch Verbindungen, die nicht gleichwertig ausgebaut sind.
 
 Aktuell gilt:
 
-- der sichtbare Standard-Login laeuft heute ueber Google
+- Google und Apple koennen als sichtbare Login-Pfade parallel erscheinen, sobald das jeweilige Deployment beide technisch freigeschaltet hat
 - in lokaler Entwicklung gibt es zusaetzlich einen dev-only Test-Login
 - Kalenderkontext ist heute an Google Kalender angebunden
 - Kontakte-Sync ist heute an Google Kontakte angebunden
@@ -76,7 +103,6 @@ Wichtig dabei:
 
 Diese Pfade sind im aktuellen Produkt noch **nicht** allgemein freigeschaltet:
 
-- Apple Login ausserhalb interner Tests
 - Microsoft Login ausserhalb interner Tests
 - Apple Kalender als angebundener Planungskontext
 - Microsoft Kalender als angebundener Planungskontext

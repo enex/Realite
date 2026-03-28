@@ -7,6 +7,7 @@ import { UserAvatar } from "@/src/components/user-avatar";
 import { AccountDeleteCard } from "@/src/components/settings/account-delete-card";
 import { DatingSettingsCard } from "@/src/components/settings/dating-settings-card";
 import { MpcSettingsCard } from "@/src/components/settings/mcp-settings-card";
+import { ProviderCapabilityCard } from "@/src/components/settings/provider-capability-card";
 import { SuggestionLearningCard } from "@/src/components/settings/suggestion-learning-card";
 import { SuggestionSettingsCard, type SuggestionSettingsForm } from "@/src/components/settings/suggestion-settings-card";
 import type { CalendarConnectionState } from "@/src/lib/calendar-connection-state";
@@ -231,6 +232,8 @@ export function SettingsPage({
           onFormChange={setSuggestionForm}
           onSubmit={saveSuggestionSettings}
         />
+
+        <ProviderCapabilityCard />
 
         <SuggestionLearningCard
           positiveCriteria={data.criteria.positiveCriteria}
