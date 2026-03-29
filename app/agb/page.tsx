@@ -34,7 +34,7 @@ export default function AgbPage() {
       <section>
         <h2>3. Registrierung und Konto</h2>
         <ul>
-          <li>Die Nutzung setzt ein Realite-Konto ueber einen aktuell angebotenen Login-Pfad voraus, zum Beispiel Google, Apple oder Microsoft.</li>
+          <li>Die Nutzung setzt ein Realite-Konto über einen aktuell angebotenen Login-Pfad voraus, zum Beispiel Google, Apple oder Microsoft.</li>
           <li>Du bist für den sicheren Umgang mit deinem Konto selbst verantwortlich.</li>
           <li>Du darfst Realite nur im Rahmen der geltenden Gesetze und dieser AGB nutzen.</li>
         </ul>

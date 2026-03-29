@@ -74,7 +74,7 @@ Realite arbeitet mit abgestufter Sichtbarkeit:
 So kannst du selbst steuern, wie weit sich eine Aktivität in deinem sozialen Umfeld öffnet.
 
 Wie Relevanz, Sichtbarkeit, Gruppen, Kontakte und geschützte Sonderfälle zusammenhängen, steht auch gesammelt unter **[Sichtbarkeit und Relevanz](/docs/sichtbarkeit-und-relevanz)**.
-Welche Schutzregeln fuer spaetere Vor-Ort- oder Festival-Kontexte gelten sollen, steht unter
+Welche Schutzregeln für spätere Vor-Ort- oder Festival-Kontexte gelten sollen, steht unter
 **[Sicherheit bei Vor-Ort- und Festival-Kontexten](/docs/sicherheit-bei-vor-ort-und-festival-kontexten)**.
 
 ### Einfach reagieren statt lange abstimmen

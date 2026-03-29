@@ -61,10 +61,10 @@ export default function DatenschutzPage() {
       <section>
         <h2>5. Login- und Provider-Integration</h2>
         <p>
-          Fuer den Kontozugang nutzt Realite den jeweils angebotenen Login-Provider, aktuell z. B. Google, Apple oder
-          Microsoft. Fuer Kalender- und Kontakte-Kontext werden heute Google APIs genutzt. Es werden nur die Daten
-          verarbeitet, die fuer die jeweilige Funktion erforderlich sind. Berechtigungen koennen in deinem jeweiligen
-          Anbieter-Konto jederzeit eingeschraenkt oder widerrufen werden.
+          Für den Kontozugang nutzt Realite den jeweils angebotenen Login-Provider, aktuell z. B. Google, Apple oder
+          Microsoft. Für Kalender- und Kontakte-Kontext werden heute Google APIs genutzt. Es werden nur die Daten
+          verarbeitet, die für die jeweilige Funktion erforderlich sind. Berechtigungen können in deinem jeweiligen
+          Anbieter-Konto jederzeit eingeschränkt oder widerrufen werden.
         </p>
       </section>
 

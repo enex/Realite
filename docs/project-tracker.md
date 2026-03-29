@@ -39,18 +39,18 @@ Zuletzt umgesetzt am 28.03.2026:
 - `Nächster Schritt`, die dritte Leitfrage in `Jetzt` und die Rückführung aus `Events` greifen jetzt dieselbe Low-Momentum-Logik auf statt in ruhigen Phasen generisch von irgendeiner offenen Aktivität zu sprechen
 - die Provider-Capability-Matrix in `Profil & Einstellungen` startet jetzt mit einer kompakten Kurzlogik: gemeinsamer Kalender-Kern getrennt von provider-spezifischen Extras
 - die Nutzer-Doku zu Login, Kalender und Providern verweist jetzt direkt auf diesen Produktort, damit der Capability-Unterschied nicht nur in tieferer Hintergrunddoku steckt
-- Regressionstests sichern die Layer jetzt explizit ab: `shared_core` bleibt bei Verfuegbarkeit, Kalenderkopien und Import; Einladungen und Kalender-Links bleiben Provider-Extras
-- neue Nutzer-Doku **Sicherheit bei Vor-Ort- und Festival-Kontexten** konkretisiert jetzt die offenen Trust-/Safety-Regeln fuer spaetere On-Site-Socializing-Faelle
-- Vor-Ort-Sichtbarkeit, Sichtbarkeit/Relevanz und FAQ verlinken diese Leitplanken jetzt direkt, damit spaetere Festival-Kontexte klar als geschuetzter Zusatz statt People-Browsing gerahmt bleiben
-- auch die Grundsatz-Doku **Was ist Realite?** verweist jetzt direkt auf diese Leitplanken, damit der Produktkern schon in der Einstiegserklaerung nicht in offene Nearby-Discovery kippt
-- der offene P2-Task zu Trust- und Safety-Leitplanken fuer spaetere Vor-Ort-/Festival-Kontexte ist damit im aktuellen Doku-Stand abgehakt
+- Regressionstests sichern die Layer jetzt explizit ab: `shared_core` bleibt bei Verfügbarkeit, Kalenderkopien und Import; Einladungen und Kalender-Links bleiben Provider-Extras
+- neue Nutzer-Doku **Sicherheit bei Vor-Ort- und Festival-Kontexten** konkretisiert jetzt die offenen Trust-/Safety-Regeln für spätere On-Site-Socializing-Fälle
+- Vor-Ort-Sichtbarkeit, Sichtbarkeit/Relevanz und FAQ verlinken diese Leitplanken jetzt direkt, damit spätere Festival-Kontexte klar als geschützter Zusatz statt People-Browsing gerahmt bleiben
+- auch die Grundsatz-Doku **Was ist Realite?** verweist jetzt direkt auf diese Leitplanken, damit der Produktkern schon in der Einstiegserklärung nicht in offene Nearby-Discovery kippt
+- der offene P2-Task zu Trust- und Safety-Leitplanken für spätere Vor-Ort-/Festival-Kontexte ist damit im aktuellen Doku-Stand abgehakt
 - `Jetzt` unterscheidet komplett leere Hauptfeed-Zustände jetzt explizit zwischen fehlendem Relevanzkontext, fehlendem Timing-Kontext ohne Kalender und vorhandenem Kontext ohne offene Aktivität
 - der leere Hauptfeed führt dadurch gezielter weiter: erst Gruppen für sozialen Kontext, optional Einstellungen für mehr Zeitkontext, sonst direkt Aktivität erstellen oder Planung in `Events` prüfen
 - Nutzer-Doku für den kalenderlosen Kernflow hält diese differenzierten Empty States jetzt direkt in derselben Einstiegserklärung fest
 - Kalender-Kern und provider-spezifische Extras jetzt als explizite Source-of-Truth im Adapter-Layer verankert statt nur lose in Doku und Tracker beschrieben
-- Profil & Einstellungen zeigt diese Trennung jetzt direkt im Produkt: gemeinsamer Kalender-Kern versus providergebundene Extras mit Status fuer Google, Apple und Microsoft
-- Nutzer-Doku zu Login, Kalender und Providern erklaert jetzt explizit, welche Kalenderfaehigkeiten kuenftig fuer alle Adapter gleich gedacht bleiben und wo bewusste Fallbacks auf Event-Link und Join-Flow gelten
-- die offene Entscheidungsfrage, welche Kalenderfeatures provideruebergreifend gemeinsamer Kern sind und was vorerst providerspezifisch bleibt, ist damit fuer den aktuellen Produktstand beantwortet
+- Profil & Einstellungen zeigt diese Trennung jetzt direkt im Produkt: gemeinsamer Kalender-Kern versus providergebundene Extras mit Status für Google, Apple und Microsoft
+- Nutzer-Doku zu Login, Kalender und Providern erklärt jetzt explizit, welche Kalenderfähigkeiten künftig für alle Adapter gleich gedacht bleiben und wo bewusste Fallbacks auf Event-Link und Join-Flow gelten
+- die offene Entscheidungsfrage, welche Kalenderfeatures providerübergreifend gemeinsamer Kern sind und was vorerst providerspezifisch bleibt, ist damit für den aktuellen Produktstand beantwortet
 - Apple Login erscheint jetzt als normaler Kontopfad im Login, sobald Apple technisch konfiguriert ist, statt weiter hinter einem separaten UI-Gate zu verschwinden
 - Login-CTAs erklären den gemeinsamen Kernflow jetzt direkter pro Provider: gleicher Einstieg in Events, Gruppen und Vorschläge, Kalender bleibt optionaler Kontext
 - Nutzer-Doku zu Onboarding, Providern und Schnellstart hält diese Entscheidung jetzt explizit fest: Apple ist im Login gleichwertig sichtbar, Microsoft bleibt vorerst separat freizuschalten
@@ -497,7 +497,7 @@ Damit Milestone 7 nicht nur abstrakt bleibt, gelten für die nächsten Kalender-
 - [x] Adaptergrenzen für Login und Kalender konkretisieren: Google, Apple und Microsoft dürfen in der Kernlogik keine Sonderbehandlung erzwingen
 - [x] Capability-Matrix festhalten: Welche Produktfunktionen hängen an Login, welche an Kalenderzugriff und welche an einzelnen Providern
 - [x] Apple Kalender und Microsoft Kalender als nächste konkrete Integrationspfade im Plan verankern, inklusive erwarteter Unterschiede bei Sync, Einladungen und Bearbeiten-im-Kalender-Links
-- [x] Trust- und Safety-Leitplanken fuer spaetere Vor-Ort-/Festival-Kontexte in der Nutzer-Doku konkretisieren, statt den Zusatzfall nur implizit mitzudenken
+- [x] Trust- und Safety-Leitplanken für spätere Vor-Ort-/Festival-Kontexte in der Nutzer-Doku konkretisieren, statt den Zusatzfall nur implizit mitzudenken
 
 ## Konkret bekannte UX-/View-Aufgaben
 

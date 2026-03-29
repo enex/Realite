@@ -4,7 +4,7 @@ import { EventImage } from "@/src/components/event-image";
 import { LandingDatingGate } from "@/src/components/landing-dating-gate";
 import { getAuthSession } from "@/src/lib/auth";
 import { APP_SHELL_SECTIONS } from "@/src/lib/app-shell-navigation";
-import { buildLoginPath, isDevelopmentAuthMode } from "@/src/lib/provider-adapters";
+import { buildLoginPath } from "@/src/lib/provider-adapters";
 import { listPublicAlleEvents } from "@/src/lib/repository";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
@@ -684,7 +684,7 @@ function HowItWorksSection({ signInHref }: { signInHref: string }) {
             <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2 text-xs text-emerald-50/80">
               <span>Keine Kreditkarte</span>
               <span>Kein Spam</span>
-              <span>Google-Login jetzt, Kalender spaeter optional</span>
+              <span>Google-Login jetzt, Kalender später optional</span>
             </div>
           </div>
 

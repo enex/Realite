@@ -68,7 +68,7 @@ const DOCS_PAGES: DocsPage[] = [
   {
     slug: "sicherheit-bei-vor-ort-und-festival-kontexten",
     title: "Sicherheit bei Vor-Ort- und Festival-Kontexten",
-    description: "Welche Schutzregeln fuer spaetere On-Site- und Socializing-Faelle gelten sollen.",
+    description: "Welche Schutzregeln für spätere On-Site- und Socializing-Fälle gelten sollen.",
     fileName: "sicherheit-bei-vor-ort-und-festival-kontexten.md"
   },
   {

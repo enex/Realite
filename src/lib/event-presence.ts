@@ -287,7 +287,7 @@ export function getEventPresenceAudienceHint(input: {
     return "Aktive Check-ins sehen nur gegenseitige Matches.";
   }
 
-  return "Aktive Check-ins sehen nur Personen, die dieses Event sehen duerfen.";
+  return "Aktive Check-ins sehen nur Personen, die dieses Event sehen dürfen.";
 }
 
 export function isEventPresenceActive(

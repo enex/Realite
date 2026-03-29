@@ -365,7 +365,7 @@ export function SuggestionsPage({
         ) : null}
         {loading && data.suggestions.length === 0 ? <p className="mt-6 text-slate-600">Lade Vorschläge...</p> : null}
 
-        <section id="vorschlaege" className="mt-8 scroll-mt-24 space-y-6">
+        <section id="vorschläge" className="mt-8 scroll-mt-24 space-y-6">
           <div className={suggestionCard.sectionClassName}>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>

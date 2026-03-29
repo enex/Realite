@@ -24,7 +24,7 @@ Der Zugriff läuft über OAuth mit Better Auth. Dein MCP-Client bekommt also kei
 
 1. Dein MCP-Client verbindet sich mit dem geschützten Resource-Endpunkt von Realite.
 2. Realite verweist den Client auf die OAuth-Metadaten von Better Auth.
-3. Du meldest dich mit einem fuer dieses Deployment freigeschalteten Realite-Login an, heute im Regelfall Google.
+3. Du meldest dich mit einem für dieses Deployment freigeschalteten Realite-Login an, heute im Regelfall Google.
 4. Du bestätigst den Zugriff auf dein Realite-Konto.
 5. Danach kann der MCP-Client Tools und Resources von Realite nutzen.
 

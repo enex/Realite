@@ -18,7 +18,7 @@ const AVAILABILITY_STYLES: Record<
   { label: string; className: string }
 > = {
   available: {
-    label: "Verfuegbar",
+    label: "Verfügbar",
     className: "border-emerald-200 bg-emerald-50 text-emerald-700",
   },
   planned: {
@@ -38,12 +38,12 @@ const SECTION_COPY: Record<
   shared_core: {
     title: "Gemeinsamer Kalender-Kern",
     description:
-      "Diese Faehigkeiten sollen fuer alle Kalenderadapter gleich gedacht bleiben. Unterschiede duerfen nur in der technischen Verfuegbarkeit liegen.",
+      "Diese Fähigkeiten sollen für alle Kalenderadapter gleich gedacht bleiben. Unterschiede dürfen nur in der technischen Verfügbarkeit liegen.",
   },
   provider_extra: {
     title: "Provider-spezifische Extras",
     description:
-      "Diese Pfade koennen sich je Provider unterscheiden und duerfen nie den Realite-Kernflow blockieren.",
+      "Diese Pfade können sich je Provider unterscheiden und dürfen nie den Realite-Kernflow blockieren.",
   },
 };
 
@@ -51,12 +51,12 @@ const SUMMARY_ITEMS = [
   {
     title: "Gemeinsamer Kern",
     description:
-      "Verfuegbarkeitsabgleich, Kalenderkopien und Import bleiben dieselben Produktpfade, auch wenn sie technisch je Provider unterschiedlich weit sind.",
+      "Verfügbarkeitsabgleich, Kalenderkopien und Import bleiben dieselben Produktpfade, auch wenn sie technisch je Provider unterschiedlich weit sind.",
   },
   {
     title: "Provider-Extras",
     description:
-      "Einladungsversand und Bearbeiten-im-Kalender-Links duerfen abweichen. Wenn sie fehlen, faellt Realite auf Links, Sichtbarkeit und Join-Flow zurueck.",
+      "Einladungsversand und Bearbeiten-im-Kalender-Links dürfen abweichen. Wenn sie fehlen, fällt Realite auf Links, Sichtbarkeit und Join-Flow zurück.",
   },
 ] as const;
 
@@ -104,8 +104,8 @@ export function ProviderCapabilityCard() {
       <h2 className="text-lg font-semibold text-slate-900">Kalender-Kern und Provider-Pfade</h2>
       <p className="mt-2 text-sm leading-6 text-slate-700">
         Realite trennt hier bewusst zwischen gemeinsamem Produktkern und technischen Provider-Unterschieden. So bleibt
-        klar, welche Kalenderfunktionen spaeter fuer Apple und Microsoft anschliessen sollen und wo Realite im Zweifel
-        immer auf den Link-, Sichtbarkeits- und Join-Flow zurueckfaellt.
+        klar, welche Kalenderfunktionen später für Apple und Microsoft anschließen sollen und wo Realite im Zweifel
+        immer auf den Link-, Sichtbarkeits- und Join-Flow zurückfällt.
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         {SUMMARY_ITEMS.map((item) => (

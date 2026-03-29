@@ -117,7 +117,7 @@ Wichtig:
 
 Mehr dazu steht unter **[Vor-Ort-Sichtbarkeit](/docs/vor-ort-sichtbarkeit)**.
 
-## Welche Regeln wuerden spaeter fuer Festival- oder Vor-Ort-Socializing gelten?
+## Welche Regeln würden später für Festival- oder Vor-Ort-Socializing gelten?
 
 Realite soll auch dann kein offener Personenradar werden.
 
@@ -128,7 +128,7 @@ Darum gilt produktseitig schon jetzt:
 - Sichtbarkeit nur mit klarem Event- oder Kontextbezug
 - low-pressure Interaktion vor direkter Offenlegung
 
-Die ausfuehrliche Leitlinie steht unter
+Die ausführliche Leitlinie steht unter
 **[Sicherheit bei Vor-Ort- und Festival-Kontexten](/docs/sicherheit-bei-vor-ort-und-festival-kontexten)**.
 
 ## Warum fragt Realite bei Absage nach Gründen?
@@ -228,7 +228,7 @@ Weil Realite den Produktkern und die heutige Technik bewusst trennt.
 
 Heute gilt:
 
-- der Kontologin haengt vom aktuell konfigurierten Deployment ab
+- der Kontologin hängt vom aktuell konfigurierten Deployment ab
 - Kalenderkontext und Kontakte-Sync hängen aktuell an Google-Verbindungen
 - der eigentliche Kernflow mit Events, Gruppen, Sichtbarkeit und Vorschlägen bleibt davon im Produkt getrennt
 

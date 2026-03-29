@@ -29,35 +29,35 @@ Wenn du den kompletten Standardfall ohne Kalender sehen willst, hilft dir zusät
 
 ## Wie der Einstieg das schon im Onboarding zeigen soll
 
-Der Einstieg soll den kalenderlosen Kernflow frueh sichtbar machen, ohne den spaeteren Nutzen einer Verbindung kleinzureden.
+Der Einstieg soll den kalenderlosen Kernflow früh sichtbar machen, ohne den späteren Nutzen einer Verbindung kleinzureden.
 
 Darum ist die Reihenfolge im Onboarding bewusst:
 
-1. zuerst klar sagen: Realite funktioniert bereits mit Aktivitaet, Sichtbarkeit, Gruppen und Vorschlaegen
+1. zuerst klar sagen: Realite funktioniert bereits mit Aktivität, Sichtbarkeit, Gruppen und Vorschlägen
 2. danach den technischen Login-Schritt zeigen
-3. erst anschliessend Kalender und Kontakte als optionalen Ausbau erklaeren
+3. erst anschließend Kalender und Kontakte als optionalen Ausbau erklären
 
-Das bedeutet fuer die Copy:
+Das bedeutet für die Copy:
 
-- kein Einstiegstext darf so klingen, als waere Kalenderzugriff Voraussetzung fuer den ersten Nutzen
-- gleichzeitig soll sichtbar bleiben, dass Kalender spaeter mehr Timing-, Verfuegbarkeits- und Planungs-Kontext geben kann
-- der spaetere Upgrade-Pfad wird erklaert, aber nicht als Huerde vor den ersten Event-, Gruppen- oder Vorschlags-Flow gesetzt
+- kein Einstiegstext darf so klingen, als wäre Kalenderzugriff Voraussetzung für den ersten Nutzen
+- gleichzeitig soll sichtbar bleiben, dass Kalender später mehr Timing-, Verfügbarkeits- und Planungs-Kontext geben kann
+- der spätere Upgrade-Pfad wird erklärt, aber nicht als Hürde vor den ersten Event-, Gruppen- oder Vorschlags-Flow gesetzt
 
 So bleibt der Onboarding-Pfad ehrlich:
 
 - du kannst sofort starten
-- du kannst spaeter bewusst mehr Kontext verbinden
+- du kannst später bewusst mehr Kontext verbinden
 - nichts davon passiert automatisch
 
 ## Google
 
-Google ist ein voll unterstuetzter Login-Pfad und heute auch der einzige ausgebaute Kalender- und Kontakte-Kontext.
+Google ist ein voll unterstützter Login-Pfad und heute auch der einzige ausgebaute Kalender- und Kontakte-Kontext.
 
 Das bedeutet aktuell:
 
 - Google kann als Login genutzt werden
 - Google Kalender kann optional als Planungskontext verbunden werden
-- Google Kontakte koennen als Relevanz- und Gruppenkontext synchronisiert werden
+- Google Kontakte können als Relevanz- und Gruppenkontext synchronisiert werden
 
 Produktlogisch bleibt aber auch hier derselbe Kern:
 
@@ -79,7 +79,7 @@ Auch über Apple trägt der Pfad denselben Kern:
 - mit Apple anmelden
 - direkt in Realite starten
 - Events, Gruppen und Vorschläge ohne Pflicht-Kalender nutzen
-- Apple Kalender spaeter optional als Planungskontext verbinden
+- Apple Kalender später optional als Planungskontext verbinden
 
 Was sich dabei **nicht** ändern soll:
 
@@ -91,26 +91,26 @@ Was sich dabei **nicht** ändern soll:
 
 Microsoft ist als interner Testpfad vorbereitet, aber noch nicht allgemein im Login freigeschaltet.
 
-Sobald dieser Pfad oeffentlich aktiviert wird, soll derselbe Kern gelten:
+Sobald dieser Pfad öffentlich aktiviert wird, soll derselbe Kern gelten:
 
 - mit Microsoft anmelden
-- direkt erste Aktivitaet oder ersten Kreis anlegen
-- Vorschlaege und Join-Mechaniken ohne Pflicht-Kalender nutzen
-- Microsoft Kalender spaeter optional als Planungskontext verbinden
+- direkt erste Aktivität oder ersten Kreis anlegen
+- Vorschläge und Join-Mechaniken ohne Pflicht-Kalender nutzen
+- Microsoft Kalender später optional als Planungskontext verbinden
 
 ## Dev-Login
 
-In lokaler Entwicklung gibt es zusaetzlich einen speziellen Dev-Login.
+In lokaler Entwicklung gibt es zusätzlich einen speziellen Dev-Login.
 
-Er ist nur fuer Entwicklung, E2E-Tests und Agent-Arbeit gedacht:
+Er ist nur für Entwicklung, E2E-Tests und Agent-Arbeit gedacht:
 
-- nur ausserhalb von Production sichtbar
+- nur außerhalb von Production sichtbar
 - legt bei Bedarf automatisch einen lokalen Testnutzer an
 - darf nicht als normaler Nutzerpfad verstanden werden
 
 ## Was über alle Pfade gleich bleiben muss
 
-Diese Regeln gelten unabhaengig davon, ob du ueber Google startest oder spaeter ueber Apple oder Microsoft:
+Diese Regeln gelten unabhängig davon, ob du über Google startest oder später über Apple oder Microsoft:
 
 - Events anlegen, teilen und verwalten
 - Sichtbarkeit wählen
@@ -138,12 +138,12 @@ Der Produktkern darunter bleibt gleich:
 
 ## Woran du den aktuellen Stand erkennst
 
-Wenn ein Pfad noch nicht vollstaendig aktiv ist, sollte Realite das als Technikstand markieren und nicht als fehlenden Produktzugang.
+Wenn ein Pfad noch nicht vollständig aktiv ist, sollte Realite das als Technikstand markieren und nicht als fehlenden Produktzugang.
 
-Das heisst:
+Das heißt:
 
 - Google ist heute technisch und in der Sichtbarkeit weiter ausgebaut als Apple oder Microsoft
-- der Kernflow bleibt trotzdem providerunabhaengig beschrieben
+- der Kernflow bleibt trotzdem providerunabhängig beschrieben
 - fehlende Kalenderverbindung ist ein optionaler Upgrade-Unterschied, kein Produktbruch
 
 Für die aktuelle Trennung zwischen Konto, Kalenderzugriff und heutigem Technikstand hilft auch **[Login, Kalender und Provider](/docs/login-kalender-und-provider)**.

@@ -196,7 +196,7 @@ describe("event presence", () => {
       getEventPresenceAudienceHint({
         visibility: "public",
       }),
-    ).toBe("Aktive Check-ins sehen nur Personen, die dieses Event sehen duerfen.");
+    ).toBe("Aktive Check-ins sehen nur Personen, die dieses Event sehen dürfen.");
   });
 
   test("treats expired presence windows as inactive", () => {

@@ -111,7 +111,7 @@ export default async function EventShortcutPage({
           >
             Jetzt anmelden
           </a>
-          <p className="mt-2 text-xs text-slate-500">Du waehlst den verfuegbaren Login danach selbst aus.</p>
+          <p className="mt-2 text-xs text-slate-500">Du wählst den verfügbaren Login danach selbst aus.</p>
         </section>
 
         <EventComments

@@ -91,8 +91,8 @@ Produktlogisch ist Realite schon breiter gedacht. Technisch gibt es heute aber n
 
 Aktuell gilt:
 
-- Google und Apple koennen als sichtbare Login-Pfade parallel erscheinen, sobald das jeweilige Deployment beide technisch freigeschaltet hat
-- in lokaler Entwicklung gibt es zusaetzlich einen dev-only Test-Login
+- Google und Apple können als sichtbare Login-Pfade parallel erscheinen, sobald das jeweilige Deployment beide technisch freigeschaltet hat
+- in lokaler Entwicklung gibt es zusätzlich einen dev-only Test-Login
 - Kalenderkontext ist heute an Google Kalender angebunden
 - Kontakte-Sync ist heute an Google Kontakte angebunden
 
@@ -106,7 +106,7 @@ Wichtig dabei:
 
 Diese Pfade sind im aktuellen Produkt noch **nicht** allgemein freigeschaltet:
 
-- Microsoft Login ausserhalb interner Tests
+- Microsoft Login außerhalb interner Tests
 - Apple Kalender als angebundener Planungskontext
 - Microsoft Kalender als angebundener Planungskontext
 

@@ -30,7 +30,7 @@ export default async function MpcOAuthConsentPage({
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center px-6 py-16 text-slate-900">
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-700">Realite MCP</p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight">Zugriff bestaetigen</h1>
+        <h1 className="mt-3 text-3xl font-bold tracking-tight">Zugriff bestätigen</h1>
         <p className="mt-4 text-sm leading-6 text-slate-600">
           Der Client <span className="font-semibold text-slate-900">{clientId}</span> moechte auf dein Realite-Konto
           zugreifen.

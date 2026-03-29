@@ -34,7 +34,7 @@ export default async function LoginPage({
             <AuthProviderButtons callbackUrl={callbackUrl} providers={providers} />
           ) : (
             <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
-              Aktuell ist kein Login-Provider konfiguriert. Pruefe die Auth-Umgebungsvariablen fuer dieses Deployment.
+              Aktuell ist kein Login-Provider konfiguriert. Prüfe die Auth-Umgebungsvariablen für dieses Deployment.
             </p>
           )}
         </div>

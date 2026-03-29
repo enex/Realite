@@ -82,7 +82,7 @@ export const MICROSOFT_AUTH_PROVIDER: AuthProviderDefinition = {
   status: "active",
   loginStartPath: "/api/auth/signin/microsoft",
   scopes: ["openid", "profile", "email", "User.Read", "offline_access"],
-  description: "Konto-Login fuer Microsoft-/Entra-Konten.",
+  description: "Konto-Login für Microsoft-/Entra-Konten.",
 };
 
 export const DEV_AUTH_PROVIDER: AuthProviderDefinition = {
@@ -91,7 +91,7 @@ export const DEV_AUTH_PROVIDER: AuthProviderDefinition = {
   status: "dev_only",
   loginStartPath: "/api/auth/signin/dev",
   scopes: [],
-  description: "Nur lokal fuer Entwicklung, Agents und E2E-Tests.",
+  description: "Nur lokal für Entwicklung, Agents und E2E-Tests.",
 };
 
 export const AUTH_PROVIDER_DEFINITIONS = [
@@ -143,12 +143,12 @@ export const CALENDAR_ADAPTER_DEFINITIONS = [
 export const CALENDAR_CAPABILITY_DEFINITIONS = [
   {
     id: "availability_context",
-    label: "Verfugbarkeit und Timing-Kontext",
+    label: "Verfügbarkeit und Timing-Kontext",
     layer: "shared_core",
     description:
-      "Realite nutzt verbundene Kalender fuer Free/Busy-Abgleich, Vorschlagskontext und vorsichtigere Priorisierung.",
+      "Realite nutzt verbundene Kalender für Free/Busy-Abgleich, Vorschlagskontext und vorsichtigere Priorisierung.",
     fallback:
-      "Ohne diese Capability bleibt der Kernflow nutzbar; Vorschlaege laufen dann als Schaetzung ohne Kalenderabgleich weiter.",
+      "Ohne diese Capability bleibt der Kernflow nutzbar; Vorschläge laufen dann als Schätzung ohne Kalenderabgleich weiter.",
     availability: {
       google: "available",
       apple: "planned",
@@ -160,9 +160,9 @@ export const CALENDAR_CAPABILITY_DEFINITIONS = [
     label: "Realite-Events in deinen Kalender schreiben",
     layer: "shared_core",
     description:
-      "Realite kann bestaetigte Aktivitaeten oder bewusste Kalenderkopien in den verbundenen Kalender zurueckschreiben.",
+      "Realite kann bestätigte Aktivitäten oder bewusste Kalenderkopien in den verbundenen Kalender zurückschreiben.",
     fallback:
-      "Wenn ein Provider das noch nicht traegt, bleiben Event-Link, Sichtbarkeit und manuelle Planung der gemeinsame Rueckweg.",
+      "Wenn ein Provider das noch nicht trägt, bleiben Event-Link, Sichtbarkeit und manuelle Planung der gemeinsame Rückweg.",
     availability: {
       google: "available",
       apple: "planned",
@@ -171,12 +171,12 @@ export const CALENDAR_CAPABILITY_DEFINITIONS = [
   },
   {
     id: "event_import",
-    label: "Relevante Kalendertermine nach Realite uebernehmen",
+    label: "Relevante Kalendertermine nach Realite übernehmen",
     layer: "shared_core",
     description:
-      "Kalendertermine koennen als zusaetzlicher Planungskontext nach Realite gespiegelt werden, ohne den Produktkern zu veraendern.",
+      "Kalendertermine können als zusätzlicher Planungskontext nach Realite gespiegelt werden, ohne den Produktkern zu verändern.",
     fallback:
-      "Fehlt diese Capability, bleibt Realite weiter die Aktivitaets- und Zusagenflaeche; nur externer Kalenderkontext fehlt.",
+      "Fehlt diese Capability, bleibt Realite weiter die Aktivitäts- und Zusagenfläche; nur externer Kalenderkontext fehlt.",
     availability: {
       google: "available",
       apple: "planned",
@@ -188,9 +188,9 @@ export const CALENDAR_CAPABILITY_DEFINITIONS = [
     label: "Kalendereinladungen und Teilnehmerpflege",
     layer: "provider_extra",
     description:
-      "Teilnehmerversand ueber den angebundenen Kalender bleibt eine Provider-Capability und keine allgemeine Event-Voraussetzung.",
+      "Teilnehmerversand über den angebundenen Kalender bleibt eine Provider-Capability und keine allgemeine Event-Voraussetzung.",
     fallback:
-      "Wenn der Provider das nicht gleichwertig traegt, faellt Realite auf Event-Link, Sichtbarkeit und Join-Mechaniken zurueck.",
+      "Wenn der Provider das nicht gleichwertig trägt, fällt Realite auf Event-Link, Sichtbarkeit und Join-Mechaniken zurück.",
     availability: {
       google: "available",
       apple: "fallback_only",
@@ -202,9 +202,9 @@ export const CALENDAR_CAPABILITY_DEFINITIONS = [
     label: "Direkte Bearbeiten-im-Kalender-Links",
     layer: "provider_extra",
     description:
-      "Der Ruecksprung in den Quellkalender bleibt technisch providerabhaengig, weil Web-Links und Deep-Links unterschiedlich funktionieren.",
+      "Der Rücksprung in den Quellkalender bleibt technisch providerabhängig, weil Web-Links und Deep-Links unterschiedlich funktionieren.",
     fallback:
-      "Solange ein Provider dafuer noch keinen sauberen Link liefert, bleibt die Aktivitaet in Realite bearbeitbar und teilbar.",
+      "Solange ein Provider dafür noch keinen sauberen Link liefert, bleibt die Aktivität in Realite bearbeitbar und teilbar.",
     availability: {
       google: "available",
       apple: "planned",

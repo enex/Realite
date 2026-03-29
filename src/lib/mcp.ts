@@ -520,7 +520,7 @@ export function createRealiteMcpServer(user: McpUser) {
     ]
   }));
 
-  server.registerResource("suggestions", "realite://suggestions", { title: "Vorschlaege", mimeType: "application/json" }, async () => ({
+  server.registerResource("suggestions", "realite://suggestions", { title: "Vorschläge", mimeType: "application/json" }, async () => ({
     contents: [
       {
         uri: "realite://suggestions",
@@ -566,7 +566,7 @@ export function createRealiteMcpServer(user: McpUser) {
   server.registerTool(
     "contacts.list",
     {
-      description: "Listet alle Kontakte ueber alle Gruppen des Nutzers.",
+      description: "Listet alle Kontakte über alle Gruppen des Nutzers.",
       annotations: { readOnlyHint: true }
     },
     async () => successResult(await listGroupContactsForUser(user.id))
@@ -626,7 +626,7 @@ export function createRealiteMcpServer(user: McpUser) {
   server.registerTool(
     "groups.delete",
     {
-      description: "Loescht oder versteckt eine Gruppe je nach Systemregeln.",
+      description: "Löscht oder versteckt eine Gruppe je nach Systemregeln.",
       inputSchema: {
         groupId: z.string().uuid()
       }
@@ -643,7 +643,7 @@ export function createRealiteMcpServer(user: McpUser) {
   server.registerTool(
     "groups.add_member",
     {
-      description: "Fuegt einer Gruppe ein Mitglied per E-Mail hinzu.",
+      description: "Fügt einer Gruppe ein Mitglied per E-Mail hinzu.",
       inputSchema: {
         groupId: z.string().uuid(),
         email: z.string().email()
@@ -661,7 +661,7 @@ export function createRealiteMcpServer(user: McpUser) {
   server.registerTool(
     "groups.create_invite_link",
     {
-      description: "Erzeugt einen Join-Link fuer eine Gruppe.",
+      description: "Erzeugt einen Join-Link für eine Gruppe.",
       inputSchema: {
         groupId: z.string().uuid()
       }
@@ -669,7 +669,7 @@ export function createRealiteMcpServer(user: McpUser) {
     async ({ groupId }) => {
       try {
         if (!(await isGroupMember(groupId, user.id))) {
-          throw new Error("Keine Berechtigung fuer diese Gruppe.");
+          throw new Error("Keine Berechtigung für diese Gruppe.");
         }
 
         const invite = await createInviteLink({ groupId, createdBy: user.id });
@@ -687,7 +687,7 @@ export function createRealiteMcpServer(user: McpUser) {
   server.registerTool(
     "groups.join_by_token",
     {
-      description: "Tritt einer Gruppe ueber ein Invite-Token bei.",
+      description: "Tritt einer Gruppe über ein Invite-Token bei.",
       inputSchema: {
         token: z.string().min(1)
       }
@@ -704,7 +704,7 @@ export function createRealiteMcpServer(user: McpUser) {
   server.registerTool(
     "events.list",
     {
-      description: "Listet alle fuer den Nutzer sichtbaren Events.",
+      description: "Listet alle für den Nutzer sichtbaren Events.",
       annotations: { readOnlyHint: true }
     },
     async () => successResult((await listVisibleEventsForUser(user.id)).map((event) => serializeEvent(event)))
@@ -721,7 +721,7 @@ export function createRealiteMcpServer(user: McpUser) {
       const shortcuts = parseSmartMeetingShortcuts(input.title);
       if (shortcuts.enabled) {
         if (!input.groupId) {
-          throw new Error("Smart-Treffen-Shortcut benoetigt eine ausgewaehlte Gruppe.");
+          throw new Error("Smart-Treffen-Shortcut benötigt eine ausgewählte Gruppe.");
         }
 
         const durationMinutes = Math.max(15, Math.round((endsAt.getTime() - startsAt.getTime()) / 60_000));
@@ -812,7 +812,7 @@ export function createRealiteMcpServer(user: McpUser) {
   server.registerTool(
     "events.add_comment",
     {
-      description: "Fuegt einem Event einen Kommentar hinzu.",
+      description: "Fügt einem Event einen Kommentar hinzu.",
       inputSchema: {
         eventId: z.string().uuid(),
         body: z.string().min(1).max(MAX_COMMENT_BODY_LENGTH)
@@ -841,7 +841,7 @@ export function createRealiteMcpServer(user: McpUser) {
   server.registerTool(
     "events.get_invite_context",
     {
-      description: "Liest den aktuellen Invite-Status und Kontaktvorschlaege fuer ein Google-Event.",
+      description: "Liest den aktuellen Invite-Status und Kontaktvorschläge für ein Google-Event.",
       inputSchema: {
         eventId: z.string().uuid(),
         query: z.string().optional()
@@ -852,7 +852,7 @@ export function createRealiteMcpServer(user: McpUser) {
       try {
         const event = await getVisibleEventForUserById({ userId: user.id, eventId });
         if (!event || event.createdBy !== user.id || !isEventInviteable(event)) {
-          throw new Error("Event nicht gefunden oder Einladungen nicht moeglich.");
+          throw new Error("Event nicht gefunden oder Einladungen nicht möglich.");
         }
 
         const alreadyInvited =
@@ -917,7 +917,7 @@ export function createRealiteMcpServer(user: McpUser) {
   server.registerTool(
     "events.invite_contact",
     {
-      description: "Laedt einen Kontakt zu einem Google-Quell-Event ein.",
+      description: "Lädt einen Kontakt zu einem Google-Quell-Event ein.",
       inputSchema: {
         eventId: z.string().uuid(),
         email: z.string().email()
@@ -927,7 +927,7 @@ export function createRealiteMcpServer(user: McpUser) {
       try {
         const event = await getVisibleEventForUserById({ userId: user.id, eventId });
         if (!event || event.createdBy !== user.id || !isEventInviteable(event)) {
-          throw new Error("Event nicht gefunden oder Einladungen nicht moeglich.");
+          throw new Error("Event nicht gefunden oder Einladungen nicht möglich.");
         }
 
         const attendeeEmail = normalizeEmailForMatch(email);
@@ -974,7 +974,7 @@ export function createRealiteMcpServer(user: McpUser) {
   server.registerTool(
     "suggestions.list",
     {
-      description: "Listet alle Vorschlaege des Nutzers.",
+      description: "Listet alle Vorschläge des Nutzers.",
       annotations: { readOnlyHint: true }
     },
     async () => successResult((await listSuggestionsForUser(user.id)).map((suggestion) => serializeSuggestion(suggestion)))
@@ -1046,7 +1046,7 @@ export function createRealiteMcpServer(user: McpUser) {
   server.registerTool(
     "suggestions.get_calendar_link",
     {
-      description: "Gibt die Web-URL des Kalendereintrags eines Vorschlags zurueck.",
+      description: "Gibt die Web-URL des Kalendereintrags eines Vorschlags zurück.",
       inputSchema: {
         suggestionId: z.string().uuid()
       },
@@ -1056,7 +1056,7 @@ export function createRealiteMcpServer(user: McpUser) {
       try {
         const suggestion = await getSuggestionForUser(suggestionId, user.id);
         if (!suggestion?.calendarEventId?.trim()) {
-          throw new Error("Kein Kalendertermin fuer diesen Vorschlag.");
+          throw new Error("Kein Kalendertermin für diesen Vorschlag.");
         }
 
         return successResult({
@@ -1114,7 +1114,7 @@ export function createRealiteMcpServer(user: McpUser) {
       }
 
       if (nextProfile.enabled && nextProfile.birthYear !== null && currentYear - nextProfile.birthYear < DATE_MIN_AGE) {
-        throw new Error(`Der Dating-Modus ist erst ab ${DATE_MIN_AGE} Jahren verfuegbar.`);
+        throw new Error(`Der Dating-Modus ist erst ab ${DATE_MIN_AGE} Jahren verfügbar.`);
       }
 
       await updateUserDatingProfile({

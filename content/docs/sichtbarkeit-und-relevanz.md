@@ -77,7 +77,7 @@ Einige Fälle brauchen mehr Schutz, aber keine neue Standard-Sichtbarkeitsstufe:
 - **Vor-Ort-Sichtbarkeit** bleibt ein zusätzlicher Opt-in-Layer pro Event
 - weitere Spezialfälle sollen, wenn überhaupt, als klar benannte Zusatzregeln entstehen und nicht als immer feinere allgemeine Sichtbarkeitsleiter
 
-Fuer spaetere Festival- und On-Site-Faelle gelten dieselben Leitplanken:
+Für spätere Festival- und On-Site-Fälle gelten dieselben Leitplanken:
 **[Sicherheit bei Vor-Ort- und Festival-Kontexten](/docs/sicherheit-bei-vor-ort-und-festival-kontexten)**.
 
 Damit bleibt das Basismodell klein, während sensible Kontexte trotzdem eigene Schutzlogik bekommen.
