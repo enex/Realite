@@ -167,16 +167,16 @@ export function SharedEventContent(props: SharedEventContentProps) {
       ) : null}
 
       {joinModeMeta ? (
-        <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("reaction").insetClassName}`}>
+        <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("momentum").insetClassName}`}>
           <p className={detailLabelClassName}>Mitmachen</p>
           <p className={detailBodyClassName}>
-            <span className="font-medium text-teal-800">{joinModeMeta.label}</span> · {joinModeMeta.description}
+            <span className="font-medium text-slate-900">{joinModeMeta.label}</span> · {joinModeMeta.description}
           </p>
         </section>
       ) : null}
 
       {visibilityMeta ? (
-        <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("neutral").insetClassName}`}>
+        <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("momentum").insetClassName}`}>
           <p className={detailLabelClassName}>Sichtbarkeit</p>
           <p className={detailBodyClassName}>
             <span className="font-medium text-slate-900">{visibilityMeta.label}</span> ·{" "}

@@ -369,7 +369,7 @@ function QuickShareCard({
             <h2 className="mt-2 text-lg font-semibold tracking-tight text-slate-900">
               Kurz sagen, wo du bist oder wohin du gehst
             </h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+            <p className="mt-2 hidden max-w-3xl text-sm leading-6 text-slate-600 md:block">
               Realite erstellt daraus eine normale Aktivität mit bewusstem Freigabekreis. Bei
               <span className="font-medium text-slate-900"> Ich bin gerade hier</span> wird dein Vor-Ort-Status direkt für dieses Event aktiviert.
             </p>
@@ -1403,7 +1403,7 @@ export function Dashboard({
             </div>
           </div>
           {!isEventsView ? (
-            <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium text-teal-50">
+            <div className="mt-4 hidden flex-wrap gap-2 text-xs font-medium text-teal-50 md:flex">
               <span className="rounded-full bg-white/10 px-3 py-1">
                 1. Reagieren
                 <span className="ml-1 text-teal-100">wenn etwas offen ist</span>
@@ -1487,7 +1487,7 @@ export function Dashboard({
         ) : null}
 
         {!isEventsView ? (
-          <section className="mt-5 md:mt-6" aria-label="Jetzt in drei Fragen">
+          <section className="mt-5 hidden md:mt-6 md:block" aria-label="Jetzt in drei Fragen">
             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
               <div>
                 <p className={reactionPage.eyebrowClassName}>Jetzt in 3 Fragen</p>
