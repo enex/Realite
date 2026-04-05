@@ -6,6 +6,13 @@ import type { Route } from "next";
 import { useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/src/components/ui/dialog";
 import { CalendarReconnectBanner } from "@/src/components/calendar-reconnect-banner";
 import { EventImage } from "@/src/components/event-image";
 import { FlowCard } from "@/src/components/flow-card";
@@ -361,48 +368,35 @@ function QuickShareCard({
   });
 
   return (
-    <section className="mt-5 md:mt-6" aria-label="Hier und jetzt teilen">
-      <article className="rounded-2xl border border-teal-200 bg-gradient-to-br from-white via-teal-50/70 to-emerald-50/60 p-4 shadow-sm md:p-5">
-        <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">Hier & jetzt teilen</p>
-            <h2 className="mt-2 text-lg font-semibold tracking-tight text-slate-900">
-              Kurz sagen, wo du bist oder wohin du gehst
-            </h2>
-            <p className="mt-2 hidden max-w-3xl text-sm leading-6 text-slate-600 md:block">
-              Realite erstellt daraus eine normale Aktivität mit bewusstem Freigabekreis. Bei
-              <span className="font-medium text-slate-900"> Ich bin gerade hier</span> wird dein Vor-Ort-Status direkt für dieses Event aktiviert.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => onModeChange("here_now")}
-              className={`inline-flex items-center justify-center rounded-full border px-3 py-2 text-sm font-semibold transition ${
-                mode === "here_now"
-                  ? "border-teal-300 bg-teal-600 text-white shadow-sm"
-                  : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-              }`}
-            >
-              Ich bin gerade hier
-            </button>
-            <button
-              type="button"
-              onClick={() => onModeChange("going")}
-              className={`inline-flex items-center justify-center rounded-full border px-3 py-2 text-sm font-semibold transition ${
-                mode === "going"
-                  ? "border-teal-300 bg-teal-600 text-white shadow-sm"
-                  : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-              }`}
-            >
-              Ich gehe hin
-            </button>
-          </div>
-        </div>
+    <div className="space-y-5" aria-label="Hier und jetzt teilen Formular">
+      <div className="flex flex-wrap gap-2 md:gap-3">
+        <button
+          type="button"
+          onClick={() => onModeChange("here_now")}
+          className={`inline-flex flex-1 items-center justify-center rounded-full border px-3 py-2.5 text-sm font-semibold transition sm:flex-none ${
+            mode === "here_now"
+              ? "border-teal-300 bg-teal-600 text-white shadow-sm"
+              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          Ich bin gerade hier
+        </button>
+        <button
+          type="button"
+          onClick={() => onModeChange("going")}
+          className={`inline-flex flex-1 items-center justify-center rounded-full border px-3 py-2.5 text-sm font-semibold transition sm:flex-none ${
+            mode === "going"
+              ? "border-teal-300 bg-teal-600 text-white shadow-sm"
+              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          Ich gehe hin
+        </button>
+      </div>
 
-        <form onSubmit={onSubmit} className="mt-4 grid gap-3">
-          <div className="grid gap-3 md:grid-cols-2">
-            <label className="grid gap-1 text-sm text-slate-700">
+      <form onSubmit={onSubmit} className="grid gap-4 md:gap-5">
+          <div className="grid gap-4 md:grid-cols-2 md:gap-5">
+            <label className="grid gap-1.5 text-sm text-slate-700">
               <span className="font-medium text-slate-900">Was machst du?</span>
               <input
                 value={activity}
@@ -412,7 +406,7 @@ function QuickShareCard({
                 required
               />
             </label>
-            <label className="grid gap-1 text-sm text-slate-700">
+            <label className="grid gap-1.5 text-sm text-slate-700">
               <span className="font-medium text-slate-900">Wo?</span>
               <input
                 value={location}
@@ -424,8 +418,8 @@ function QuickShareCard({
             </label>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-            <div className="rounded-2xl border border-slate-200 bg-white/80 p-3">
+          <div className="grid gap-4 md:grid-cols-2 md:gap-5">
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 md:p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Wer sieht das?</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {(["friends", "friends_of_friends", "group", "public"] as const).map((option) => {
@@ -448,7 +442,7 @@ function QuickShareCard({
                   );
                 })}
               </div>
-              <p className="mt-3 text-sm text-slate-600">{audienceMeta.description}</p>
+              <p className="mt-3 text-sm leading-relaxed text-slate-600">{audienceMeta.description}</p>
               {audience === "group" ? (
                 <label className="mt-3 grid gap-1 text-sm text-slate-700">
                   <span className="font-medium text-slate-900">Welche Gruppe?</span>
@@ -469,8 +463,8 @@ function QuickShareCard({
               ) : null}
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white/80 p-3">
-              <label className="grid gap-1 text-sm text-slate-700">
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 md:p-5">
+              <label className="grid gap-1.5 text-sm text-slate-700">
                 <span className="font-medium text-slate-900">Noch etwa</span>
                 <select
                   value={String(durationMinutes)}
@@ -483,25 +477,25 @@ function QuickShareCard({
                   <option value="180">3 Stunden</option>
                 </select>
               </label>
-              <p className="mt-3 text-sm text-slate-600">
+              <p className="mt-3 text-sm leading-relaxed text-slate-600">
                 Andere sehen keinen allgemeinen Live-Standort, sondern nur dieses konkrete Event im gewählten Kreis.
               </p>
-              <p className="mt-3 text-xs text-slate-500">
+              <p className="mt-3 text-xs leading-relaxed text-slate-500">
                 Vor Ort sichtbar: {audienceRule.description}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-slate-500">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
+            <p className="max-w-prose text-xs leading-relaxed text-slate-500 md:pt-1">
               Andere können danach direkt reagieren und auf der Eventseite ebenfalls signalisieren, dass sie da sind oder hingehen.
             </p>
             <button
               type="submit"
               disabled={busy}
-              className="inline-flex items-center justify-center rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:opacity-50"
+              className="inline-flex shrink-0 items-center justify-center rounded-xl bg-teal-700 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:opacity-50 md:min-w-[7.5rem]"
             >
-              {mode === "here_now" ? "Jetzt sichtbar teilen" : "Hinweg teilen"}
+              Teilen
             </button>
           </div>
 
@@ -509,8 +503,7 @@ function QuickShareCard({
             <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
           ) : null}
         </form>
-      </article>
-    </section>
+    </div>
   );
 }
 
@@ -543,6 +536,7 @@ export function Dashboard({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [quickShareError, setQuickShareError] = useState<string | null>(null);
   const [showEventForm, setShowEventForm] = useState(false);
+  const [quickShareOpen, setQuickShareOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [feedFocus, setFeedFocus] = useState<DashboardFeedFocus>("prioritized");
   const [quickShareForm, setQuickShareForm] = useState({
@@ -939,6 +933,7 @@ export function Dashboard({
         audience: quickShareForm.audience,
         groupId: "",
       });
+      setQuickShareOpen(false);
       await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
     } catch (err) {
       setQuickShareError(err instanceof Error ? err.message : "Unbekannter Fehler");
@@ -1421,34 +1416,74 @@ export function Dashboard({
         </section>
 
         {!isEventsView ? (
-          <QuickShareCard
-            activity={quickShareForm.activity}
-            location={quickShareForm.location}
-            durationMinutes={quickShareForm.durationMinutes}
-            mode={quickShareForm.mode}
-            audience={quickShareForm.audience}
-            groupId={quickShareForm.groupId}
-            groups={visibleGroups}
-            busy={busy}
-            error={quickShareError}
-            onFieldChange={(field, value) =>
-              setQuickShareForm((state) => ({ ...state, [field]: value }))
-            }
-            onModeChange={(mode) =>
-              setQuickShareForm((state) => ({ ...state, mode }))
-            }
-            onAudienceChange={(audience) =>
-              setQuickShareForm((state) => ({
-                ...state,
-                audience,
-                groupId: audience === "group" ? state.groupId : "",
-              }))
-            }
-            onDurationChange={(durationMinutes) =>
-              setQuickShareForm((state) => ({ ...state, durationMinutes }))
-            }
-            onSubmit={createQuickShare}
-          />
+          <Dialog
+            open={quickShareOpen}
+            onOpenChange={(open) => {
+              setQuickShareOpen(open);
+              if (!open) {
+                setQuickShareError(null);
+              }
+            }}
+          >
+            <section className="mt-5 md:mt-6" aria-label="Hier und jetzt teilen">
+              <DialogTrigger asChild>
+                <button
+                  type="button"
+                  className="group flex w-full max-w-full items-center gap-4 rounded-2xl border border-teal-200 bg-gradient-to-br from-white via-teal-50/70 to-emerald-50/60 p-4 text-left shadow-sm transition hover:border-teal-300 hover:shadow-md md:p-5"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">Hier &amp; jetzt teilen</p>
+                    <p className="mt-1 text-base font-semibold tracking-tight text-slate-900">Kurz sagen, wo du bist</p>
+                    <p className="mt-0.5 line-clamp-2 text-sm text-slate-600">
+                      Aktivität mit Freigabekreis – optional mit Vor-Ort-Status
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-xl bg-teal-700 px-3 py-2 text-sm font-semibold text-white transition group-hover:bg-teal-800">
+                    Öffnen
+                  </span>
+                </button>
+              </DialogTrigger>
+            </section>
+
+            <DialogContent showCloseButton className="gap-0 p-0">
+              <div className="shrink-0 border-b border-slate-100 px-4 pb-4 pt-3 pr-14 md:rounded-t-2xl md:px-6 md:pb-5 md:pt-6">
+                <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-slate-200 md:hidden" aria-hidden />
+                <DialogTitle className="text-xl md:text-2xl">Hier &amp; jetzt teilen</DialogTitle>
+                <DialogDescription className="mt-2 max-w-none text-base leading-relaxed md:text-[15px]">
+                  Kurz sagen, wo du bist oder wohin du gehst. Realite erstellt daraus eine Aktivität mit gewähltem Kreis; bei
+                  <span className="font-medium text-slate-800"> Ich bin gerade hier</span> kannst du den Vor-Ort-Status für genau dieses Event aktivieren.
+                </DialogDescription>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 md:px-6 md:pt-5">
+                <QuickShareCard
+                  activity={quickShareForm.activity}
+                  location={quickShareForm.location}
+                  durationMinutes={quickShareForm.durationMinutes}
+                  mode={quickShareForm.mode}
+                  audience={quickShareForm.audience}
+                  groupId={quickShareForm.groupId}
+                  groups={visibleGroups}
+                  busy={busy}
+                  error={quickShareError}
+                  onFieldChange={(field, value) =>
+                    setQuickShareForm((state) => ({ ...state, [field]: value }))
+                  }
+                  onModeChange={(mode) => setQuickShareForm((state) => ({ ...state, mode }))}
+                  onAudienceChange={(audience) =>
+                    setQuickShareForm((state) => ({
+                      ...state,
+                      audience,
+                      groupId: audience === "group" ? state.groupId : "",
+                    }))
+                  }
+                  onDurationChange={(durationMinutes) =>
+                    setQuickShareForm((state) => ({ ...state, durationMinutes }))
+                  }
+                  onSubmit={createQuickShare}
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
         ) : null}
 
         {!isEventsView ? (

@@ -34,7 +34,7 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 
 - Die Navigation trennt bewusst zwischen **Entdecken**, **Reagieren** und **Verwalten**.
 - **Jetzt** ist die Hauptansicht für „Was geht gerade?“
-- Direkt dort gibt es jetzt zusätzlich den kompakten Block **„Hier & jetzt teilen“**. Damit kannst du mobil schnell sagen, was du gerade machst und wo du bist oder wohin du gehst, ohne erst in die ausführliche Planung zu wechseln.
+- Direkt dort gibt es die Einstiegskarte **„Hier & jetzt teilen“**. Ein Tipp auf **Öffnen** zeigt das Formular in einem **Overlay**: Unten am Handy wie ein Sheet, auf dem PC als **Dialog** in der Mitte – damit bleibt die Startansicht ruhig, du füllst Ort, Aktivität und Sichtbarkeit aber genauso bewusst aus.
 - Du wählst dabei weiterhin bewusst den sichtbaren Kreis, zum Beispiel **Freunde**, **Freunde + 1**, **eine Gruppe** oder **Öffentlich**.
 - Wenn du **„Ich bin gerade hier“** nutzt, erstellt Realite daraus ein normales Event mit aktivierter Vor-Ort-Sichtbarkeit für genau diesen Kreis. Es wird nichts global oder automatisch außerhalb dieses Event-Kontexts veröffentlicht.
 - Ganz oben steht jetzt ein klarer Block **„Nächster Schritt“**. Er zeigt dir genau eine priorisierte Aktion: zuerst offene Vorschläge beantworten, sonst bei sichtbarem Momentum mitmachen, sonst die nächste relevante Aktivität öffnen oder selbst etwas starten.
