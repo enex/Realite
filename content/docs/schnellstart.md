@@ -34,12 +34,12 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 
 - Die Navigation trennt bewusst zwischen **Entdecken**, **Reagieren** und **Verwalten**.
 - **Jetzt** ist die Hauptansicht für „Was geht gerade?“
-- Direkt dort gibt es jetzt zusätzlich den kompakten Block **„Hier & jetzt teilen“**. Damit kannst du mobil schnell sagen, was du gerade machst und wo du bist oder wohin du gehst, ohne erst in die ausführliche Planung zu wechseln.
+- Direkt dort gibt es die Einstiegskarte **„Hier & jetzt teilen“**. Ein Tipp auf **Öffnen** zeigt das Formular in einem **Overlay**: Unten am Handy wie ein Sheet, auf dem PC als **Dialog** in der Mitte – damit bleibt die Startansicht ruhig, du füllst Ort, Aktivität und Sichtbarkeit aber genauso bewusst aus.
 - Du wählst dabei weiterhin bewusst den sichtbaren Kreis, zum Beispiel **Freunde**, **Freunde + 1**, **eine Gruppe** oder **Öffentlich**.
 - Wenn du **„Ich bin gerade hier“** nutzt, erstellt Realite daraus ein normales Event mit aktivierter Vor-Ort-Sichtbarkeit für genau diesen Kreis. Es wird nichts global oder automatisch außerhalb dieses Event-Kontexts veröffentlicht.
 - Ganz oben steht jetzt ein klarer Block **„Nächster Schritt“**. Er zeigt dir genau eine priorisierte Aktion: zuerst offene Vorschläge beantworten, sonst bei sichtbarem Momentum mitmachen, sonst die nächste relevante Aktivität öffnen oder selbst etwas starten.
 - Wenn gerade nur eine einzelne offene Aktivität ohne sichtbares Momentum da ist, sagt **Jetzt** jetzt klarer, ob sie aus einem bestehenden Kreis kommt oder allgemein offen sichtbar ist. So wirkt der empfohlene erste Schritt in ruhigen Phasen nicht mehr generisch.
-- Direkt unter dem Einstieg siehst du den Block **„Jetzt in 3 Fragen“**. Dort beantwortet Realite zuerst:
+- Auf größeren Bildschirmen siehst du unter dem Einstieg den Block **„Jetzt in 3 Fragen“**. Dort beantwortet Realite zuerst:
 - was als Nächstes konkret relevant ist
 - wo gerade deine Reaktion fehlt
 - wo du mit wenig Abstimmung direkt mitmachen kannst
@@ -63,9 +63,9 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 - Lege dort über **Neue Gruppe** eine Gruppe an.
 - Tippe auf eine Gruppe, um Details zu öffnen.
 - Dort kannst du Mitglieder einladen und Hashtags anpassen.
-- Auf dem Handy nutzt du unten die Navigation mit **Jetzt**, **Vorschläge**, **Events** und **Gruppen**. Über den kleinen Bereichshinweis siehst du zusätzlich, ob du gerade im Modus **Entdecken**, **Reagieren** oder **Verwalten** bist. Dein Profil erreichst du oben rechts.
-- Direkt unter der Hauptnavigation zeigt Realite jetzt auf allen Kernseiten zusätzlich einen kompakten Bereichswechsel. Dort siehst du immer, wie **Jetzt**, **Vorschläge**, **Events** und **Gruppen** produktlogisch zusammenhängen und kannst gezielt zwischen Entdecken, Reagieren und Verwalten wechseln.
-- Unter jedem Bereich steht dort jetzt außerdem der konkrete Nutzungsfokus: in **Jetzt** spontane joinbare Optionen, in **Vorschläge** offene Empfehlungen, in **Events** Zusagen und Planung, in **Gruppen** Kreise und Sichtbarkeit.
+- Auf dem Handy nutzt du unten die feste Tab-Leiste mit **Jetzt**, **Tipps** (kurz für **Vorschläge**), **Events** und **Gruppen** – jeweils großes Symbol und gut lesbarer Name. Über den kleinen Bereichshinweis siehst du zusätzlich, ob du gerade im Modus **Entdecken**, **Reagieren** oder **Verwalten** bist. Dein Profil erreichst du oben rechts.
+- Wenn du nicht direkt auf einer der vier Hauptseiten bist, zeigt Realite unter der Hauptnavigation einen **Bereichswechsel**: Auf dem Handy sind das kurze Sprünge mit Bereichsnamen; auf Tablet und Desktop siehst du dieselben Bereiche mit kurzer Einordnung (Fokus und typische Nutzung).
+- Unter jedem Bereich steht dort auf größeren Bildschirmen außerdem der konkrete Nutzungsfokus: in **Jetzt** spontane joinbare Optionen, in **Vorschläge** offene Empfehlungen, in **Events** Zusagen und Planung, in **Gruppen** Kreise und Sichtbarkeit.
 - So bleiben besonders die beiden Verwaltungsbereiche schneller unterscheidbar: **Events** für deinen Sozialkalender und bestätigte Aktivitäten, **Gruppen** für Kontakte, Freigabekreise und Einladungen.
 
 ## 5. Erstes Event erstellen
