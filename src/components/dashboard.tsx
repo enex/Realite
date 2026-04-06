@@ -373,136 +373,133 @@ function QuickShareCard({
         <button
           type="button"
           onClick={() => onModeChange("here_now")}
-          className={`inline-flex flex-1 items-center justify-center rounded-full border px-3 py-2.5 text-sm font-semibold transition sm:flex-none ${
-            mode === "here_now"
+          className={`inline-flex flex-1 items-center justify-center rounded-full border px-3 py-2.5 text-sm font-semibold transition sm:flex-none ${mode === "here_now"
               ? "border-teal-300 bg-teal-600 text-white shadow-sm"
               : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-          }`}
+            }`}
         >
           Ich bin gerade hier
         </button>
         <button
           type="button"
           onClick={() => onModeChange("going")}
-          className={`inline-flex flex-1 items-center justify-center rounded-full border px-3 py-2.5 text-sm font-semibold transition sm:flex-none ${
-            mode === "going"
+          className={`inline-flex flex-1 items-center justify-center rounded-full border px-3 py-2.5 text-sm font-semibold transition sm:flex-none ${mode === "going"
               ? "border-teal-300 bg-teal-600 text-white shadow-sm"
               : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-          }`}
+            }`}
         >
           Ich gehe hin
         </button>
       </div>
 
       <form onSubmit={onSubmit} className="grid gap-4 md:gap-5">
-          <div className="grid gap-4 md:grid-cols-2 md:gap-5">
-            <label className="grid gap-1.5 text-sm text-slate-700">
-              <span className="font-medium text-slate-900">Was machst du?</span>
-              <input
-                value={activity}
-                onChange={(event) => onFieldChange("activity", event.target.value)}
-                placeholder={mode === "here_now" ? "z. B. beim Stadtfest" : "z. B. gehe zum Stadtfest"}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm"
-                required
-              />
-            </label>
-            <label className="grid gap-1.5 text-sm text-slate-700">
-              <span className="font-medium text-slate-900">Wo?</span>
-              <input
-                value={location}
-                onChange={(event) => onFieldChange("location", event.target.value)}
-                placeholder="z. B. Stadtfest Aachen"
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm"
-                required
-              />
-            </label>
-          </div>
+        <div className="grid gap-4 md:grid-cols-2 md:gap-5">
+          <label className="grid gap-1.5 text-sm text-slate-700">
+            <span className="font-medium text-slate-900">Was machst du?</span>
+            <input
+              value={activity}
+              onChange={(event) => onFieldChange("activity", event.target.value)}
+              placeholder={mode === "here_now" ? "z. B. beim Stadtfest" : "z. B. gehe zum Stadtfest"}
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm"
+              required
+            />
+          </label>
+          <label className="grid gap-1.5 text-sm text-slate-700">
+            <span className="font-medium text-slate-900">Wo?</span>
+            <input
+              value={location}
+              onChange={(event) => onFieldChange("location", event.target.value)}
+              placeholder="z. B. Stadtfest Aachen"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm"
+              required
+            />
+          </label>
+        </div>
 
-          <div className="grid gap-4 md:grid-cols-2 md:gap-5">
-            <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 md:p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Wer sieht das?</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {(["friends", "friends_of_friends", "group", "public"] as const).map((option) => {
-                  const optionMeta = getEventVisibilityMeta(option);
-                  const isActive = audience === option;
+        <div className="grid gap-4 md:grid-cols-2 md:gap-5">
+          <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 md:p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Wer sieht das?</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(["friends", "friends_of_friends", "group", "public"] as const).map((option) => {
+                const optionMeta = getEventVisibilityMeta(option);
+                const isActive = audience === option;
 
-                  return (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => onAudienceChange(option)}
-                      className={`inline-flex items-center justify-center rounded-full border px-3 py-2 text-sm font-semibold transition ${
-                        isActive
-                          ? "border-teal-300 bg-teal-100 text-teal-900"
-                          : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => onAudienceChange(option)}
+                    className={`inline-flex items-center justify-center rounded-full border px-3 py-2 text-sm font-semibold transition ${isActive
+                        ? "border-teal-300 bg-teal-100 text-teal-900"
+                        : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
                       }`}
-                    >
-                      {optionMeta.shortLabel}
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="mt-3 text-sm leading-relaxed text-slate-600">{audienceMeta.description}</p>
-              {audience === "group" ? (
-                <label className="mt-3 grid gap-1 text-sm text-slate-700">
-                  <span className="font-medium text-slate-900">Welche Gruppe?</span>
-                  <select
-                    value={groupId}
-                    onChange={(event) => onFieldChange("groupId", event.target.value)}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm"
-                    required
                   >
-                    <option value="">Gruppe wählen</option>
-                    {groups.map((group) => (
-                      <option key={group.id} value={group.id}>
-                        {group.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : null}
+                    {optionMeta.shortLabel}
+                  </button>
+                );
+              })}
             </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 md:p-5">
-              <label className="grid gap-1.5 text-sm text-slate-700">
-                <span className="font-medium text-slate-900">Noch etwa</span>
+            <p className="mt-3 text-sm leading-relaxed text-slate-600">{audienceMeta.description}</p>
+            {audience === "group" ? (
+              <label className="mt-3 grid gap-1 text-sm text-slate-700">
+                <span className="font-medium text-slate-900">Welche Gruppe?</span>
                 <select
-                  value={String(durationMinutes)}
-                  onChange={(event) => onDurationChange(Number(event.target.value))}
+                  value={groupId}
+                  onChange={(event) => onFieldChange("groupId", event.target.value)}
                   className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm"
+                  required
                 >
-                  <option value="30">30 Minuten</option>
-                  <option value="60">1 Stunde</option>
-                  <option value="120">2 Stunden</option>
-                  <option value="180">3 Stunden</option>
+                  <option value="">Gruppe wählen</option>
+                  {groups.map((group) => (
+                    <option key={group.id} value={group.id}>
+                      {group.name}
+                    </option>
+                  ))}
                 </select>
               </label>
-              <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                Andere sehen keinen allgemeinen Live-Standort, sondern nur dieses konkrete Event im gewählten Kreis.
-              </p>
-              <p className="mt-3 text-xs leading-relaxed text-slate-500">
-                Vor Ort sichtbar: {audienceRule.description}
-              </p>
-            </div>
+            ) : null}
           </div>
 
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
-            <p className="max-w-prose text-xs leading-relaxed text-slate-500 md:pt-1">
-              Andere können danach direkt reagieren und auf der Eventseite ebenfalls signalisieren, dass sie da sind oder hingehen.
+          <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 md:p-5">
+            <label className="grid gap-1.5 text-sm text-slate-700">
+              <span className="font-medium text-slate-900">Noch etwa</span>
+              <select
+                value={String(durationMinutes)}
+                onChange={(event) => onDurationChange(Number(event.target.value))}
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm"
+              >
+                <option value="30">30 Minuten</option>
+                <option value="60">1 Stunde</option>
+                <option value="120">2 Stunden</option>
+                <option value="180">3 Stunden</option>
+              </select>
+            </label>
+            <p className="mt-3 text-sm leading-relaxed text-slate-600">
+              Andere sehen keinen allgemeinen Live-Standort, sondern nur dieses konkrete Event im gewählten Kreis.
             </p>
-            <button
-              type="submit"
-              disabled={busy}
-              className="inline-flex shrink-0 items-center justify-center rounded-xl bg-teal-700 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:opacity-50 md:min-w-[7.5rem]"
-            >
-              Teilen
-            </button>
+            <p className="mt-3 text-xs leading-relaxed text-slate-500">
+              Vor Ort sichtbar: {audienceRule.description}
+            </p>
           </div>
+        </div>
 
-          {error ? (
-            <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
-          ) : null}
-        </form>
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
+          <p className="max-w-prose text-xs leading-relaxed text-slate-500 md:pt-1">
+            Andere können danach direkt reagieren und auf der Eventseite ebenfalls signalisieren, dass sie da sind oder hingehen.
+          </p>
+          <button
+            type="submit"
+            disabled={busy}
+            className="inline-flex shrink-0 items-center justify-center rounded-xl bg-teal-700 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:opacity-50 md:min-w-[7.5rem]"
+          >
+            Teilen
+          </button>
+        </div>
+
+        {error ? (
+          <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+        ) : null}
+      </form>
     </div>
   );
 }
@@ -1012,9 +1009,9 @@ export function Dashboard({
     () =>
       nextRelevantEvent
         ? getDashboardRelevantActivityKind({
-            isOwnEvent: nextRelevantEvent.createdBy === data.me.id,
-            isAccepted: acceptedEventIds.has(nextRelevantEvent.id),
-          })
+          isOwnEvent: nextRelevantEvent.createdBy === data.me.id,
+          isAccepted: acceptedEventIds.has(nextRelevantEvent.id),
+        })
         : "none",
     [acceptedEventIds, data.me.id, nextRelevantEvent],
   );
@@ -1032,9 +1029,9 @@ export function Dashboard({
   );
   const nextJoinableCopy = nextJoinableEvent
     ? getDashboardJoinFirstCopy({
-        groupName: nextJoinableEvent.groupName,
-        visibility: nextJoinableEvent.visibility,
-      })
+      groupName: nextJoinableEvent.groupName,
+      visibility: nextJoinableEvent.visibility,
+    })
     : null;
   const joinCtaHref = nextJoinableEvent ? `/e/${shortenUUID(nextJoinableEvent.id)}` : "/events#events";
   const joinCtaLabel = nextJoinableEvent ? "Mitmachen" : "Events ansehen";
@@ -1249,9 +1246,9 @@ export function Dashboard({
       title: nextRelevantActivityMeta.questionTitle,
       value: nextRelevantEvent
         ? `${nextRelevantEvent.title.replace(/#[^\s]+/gi, "").trim()} · ${formatQuestionTiming(
-            nextRelevantEvent.startsAt,
-            nextRelevantEvent.endsAt
-          )}`
+          nextRelevantEvent.startsAt,
+          nextRelevantEvent.endsAt
+        )}`
         : "Gerade keine offene Aktivität",
       description: nextRelevantActivityMeta.questionDescription,
       actionHref: nextRelevantEvent ? `/e/${shortenUUID(nextRelevantEvent.id)}` : "/events#events",
@@ -1628,342 +1625,314 @@ export function Dashboard({
 
         {!isEventsView ? (
           <section className="mt-5 md:mt-6" aria-label="Was geht? Nach Tag">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-base font-bold text-slate-900 md:text-lg">Offene Aktivitäten nach Tag</h2>
-            <div className="flex items-center gap-1">
-              <input
-                type="search"
-                placeholder="Suchen…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-24 rounded-full border border-slate-200 bg-slate-50/80 py-1.5 pl-3 pr-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-teal-300 focus:outline-none focus:ring-1 focus:ring-teal-300 md:w-32"
-                aria-label="Events und Vorschläge durchsuchen"
-              />
-              <a
-                href="/suggestions"
-                className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                title="Vorschläge"
-              >
-                {pendingCount > 0 ? (
-                  <span className="relative inline-flex">
-                    <Sparkle className="h-5 w-5 md:h-4 md:w-4" weight="duotone" />
-                    <span className="absolute -right-1 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white">
-                      {pendingCount}
-                    </span>
-                  </span>
-                ) : (
-                  <Sparkle className="h-5 w-5 md:h-4 md:w-4" weight="regular" />
-                )}
-              </a>
-              <a
-                href="/events#events"
-                className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                title="Alle Events"
-              >
-                <List className="h-5 w-5 md:h-4 md:w-4" weight="regular" />
-              </a>
-            </div>
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {focusOptions.map((option) => {
-              const isActive = option.id === feedFocus;
-
-              return (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() => setFeedFocus(option.id)}
-                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold transition ${
-                    isActive
-                      ? "border-teal-300 bg-teal-50 text-teal-900"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-                  }`}
-                  aria-pressed={isActive}
-                  title={option.description}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-base font-bold text-slate-900 md:text-lg">Offene Aktivitäten nach Tag</h2>
+              <div className="flex items-center gap-1">
+                <input
+                  type="search"
+                  placeholder="Suchen…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-24 rounded-full border border-slate-200 bg-slate-50/80 py-1.5 pl-3 pr-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-teal-300 focus:outline-none focus:ring-1 focus:ring-teal-300 md:w-32"
+                  aria-label="Events und Vorschläge durchsuchen"
+                />
+                <a
+                  href="/suggestions"
+                  className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                  title="Vorschläge"
                 >
-                  <span>{option.label}</span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                      isActive ? "bg-white text-teal-800 ring-1 ring-teal-200" : "bg-slate-100 text-slate-600"
-                    }`}
+                  {pendingCount > 0 ? (
+                    <span className="relative inline-flex">
+                      <Sparkle className="h-5 w-5 md:h-4 md:w-4" weight="duotone" />
+                      <span className="absolute -right-1 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white">
+                        {pendingCount}
+                      </span>
+                    </span>
+                  ) : (
+                    <Sparkle className="h-5 w-5 md:h-4 md:w-4" weight="regular" />
+                  )}
+                </a>
+                <a
+                  href="/events#events"
+                  className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                  title="Alle Events"
+                >
+                  <List className="h-5 w-5 md:h-4 md:w-4" weight="regular" />
+                </a>
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {focusOptions.map((option) => {
+                const isActive = option.id === feedFocus;
+
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setFeedFocus(option.id)}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold transition ${isActive
+                        ? "border-teal-300 bg-teal-50 text-teal-900"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                      }`}
+                    aria-pressed={isActive}
+                    title={option.description}
                   >
-                    {option.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <p className="mt-2 text-sm text-slate-600">
-            Fokus: <span className="font-medium text-slate-900">{activeFocusOption.label}</span>. {activeFocusOption.description}.
-          </p>
-          <div className={`mt-4 rounded-2xl p-4 md:p-5 ${getVisualPriorityMeta("reaction").sectionClassName}`}>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className={reactionPage.eyebrowClassName}>Reagieren zuerst</p>
-                <h3 className={sectionTitleClassName}>Vorschläge mit Handlungsbedarf</h3>
-                <p className={sectionBodyClassName}>
-                  Entscheide zuerst über offene Vorschläge. Danach ist der Feed nur noch für sichtbare Aktivitäten zum Mitmachen da.
+                    <span>{option.label}</span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${isActive ? "bg-white text-teal-800 ring-1 ring-teal-200" : "bg-slate-100 text-slate-600"
+                        }`}
+                    >
+                      {option.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-2 text-sm text-slate-600">
+              Fokus: <span className="font-medium text-slate-900">{activeFocusOption.label}</span>. {activeFocusOption.description}.
+            </p>
+            <div className={`mt-4 rounded-2xl p-4 md:p-5 ${getVisualPriorityMeta("reaction").sectionClassName}`}>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className={reactionPage.eyebrowClassName}>Reagieren zuerst</p>
+                  <h3 className={sectionTitleClassName}>Vorschläge mit Handlungsbedarf</h3>
+                  <p className={sectionBodyClassName}>
+                    Entscheide zuerst über offene Vorschläge. Danach ist der Feed nur noch für sichtbare Aktivitäten zum Mitmachen da.
+                  </p>
+                </div>
+                <p className={`text-sm font-medium ${getVisualPriorityMeta("reaction").accentTextClassName}`}>
+                  {pendingSuggestions.length === 0
+                    ? "Gerade nichts offen"
+                    : `${pendingSuggestions.length} offene${pendingSuggestions.length === 1 ? "r Vorschlag" : " Vorschläge"}`}
                 </p>
               </div>
-              <p className={`text-sm font-medium ${getVisualPriorityMeta("reaction").accentTextClassName}`}>
-                {pendingSuggestions.length === 0
-                  ? "Gerade nichts offen"
-                  : `${pendingSuggestions.length} offene${pendingSuggestions.length === 1 ? "r Vorschlag" : " Vorschläge"}`}
-              </p>
+              {pendingSuggestions.length === 0 ? (
+                <div className={`mt-4 rounded-xl border p-4 text-sm text-slate-600 ${getVisualPriorityMeta("reaction").mutedInsetClassName}`}>
+                  Im Moment wartet keine Entscheidung auf dich. Nutze den Feed darunter für offene Aktivitäten oder starte neues Matching.
+                </div>
+              ) : (
+                <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                  {pendingSuggestions.map((suggestion) => {
+                    const accepted = data.acceptedByEventId?.[suggestion.eventId] ?? [];
+                    const acceptedNames = getAcceptedDisplayNames(accepted);
+                    const remainingAccepted = accepted.length - acceptedNames.length;
+
+                    return (
+                      <a
+                        key={suggestion.id}
+                        href={`/suggestions?suggestion=${suggestion.id}`}
+                        className={`rounded-xl border p-4 transition ${getVisualPriorityMeta("reaction").itemClassName}`}
+                      >
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${getVisualPriorityMeta("reaction").badgeClassName}`}>
+                            Jetzt reagieren
+                          </span>
+                          {accepted.length > 0 ? (
+                            <span className="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-800">
+                              {getAcceptedCountLabel(accepted.length)}
+                            </span>
+                          ) : null}
+                        </div>
+                        <h3 className="mt-3 text-base font-semibold text-slate-900">
+                          {suggestion.title.replace(/#[^\s]+/gi, "").trim()}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-600">{getDashboardSuggestionTiming(suggestion.startsAt, suggestion.endsAt)}</p>
+                        <p className="mt-1 text-xs text-slate-500">
+                          {suggestion.createdByName ? `Von ${suggestion.createdByName}` : "Passender Vorschlag"} · Score{" "}
+                          {suggestion.score.toFixed(2)}
+                        </p>
+                        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                          <div className={`rounded-xl border p-3 ${getVisualPriorityMeta("reaction").insetClassName}`}>
+                            <p className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${getVisualPriorityMeta("reaction").accentTextClassName}`}>Warum jetzt?</p>
+                            <p className="mt-2 text-sm font-medium text-slate-900">{getDashboardReasonHeadline(suggestion.reason)}</p>
+                            <p className="mt-1 text-xs leading-5 text-slate-600">{suggestion.reason}</p>
+                          </div>
+                          <div className={`rounded-xl border p-3 ${getVisualPriorityMeta("momentum").insetClassName}`}>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">Wer ist dabei?</p>
+                            {accepted.length > 0 ? (
+                              <p className="mt-2 text-sm font-medium text-slate-900">
+                                {acceptedNames.join(", ")}
+                                {remainingAccepted > 0 ? ` +${remainingAccepted}` : ""}
+                              </p>
+                            ) : (
+                              <p className="mt-2 text-sm font-medium text-slate-900">Noch niemand zugesagt</p>
+                            )}
+                            <p className="mt-1 text-xs text-slate-600">
+                              {accepted.length > 0 ? "Schon Momentum vorhanden." : "Du könntest die erste Zusage sein."}
+                            </p>
+                          </div>
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-            {pendingSuggestions.length === 0 ? (
-              <div className={`mt-4 rounded-xl border p-4 text-sm text-slate-600 ${getVisualPriorityMeta("reaction").mutedInsetClassName}`}>
-                Im Moment wartet keine Entscheidung auf dich. Nutze den Feed darunter für offene Aktivitäten oder starte neues Matching.
+            {filteredItemsByDay.length === 0 && !loading ? (
+              <div className="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/80 p-6 text-center">
+                {searchQuery.trim() ? (
+                  <>
+                    <p className="text-sm font-medium text-slate-700">Keine Treffer für „{searchQuery.trim()}“</p>
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      className="mt-3 text-sm font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800"
+                    >
+                      Suche zurücksetzen
+                    </button>
+                  </>
+                ) : nowFeedEmptyState ? (
+                  <>
+                    <p className="text-sm font-medium text-slate-700">{nowFeedEmptyState.title}</p>
+                    <p className="mt-1 text-sm text-slate-500">{nowFeedEmptyState.description}</p>
+                    <div className="mt-4 flex flex-wrap justify-center gap-2">
+                      {nowFeedEmptyState.primaryHref ? (
+                        <a
+                          href={nowFeedEmptyState.primaryHref}
+                          onClick={nowFeedEmptyState.primaryAction}
+                          className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
+                        >
+                          {nowFeedEmptyState.primaryLabel}
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={nowFeedEmptyState.primaryAction}
+                          className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
+                        >
+                          {nowFeedEmptyState.primaryLabel}
+                        </button>
+                      )}
+                      {nowFeedEmptyState.secondaryHref ? (
+                        <a
+                          href={nowFeedEmptyState.secondaryHref}
+                          onClick={nowFeedEmptyState.secondaryAction}
+                          className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                        >
+                          {nowFeedEmptyState.secondaryLabel}
+                        </a>
+                      ) : nowFeedEmptyState.secondaryAction ? (
+                        <button
+                          type="button"
+                          onClick={nowFeedEmptyState.secondaryAction}
+                          className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                        >
+                          {nowFeedEmptyState.secondaryLabel}
+                        </button>
+                      ) : null}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium text-slate-700">Gerade keine sichtbaren Aktivitäten</p>
+                    <p className="mt-1 text-sm text-slate-500">Sobald wieder offene Aktivitäten auftauchen, erscheinen sie hier.</p>
+                  </>
+                )}
               </div>
             ) : (
-              <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                {pendingSuggestions.map((suggestion) => {
-                  const accepted = data.acceptedByEventId?.[suggestion.eventId] ?? [];
-                  const acceptedNames = getAcceptedDisplayNames(accepted);
-                  const remainingAccepted = accepted.length - acceptedNames.length;
-
+              <div className="mt-4 space-y-8">
+                {filteredItemsByDay.map(({ dayKey, dayLabel, date: dayDate, items }) => {
+                  const isToday = (() => {
+                    const t = new Date();
+                    return dayDate.getDate() === t.getDate() && dayDate.getMonth() === t.getMonth() && dayDate.getFullYear() === t.getFullYear();
+                  })();
                   return (
-                    <a
-                      key={suggestion.id}
-                      href={`/suggestions?suggestion=${suggestion.id}`}
-                      className={`rounded-xl border p-4 transition ${getVisualPriorityMeta("reaction").itemClassName}`}
-                    >
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${getVisualPriorityMeta("reaction").badgeClassName}`}>
-                          Jetzt reagieren
-                        </span>
-                        {accepted.length > 0 ? (
-                          <span className="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-800">
-                            {getAcceptedCountLabel(accepted.length)}
-                          </span>
-                        ) : null}
-                      </div>
-                      <h3 className="mt-3 text-base font-semibold text-slate-900">
-                        {suggestion.title.replace(/#[^\s]+/gi, "").trim()}
+                    <div key={dayKey}>
+                      <h3 className="mb-3 text-base font-semibold text-slate-800">
+                        {isToday ? "Heute" : dayLabel}
+                        <span className="ml-2 text-sm font-normal text-slate-500">({items.length})</span>
                       </h3>
-                      <p className="mt-1 text-sm text-slate-600">{getDashboardSuggestionTiming(suggestion.startsAt, suggestion.endsAt)}</p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {suggestion.createdByName ? `Von ${suggestion.createdByName}` : "Passender Vorschlag"} · Score{" "}
-                        {suggestion.score.toFixed(2)}
-                      </p>
-                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                        <div className={`rounded-xl border p-3 ${getVisualPriorityMeta("reaction").insetClassName}`}>
-                          <p className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${getVisualPriorityMeta("reaction").accentTextClassName}`}>Warum jetzt?</p>
-                          <p className="mt-2 text-sm font-medium text-slate-900">{getDashboardReasonHeadline(suggestion.reason)}</p>
-                          <p className="mt-1 text-xs leading-5 text-slate-600">{suggestion.reason}</p>
-                        </div>
-                        <div className={`rounded-xl border p-3 ${getVisualPriorityMeta("momentum").insetClassName}`}>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">Wer ist dabei?</p>
-                          {accepted.length > 0 ? (
-                            <p className="mt-2 text-sm font-medium text-slate-900">
-                              {acceptedNames.join(", ")}
-                              {remainingAccepted > 0 ? ` +${remainingAccepted}` : ""}
-                            </p>
-                          ) : (
-                            <p className="mt-2 text-sm font-medium text-slate-900">Noch niemand zugesagt</p>
-                          )}
-                          <p className="mt-1 text-xs text-slate-600">
-                            {accepted.length > 0 ? "Schon Momentum vorhanden." : "Du könntest die erste Zusage sein."}
-                          </p>
-                        </div>
-                      </div>
-                    </a>
+                      <ul className="space-y-3">
+                        {items.map((item) => {
+                          const accepted = data.acceptedByEventId?.[item.eventId] ?? [];
+                          const acceptedNames = getAcceptedDisplayNames(accepted);
+                          const remainingAccepted = accepted.length - acceptedNames.length;
+                          const isAccepted = acceptedEventIds.has(item.eventId);
+                          const isOwnEvent = item.event.createdBy === data.me.id;
+                          const eventPattern = getEventPatternMeta({ isOwnEvent, isAccepted });
+                          const coverUrl = item.event.placeImageUrl ?? item.event.linkPreviewImageUrl ?? null;
+                          const borderColor = item.event.color ?? CATEGORY_COLORS[item.event.category ?? "default"];
+                          const joinModeMeta = getEventJoinModeMeta(item.event.joinMode);
+                          const onSiteMeta = getEventOnSiteVisibilityMeta(item.event.allowOnSiteVisibility);
+                          const onSiteAudienceHint = item.event.allowOnSiteVisibility
+                            ? getEventPresenceAudienceHint({
+                              visibility: item.event.visibility,
+                              groupName: item.event.groupName,
+                            })
+                            : null;
+                          return (
+                            <li key={`event-${item.eventId}`}>
+                              <a
+                                href={`/e/${shortenUUID(item.eventId)}`}
+                                className={`flex gap-3 rounded-xl border p-4 text-left transition ${getVisualPriorityMeta(eventPattern.priority).itemClassName}`}
+                                style={{ borderLeftWidth: "4px", borderLeftColor: borderColor }}
+                              >
+                                {coverUrl ? (
+                                  <span className="relative h-20 w-24 shrink-0 overflow-hidden rounded-lg bg-slate-100 sm:h-20 sm:w-28">
+                                    <EventImage src={coverUrl} className="h-full w-full object-cover" />
+                                  </span>
+                                ) : null}
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span
+                                      className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${eventPattern.badgeClassName}`}
+                                    >
+                                      {eventPattern.label}
+                                    </span>
+                                    {accepted.length > 0 ? (
+                                      <span className="inline-flex items-center rounded-full bg-teal-100 px-2.5 py-1 text-[11px] font-semibold text-teal-800">
+                                        {getAcceptedCountLabel(accepted.length)}
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                  <span className="font-semibold text-slate-900">{item.title}</span>
+                                  <p className="mt-0.5 text-xs text-slate-500">
+                                    {new Date(item.startsAt).toLocaleString("de-DE", {
+                                      weekday: "short",
+                                      hour: "2-digit",
+                                      minute: "2-digit"
+                                    })}{" "}
+                                    –{" "}
+                                    {new Date(item.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                                  </p>
+                                  <p className="mt-1 text-xs font-medium text-slate-600">Mitmachen: {joinModeMeta.shortLabel}</p>
+                                  <p className="mt-1 text-xs font-medium text-slate-600">Vor Ort: {onSiteMeta.shortLabel}</p>
+                                  {onSiteAudienceHint ? (
+                                    <p className="mt-1 text-xs text-slate-500">{onSiteAudienceHint}</p>
+                                  ) : null}
+                                  <div className={`mt-2 rounded-lg border px-3 py-2.5 ${getVisualPriorityMeta(eventPattern.priority).insetClassName}`}>
+                                    <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                                      Wer ist dabei?
+                                    </p>
+                                    {accepted.length > 0 ? (
+                                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                                        <p className="text-sm font-medium text-slate-800">
+                                          {acceptedNames.join(", ")}
+                                          {remainingAccepted > 0 ? ` +${remainingAccepted}` : ""}
+                                        </p>
+                                        <span className="text-xs font-medium text-teal-700">
+                                          Schon Leute dabei
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <p className="mt-0.5 text-sm text-slate-500">Noch niemand zugesagt</p>
+                                    )}
+                                  </div>
+                                  <div className={`mt-2 flex items-center justify-between rounded-lg border px-3 py-2 text-sm font-semibold ${getVisualPriorityMeta(eventPattern.priority).actionRowClassName}`}>
+                                    <span>{eventPattern.actionLabel}</span>
+                                    <span aria-hidden>→</span>
+                                  </div>
+                                </div>
+                              </a>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
                   );
                 })}
               </div>
             )}
-          </div>
-          {hiddenOwnPlanningEvents.length > 0 ? (
-            <div className={`mt-4 rounded-2xl p-4 ${getVisualPriorityMeta("planning").sectionClassName}`}>
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <p className={`text-xs font-semibold uppercase tracking-[0.14em] ${getVisualPriorityMeta("planning").eyebrowClassName}`}>Deine Planung bleibt in Events</p>
-                  <h3 className="mt-1 text-base font-semibold text-slate-900">
-                    {hiddenOwnPlanningEvents.length === 1
-                      ? "1 eigenes Event ohne Zusagen wurde aus Jetzt herausgenommen"
-                      : `${hiddenOwnPlanningEvents.length} eigene Events ohne Zusagen wurden aus Jetzt herausgenommen`}
-                  </h3>
-                  <p className="mt-1 text-sm text-slate-600">
-                    So bleibt der Feed auf offene Aktivitäten zum Reagieren und Mitmachen fokussiert. Deine eigene Planung findest du gesammelt in{" "}
-                    <a href="/events#events" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">
-                      Events
-                    </a>.
-                  </p>
-                </div>
-                <a
-                  href="/events#events"
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-                >
-                  Planung öffnen
-                </a>
-              </div>
-            </div>
-          ) : null}
-          {filteredItemsByDay.length === 0 && !loading ? (
-            <div className="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/80 p-6 text-center">
-              {searchQuery.trim() ? (
-                <>
-                  <p className="text-sm font-medium text-slate-700">Keine Treffer für „{searchQuery.trim()}“</p>
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery("")}
-                    className="mt-3 text-sm font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800"
-                  >
-                    Suche zurücksetzen
-                  </button>
-                </>
-              ) : nowFeedEmptyState ? (
-                <>
-                  <p className="text-sm font-medium text-slate-700">{nowFeedEmptyState.title}</p>
-                  <p className="mt-1 text-sm text-slate-500">{nowFeedEmptyState.description}</p>
-                  <div className="mt-4 flex flex-wrap justify-center gap-2">
-                    {nowFeedEmptyState.primaryHref ? (
-                      <a
-                        href={nowFeedEmptyState.primaryHref}
-                        onClick={nowFeedEmptyState.primaryAction}
-                        className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
-                      >
-                        {nowFeedEmptyState.primaryLabel}
-                      </a>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={nowFeedEmptyState.primaryAction}
-                        className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
-                      >
-                        {nowFeedEmptyState.primaryLabel}
-                      </button>
-                    )}
-                    {nowFeedEmptyState.secondaryHref ? (
-                      <a
-                        href={nowFeedEmptyState.secondaryHref}
-                        onClick={nowFeedEmptyState.secondaryAction}
-                        className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                      >
-                        {nowFeedEmptyState.secondaryLabel}
-                      </a>
-                    ) : nowFeedEmptyState.secondaryAction ? (
-                      <button
-                        type="button"
-                        onClick={nowFeedEmptyState.secondaryAction}
-                        className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                      >
-                        {nowFeedEmptyState.secondaryLabel}
-                      </button>
-                    ) : null}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm font-medium text-slate-700">Gerade keine sichtbaren Aktivitäten</p>
-                  <p className="mt-1 text-sm text-slate-500">Sobald wieder offene Aktivitäten auftauchen, erscheinen sie hier.</p>
-                </>
-              )}
-            </div>
-          ) : (
-            <div className="mt-4 space-y-8">
-              {filteredItemsByDay.map(({ dayKey, dayLabel, date: dayDate, items }) => {
-                const isToday = (() => {
-                  const t = new Date();
-                  return dayDate.getDate() === t.getDate() && dayDate.getMonth() === t.getMonth() && dayDate.getFullYear() === t.getFullYear();
-                })();
-                return (
-                  <div key={dayKey}>
-                    <h3 className="mb-3 text-base font-semibold text-slate-800">
-                      {isToday ? "Heute" : dayLabel}
-                      <span className="ml-2 text-sm font-normal text-slate-500">({items.length})</span>
-                    </h3>
-                    <ul className="space-y-3">
-                      {items.map((item) => {
-                        const accepted = data.acceptedByEventId?.[item.eventId] ?? [];
-                        const acceptedNames = getAcceptedDisplayNames(accepted);
-                        const remainingAccepted = accepted.length - acceptedNames.length;
-                        const isAccepted = acceptedEventIds.has(item.eventId);
-                        const isOwnEvent = item.event.createdBy === data.me.id;
-                        const eventPattern = getEventPatternMeta({ isOwnEvent, isAccepted });
-                        const coverUrl = item.event.placeImageUrl ?? item.event.linkPreviewImageUrl ?? null;
-                        const borderColor = item.event.color ?? CATEGORY_COLORS[item.event.category ?? "default"];
-                        const joinModeMeta = getEventJoinModeMeta(item.event.joinMode);
-                        const onSiteMeta = getEventOnSiteVisibilityMeta(item.event.allowOnSiteVisibility);
-                        const onSiteAudienceHint = item.event.allowOnSiteVisibility
-                          ? getEventPresenceAudienceHint({
-                              visibility: item.event.visibility,
-                              groupName: item.event.groupName,
-                            })
-                          : null;
-                        return (
-                          <li key={`event-${item.eventId}`}>
-                            <a
-                              href={`/e/${shortenUUID(item.eventId)}`}
-                              className={`flex gap-3 rounded-xl border p-4 text-left transition ${getVisualPriorityMeta(eventPattern.priority).itemClassName}`}
-                              style={{ borderLeftWidth: "4px", borderLeftColor: borderColor }}
-                            >
-                              {coverUrl ? (
-                                <span className="relative h-20 w-24 shrink-0 overflow-hidden rounded-lg bg-slate-100 sm:h-20 sm:w-28">
-                                  <EventImage src={coverUrl} className="h-full w-full object-cover" />
-                                </span>
-                              ) : null}
-                              <div className="min-w-0 flex-1">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <span
-                                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${eventPattern.badgeClassName}`}
-                                  >
-                                    {eventPattern.label}
-                                  </span>
-                                  {accepted.length > 0 ? (
-                                    <span className="inline-flex items-center rounded-full bg-teal-100 px-2.5 py-1 text-[11px] font-semibold text-teal-800">
-                                      {getAcceptedCountLabel(accepted.length)}
-                                    </span>
-                                  ) : null}
-                                </div>
-                                <span className="font-semibold text-slate-900">{item.title}</span>
-                                <p className="mt-0.5 text-xs text-slate-500">
-                                  {new Date(item.startsAt).toLocaleString("de-DE", {
-                                    weekday: "short",
-                                    hour: "2-digit",
-                                    minute: "2-digit"
-                                  })}{" "}
-                                  –{" "}
-                                  {new Date(item.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
-                                </p>
-                                <p className="mt-1 text-xs font-medium text-slate-600">Mitmachen: {joinModeMeta.shortLabel}</p>
-                                <p className="mt-1 text-xs font-medium text-slate-600">Vor Ort: {onSiteMeta.shortLabel}</p>
-                                {onSiteAudienceHint ? (
-                                  <p className="mt-1 text-xs text-slate-500">{onSiteAudienceHint}</p>
-                                ) : null}
-                                <div className={`mt-2 rounded-lg border px-3 py-2.5 ${getVisualPriorityMeta(eventPattern.priority).insetClassName}`}>
-                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                                    Wer ist dabei?
-                                  </p>
-                                  {accepted.length > 0 ? (
-                                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                                      <p className="text-sm font-medium text-slate-800">
-                                        {acceptedNames.join(", ")}
-                                        {remainingAccepted > 0 ? ` +${remainingAccepted}` : ""}
-                                      </p>
-                                      <span className="text-xs font-medium text-teal-700">
-                                        Schon Leute dabei
-                                      </span>
-                                    </div>
-                                  ) : (
-                                    <p className="mt-0.5 text-sm text-slate-500">Noch niemand zugesagt</p>
-                                  )}
-                                </div>
-                                <div className={`mt-2 flex items-center justify-between rounded-lg border px-3 py-2 text-sm font-semibold ${getVisualPriorityMeta(eventPattern.priority).actionRowClassName}`}>
-                                  <span>{eventPattern.actionLabel}</span>
-                                  <span aria-hidden>→</span>
-                                </div>
-                              </div>
-                            </a>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                );
-              })}
-            </div>
-          )}
           </section>
         ) : null}
 
@@ -2301,9 +2270,9 @@ export function Dashboard({
                                 const onSiteMeta = getEventOnSiteVisibilityMeta(event.allowOnSiteVisibility);
                                 const onSiteAudienceHint = event.allowOnSiteVisibility
                                   ? getEventPresenceAudienceHint({
-                                      visibility: event.visibility,
-                                      groupName: event.groupName,
-                                    })
+                                    visibility: event.visibility,
+                                    groupName: event.groupName,
+                                  })
                                   : null;
                                 const contextLabel =
                                   section.id === "context" && event.sourceProvider
