@@ -1954,9 +1954,13 @@ export function Dashboard({
           </div>
         ) : null}
 
-        {(queryError || submitError) ? (
+        {(queryError || (submitError && !showEventForm)) ? (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {submitError ?? (queryError instanceof Error ? queryError.message : String(queryError))}
+            {submitError && !showEventForm
+              ? submitError
+              : queryError instanceof Error
+                ? queryError.message
+                : String(queryError)}
           </div>
         ) : null}
         <CalendarReconnectBanner calendarConnectionState={data.me.calendarConnectionState} />
@@ -1977,10 +1981,23 @@ export function Dashboard({
         ) : null}
         {loading && data.events.length === 0 ? <p className="mt-6 text-slate-600">Lade Daten...</p> : null}
 
-        {showEventForm ? (
-          <form onSubmit={createEvent} className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">Neues Event anlegen</h2>
-            <div className="mt-4 grid gap-3">
+        <Dialog
+          open={showEventForm}
+          onOpenChange={setShowEventForm}
+        >
+          <DialogContent showCloseButton className="gap-0 p-0">
+            <div className="shrink-0 border-b border-slate-100 px-4 pb-4 pt-3 pr-14 md:rounded-t-2xl md:px-6 md:pb-5 md:pt-6">
+              <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-slate-200 md:hidden" aria-hidden />
+              <DialogTitle className="text-xl md:text-2xl">Neues Event anlegen</DialogTitle>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 md:px-6 md:pt-5">
+              {submitError ? (
+                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {submitError}
+                </div>
+              ) : null}
+              <form onSubmit={createEvent} className="pb-1">
+            <div className="grid gap-3">
               <input
                 value={eventForm.title}
                 onChange={(event) => setEventForm((state) => ({ ...state, title: event.target.value }))}
@@ -2156,7 +2173,9 @@ export function Dashboard({
               Event speichern
             </button>
           </form>
-        ) : null}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {isEventsView ? (
           <section id="events" className="mt-8 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
