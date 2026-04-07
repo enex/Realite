@@ -25,7 +25,7 @@ Wenn du genauer verstehen willst, welche Funktionen nur ein Konto brauchen, welc
 
 Hinweis:
 
-- Auf der Startseite siehst du direkt öffentliche Events als Beispiel, bevor du dich anmeldest.
+- Auf der Startseite siehst du direkt **offene Einladungen** als Beispiel, bevor du dich anmeldest.
 - Die Startseite zeigt kurze Einstiege für **neue Leute kennenlernen**, **Reconnecten** und optional **Dating** (`#date`).
 
 ## 3. Startansicht verstehen

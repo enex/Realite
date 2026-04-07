@@ -44,7 +44,7 @@ export async function generateMetadata({
       url: eventPath,
       title: copy.title,
       description: copy.description,
-      images: [{ url: imagePath, width: 1200, height: 630, alt: "Event auf Realite" }]
+      images: [{ url: imagePath, width: 1200, height: 630, alt: "Einladung auf Realite" }]
     },
     twitter: {
       card: "summary_large_image",

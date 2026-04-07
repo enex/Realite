@@ -5,8 +5,8 @@ import {
 } from "@/src/lib/person-display";
 import { enlargeUUID } from "@/src/lib/utils/short-uuid";
 
-export const EVENT_SHARE_FALLBACK_TITLE = "Event auf Realite";
-export const EVENT_SHARE_FALLBACK_DESCRIPTION = "Öffne den Link, um das Event in Realite anzusehen.";
+export const EVENT_SHARE_FALLBACK_TITLE = "Einladung auf Realite";
+export const EVENT_SHARE_FALLBACK_DESCRIPTION = "Öffne den Link, um die Einladung in Realite anzusehen.";
 
 function truncate(value: string, maxLength: number) {
   if (value.length <= maxLength) {
@@ -77,8 +77,9 @@ export function getEventShareCopy(preview: PublicEventSharePreview | null) {
   const owner = formatEventShareOwner(preview);
   const detail = descriptionText ? truncate(descriptionText, 96) : null;
 
+  const invitationTail = detail ? ` ${detail}` : "";
   return {
     title,
-    description: [schedule, owner, detail].filter(Boolean).join(" | ")
+    description: `Komm gern dazu · ${schedule} · ${owner}${invitationTail ? ` ·${invitationTail}` : ""}`
   };
 }

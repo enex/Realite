@@ -60,6 +60,18 @@ export default async function HomePage({
 
 type PublicAlleEvent = Awaited<ReturnType<typeof listPublicAlleEvents>>[number];
 
+/** Kurze, persönliche Zeitzeile für offene Einladungen (kein „Event:“-Katalogstil). */
+function formatOpenInvitationWhenLine(startsAt: Date, endsAt: Date): string {
+  const dayPart = startsAt.toLocaleDateString("de-DE", {
+    weekday: "long",
+    day: "numeric",
+    month: "long"
+  });
+  const startT = startsAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  const endT = endsAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  return `${dayPart} · ${startT}–${endT} Uhr · komm gern dazu`;
+}
+
 function LandingHeader({ signInHref }: { signInHref: string }) {
   return (
     <header
@@ -134,14 +146,14 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
           className="h-52 w-full rounded-[22px] border border-emerald-950/10 bg-[#ebe4d5] object-cover sm:h-64"
           loading="lazy"
         />
-        <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-900/70">Live vor Ort</p>
+        <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-900/70">Von Menschen wie dir</p>
         <h2 className="mt-2 text-xl font-bold text-slate-950 sm:text-2xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
-          Offene Events
+          Offene Einladungen
         </h2>
         <p className="mt-2 text-sm leading-6 text-slate-700">
           {publicAlleEvents.length > 0
-            ? `${publicAlleEvents.length} offene Aktivität(en) warten gerade auf neue Leute.`
-            : "Gerade wird das nächste Event vorbereitet. Starte jetzt und setze den ersten Impuls."}
+            ? `${publicAlleEvents.length} Einladung(en), formuliert wie an Freunde – nicht wie eine Veranstaltungsliste.`
+            : "Noch lädt niemand öffentlich ein. Schreib deinen Impuls so, wie du’s jemandem sagen würdest: z. B. „Wir grillen Sonntag, komm dazu“."}
         </p>
         <div className="mt-5 space-y-3">
           {publicAlleEvents.slice(0, 3).map((event) => {
@@ -157,9 +169,8 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
                   <a href={`/e/${shortenUUID(event.id)}`} className="wrap-break-word font-semibold text-slate-900 hover:text-emerald-800">
                     {event.title.replace(/#[^\s]+/gi, "").trim()}
                   </a>
-                  <p className="mt-1 text-xs text-slate-500">
-                    {new Date(event.startsAt).toLocaleString("de-DE")} bis{" "}
-                    {new Date(event.endsAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                  <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                    {formatOpenInvitationWhenLine(new Date(event.startsAt), new Date(event.endsAt))}
                   </p>
                 </div>
               </article>
@@ -167,7 +178,7 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
           })}
           {publicAlleEvents.length === 0 ? (
             <article className="rounded-2xl border border-dashed border-emerald-950/15 bg-[#f8f4ec] p-4 text-sm text-slate-600">
-              Noch keine öffentlichen Events vorhanden.
+              Noch keine offenen Einladungen – du kannst die erste schreiben.
             </article>
           ) : null}
         </div>

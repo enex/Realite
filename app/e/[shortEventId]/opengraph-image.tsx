@@ -15,7 +15,7 @@ import { enlargeUUID } from "@/src/lib/utils/short-uuid";
 /** Öffentlich abrufbar ohne Anmeldung – nur getPublicEventSharePreview*, keine Session. */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const alt = "Event auf Realite";
+export const alt = "Einladung auf Realite";
 export const size = {
   width: 1200,
   height: 630
@@ -117,7 +117,7 @@ export default async function EventOgImage({
               color: "#1e3a34"
             }}
           >
-            Event auf Realite
+            Einladung auf Realite
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
