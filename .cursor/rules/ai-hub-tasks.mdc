@@ -1,27 +1,29 @@
 ---
-description: AI-Hub Tasks bei Implementierungsaufträgen abfragen und nach Umsetzung aktualisieren
+description: AI-Hub Tasks bei Implementierungsaufträgen per ai-hub-cli abfragen und nach Umsetzung aktualisieren
 alwaysApply: true
 ---
 
-# AI-Hub Tasks: Abfragen und Aktualisieren
+# AI-Hub Tasks: ai-hub-cli
 
 Wenn du aufgefordert wirst, etwas zu **implementieren**, zu **fixen** oder als **Feature** umzusetzen (z. B. „implementiere X“, „fix Y“, „add Z“):
 
-## 1. Vor der Umsetzung – Tasks abfragen
+## Authentifizierung
 
-- **Task-Suche**: MCP-Server `user-ai-hub-tasks`, Tool `task_find` mit passendem `search` (z. B. „Realite“, „Profilbild“, „Apple“, „Kalender“). Parameter: `limit` 20–50, `status` `["pending","running","blocked","waiting","sleeping"]`, `includeCompleted` false.
-- **Relevanten Task lesen**: Mit `task_get` (Tool, `taskId`) Name und `description` des gefundenen Tasks als Spezifikation nutzen. Enthaltene **Unteraufgaben** (im Response unter `blockedBy`/`blocks` oder als eigene Treffer) sind Teil der Spec; im API-Response bedeutet **`subtasks`** den **Supertask (Eltern-Task)** dieses Tasks (invertierte Semantik).
-- Wenn kein passender Task existiert: trotzdem wie gewohnt implementieren; optional einen passenden Task per `task_create_subtask` unter einem bestehenden Realite-Task anlegen.
+Hub-Zugriff wie bei anderen `ai-hub-cli`-Befehlen: Umgebungsvariablen `AI_HUB_URL` und `AI_HUB_API_KEY`, oder `--url` / `--api-key` an jedem Aufruf.
 
-## 2. Nach der Umsetzung – Task sinnvoll aktualisieren
+## 1. Vor der Umsetzung – Tasks einholen
 
-- **Erledigten Task abschließen**: `task_complete` mit `taskId` und kurzem `message` (z. B. was umgesetzt wurde, welche Dateien/APIs).
-- **Teilweise erledigt oder Stand dokumentieren**: `task_update` mit aktualisierter `description` (z. B. „Stand: X implementiert, Y offen“) oder `task_comment` mit Nachricht, was erledigt wurde und was noch fehlt.
-- **Neue Unteraufgabe erledigt**: Den konkreten Untertask per `task_complete` schließen; bei Bedarf beim Eltern-Task einen `task_comment` mit Verweis auf die erledigte Unteraufgabe.
+- **Queue lesen**: `ai-hub-cli task list --limit 50` (bei Bedarf `--full-json`). Passenden Task anhand von Name und Kurzbeschreibung in der Ausgabe wählen.
+- **Spec lesen**: `ai-hub-cli task get <task-id> --full-json` — `name` und `description` sind die Implementierungsspec. **Unteraufgaben und Abhängigkeiten** im JSON beachten (`blockedBy` / `blocks`); im Response kann **`subtasks`** den **Supertask (Eltern-Task)** dieses Tasks bedeuten (invertierte Semantik).
+- **Suche / Filter über Hub-Tools**: Wenn die Instanz passende MCP-Tools bereitstellt, z. B. `ai-hub-cli call task_find --params '{"search":"Realite","limit":30,...}'`. Verfügbare Toolnamen und Parameter mit `ai-hub-cli tools` bzw. `ai-hub-cli call --help` klären.
+- Wenn kein passender Task existiert: trotzdem implementieren; optional neuen Task mit `ai-hub-cli task create` anlegen, z. B. mit `--agent-id 01948acb-0d73-723e-88fd-2d0e5c546a4b` und `--subtask-of <parent-id>` wenn es eine Unteraufgabe sein soll.
 
-## 3. Technik
+## 2. Nach der Umsetzung – Task aktualisieren
 
-- MCP-Tool-Descriptor vor Nutzung prüfen: `/Users/simon/.cursor/projects/Users-simon-Projekte-Realite/mcps/user-ai-hub-tasks/tools/*.json`.
-- Agent/Space für Realite-Tasks: `agentId` `01948acb-0d73-723e-88fd-2d0e5c546a4b` (bei Erstellung von Subtasks angeben).
+- **Erledigt**: `ai-hub-cli task complete <task-id> --message "…"` (kurz: was umgesetzt wurde, ggf. Pfade/APIs).
+- **Teilstand / Felder ändern**: `ai-hub-cli task update <task-id> --json-file -` oder `--json-file pfad.json` mit dem gewünschten JSON-Body gemäß Hub-API.
+- **Unteraufgabe erledigt**: den konkreten Task per `task complete` schließen; bei Bedarf Eltern-Task per `task update` oder einem vom Hub unterstützten Kommentar-/Verlaufsfeld nachziehen.
 
-So bleibt der AI-Hub mit dem Implementierungsstand synchron; du liest die Anforderungen aus den Tasks und meldest den Fortschritt zurück.
+## 3. Abgrenzung
+
+Projektmanagement läuft **über den AI-Hub**, nicht über zusätzliche Tracker-Dateien im Repo. Kein paralleles Aufgaben-Backlog in Markdown pflegen.

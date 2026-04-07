@@ -177,12 +177,12 @@ Update the right layer:
 
 When the user asks to implement, fix, or add a feature (e.g. “implement X”, “fix Y”):
 
-1. **Before implementing**: Query AI-Hub tasks (MCP server `user-ai-hub-tasks`, tool `task_find` with a relevant `search` such as “Realite”, “Profilbild”, “Apple”). Use `task_get` to read the matching task’s name and description as the implementation spec. Note: in the API response, `subtasks` denotes the **parent/supertask** of that task (inverted).
-2. **After implementing**: Update the task appropriately: `task_complete` with a short message, or `task_update` / `task_comment` to document what was done and what remains.
+1. **Before implementing**: Use **`ai-hub-cli`**, not the in-editor MCP bridge, for task workflow. List work with `ai-hub-cli task list` (adjust `--limit`), then `ai-hub-cli task get <task-id> --full-json` for the spec (`name`, `description`). If your hub exposes search tools, you can call them with `ai-hub-cli call <tool-name> --params '<json>'` (see `ai-hub-cli tools`). Note: in some API payloads, `subtasks` denotes the **parent/supertask** of a task (inverted semantics).
+2. **After implementing**: `ai-hub-cli task complete <task-id> --message "…"`, or `ai-hub-cli task update <task-id> --json-file …` for partial progress or field changes.
 
-See `.cursor/rules/ai-hub-tasks.mdc` for the full workflow and tool parameters.
+Auth: `AI_HUB_URL` and `AI_HUB_API_KEY` (or pass `--url` / `--api-key`). See `.cursor/rules/ai-hub-tasks.mdc` for the German step-by-step rule.
 
-If the MCP server is unavailable in the current environment, continue with local repo context and mention that limitation in the final summary.
+If `ai-hub-cli` or hub credentials are unavailable, continue from local repo context and mention that limitation in the final summary.
 
 ### GitHub Workflow
 
