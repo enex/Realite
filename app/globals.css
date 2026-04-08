@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   color-scheme: light;
   --app-primary: #2f5d50;
@@ -60,6 +62,105 @@
   --color-indigo-700: #2f5d50;
 }
 
+.dark {
+  color-scheme: dark;
+  --app-primary: #5aaf96;
+  --app-primary-dark: #3d8772;
+  /* Warm charcoal: leicht mehr Tiefe als reines Grau */
+  --app-background: #12100e;
+  --app-surface: #1e1c19;
+  --app-accent: #d9a08a;
+
+  --color-slate-50: #171513;
+  --color-slate-100: #1c1a17;
+  --color-slate-200: #2e2b27;
+  --color-slate-300: #45413b;
+  --color-slate-400: #7a7268;
+  --color-slate-500: #9a9286;
+  --color-slate-600: #b0a89a;
+  --color-slate-700: #cac2b4;
+  --color-slate-800: #e3dcd0;
+  --color-slate-900: #f2ebe0;
+  --color-slate-950: #faf6ef;
+
+  /* Monoton von dunkel (50) zu hell (900); 700 = Akzent */
+  --color-teal-50: #141f1c;
+  --color-teal-100: #182520;
+  --color-teal-200: #1f332c;
+  --color-teal-300: #2a453c;
+  --color-teal-400: #3a5f52;
+  --color-teal-500: #4a8574;
+  --color-teal-600: #52957f;
+  --color-teal-700: #5aaf96;
+  --color-teal-800: #86c9b4;
+  --color-teal-900: #b8e5d4;
+
+  --color-emerald-50: #141f1c;
+  --color-emerald-100: #182520;
+  --color-emerald-200: #1f332c;
+  --color-emerald-300: #2a453c;
+  --color-emerald-400: #3a5f52;
+  --color-emerald-500: #4a8574;
+  --color-emerald-600: #52957f;
+  --color-emerald-700: #5aaf96;
+  --color-emerald-800: #86c9b4;
+  --color-emerald-900: #b8e5d4;
+
+  --color-amber-50: #2a1f18;
+  --color-amber-100: #33241c;
+  --color-amber-200: #443020;
+  --color-amber-300: #5a3b2c;
+  --color-amber-400: #8b5a3f;
+  --color-amber-500: #c77b56;
+  --color-amber-600: #d89470;
+  --color-amber-700: #e4ad8e;
+  --color-amber-800: #edc5ad;
+  --color-amber-900: #f5ddce;
+
+  --color-rose-400: #e49a86;
+  --color-rose-500: #e09880;
+
+  --color-red-50: #2d1a1a;
+  --color-red-200: #5a2525;
+  --color-red-700: #f28080;
+  --color-red-800: #e87070;
+  --color-red-900: #fcc;
+
+  --color-indigo-100: #1e332d;
+  --color-indigo-700: #5aaf96;
+}
+
+/*
+ * Dark mode surface overrides:
+ * bg-white → dark surface, bg-white/XX → dark frosted surface.
+ * bg-slate-900/950 stay dark (buttons, overlays, code blocks).
+ */
+:root.dark .bg-white {
+  background-color: var(--app-surface);
+}
+:root.dark [class*="bg-white\\/"] {
+  /* Für backdrop-blur / Glass: warm, nicht matschig-grau */
+  --color-white: #2a2724;
+}
+:root.dark .bg-slate-900 {
+  background-color: #2a231c;
+}
+:root.dark .bg-slate-950 {
+  background-color: #1a1510;
+}
+:root.dark [class*="bg-slate-900\\/"] {
+  --color-slate-900: #2a231c;
+}
+
+/* Docs code blocks: keep dark bg + light text in both themes */
+.dark .docs-markdown pre {
+  background-color: #2a231c;
+  color: #f0ebe4;
+}
+.dark .docs-markdown code {
+  background-color: #32302d;
+}
+
 body {
   font-family: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
   background-color: var(--app-background);
@@ -110,4 +211,21 @@ body {
 
 button  {
   cursor: pointer;
+}
+
+/* Dark mode form controls */
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: var(--app-surface);
+  color: var(--color-slate-900);
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--color-slate-500);
+}
+
+/* Scrollbar: dezenter im Dark Mode */
+.dark {
+  scrollbar-color: var(--color-slate-300) var(--color-slate-100);
 }

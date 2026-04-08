@@ -10,6 +10,7 @@ import { MpcSettingsCard } from "@/src/components/settings/mcp-settings-card";
 import { ProviderCapabilityCard } from "@/src/components/settings/provider-capability-card";
 import { SuggestionLearningCard } from "@/src/components/settings/suggestion-learning-card";
 import { SuggestionSettingsCard, type SuggestionSettingsForm } from "@/src/components/settings/suggestion-settings-card";
+import { ThemeSettingsCard } from "@/src/components/settings/theme-settings-card";
 import type { CalendarConnectionState } from "@/src/lib/calendar-connection-state";
 import { getSuggestionSettingsMessaging } from "@/src/lib/calendar-messaging";
 import { getPageIntentMeta, pageLeadClassName, pageMetaClassName, pageShellClassName, pageTitleClassName } from "@/src/lib/page-hierarchy";
@@ -219,6 +220,8 @@ export function SettingsPage({
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{dating.error}</div>
         ) : null}
         {loading ? <p className="mt-6 text-slate-600">Lade Einstellungen...</p> : null}
+
+        <ThemeSettingsCard />
 
         <SuggestionSettingsCard
           calendarConnected={data.calendarConnected}

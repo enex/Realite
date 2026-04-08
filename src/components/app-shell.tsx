@@ -53,9 +53,13 @@ export function AppShell({ user, children }: AppShellProps) {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-40 border-b border-slate-200/90 bg-white/95 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-slate-200/90 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-[color-mix(in_oklab,var(--app-surface)_96%,transparent)]">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          <a href="/now" className="inline-flex items-center gap-2 text-lg font-bold tracking-tight text-slate-900" title="Zur Übersicht">
+          <a
+            href="/now"
+            className="inline-flex items-center gap-2 text-lg font-bold tracking-tight text-slate-900"
+            title="Zur Übersicht"
+          >
             <img
               src="/icon.svg"
               alt=""
@@ -72,8 +76,11 @@ export function AppShell({ user, children }: AppShellProps) {
                 <a
                   key={item.href}
                   href={item.href}
-                  className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${active ? "bg-teal-100 text-teal-900" : "text-slate-700 hover:bg-slate-100"
-                    }`}
+                  className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                    active
+                      ? "bg-teal-100 text-teal-900 dark:bg-teal-950/55 dark:text-teal-100"
+                      : "text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/6"
+                  }`}
                 >
                   {item.label}
                 </a>
@@ -83,10 +90,10 @@ export function AppShell({ user, children }: AppShellProps) {
 
           <Link
             href="/settings"
-            className="inline-flex items-center rounded-full border border-slate-200 bg-white p-1 transition hover:border-teal-200 hover:bg-teal-50 sm:gap-2 sm:pr-3"
+            className="inline-flex items-center rounded-full border border-slate-200 bg-white p-1 transition hover:border-teal-200 hover:bg-teal-50 dark:border-white/12 dark:bg-[var(--app-background)] dark:hover:border-teal-500/35 dark:hover:bg-teal-950/30 sm:gap-2 sm:pr-3"
           >
             <UserAvatar name={user.name} email={user.email} image={user.image ?? null} size="sm" />
-            <span className="hidden max-w-44 truncate text-sm font-medium text-slate-700 sm:block">
+            <span className="hidden max-w-44 truncate text-sm font-medium text-slate-700 dark:text-slate-200 sm:block">
               Mein Profil
             </span>
           </Link>
@@ -101,7 +108,7 @@ export function AppShell({ user, children }: AppShellProps) {
         className="fixed inset-x-0 bottom-0 z-40 md:hidden"
         aria-label="Mobile Navigation"
       >
-        <div className="border-t border-slate-200/70 bg-white/75 pb-[env(safe-area-inset-bottom)] shadow-[0_-1px_0_rgba(15,23,42,0.04)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/68">
+        <div className="border-t border-slate-200/70 bg-white/75 pb-[env(safe-area-inset-bottom)] shadow-[0_-1px_0_rgba(15,23,42,0.04)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/68 dark:border-white/10 dark:bg-[color-mix(in_oklab,var(--app-surface)_92%,transparent)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.35)] supports-[backdrop-filter]:dark:bg-[color-mix(in_oklab,var(--app-surface)_88%,transparent)]">
           <div className="mx-auto flex w-full max-w-6xl">
             {MOBILE_ITEMS.map((item) => {
               const active = isAppShellSectionActive(pathname, item.href);
@@ -114,18 +121,18 @@ export function AppShell({ user, children }: AppShellProps) {
                   aria-label={item.label}
                   aria-current={active ? "page" : undefined}
                   className={`flex min-h-[50px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-0.5 pb-1.5 pt-1.5 transition [-webkit-tap-highlight-color:transparent] active:opacity-70 ${
-                    active ? "text-teal-600" : "text-slate-400 hover:text-slate-600"
+                    active ? "text-teal-600 dark:text-teal-400" : "text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
                   }`}
                 >
                   <Icon
                     size={26}
                     weight={active ? "fill" : "regular"}
                     aria-hidden
-                    className={`shrink-0 ${active ? "text-teal-600" : "text-slate-400"}`}
+                    className={`shrink-0 ${active ? "text-teal-600 dark:text-teal-400" : "text-slate-400 dark:text-slate-500"}`}
                   />
                   <span
                     className={`max-w-full px-0.5 text-center text-[13px] leading-[1.15] tracking-[-0.01em] ${
-                      active ? "font-semibold text-teal-700" : "font-normal text-slate-500"
+                      active ? "font-semibold text-teal-700 dark:text-teal-300" : "font-normal text-slate-500 dark:text-slate-400"
                     }`}
                   >
                     {item.tabLabel}
