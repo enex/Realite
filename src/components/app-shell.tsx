@@ -10,10 +10,8 @@ import posthog from "posthog-js";
 import { UserAvatar } from "@/src/components/user-avatar";
 import {
   APP_SHELL_SECTIONS,
-  getCurrentAppShellSection,
   isAppShellSectionActive,
 } from "@/src/lib/app-shell-navigation";
-import { getPageIntentMeta, type PageIntent } from "@/src/lib/page-hierarchy";
 
 type AppShellProps = {
   user: {
@@ -41,39 +39,8 @@ const MOBILE_ITEMS: MobileNavItem[] = [
   { href: "/groups", label: "Gruppen", tabLabel: "Gruppen", intent: "Verwalten", Icon: Users },
 ];
 
-function getIntentTone(intent: string): PageIntent {
-  if (intent === "Entdecken") {
-    return "discover";
-  }
-
-  if (intent === "Reagieren") {
-    return "react";
-  }
-
-  return "manage";
-}
-
-function getSectionRailClassName(intent: string, active: boolean) {
-  if (!active) {
-    return "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50";
-  }
-
-  if (intent === "Reagieren") {
-    return "border-amber-200 bg-amber-50 text-amber-950 shadow-sm";
-  }
-
-  if (intent === "Verwalten") {
-    return "border-slate-300 bg-slate-100 text-slate-950 shadow-sm";
-  }
-
-  return "border-teal-200 bg-teal-50 text-teal-950 shadow-sm";
-}
-
 export function AppShell({ user, children }: AppShellProps) {
   const pathname = usePathname();
-  const currentSection = getCurrentAppShellSection(pathname);
-  const showSectionContext =
-    currentSection !== null && pathname !== currentSection.href;
 
   useEffect(() => {
     if (!user.email) return;
@@ -126,54 +93,6 @@ export function AppShell({ user, children }: AppShellProps) {
         </div>
       </header>
 
-      {currentSection && showSectionContext ? (
-        <div className="border-b border-slate-200 bg-white/80 backdrop-blur">
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-2 sm:px-6 lg:px-8 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className={getPageIntentMeta(getIntentTone(currentSection.intent)).eyebrowClassName}>
-                {currentSection.intent}
-              </p>
-              <p className="text-sm text-slate-600">
-                <span className="font-semibold text-slate-900">{currentSection.label}</span>
-                <span className="hidden sm:inline">
-                  {" · "}
-                  {currentSection.description}
-                </span>
-              </p>
-              <p className="mt-1 hidden text-sm font-medium text-slate-700 md:block">{currentSection.focus}</p>
-            </div>
-            <div className="hidden text-xs text-slate-500 md:block">
-              <span className="font-semibold text-slate-700">Hier jetzt:</span> {currentSection.whenToUse}
-            </div>
-          </div>
-          <div className="mx-auto w-full max-w-6xl px-4 pb-3 sm:px-6 lg:px-8">
-            <p className="hidden text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 md:block">Bereichswechsel</p>
-            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pt-2 sm:mx-0 sm:px-0 md:pt-2">
-              {APP_SHELL_SECTIONS.map((item) => {
-                const active = isAppShellSectionActive(pathname, item.href);
-                const intentMeta = getPageIntentMeta(getIntentTone(item.intent));
-
-                return (
-                  <a
-                    key={`section-rail-${item.href}`}
-                    href={item.href}
-                    aria-current={active ? "page" : undefined}
-                    className={`min-w-[7.25rem] shrink-0 rounded-2xl border px-3 py-2.5 transition sm:min-w-[9rem] md:min-w-0 md:flex-1 md:px-4 md:py-3 ${getSectionRailClassName(
-                      item.intent,
-                      active
-                    )}`}
-                  >
-                    <span className={`hidden md:block ${intentMeta.eyebrowClassName}`}>{item.intent}</span>
-                    <span className="block text-sm font-semibold md:mt-1">{item.label}</span>
-                    <span className="mt-1 hidden text-xs font-medium leading-5 text-slate-700 md:block">{item.focus}</span>
-                    <span className="mt-1 hidden text-xs leading-5 text-slate-500 md:block">{item.whenToUse}</span>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      ) : null}
 
       <div className="pb-[calc(env(safe-area-inset-bottom)+4rem)] md:pb-0">{children}</div>
 

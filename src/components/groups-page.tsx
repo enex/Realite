@@ -6,27 +6,11 @@ import { useMemo, useState } from "react";
 
 import { AppShell } from "@/src/components/app-shell";
 import { CalendarReconnectBanner } from "@/src/components/calendar-reconnect-banner";
-import { FlowCard } from "@/src/components/flow-card";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
 import type { CalendarConnectionState } from "@/src/lib/calendar-connection-state";
-import {
-  getGroupManagementFocus,
-  getGroupManagementState,
-  sortGroupsForManagement
-} from "@/src/lib/group-management";
-import {
-  getPageIntentMeta,
-  pageLeadClassName,
-  pageMetaClassName,
-  pageShellClassName,
-  pageTitleClassName,
-  sectionBodyClassName,
-  sectionTitleClassName,
-  statLabelClassName,
-  statValueClassName,
-} from "@/src/lib/page-hierarchy";
+import { getGroupManagementState, sortGroupsForManagement } from "@/src/lib/group-management";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 
 type GroupContact = {
@@ -76,41 +60,11 @@ type GroupsPayload = {
 };
 
 const emptyPayload: GroupsPayload = {
-  me: {
-    email: "",
-    name: null,
-    image: null,
-    calendarConnectionState: "not_connected"
-  },
-  sync: {
-    warning: null,
-    contactsWarning: null
-  },
-  dating: {
-    enabled: false,
-    unlocked: false,
-    missingRequirements: []
-  },
+  me: { email: "", name: null, image: null, calendarConnectionState: "not_connected" },
+  sync: { warning: null, contactsWarning: null },
+  dating: { enabled: false, unlocked: false, missingRequirements: [] },
   groups: []
 };
-
-function ManagementCard({
-  eyebrow,
-  title,
-  description
-}: {
-  eyebrow: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className={getPageIntentMeta("manage").eyebrowClassName}>{eyebrow}</p>
-      <h2 className={sectionTitleClassName}>{title}</h2>
-      <p className={sectionBodyClassName}>{description}</p>
-    </article>
-  );
-}
 
 export function GroupsPage({
   userName,
@@ -135,7 +89,6 @@ export function GroupsPage({
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showGroupForm, setShowGroupForm] = useState(false);
-
   const [groupForm, setGroupForm] = useState({
     name: "",
     description: "",
@@ -144,69 +97,23 @@ export function GroupsPage({
   });
 
   const datingModeEnabled = useRealiteFeatureFlag("dating-mode", false);
-  const managementPage = getPageIntentMeta("manage");
-  const discoveryPage = getPageIntentMeta("discover");
-  const visibleGroups = useMemo(() => data.groups.filter((group) => !group.isHidden), [data.groups]);
-  const hiddenGroups = useMemo(() => data.groups.filter((group) => group.isHidden), [data.groups]);
+  const visibleGroups = useMemo(() => data.groups.filter((g) => !g.isHidden), [data.groups]);
+  const hiddenGroups = useMemo(() => data.groups.filter((g) => g.isHidden), [data.groups]);
   const orderedVisibleGroups = useMemo(() => sortGroupsForManagement(visibleGroups), [visibleGroups]);
-  const managedContactCount = useMemo(
-    () => visibleGroups.reduce((total, group) => total + group.contactCount, 0),
-    [visibleGroups]
-  );
-  const managedEventCount = useMemo(
-    () => visibleGroups.reduce((total, group) => total + group.eventCount, 0),
-    [visibleGroups]
-  );
-  const syncedVisibleGroupCount = useMemo(
-    () => visibleGroups.filter((group) => group.syncProvider === "google_contacts" && group.syncEnabled).length,
-    [visibleGroups]
-  );
-  const publicVisibleGroupCount = useMemo(
-    () => visibleGroups.filter((group) => group.visibility === "public").length,
-    [visibleGroups]
-  );
-  const setupGroupCount = useMemo(
-    () => visibleGroups.filter((group) => group.eventCount === 0 && group.contactCount === 0).length,
-    [visibleGroups]
-  );
-  const managementFocus = useMemo(
-    () => getGroupManagementFocus(visibleGroups, hiddenGroups.length),
-    [hiddenGroups.length, visibleGroups]
-  );
 
   const profileName = data.me.name ?? userName;
   const profileEmail = data.me.email || userEmail;
   const profileImage = data.me.image ?? userImage;
 
-  function parseHashtagList(value: string) {
-    const list = value
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter(Boolean);
-
-    return list.length ? list : ["#alle"];
-  }
-
-  function formatMissingDatingRequirement(value: string) {
-    const labels: Record<string, string> = {
-      enable_mode: "Dating-Modus aktivieren",
-      birth_year: "Geburtsjahr setzen",
-      adult: "mindestens 18 Jahre",
-      gender: "Geschlecht setzen",
-      must_be_single: "Single-Status auf single",
-      sought_genders: "gesuchte Geschlechter auswählen",
-      sought_age_range: "gesuchten Altersbereich setzen"
-    };
-
-    return labels[value] ?? value;
-  }
-
   async function createGroup(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
     setSubmitError(null);
-
     try {
+      const hashtags = groupForm.hashtags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean);
       const response = await fetch("/api/groups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -214,23 +121,14 @@ export function GroupsPage({
           name: groupForm.name,
           description: groupForm.description,
           visibility: groupForm.visibility,
-          hashtags: parseHashtagList(groupForm.hashtags)
+          hashtags: hashtags.length ? hashtags : ["#alle"]
         })
       });
-
       const payload = (await response.json()) as {
         error?: string;
-        group?: {
-          id: string;
-          visibility: "public" | "private";
-          hashtags: string[];
-          syncProvider: string | null;
-        };
+        group?: { id: string; visibility: "public" | "private"; hashtags: string[]; syncProvider: string | null };
       };
-      if (!response.ok) {
-        throw new Error(payload.error ?? "Gruppe konnte nicht erstellt werden");
-      }
-
+      if (!response.ok) throw new Error(payload.error ?? "Gruppe konnte nicht erstellt werden");
       if (payload.group) {
         captureProductEvent("group_created", {
           group_id: payload.group.id,
@@ -239,7 +137,6 @@ export function GroupsPage({
           sync_provider: payload.group.syncProvider ?? "none"
         });
       }
-
       setGroupForm({ name: "", description: "", hashtags: "#alle", visibility: "private" });
       setShowGroupForm(false);
       await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
@@ -251,178 +148,60 @@ export function GroupsPage({
   }
 
   return (
-    <AppShell
-      user={{
-        name: profileName,
-        email: profileEmail,
-        image: profileImage
-      }}
-    >
-      <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className={pageShellClassName}>
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex items-start gap-3">
-              <UserAvatar name={profileName} email={profileEmail} image={profileImage} size="lg" />
-              <div>
-                <p className={managementPage.eyebrowClassName}>Verwalten</p>
-                <h1 className={pageTitleClassName}>Alle Gruppen</h1>
-                <p className={pageMetaClassName}>{profileEmail}</p>
-                <p className={pageLeadClassName}>
-                  Gruppen sind dein Relevanz- und Sichtbarkeitslayer. Du steuerst hier, welche sozialen Kreise Realite für
-                  Aktivitäten berücksichtigen soll. Der eigentliche Aktivitätsfluss bleibt bewusst in Jetzt, Vorschlägen und
-                  Events.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowGroupForm((current) => !current)}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
-            >
-              {showGroupForm ? "Formular schließen" : "Neue Gruppe"}
-            </button>
-          </div>
-        </header>
-
-        <section className="mt-6 rounded-2xl border border-teal-200 bg-teal-50 p-6 shadow-sm">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)]">
-            <div className="space-y-4">
-              <div className="max-w-2xl">
-                <p className={discoveryPage.eyebrowClassName}>Aktivitätsfluss getrennt halten</p>
-                <h2 className={sectionTitleClassName}>Hier pflegst du Kreise. Entscheidungen triffst du anderswo.</h2>
-                <p className={sectionBodyClassName}>
-                  Gruppen helfen Realite bei Relevanz, Sichtbarkeit und Einladungen. Sie sollen aber nicht mit spontanen Aktivitäten,
-                  offenen Reaktionen oder deinem Sozialkalender konkurrieren.
-                </p>
-              </div>
-              <div className="rounded-2xl border border-teal-200 bg-white/80 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">Nächster Verwaltungsfokus</p>
-                <h3 className="mt-2 text-base font-semibold text-slate-900">{managementFocus.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{managementFocus.description}</p>
-              </div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/80 bg-white px-4 py-4 shadow-sm">
-                <p className={statLabelClassName}>Aktiv sichtbar</p>
-                <p className={statValueClassName}>{visibleGroups.length}</p>
-                <p className="mt-2 text-xs text-slate-500">Kreise, die gerade als Relevanz- und Sichtbarkeitslayer aktiv sind.</p>
-              </div>
-              <div className="rounded-2xl border border-white/80 bg-white px-4 py-4 shadow-sm">
-                <p className={statLabelClassName}>Synchronisiert</p>
-                <p className={statValueClassName}>{syncedVisibleGroupCount}</p>
-                <p className="mt-2 text-xs text-slate-500">Google-Kontaktkreise, die gerade sichtbar mitlaufen.</p>
-              </div>
-              <div className="rounded-2xl border border-white/80 bg-white px-4 py-4 shadow-sm">
-                <p className={statLabelClassName}>Öffentlich</p>
-                <p className={statValueClassName}>{publicVisibleGroupCount}</p>
-                <p className="mt-2 text-xs text-slate-500">Bewusst geöffnete Kreise statt rein privater Abstimmung.</p>
-              </div>
-              <div className="rounded-2xl border border-white/80 bg-white px-4 py-4 shadow-sm">
-                <p className={statLabelClassName}>Wartet auf Pflege</p>
-                <p className={statValueClassName}>{setupGroupCount}</p>
-                <p className="mt-2 text-xs text-slate-500">Gruppen ohne Kontakte und ohne bisherige Aktivitäten.</p>
-              </div>
-              <div className="rounded-2xl border border-white/80 bg-white px-4 py-4 shadow-sm sm:col-span-2">
-                <p className={statLabelClassName}>Kontakte</p>
-                <div className="mt-1 flex items-end justify-between gap-4">
-                  <p className="text-xl font-semibold text-slate-900">{managedContactCount}</p>
-                  <p className="text-sm font-medium text-slate-600">{managedEventCount} Events im Gruppenkontext</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
-            <FlowCard
-              href="/now"
-              intent="discover"
-              eyebrow="Zurück zu Jetzt"
-              title="Spontane Aktivitäten sehen"
-              description="Wechsle dorthin, wenn du wissen willst, was gerade relevant ist und wo du direkt mitmachen kannst."
-            />
-            <FlowCard
-              href="/suggestions"
-              intent="react"
-              eyebrow="Zurück zu Vorschlägen"
-              title="Offene Reaktionen priorisieren"
-              description="Nutze Vorschläge für Empfehlungen, auf die du antworten, zusagen oder bewusst ablehnen willst."
-            />
-            <FlowCard
-              href="/events"
-              intent="manage"
-              eyebrow="Zurück zu Events"
-              title="Planung und Sozialkalender prüfen"
-              description="Dort siehst du bestätigte Aktivitäten, eigene Planung und Smart Treffen im laufenden Kontext."
-            />
-          </div>
-        </section>
-
-        <section className="mt-6 grid gap-3 lg:grid-cols-3">
-          <ManagementCard
-            eyebrow="Relevanz"
-            title="Wen Realite zuerst einbezieht"
-            description="Gruppen helfen dabei, Aktivitäten zuerst für passende Leute zu priorisieren, statt alles wahllos offen zu streuen."
-          />
-          <ManagementCard
-            eyebrow="Sichtbarkeit"
-            title="Welche Kreise etwas sehen"
-            description="Eine Gruppe definiert den sozialen Rahmen eines Events. Sichtbarkeit bleibt bewusst begrenzt und von dir steuerbar."
-          />
-          <ManagementCard
-            eyebrow="Verwaltung"
-            title="Kontakte, Hashtags und Einladungen pflegen"
-            description="Hier strukturierst du Kreise und Sichtbarkeit. Reagieren, entdecken und zusagen passiert weiter getrennt in den Aktivitätsansichten."
-          />
-        </section>
+    <AppShell user={{ name: profileName, email: profileEmail, image: profileImage }}>
+      <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl font-bold text-slate-900">Gruppen</h1>
+          <button
+            onClick={() => setShowGroupForm((v) => !v)}
+            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700"
+          >
+            {showGroupForm ? "Schließen" : "Neue Gruppe"}
+          </button>
+        </div>
 
         {(queryError || submitError) ? (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {submitError ?? (queryError instanceof Error ? queryError.message : String(queryError))}
           </div>
         ) : null}
         <CalendarReconnectBanner calendarConnectionState={data.me.calendarConnectionState} />
         {data.sync.warning ? (
-          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-            Kalender-Sync Warnung: {data.sync.warning}
+          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            {data.sync.warning}
           </div>
         ) : null}
         {data.sync.contactsWarning ? (
-          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-            Kontakte-Sync Warnung: {data.sync.contactsWarning}
+          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            {data.sync.contactsWarning}
           </div>
         ) : null}
-        {loading && data.groups.length === 0 ? <p className="mt-6 text-slate-600">Lade Gruppen...</p> : null}
 
         {showGroupForm ? (
-          <form onSubmit={createGroup} className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">Neue Gruppe anlegen</h2>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
-              Eine Gruppe bündelt Kontakte, Hashtags und Sichtbarkeit. Sie bestimmt nicht den Hauptfeed, sondern hilft Realite,
-              spätere Aktivitäten für den richtigen Kreis einzuordnen.
-            </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <form onSubmit={createGroup} className="mt-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="grid gap-3 sm:grid-cols-2">
               <input
                 value={groupForm.name}
-                onChange={(event) => setGroupForm((state) => ({ ...state, name: event.target.value }))}
+                onChange={(e) => setGroupForm((s) => ({ ...s, name: e.target.value }))}
                 placeholder="Gruppenname"
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                 required
               />
               <input
                 value={groupForm.hashtags}
-                onChange={(event) => setGroupForm((state) => ({ ...state, hashtags: event.target.value }))}
+                onChange={(e) => setGroupForm((s) => ({ ...s, hashtags: e.target.value }))}
                 placeholder="#alle, #kontakte"
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               />
               <input
                 value={groupForm.description}
-                onChange={(event) => setGroupForm((state) => ({ ...state, description: event.target.value }))}
-                placeholder="Beschreibung"
+                onChange={(e) => setGroupForm((s) => ({ ...s, description: e.target.value }))}
+                placeholder="Beschreibung (optional)"
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
               />
               <select
                 value={groupForm.visibility}
-                onChange={(event) =>
-                  setGroupForm((state) => ({ ...state, visibility: event.target.value as "public" | "private" }))
-                }
+                onChange={(e) => setGroupForm((s) => ({ ...s, visibility: e.target.value as "public" | "private" }))}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               >
                 <option value="private">Privat</option>
@@ -432,116 +211,35 @@ export function GroupsPage({
             <button
               type="submit"
               disabled={busy}
-              className="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              className="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
             >
-              Gruppe erstellen
+              Erstellen
             </button>
           </form>
         ) : null}
 
-        <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="max-w-2xl">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Gruppenverwaltung</p>
-              <h2 className="mt-2 text-lg font-semibold text-slate-900">Was du hier konkret pflegst</h2>
-              <p className="mt-2 text-sm text-slate-600">
-                Nutze Gruppen, um deinen sozialen Rahmen sauber zu halten. Das hilft später bei Sichtbarkeit, Relevanz und
-                Einladungen, ohne dass du im spontanen Flow zusätzliche Verwaltungsarbeit siehst.
-              </p>
-            </div>
-            <a
-              href="#gruppen"
-              className="rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700"
-            >
-              Zu den Gruppenlisten
-            </a>
-          </div>
-          <div className="mt-5 grid gap-3 md:grid-cols-2">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <h3 className="text-sm font-semibold text-slate-900">Hier verwaltest du</h3>
-              <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                <li>Kontakte und Kreise, die für spätere Events relevant sind</li>
-                <li>Hashtags und Sichtbarkeit, die du bewusst begrenzen oder öffnen willst</li>
-                <li>Invite-Links, Mitgliedschaften und Sync-Gruppen aus Google Kontakte</li>
-              </ul>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <h3 className="text-sm font-semibold text-slate-900">Hier machst du bewusst nicht</h3>
-              <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                <li>offene Aktivitäten durchscrollen wie in einem Feed</li>
-                <li>Vorschläge beantworten oder spontane Zusagen priorisieren</li>
-                <li>eigene Planung gegen fremde Aktivitäten direkt vergleichen</li>
-              </ul>
-            </div>
-          </div>
-        </section>
+        {loading && data.groups.length === 0 ? <p className="mt-6 text-sm text-slate-500">Lade Gruppen…</p> : null}
 
-        {datingModeEnabled ? (
-          <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="text-sm text-slate-500">Smarte Gruppe</p>
-                <h2 className="text-lg font-semibold text-slate-900">#date</h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  `#date` ist kein eigener Feed, sondern ein geschützter Sonderfall deines Relevanzmodells: Events sind nur
-                  für Personen sichtbar, die sich gegenseitig im Dating-Profil matchen.
-                </p>
-                <p className="mt-2 text-xs text-slate-500">
-                  Status:{" "}
-                  {data.dating.unlocked
-                    ? "freigeschaltet"
-                    : data.dating.enabled
-                      ? "aktiv, aber noch nicht vollständig"
-                      : "nicht aktiviert"}
-                </p>
-              </div>
-              <a
-                href="/settings#dating"
-                className="rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700"
-              >
-                Dating-Profil öffnen
-              </a>
-            </div>
-            {!data.dating.unlocked && data.dating.missingRequirements.length ? (
-              <p className="mt-3 text-xs text-slate-500">
-                Noch offen: {data.dating.missingRequirements.map((item) => formatMissingDatingRequirement(item)).join(", ")}
-              </p>
-            ) : null}
-          </section>
+        {visibleGroups.length === 0 && !loading && !showGroupForm ? (
+          <div className="mt-8 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
+            <p className="text-sm font-medium text-slate-700">Noch keine Gruppen</p>
+            <p className="mt-1 text-sm text-slate-500">Erstelle deine erste Gruppe, um Kontakte und Sichtbarkeit zu organisieren.</p>
+          </div>
         ) : null}
 
-        <section id="gruppen" className="mt-8 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900">Sichtbare Gruppen</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Klick auf eine Gruppe für Mitglieder, Invite und Bearbeitung. Die Karten zeigen dir, welche Kreise du aktuell als
-                Relevanz- und Sichtbarkeitslayer pflegst.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2 text-xs font-medium text-slate-600">
-              <span className="rounded-full bg-slate-100 px-3 py-1">{publicVisibleGroupCount} öffentlich</span>
-              <span className="rounded-full bg-slate-100 px-3 py-1">{visibleGroups.length - publicVisibleGroupCount} privat</span>
-              <span className="rounded-full bg-slate-100 px-3 py-1">{setupGroupCount} wartet auf Pflege</span>
-            </div>
-          </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {visibleGroups.length === 0 ? <p className="text-sm text-slate-500">Noch keine sichtbaren Gruppen angelegt.</p> : null}
+        {orderedVisibleGroups.length > 0 ? (
+          <section className="mt-5 grid gap-3 sm:grid-cols-2">
             {orderedVisibleGroups.map((group) => {
               const state = getGroupManagementState(group);
-
               return (
                 <Link
                   key={group.id}
                   href={`/groups/${group.id}`}
-                  className={`rounded-2xl border p-4 transition ${state.cardClassName}`}
+                  className={`rounded-xl border p-4 transition ${state.cardClassName}`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="truncate text-base font-semibold text-slate-900">{group.name}</p>
-                      <p className="mt-1 text-xs text-slate-500">{group.visibility === "public" ? "öffentlich" : "privat"}</p>
-                    </div>
-                    <div className="flex flex-wrap justify-end gap-2">
+                    <p className="truncate font-semibold text-slate-900">{group.name}</p>
+                    <div className="flex shrink-0 gap-1.5">
                       <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${state.badgeClassName}`}>
                         {state.label}
                       </span>
@@ -552,60 +250,67 @@ export function GroupsPage({
                       ) : null}
                     </div>
                   </div>
-                  <p className="mt-3 text-sm text-slate-600">{state.description}</p>
-                  <div className="mt-3 flex items-center justify-between gap-2">
-                    <div className="flex -space-x-2">
-                      {group.contacts.slice(0, 3).map((contact) => (
-                        <UserAvatar
-                          key={`${group.id}:${contact.email}`}
-                          name={contact.name}
-                          email={contact.email}
-                          image={contact.image}
-                          size="xs"
-                          className="ring-2 ring-white"
-                        />
-                      ))}
-                      {group.contactCount > 3 ? (
-                        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] font-semibold text-slate-600 ring-2 ring-white">
-                          +{group.contactCount - 3}
-                        </span>
-                      ) : null}
+                  <p className="mt-1 text-xs text-slate-500">
+                    {group.contactCount} Kontakte · {group.eventCount} Events · {group.visibility === "public" ? "öffentlich" : "privat"}
+                  </p>
+                  {group.contacts.length > 0 ? (
+                    <div className="mt-3 flex items-center gap-2">
+                      <div className="flex -space-x-2">
+                        {group.contacts.slice(0, 4).map((contact) => (
+                          <UserAvatar
+                            key={`${group.id}:${contact.email}`}
+                            name={contact.name}
+                            email={contact.email}
+                            image={contact.image}
+                            size="xs"
+                            className="ring-2 ring-white"
+                          />
+                        ))}
+                        {group.contactCount > 4 ? (
+                          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] font-semibold text-slate-600 ring-2 ring-white">
+                            +{group.contactCount - 4}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
-                    <p className="text-[11px] text-slate-500">{group.contactCount} Kontakte</p>
-                  </div>
-                  <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-md border border-white/80 bg-white/90 px-2 py-2">
-                      <p className="text-[11px] text-slate-500">Events</p>
-                      <p className="text-sm font-semibold text-slate-800">{group.eventCount}</p>
-                    </div>
-                    <div className="rounded-md border border-white/80 bg-white/90 px-2 py-2">
-                      <p className="text-[11px] text-slate-500">Kontakte</p>
-                      <p className="text-sm font-semibold text-slate-800">{group.contactCount}</p>
-                    </div>
-                    <div className="rounded-md border border-white/80 bg-white/90 px-2 py-2">
-                      <p className="text-[11px] text-slate-500">Tags</p>
-                      <p className="text-sm font-semibold text-slate-800">{group.hashtags.length}</p>
-                    </div>
-                  </div>
+                  ) : null}
                 </Link>
               );
             })}
-          </div>
-        </section>
+          </section>
+        ) : null}
 
-        {hiddenGroups.length ? (
-          <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">Versteckte Sync-Gruppen</h2>
-            <p className="mt-1 text-sm text-slate-600">Diese Gruppen sind ausgeblendet und können in der Detailseite wieder eingeblendet werden.</p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {datingModeEnabled ? (
+          <section className="mt-6 rounded-xl border border-slate-200 bg-white p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-semibold text-slate-900">#date</p>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {data.dating.unlocked ? "Freigeschaltet" : data.dating.enabled ? "Aktiv, noch nicht vollständig" : "Nicht aktiviert"}
+                </p>
+              </div>
+              <a
+                href="/settings#dating"
+                className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700"
+              >
+                Profil öffnen
+              </a>
+            </div>
+          </section>
+        ) : null}
+
+        {hiddenGroups.length > 0 ? (
+          <section className="mt-6">
+            <h2 className="text-sm font-semibold text-slate-500">Versteckt</h2>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
               {hiddenGroups.map((group) => (
                 <Link
                   key={group.id}
                   href={`/groups/${group.id}`}
-                  className="rounded-lg border border-slate-200 p-4 transition hover:border-amber-300 hover:bg-amber-50"
+                  className="rounded-lg border border-slate-200 p-3 transition hover:border-amber-300 hover:bg-amber-50"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-base font-semibold text-slate-900">{group.name}</p>
+                    <p className="truncate font-medium text-slate-900">{group.name}</p>
                     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700">Versteckt</span>
                   </div>
                   <p className="mt-1 text-xs text-slate-500">{group.contactCount} Kontakte · {group.eventCount} Events</p>
