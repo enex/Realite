@@ -1779,6 +1779,9 @@ async function listCalendarsByAccessRole(token: string, accessRole: "reader" | "
   );
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      return [] as ReadableGoogleCalendar[];
+    }
     return [
       {
         id: "primary",

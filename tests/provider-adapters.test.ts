@@ -53,6 +53,21 @@ describe("provider adapters", () => {
     expect(hasRequiredCalendarScopes("openid email profile", "google")).toBe(false);
   });
 
+  test("accepts comma-separated scopes as stored by Better Auth", () => {
+    expect(
+      hasRequiredCalendarScopes(
+        "openid,email,profile,https://www.googleapis.com/auth/calendar,https://www.googleapis.com/auth/contacts",
+        "google",
+      ),
+    ).toBe(true);
+    expect(
+      hasRequiredCalendarScopes(
+        "openid,email,profile,https://www.googleapis.com/auth/contacts",
+        "google",
+      ),
+    ).toBe(false);
+  });
+
   test("returns null for unknown calendar adapters", () => {
     expect(getCalendarAdapterDefinition("unknown")).toBe(null);
   });

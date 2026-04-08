@@ -263,7 +263,7 @@ export function hasRequiredCalendarScopes(
 
   const grantedScopes = new Set(
     scope
-      .split(/\s+/)
+      .split(/[\s,]+/)
       .map((entry) => entry.trim())
       .filter(Boolean),
   );

@@ -38,6 +38,18 @@ describe("deriveCalendarConnectionState", () => {
     ).toBe("needs_reconnect");
   });
 
+  test("returns connected when scopes are comma-separated (Better Auth format)", () => {
+    expect(
+      deriveCalendarConnectionState({
+        hasConnection: true,
+        providerId: "google",
+        scope: "openid,email,https://www.googleapis.com/auth/calendar",
+        writableCalendarCount: 1,
+        readableCalendarCount: 2
+      })
+    ).toBe("connected");
+  });
+
   test("returns needs_reconnect for planned providers without a scope contract", () => {
     expect(
       deriveCalendarConnectionState({
