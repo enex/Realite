@@ -16,7 +16,6 @@ import {
   getEventPresenceWindowCopy,
   type EventPresenceStatus,
 } from "@/src/lib/event-presence";
-import { getCardSurfaceMeta } from "@/src/lib/card-system";
 import { type EventVisibility } from "@/src/lib/event-visibility";
 import { getPersonDisplayLabel } from "@/src/lib/person-display";
 
@@ -38,8 +37,20 @@ type EventPresencePanelProps = {
   initialCheckedInUsers: PresenceUser[];
 };
 
+/** Eigene Shell: keine „reaction“-Gradienten — im Dark Mode nur App-Surface + klare Kontraste. */
+const shellClassName =
+  "mt-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/12 dark:bg-[var(--app-surface)] dark:shadow-none sm:p-6";
+
+const insetClassName =
+  "rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/[0.06]";
+
+const primaryBtnClassName =
+  "rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50";
+
+const secondaryBtnClassName =
+  "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/20 dark:bg-white/10 dark:hover:bg-white/15";
+
 export function EventPresencePanel(props: EventPresencePanelProps) {
-  const presenceCard = getCardSurfaceMeta("presence");
   const [status, setStatus] = useState<EventPresenceStatus | null>(
     props.initialStatus,
   );
@@ -146,28 +157,32 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
   }
 
   return (
-    <section className={`mt-4 ${presenceCard.sectionClassName} sm:p-6`}>
-      <p className={`text-sm font-semibold ${presenceCard.accentTextClassName}`}>Vor Ort Status</p>
-      <h2 className="mt-1 text-lg font-semibold text-slate-900">{panelCopy.title}</h2>
-      <p className="mt-2 text-sm text-slate-700">{panelCopy.description}</p>
-      <p className="mt-3 text-sm text-slate-600">
-        <span className="font-medium text-slate-900">{statusMeta.label}</span> ·{" "}
-        {activeVisibleUntilLabel
-          ? `sichtbar bis ${activeVisibleUntilLabel}`
-          : statusMeta.description}
+    <section className={shellClassName}>
+      <p className="text-sm font-semibold text-teal-600">Vor Ort Status</p>
+      <h2 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">{panelCopy.title}</h2>
+      <p className="mt-2 text-sm leading-relaxed text-slate-700">{panelCopy.description}</p>
+      <p className="mt-3 text-sm leading-relaxed text-slate-700">
+        <span className="font-semibold text-slate-900">{statusMeta.label}</span>
+        <span className="text-slate-500"> · </span>
+        {activeVisibleUntilLabel ? (
+          <span>sichtbar bis {activeVisibleUntilLabel}</span>
+        ) : (
+          <span>{statusMeta.description}</span>
+        )}
       </p>
-      <p className="mt-2 text-sm text-slate-600">
-        <span className="font-medium text-slate-900">{windowCopy.label}</span> ·{" "}
-        {windowCopy.description}
+      <p className="mt-2 text-sm leading-relaxed text-slate-700">
+        <span className="font-semibold text-slate-900">{windowCopy.label}</span>
+        <span className="text-slate-500"> · </span>
+        <span>{windowCopy.description}</span>
       </p>
 
       {presenceWindow.canCheckIn ? (
         <label className="mt-4 block text-sm text-slate-700">
-          <span className="font-medium text-slate-900">Sichtbar bis</span>
+          <span className="font-semibold text-slate-900">Sichtbar bis</span>
           <select
             value={selectedVisibleUntilIso}
             onChange={(event) => setSelectedVisibleUntilIso(event.target.value)}
-            className="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
+            className="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm dark:border-white/15 dark:bg-[#2a2825] dark:text-slate-100"
           >
             {selectOptions.map((option) => (
               <option key={option.value} value={option.visibleUntil.toISOString()}>
@@ -188,7 +203,7 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
             windowOptions.length === 0
           }
           onClick={() => updateStatus("checked_in")}
-          className={presenceCard.actionClassName}
+          className={primaryBtnClassName}
         >
           {presenceWindow.canCheckIn ? panelCopy.actionLabel : windowCopy.actionLabel}
         </button>
@@ -196,18 +211,18 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
           type="button"
           disabled={busy || !hasCheckedIn}
           onClick={() => updateStatus("left")}
-          className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className={secondaryBtnClassName}
         >
           {!hasCheckedIn ? "Nicht vor Ort sichtbar" : "Nicht mehr vor Ort sichtbar"}
         </button>
       </div>
 
-      <div className={`mt-4 ${presenceCard.insetClassName}`}>
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+      <div className={`mt-4 ${insetClassName}`}>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
           {audienceRuleCopy.title}
         </p>
-        <p className="mt-2 text-sm text-slate-600">{audienceRuleCopy.description}</p>
-        <p className="text-sm font-semibold text-slate-900">{audienceCopy.title}</p>
+        <p className="mt-2 text-sm leading-relaxed text-slate-700">{audienceRuleCopy.description}</p>
+        <p className="mt-3 text-sm font-semibold text-slate-900">{audienceCopy.title}</p>
         {checkedInUsers.length > 0 ? (
           <ul className="mt-2 space-y-2 text-sm text-slate-700">
             {checkedInUsers.map((user) => (
@@ -223,20 +238,18 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
               </li>
             ))}
           </ul>
-        ) : (
-          audienceCopy.description ? (
-            <p className="mt-2 text-sm text-slate-600">{audienceCopy.description}</p>
-          ) : null
-        )}
+        ) : audienceCopy.description ? (
+          <p className="mt-2 text-sm leading-relaxed text-slate-700">{audienceCopy.description}</p>
+        ) : null}
       </div>
 
       {savedMessage ? (
-        <p className="mt-4 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-700">
+        <p className="mt-4 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-800 dark:border-teal-500/35 dark:bg-teal-950/50">
           {savedMessage}
         </p>
       ) : null}
       {error ? (
-        <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-500/40 dark:bg-red-950/45">
           {error}
         </p>
       ) : null}

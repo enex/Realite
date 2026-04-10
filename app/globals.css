@@ -229,3 +229,8 @@ button  {
 .dark {
   scrollbar-color: var(--color-slate-300) var(--color-slate-100);
 }
+
+/* Google Places: Vorschlagsliste über Modals (z. B. Event-Dialog z-[101]) */
+.pac-container {
+  z-index: 200 !important;
+}

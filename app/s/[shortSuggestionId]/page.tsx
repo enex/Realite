@@ -102,12 +102,22 @@ export default async function SuggestionShortcutPage({
     notFound();
   }
 
+  const canInviteViaGoogle =
+    suggestion.createdBy === user.id &&
+    suggestion.sourceProvider === "google" &&
+    Boolean(suggestion.sourceEventId);
+
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm">
-        <a href={`/e/${shortenUUID(suggestion.eventId)}`} className="font-semibold text-teal-700 hover:text-teal-800">
+        <a href={`/e/${shortenUUID(suggestion.eventId)}`} className="font-semibold text-teal-600 hover:text-teal-700">
           Zur Eventseite
         </a>
+        {canInviteViaGoogle ? (
+          <a href="#event-invite" className="font-semibold text-teal-600 hover:text-teal-700">
+            Jemanden einladen
+          </a>
+        ) : null}
       </div>
 
       <SharedEventContent
@@ -150,13 +160,9 @@ export default async function SuggestionShortcutPage({
         />
       </div>
 
-      {suggestion.createdBy === user.id &&
-        suggestion.sourceProvider === "google" &&
-        suggestion.sourceEventId && (
-          <section className="mt-4">
-            <EventInviteSection eventId={suggestion.eventId} currentUserEmail={user.email} />
-          </section>
-        )}
+      {canInviteViaGoogle ? (
+        <EventInviteSection eventId={suggestion.eventId} currentUserEmail={user.email} />
+      ) : null}
 
       <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <p className="text-sm text-slate-600">Warum wurde dir das vorgeschlagen?</p>

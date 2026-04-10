@@ -40,6 +40,10 @@ type SharedEventContentProps = {
   showCreatorEmail?: boolean;
   sourceProvider?: string | null;
   sourceEventId?: string | null;
+  /** Kompakt: Anzahl Zusagen (Suggestion accepted). */
+  acceptedParticipantCount?: number;
+  /** Volle Namensliste für Tooltip (Komma-getrennt). */
+  acceptedParticipantNamesLine?: string | null;
 };
 
 function buildGoogleCalendarEditUrl(sourceProvider?: string | null, sourceEventId?: string | null) {
@@ -49,11 +53,39 @@ function buildGoogleCalendarEditUrl(sourceProvider?: string | null, sourceEventI
 
   const params = new URLSearchParams({
     sourceProvider: sourceProvider,
-    sourceEventId: sourceEventId
+    sourceEventId: sourceEventId,
   });
 
   return `/api/events/source-link?${params.toString()}`;
 }
+
+function formatEventDurationLabel(startsAt: Date, endsAt: Date): string {
+  const ms = endsAt.getTime() - startsAt.getTime();
+  const minutes = Math.max(0, Math.round(ms / 60_000));
+  if (minutes >= 60) {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return m > 0 ? `${h} Std. ${m} Min.` : `${h} Std.`;
+  }
+  return `${minutes} Min.`;
+}
+
+function getSchedulePhase(
+  startsAt: Date,
+  endsAt: Date,
+  now: Date,
+): { label: string; emphasis: "live" | "default" | "muted" } {
+  if (now < startsAt) {
+    return { label: "Bevorstehend", emphasis: "default" };
+  }
+  if (now <= endsAt) {
+    return { label: "Läuft gerade", emphasis: "live" };
+  }
+  return { label: "Vorbei", emphasis: "muted" };
+}
+
+const metaPillClassName =
+  "inline-flex max-w-full items-center rounded-full border border-slate-200/90 bg-slate-50/90 px-3 py-1 text-xs font-medium text-slate-800 shadow-sm dark:border-white/12 dark:bg-white/5";
 
 function EventCoverImage({
   placeImageUrl,
@@ -83,17 +115,16 @@ export function SharedEventContent(props: SharedEventContentProps) {
   const description = stripRealiteCalendarMetadata(props.description)?.trim() ?? "";
   const sanitizedDescriptionHtml = sanitizeBasicHtml(description);
   const joinModeMeta = props.joinMode ? getEventJoinModeMeta(props.joinMode) : null;
-  const visibilityMeta = props.visibility
-    ? getEventVisibilityMeta(props.visibility)
-    : null;
+  const visibilityMeta = props.visibility ? getEventVisibilityMeta(props.visibility) : null;
   const managementPage = getPageIntentMeta("manage");
   const onSiteMeta = getEventOnSiteVisibilityMeta(Boolean(props.allowOnSiteVisibility));
-  const onSiteAudienceHint = props.allowOnSiteVisibility && props.visibility
-    ? getEventPresenceAudienceHint({
-        visibility: props.visibility,
-        groupName: props.groupName,
-      })
-    : null;
+  const onSiteAudienceHint =
+    props.allowOnSiteVisibility && props.visibility
+      ? getEventPresenceAudienceHint({
+          visibility: props.visibility,
+          groupName: props.groupName,
+        })
+      : null;
   const originalEditUrl = props.isOwnedByCurrentUser
     ? buildGoogleCalendarEditUrl(props.sourceProvider, props.sourceEventId)
     : null;
@@ -106,6 +137,18 @@ export function SharedEventContent(props: SharedEventContentProps) {
   const showCreatorEmailSuffix =
     (props.showCreatorEmail ?? true) &&
     Boolean(props.createdByName?.trim() && props.createdByEmail?.trim());
+
+  const durationLabel = formatEventDurationLabel(startsAt, endsAt);
+  const phase = getSchedulePhase(startsAt, endsAt, new Date());
+  const phaseClassName =
+    phase.emphasis === "live"
+      ? "font-semibold text-teal-600"
+      : phase.emphasis === "muted"
+        ? "text-slate-500"
+        : "text-slate-700";
+
+  const acceptedN = props.acceptedParticipantCount ?? 0;
+  const acceptedTitle = props.acceptedParticipantNamesLine?.trim() ?? undefined;
 
   return (
     <section className={`${surfaceShellClassName} p-5 sm:p-6`}>
@@ -130,7 +173,7 @@ export function SharedEventContent(props: SharedEventContentProps) {
             href={originalEditUrl}
             target="_blank"
             rel="noreferrer noopener"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400 dark:border-white/15 dark:bg-white/5 dark:hover:border-white/25"
           >
             <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-none stroke-current" strokeWidth="2">
               <path d="M12 20h9" />
@@ -146,17 +189,28 @@ export function SharedEventContent(props: SharedEventContentProps) {
           weekday: "long",
           day: "2-digit",
           month: "long",
-          year: "numeric"
+          year: "numeric",
         })}{" "}
         · {startsAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} bis{" "}
         {endsAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+      </p>
+
+      <p className="mt-2 text-sm text-slate-600">
+        <span className="text-slate-500">Dauer</span> {durationLabel}
+        <span className="mx-2 text-slate-400" aria-hidden="true">
+          ·
+        </span>
+        <span className={phaseClassName}>{phase.label}</span>
       </p>
 
       {showCreatorLine ? (
         <p className={pageMetaClassName}>
           Von{" "}
           {props.createdByShortId ? (
-            <a href={`/u/${props.createdByShortId}`} className="font-medium text-teal-700 hover:text-teal-800">
+            <a
+              href={`/u/${props.createdByShortId}`}
+              className="font-medium text-teal-600 hover:text-teal-700"
+            >
               {creatorLabel}
             </a>
           ) : (
@@ -166,59 +220,54 @@ export function SharedEventContent(props: SharedEventContentProps) {
         </p>
       ) : null}
 
-      {joinModeMeta ? (
-        <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("momentum").insetClassName}`}>
-          <p className={detailLabelClassName}>Mitmachen</p>
-          <p className={detailBodyClassName}>
-            <span className="font-medium text-slate-900">{joinModeMeta.label}</span> · {joinModeMeta.description}
-          </p>
-        </section>
-      ) : null}
-
-      {visibilityMeta ? (
-        <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("momentum").insetClassName}`}>
-          <p className={detailLabelClassName}>Sichtbarkeit</p>
-          <p className={detailBodyClassName}>
-            <span className="font-medium text-slate-900">{visibilityMeta.label}</span> ·{" "}
-            {visibilityMeta.description}
-          </p>
-        </section>
-      ) : null}
-
-      <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("momentum").insetClassName}`}>
-        <p className={detailLabelClassName}>Vor Ort</p>
-        <p className={detailBodyClassName}>
-          <span className="font-medium text-slate-900">{onSiteMeta.label}</span> ·{" "}
-          {onSiteMeta.description}
-        </p>
-        {onSiteAudienceHint ? (
-          <p className={`mt-2 ${detailBodyClassName}`}>
-            <span className="font-medium text-slate-900">Wer sieht aktive Check-ins?</span> ·{" "}
-            {onSiteAudienceHint}
-          </p>
+      <div className="mt-4 flex flex-wrap gap-2" aria-label="Kurzinfos zum Event">
+        {acceptedN > 0 ? (
+          <span className={metaPillClassName} title={acceptedTitle}>
+            {acceptedN} {acceptedN === 1 ? "Zusage" : "Zusagen"}
+          </span>
         ) : null}
-      </section>
+        {joinModeMeta ? (
+          <span className={metaPillClassName} title={`${joinModeMeta.label} · ${joinModeMeta.description}`}>
+            Mitmachen: {joinModeMeta.label}
+          </span>
+        ) : null}
+        {visibilityMeta ? (
+          <span
+            className={metaPillClassName}
+            title={`${visibilityMeta.label} · ${visibilityMeta.description}`}
+          >
+            Sichtbarkeit: {visibilityMeta.label}
+          </span>
+        ) : null}
+        <span
+          className={metaPillClassName}
+          title={
+            onSiteAudienceHint
+              ? `${onSiteMeta.label} · ${onSiteMeta.description} · ${onSiteAudienceHint}`
+              : `${onSiteMeta.label} · ${onSiteMeta.description}`
+          }
+        >
+          Vor Ort: {onSiteMeta.label}
+        </span>
+      </div>
 
       {location ? (
         <EventLocationDetails location={location} />
       ) : (
-        <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("neutral").insetClassName}`}>
-          <p className={detailLabelClassName}>Ort</p>
-          <p className={detailBodyClassName}>Kein Ort angegeben.</p>
-        </section>
+        <p className="mt-4 text-sm text-slate-500">Kein Ort angegeben.</p>
       )}
 
-      <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("neutral").insetClassName}`}>
-        <p className={detailLabelClassName}>Beschreibung</p>
-        {sanitizedDescriptionHtml ? (
+      {sanitizedDescriptionHtml ? (
+        <section className={`mt-4 rounded-xl border p-4 ${getVisualPriorityMeta("neutral").insetClassName}`}>
+          <p className={detailLabelClassName}>Beschreibung</p>
           <div
-            className={`${detailBodyClassName} whitespace-pre-wrap [&_a]:font-medium [&_a]:text-teal-700 [&_a]:underline hover:[&_a]:text-teal-800 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-6`}
+            className={`${detailBodyClassName} whitespace-pre-wrap [&_a]:font-medium [&_a]:text-teal-600 [&_a]:underline hover:[&_a]:text-teal-700 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-6`}
             dangerouslySetInnerHTML={{ __html: sanitizedDescriptionHtml }}
           />
-        ) : (
-          <p className={detailBodyClassName}>Keine Beschreibung vorhanden.</p>
-        )}
-      </section>
+        </section>
+      ) : (
+        <p className="mt-4 text-sm text-slate-500">Keine Beschreibung.</p>
+      )}
     </section>
   );
 }

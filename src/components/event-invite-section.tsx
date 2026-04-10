@@ -227,7 +227,10 @@ export function EventInviteSection({ eventId, currentUserEmail }: EventInviteSec
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <section
+      id="event-invite"
+      className="mt-4 scroll-mt-20 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 dark:border-white/12 dark:bg-[var(--app-surface)] dark:shadow-none"
+    >
       <h2 className="text-lg font-semibold text-slate-900">Jemanden einladen</h2>
       <p className="mt-1 text-sm text-slate-600">
         Die Person erhält eine Einladung per E-Mail über Google Kalender.

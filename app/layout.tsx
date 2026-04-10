@@ -80,7 +80,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de" suppressHydrationWarning>
-      <body className="min-h-screen bg-slate-100 text-slate-900 transition-colors duration-200">
+      <body className="min-h-screen bg-slate-100 text-slate-900 transition-colors duration-200 dark:bg-[var(--app-background)]">
         <Providers>
         <div className="flex min-h-screen flex-col">
           <div className="flex-1">{children}</div>

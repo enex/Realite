@@ -118,7 +118,7 @@ export function EventLocationDetails({ location }: { location: string }) {
   }
 
   return (
-    <section className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+    <section className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-white/12 dark:bg-white/5">
       <p className="text-sm font-semibold text-slate-900">Ort</p>
       <p className="mt-1 text-sm text-slate-700">{normalizedLocation}</p>
       {distanceKm !== null ? (
@@ -130,13 +130,15 @@ export function EventLocationDetails({ location }: { location: string }) {
           km
         </p>
       ) : canReadCurrentLocation === false ? (
-        <p className="mt-2 text-xs text-slate-500">Distanz verfügbar, sobald dein aktueller Standort freigegeben ist.</p>
+        <p className="mt-2 text-xs text-slate-500">
+          Distanz verfügbar, sobald dein aktueller Standort freigegeben ist.
+        </p>
       ) : null}
       <a
         href={navigationHref}
         target="_blank"
         rel="noreferrer noopener"
-        className="mt-3 inline-flex rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400"
+        className="mt-3 inline-flex rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400 dark:border-white/15 dark:bg-white/5 dark:hover:border-white/25"
       >
         Route planen / navigieren
       </a>

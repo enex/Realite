@@ -109,6 +109,7 @@ Dann Werte in `.env.local` setzen:
 - `NEXT_PUBLIC_POSTHOG_HOST` (z. B. `https://eu.i.posthog.com` oder `https://us.i.posthog.com`)
 - `POSTHOG_API_KEY` (derselbe Projekt-API-Key, für serverseitige Logs an PostHog; optional)
 - `POSTHOG_HOST` (z. B. `https://eu.i.posthog.com`; optional, Standard: EU)
+- `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` (optional): Google Maps JavaScript API mit aktiviertem **Places API**-Dienst, für Ortssuche mit Autocomplete beim Anlegen von Events und beim Schnell-Teilen. Den Schlüssel in der Google Cloud Console per HTTP-Referrer auf deine Domains beschränken.
 
 ## 3.1) PostHog: Analytics, Session Replay, Feature Flags und Logs
 

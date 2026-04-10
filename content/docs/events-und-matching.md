@@ -6,31 +6,24 @@ Ein Event besteht aus:
 
 - Titel
 - Start und Ende
-- optionalem Ort
-- Sichtbarkeit
+- optionalem Ort (beim Anlegen mit Vorschlägen von Google Maps, sofern in der App eine Karten-API hinterlegt ist; sonst freie Texteingabe)
+- Sichtbarkeit (im Formular: wer es sehen soll)
 - optionaler Freigabe für Vor-Ort-Sichtbarkeit
-- Hashtags
 - optionaler Farbe (z. B. zur schnellen Zuordnung; wird bei Events und Vorschlägen als farbiger Rand angezeigt)
 - **Kategorie** (z. B. Besprechung, Sport, Privat, Geburtstag) – für die Kalenderansicht
 
-**Sichtbarkeit bewusst steuern:** Beim Anlegen legst du fest, wer ein Event sehen darf:
+**Sichtbarkeit bewusst steuern:** Beim Anlegen wählst du unter **Wer soll das sehen?** den Kreis:
 
 - **Öffentlich:** für alle sichtbaren Nutzer in Realite
-- **Nur Gruppe:** nur für Mitglieder der ausgewählten Gruppe
 - **Freunde:** nur für deine registrierten Kontakte
 - **Freunde von Freunden:** für deine registrierten Kontakte und deren Kontakte
+- **Nur Gruppe:** nur für Mitglieder der ausgewählten Gruppe (danach Gruppe wählen)
 
-Wenn du `#kontakte` nutzt oder direkt die Kontakte-Gruppe auswählst, behandelt Realite das Event automatisch als **Freunde** statt als allgemeines Gruppen-Event. Mit `#freunde+` erweiterst du den sichtbaren Kreis bewusst auf **Freunde von Freunden**. Das verändert nur die Sichtbarkeit des Events, nicht Einladungen oder automatische Reichweite. Bei `#date` überschreibt Realite die normale Auswahl weiterhin mit einem separaten, geschützten Sichtbarkeitsmodus.
+Zusätzlich kannst du im **Titel** weiterhin Hashtags wie `#alle`, `#kontakte`, `#freunde+` oder `#date` nutzen; sie wirken wie in den Regeln unten beschrieben. Wenn du `#kontakte` im Titel nutzt oder die Kontakte-Gruppe ins Spiel bringst, behandelt Realite das Event automatisch als **Freunde** statt als allgemeines Gruppen-Event. Mit `#freunde+` erweiterst du den sichtbaren Kreis bewusst auf **Freunde von Freunden**. Das verändert nur die Sichtbarkeit des Events, nicht Einladungen oder automatische Reichweite. Bei `#date` überschreibt Realite die normale Auswahl weiterhin mit einem separaten, geschützten Sichtbarkeitsmodus.
 
-**Kategorien:** Events werden auf dem Dashboard nach Kategorie gruppiert angezeigt (ähnlich wie in Google Kalender). Beim Anlegen schlägt Realite eine Kategorie anhand von Titel, Beschreibung und Tags vor; du kannst sie im Formular anpassen. Verfügbare Kategorien sind u. a. Sonstiges, Besprechung, Arbeit, Privat, Sport, Soziales, Geburtstag, Verabredung.
+**Kategorien:** Events werden auf dem Dashboard nach Kategorie gruppiert angezeigt (ähnlich wie in Google Kalender). Beim Anlegen schlägt Realite eine Kategorie anhand von Titel und Beschreibung vor; du kannst sie im Formular anpassen. Verfügbare Kategorien sind u. a. Sonstiges, Besprechung, Arbeit, Privat, Sport, Soziales, Geburtstag, Verabredung.
 
-**Mitmachen bewusst steuern:** Beim Anlegen legst du außerdem fest, wie andere auf ein Event reagieren:
-
-- **Direkt beitreten:** sichtbare Personen können direkt zusagen
-- **Anfrage senden:** Teilnahme braucht zuerst deine Freigabe
-- **Interesse zeigen:** erst ein lockeres Signal, dann bewusste Abstimmung
-
-So bleibt klar, ob ein Event offen joinbar ist oder ob du erst Rückmeldung sammeln willst. Bei `#date` nutzt Realite automatisch **Interesse zeigen**, damit dieser sensible Unterfall des Relevanzmodells low-pressure und explizit bleibt.
+**Mitmachen bewusst steuern:** Standard ist offenes Zusagen. Optional aktivierst du **Beitritt nur nach Freigabe**, damit Teilnahme erst nach deiner Zustimmung möglich ist. **Interesse zeigen** nutzt Realite automatisch bei **#date** im Titel, damit dieser sensible Unterfall des Relevanzmodells low-pressure und explizit bleibt.
 
 **Vor Ort sichtbar bleibt opt-in:** Du kannst beim Anlegen zusätzlich aktivieren, dass für dieses Event später freiwillige Vor-Ort-Sichtbarkeit erlaubt ist. Das ist keine automatische Freigabe:
 
@@ -335,10 +328,11 @@ Jede Vorschlagskarte beantwortet dabei jetzt direkt drei Fragen:
 
 ## Event-Detailseite
 
-Auf der Eventseite (`/e/<shortUUID>`) siehst du jetzt alle wichtigen Event-Informationen gesammelt:
+Auf der Eventseite (`/e/<shortUUID>`) siehst du die wichtigen Event-Informationen gesammelt:
 
 - optional ein Vorschaubild oben (Ort oder Link-Preview aus der Beschreibung)
-- Titel und Termin
+- Titel, Termin, **Dauer** und ob das Event bevorstehend, gerade läuft oder vorbei ist
+- kurze **Chips** zu Mitmachen, Sichtbarkeit und Vor-Ort-Einstellung (Details bei Bedarf per Tooltip)
 - Ort
 - Beschreibung
 - Ersteller
@@ -358,29 +352,25 @@ Der automatisch von Realite ergänzte Kalender-Zusatz (`Realite-Link (automatisc
 Wenn der Termin aus deinem Google Kalender stammt und du der Ersteller bist, findest du oben rechts einen **Bearbeiten**-Button mit Stift-Symbol.  
 Damit springst du direkt zum Original-Termin in Google Kalender.
 
-**Jemanden einladen:** Wenn du der Ersteller eines Events aus dem Google Kalender bist, erscheint auf der Eventseite und – falls du dort landest – auch auf der zugehörigen Suggestionseite der Bereich **Jemanden einladen**. Dort kannst du:
+**Jemanden einladen:** Wenn du der Ersteller eines Events aus dem Google Kalender bist, steht oben rechts neben **Zum Dashboard** bzw. neben **Zur Eventseite** der Kurzlink **Jemanden einladen** (springt zum Einladungsbereich). Auf der Eventseite und – falls du dort landest – auf der zugehörigen Suggestionseite kannst du im Bereich **Jemanden einladen** Folgendes tun:
 
 - bis zu drei Personen aus deinen Realite-Kontakten (Gruppen/Kontakte) mit einem Klick vorschlagen und einladen,
 - oder eine beliebige E-Mail-Adresse bzw. einen Namen eingeben: Realite schlägt passende Kontakte vor oder du lädst direkt per E-Mail ein.
 
 Eingeladene Personen werden im zugehörigen Google-Kalender-Termin als Teilnehmer:innen ergänzt. Sie erhalten die Einladung per E-Mail von Google Kalender und können so den Termin sehen und zu-/absagen. Es werden nur Personen angezeigt, die noch nicht eingeladen wurden.
 
-**Zusagen:** Wer einem Event in Realite zugesagt hat, ist direkt sichtbar: auf der **Eventseite** (Block „Zusagen“ mit Namen), in der **Event-Übersicht** (Dashboard) und in der **Vorschlags-Übersicht** unter jedem Termin. So siehst du auf einen Blick, wer dabei ist. Wenn für eine zugesagte Person kein Name gepflegt ist, zeigt Realite auf diesen Flächen bewusst keinen E-Mail-Fallback, sondern bleibt neutral. Als Event-Ersteller siehst du im Bereich **Jemanden einladen** zusätzlich die Antworten aus dem Google-Kalender (zugesagt, abgesagt, ausstehend). Bei Terminen, denen du selbst zugesagt hast, erscheint der Hinweis **Du hast zugesagt**.
+**Zusagen:** Wer einem Event in Realite zugesagt hat, ist direkt sichtbar: auf der **Eventseite** als kompakter Hinweis mit Zahl der Zusagen (Namen per Tooltip), in der **Event-Übersicht** (Dashboard) und in der **Vorschlags-Übersicht** unter jedem Termin. So siehst du auf einen Blick, wer dabei ist. Wenn für eine zugesagte Person kein Name gepflegt ist, zeigt Realite auf diesen Flächen bewusst keinen E-Mail-Fallback, sondern bleibt neutral. Als Event-Ersteller siehst du im Bereich **Jemanden einladen** zusätzlich die Antworten aus dem Google-Kalender (zugesagt, abgesagt, ausstehend). Bei Terminen, denen du selbst zugesagt hast, erscheint der Hinweis **Du hast zugesagt**.
 
 Wenn ein Ort hinterlegt ist, zeigt Realite zusätzlich:
 
 - Distanz von deinem aktuellen Standort (wenn Standortfreigabe aktiv ist)
 - einen Link **Route planen / navigieren** für direkte Navigation
 
-**Kommentare:** Unter jedem Event (auf der Eventseite und auf der Vorschlagsseite zum gleichen Event) findest du einen Bereich **Kommentare**. Alle, die Zugriff auf das Event haben, können dort:
+**Verlauf & Nachrichten:** Unter jedem Event (auf der Eventseite und auf der Vorschlagsseite zum gleichen Event) siehst du einen **Verlauf** (z. B. wann das Event angelegt wurde — mit Ersteller:in — und alle Nachrichten in zeitlicher Reihenfolge) und darunter ein Eingabefeld mit **Senden**. Alle, die Zugriff auf das Event haben, können dort Fragen stellen, antworten und sich zu Ort, Ablauf oder Details austauschen.
 
-- Fragen stellen und beantworten
-- vor, während und nach dem Termin miteinander schreiben
-- sich zu Ort, Ablauf oder sonstigen Details austauschen
+Die Unterhaltung ist an das Event gebunden: Ob du die Eventseite (`/e/...`) oder die Vorschlagsseite (`/s/...`) öffnest – es ist dieselbe Aktivität.
 
-Die Kommentare sind an das Event gebunden: Ob du die Eventseite (`/e/...`) oder die Vorschlagsseite (`/s/...`) öffnest – es ist dieselbe Unterhaltung.
-
-Auf öffentlichen Gastansichten zeigt Realite Kommentare ebenfalls ohne öffentliche E-Mail-Adressen. Wenn bei einem Kommentar kein Name hinterlegt ist, erscheint stattdessen nur ein neutraler Hinweis auf ein Realite-Mitglied.
+Auf öffentlichen Gastansichten zeigt Realite die Nachrichten ebenfalls ohne öffentliche E-Mail-Adressen. Wenn bei einer Nachricht kein Name hinterlegt ist, erscheint stattdessen nur ein neutraler Hinweis auf ein Realite-Mitglied.
 
 ## Profilseiten von Nutzern
 

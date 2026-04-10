@@ -12,11 +12,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/src/components/ui/dialog";
+import { GooglePlacesAutocomplete } from "@/src/components/google-places-autocomplete";
 import { CalendarReconnectBanner } from "@/src/components/calendar-reconnect-banner";
 import { EventImage } from "@/src/components/event-image";
 import { SmartMeetingsCard } from "@/src/components/smart-meetings-card";
 import { toast, REVALIDATING_TOAST_ID } from "@/src/components/toaster";
-import { EVENT_JOIN_MODE_VALUES, getEventJoinModeMeta, type EventJoinMode } from "@/src/lib/event-join-modes";
+import type { EventJoinMode } from "@/src/lib/event-join-modes";
 import {
   getDefaultEventPresenceVisibleUntil,
   getEventPresenceAudienceRuleCopy,
@@ -35,11 +36,11 @@ import {
   inferEventCategory,
 } from "@/src/lib/event-categories";
 import {
-  EVENT_CREATION_VISIBILITY_VALUES,
   getEventVisibilityMeta,
   type EventCreationVisibility,
   type EventVisibility,
 } from "@/src/lib/event-visibility";
+import { titleContainsDateTag } from "@/src/lib/dating";
 import { DASHBOARD_QUERY_KEY, fetchDashboard as fetchDashboardApi } from "@/src/lib/dashboard-query";
 import { getEventsViewMessaging } from "@/src/lib/calendar-messaging";
 
@@ -159,6 +160,10 @@ async function fetchDashboard(): Promise<DashboardPayload> {
   return fetchDashboardApi() as Promise<DashboardPayload>;
 }
 
+function titleContainsFriendsPlusTag(title: string) {
+  return /(^|\s)#freunde\+(\b|$)/iu.test(title);
+}
+
 const emptyPayload: DashboardPayload = {
   me: {
     id: "",
@@ -231,14 +236,12 @@ export function Dashboard({
     joinMode: "direct" as EventJoinMode,
     allowOnSiteVisibility: false,
     groupId: "",
-    tags: "#kontakte",
     color: "" as string,
     category: "default" as EventCategory,
   });
 
   const visibleGroups = useMemo(() => data.groups.filter((g) => !g.isHidden), [data.groups]);
   const isEventsView = view === "events";
-  const datingModeEnabled = useRealiteFeatureFlag("dating-mode", false);
   const smartMeetingsEnabled = useRealiteFeatureFlag("smart-meetings", true);
 
   const acceptedEventIds = useMemo(
@@ -288,8 +291,8 @@ export function Dashboard({
   const pendingCount = pendingSuggestions.length;
   const eventsViewMessaging = getEventsViewMessaging(data.me.calendarConnected);
 
-  const eventFormHasDateTag = eventForm.tags.toLowerCase().includes("#date");
-  const eventFormHasFriendsPlusTag = eventForm.tags.toLowerCase().includes("#freunde+");
+  const eventFormHasDateTag = titleContainsDateTag(eventForm.title);
+  const eventFormHasFriendsPlusTag = titleContainsFriendsPlusTag(eventForm.title);
   const eventFormEffectiveVisibility = eventFormHasDateTag
     ? "smart_date"
     : eventFormHasFriendsPlusTag
@@ -303,16 +306,21 @@ export function Dashboard({
 
   useEffect(() => {
     if (!showEventForm) return;
-    const tags = eventForm.tags.split(",").map((t) => t.trim()).filter(Boolean);
-    const suggested = inferEventCategory({ title: eventForm.title, description: eventForm.description, tags });
+    const suggested = inferEventCategory({ title: eventForm.title, description: eventForm.description, tags: [] });
     setEventForm((s) => ({ ...s, category: suggested }));
-  }, [showEventForm, eventForm.title, eventForm.tags, eventForm.description]);
+  }, [showEventForm, eventForm.title, eventForm.description]);
 
   useEffect(() => {
     if (!showEventForm) return;
     if (!eventFormHasDateTag || eventForm.joinMode === "interest") return;
     setEventForm((s) => ({ ...s, joinMode: "interest" }));
   }, [showEventForm, eventForm.joinMode, eventFormHasDateTag]);
+
+  useEffect(() => {
+    if (!showEventForm) return;
+    if (eventFormHasDateTag || eventForm.joinMode !== "interest") return;
+    setEventForm((s) => ({ ...s, joinMode: "direct" }));
+  }, [showEventForm, eventFormHasDateTag, eventForm.joinMode]);
 
   useEffect(() => {
     if (!data.sync.revalidating) {
@@ -325,6 +333,10 @@ export function Dashboard({
 
   async function createEvent(event: React.FormEvent) {
     event.preventDefault();
+    if (eventForm.visibility === "group" && !eventForm.groupId) {
+      setSubmitError("Bitte wähle eine Gruppe aus.");
+      return;
+    }
     setBusy(true);
     setSubmitError(null);
     try {
@@ -336,11 +348,12 @@ export function Dashboard({
           startsAt: new Date(eventForm.startsAt).toISOString(),
           endsAt: new Date(eventForm.endsAt).toISOString(),
           groupId: eventForm.groupId || null,
-          tags: eventForm.tags.split(",").map((t) => t.trim()).filter(Boolean),
+          tags: [],
           color: eventForm.color?.trim() || null,
+          location: eventForm.location.trim() || undefined,
         })
       });
-      const payload = (await response.json()) as { error?: string; event?: { id: string; visibility: EventVisibility; joinMode: EventJoinMode; allowOnSiteVisibility: boolean; groupId: string | null; tags: string[]; startsAt: string; endsAt: string } };
+      const payload = (await response.json()) as { error?: string; event?: { id: string; visibility: EventVisibility; joinMode: EventJoinMode; allowOnSiteVisibility: boolean; groupId: string | null; tags?: string[]; startsAt: string; endsAt: string } };
       if (!response.ok) throw new Error(payload.error ?? "Event konnte nicht erstellt werden");
       if (payload.event) {
         captureProductEvent("event_created", {
@@ -349,10 +362,10 @@ export function Dashboard({
           join_mode: payload.event.joinMode,
           allow_on_site_visibility: payload.event.allowOnSiteVisibility,
           has_group: Boolean(payload.event.groupId),
-          tag_count: payload.event.tags.length
+          tag_count: payload.event.tags?.length ?? 0
         });
       }
-      setEventForm({ title: "", description: "", location: "", startsAt: "", endsAt: "", visibility: "public", joinMode: "direct", allowOnSiteVisibility: false, groupId: "", tags: "#kontakte", color: "", category: "default" });
+      setEventForm({ title: "", description: "", location: "", startsAt: "", endsAt: "", visibility: "public", joinMode: "direct", allowOnSiteVisibility: false, groupId: "", color: "", category: "default" });
       setShowEventForm(false);
       await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
     } catch (err) {
@@ -562,7 +575,6 @@ export function Dashboard({
                 form={eventForm}
                 groups={visibleGroups}
                 busy={busy}
-                datingEnabled={datingModeEnabled}
                 effectiveVisibility={eventFormEffectiveVisibility}
                 presenceRule={eventFormPresenceAudienceRule}
                 hasDateTag={eventFormHasDateTag}
@@ -627,12 +639,12 @@ function QuickShareForm({
           className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
           required
         />
-        <input
+        <GooglePlacesAutocomplete
           value={form.location}
-          onChange={(e) => onChange({ location: e.target.value })}
+          onChange={(location) => onChange({ location })}
           placeholder="Wo?"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          required
+          disabled={busy}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm dark:border-white/20"
         />
       </div>
 
@@ -697,23 +709,23 @@ function EventForm({
   form,
   groups,
   busy,
-  datingEnabled,
   effectiveVisibility,
   presenceRule,
   hasDateTag,
   onChange,
   onSubmit,
 }: {
-  form: { title: string; description: string; location: string; startsAt: string; endsAt: string; visibility: EventCreationVisibility; joinMode: EventJoinMode; allowOnSiteVisibility: boolean; groupId: string; tags: string; color: string; category: EventCategory };
+  form: { title: string; description: string; location: string; startsAt: string; endsAt: string; visibility: EventCreationVisibility; joinMode: EventJoinMode; allowOnSiteVisibility: boolean; groupId: string; color: string; category: EventCategory };
   groups: Group[];
   busy: boolean;
-  datingEnabled: boolean;
   effectiveVisibility: EventVisibility;
   presenceRule: { description: string };
   hasDateTag: boolean;
   onChange: (updates: Partial<typeof form>) => void;
   onSubmit: (e: React.FormEvent) => void;
 }) {
+  const audienceValue = form.visibility === "group" ? "group" : form.visibility;
+
   return (
     <form onSubmit={onSubmit} className="space-y-3 pb-1">
       <input
@@ -723,6 +735,18 @@ function EventForm({
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         required
       />
+      <div className="space-y-1">
+        <label htmlFor="event-form-location" className="block text-xs font-medium text-slate-600">
+          Ort
+        </label>
+        <GooglePlacesAutocomplete
+          id="event-form-location"
+          value={form.location}
+          onChange={(location) => onChange({ location })}
+          placeholder="Adresse oder Treffpunkt suchen …"
+          disabled={busy}
+        />
+      </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <input
           type="datetime-local"
@@ -739,41 +763,54 @@ function EventForm({
           required
         />
       </div>
-      <input
-        value={form.tags}
-        onChange={(e) => onChange({ tags: e.target.value })}
-        placeholder={datingEnabled ? "#alle, #kontakte, #freunde+, #date" : "#alle, #kontakte, #freunde+"}
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-      />
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="space-y-2">
+        <label className="block text-xs font-medium text-slate-600">Wer soll das sehen?</label>
         <select
-          value={form.visibility}
-          onChange={(e) => onChange({ visibility: e.target.value as EventCreationVisibility })}
+          value={audienceValue}
+          onChange={(e) => {
+            const v = e.target.value as EventCreationVisibility | "group";
+            if (v === "group") {
+              onChange({ visibility: "group" });
+            } else {
+              onChange({ visibility: v, groupId: "" });
+            }
+          }}
           className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         >
-          {EVENT_CREATION_VISIBILITY_VALUES.map((v) => (
-            <option key={v} value={v}>{getEventVisibilityMeta(v).label}</option>
-          ))}
+          <option value="public">{getEventVisibilityMeta("public").label}</option>
+          <option value="friends">{getEventVisibilityMeta("friends").label}</option>
+          <option value="friends_of_friends">{getEventVisibilityMeta("friends_of_friends").label}</option>
+          <option value="group">{getEventVisibilityMeta("group").label}</option>
         </select>
-        <select
-          value={form.joinMode}
-          onChange={(e) => onChange({ joinMode: e.target.value as EventJoinMode })}
-          disabled={hasDateTag}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        >
-          {EVENT_JOIN_MODE_VALUES.map((m) => (
-            <option key={m} value={m}>{getEventJoinModeMeta(m).label}</option>
-          ))}
-        </select>
-        <select
-          value={form.groupId}
-          onChange={(e) => onChange({ groupId: e.target.value })}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        >
-          <option value="">Keine Gruppe</option>
-          {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-        </select>
+        {form.visibility === "group" ? (
+          <select
+            value={form.groupId}
+            onChange={(e) => onChange({ groupId: e.target.value })}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            required
+          >
+            <option value="">Gruppe wählen…</option>
+            {groups.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
+              </option>
+            ))}
+          </select>
+        ) : null}
       </div>
+      {hasDateTag ? (
+        <p className="text-xs text-slate-600">Dating-Event: Teilnahme über „Interesse zeigen“ (automatisch).</p>
+      ) : (
+        <label className="flex cursor-pointer items-start gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={form.joinMode === "request"}
+            onChange={(e) => onChange({ joinMode: e.target.checked ? "request" : "direct" })}
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-teal-700"
+          />
+          <span>Beitritt nur nach Freigabe (statt direkt zusagen)</span>
+        </label>
+      )}
       <label className="flex items-center gap-2 text-sm text-slate-700">
         <input
           type="checkbox"

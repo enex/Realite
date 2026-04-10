@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { getPersonDisplayLabel } from "@/src/lib/person-display";
 import { buildLoginPath } from "@/src/lib/provider-adapters";
@@ -16,15 +16,31 @@ type Comment = {
   authorEmail: string;
 };
 
+type TimelineEntry =
+  | {
+      kind: "system";
+      id: string;
+      createdAt: string;
+      creatorLabel: string;
+    }
+  | {
+      kind: "comment";
+      comment: Comment;
+    };
+
 type EventCommentsProps = {
   eventId: string;
   /** Wenn true, dürfen Gäste Kommentare lesen; Schreiben erfordert Anmeldung (Form ausgeblendet, CTA angezeigt). */
   allowGuestView?: boolean;
   /** Bei allowGuestView: Pfad für callbackUrl nach der Anmeldung (z. B. /e/xyz). */
   signInCallbackPath?: string;
+  /** Für Verlauf: Erstellungszeitpunkt des Events (ISO). */
+  eventCreatedAtIso?: string | null;
+  /** Für Verlauf: Anzeigename der Organisator:in. */
+  eventCreatorLabel?: string | null;
 };
 
-function formatCommentDate(iso: string): string {
+function formatTimelineTime(iso: string): string {
   return new Date(iso).toLocaleString("de-DE", {
     day: "2-digit",
     month: "2-digit",
@@ -32,6 +48,30 @@ function formatCommentDate(iso: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function buildTimelineEntries(
+  comments: Comment[],
+  seed: { createdAtIso: string; creatorLabel: string } | null,
+): TimelineEntry[] {
+  const entries: TimelineEntry[] = [];
+  if (seed) {
+    entries.push({
+      kind: "system",
+      id: "event-created",
+      createdAt: seed.createdAtIso,
+      creatorLabel: seed.creatorLabel,
+    });
+  }
+  for (const c of comments) {
+    entries.push({ kind: "comment", comment: c });
+  }
+  entries.sort(
+    (a, b) =>
+      new Date(a.kind === "comment" ? a.comment.createdAt : a.createdAt).getTime() -
+      new Date(b.kind === "comment" ? b.comment.createdAt : b.createdAt).getTime(),
+  );
+  return entries;
 }
 
 async function fetchEventComments(eventId: string): Promise<Comment[]> {
@@ -44,10 +84,14 @@ async function fetchEventComments(eventId: string): Promise<Comment[]> {
   return data.comments;
 }
 
+const authorHighlightClassName = "font-semibold text-teal-600";
+
 export function EventComments({
   eventId,
   allowGuestView = false,
   signInCallbackPath = "/",
+  eventCreatedAtIso,
+  eventCreatorLabel,
 }: EventCommentsProps) {
   const queryClient = useQueryClient();
   const {
@@ -62,6 +106,17 @@ export function EventComments({
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const timelineSeed = useMemo(() => {
+    if (!eventCreatedAtIso?.trim()) return null;
+    const label = eventCreatorLabel?.trim() || "Organisator:in";
+    return { createdAtIso: eventCreatedAtIso.trim(), creatorLabel: label };
+  }, [eventCreatedAtIso, eventCreatorLabel]);
+
+  const timeline = useMemo(
+    () => buildTimelineEntries(comments, timelineSeed),
+    [comments, timelineSeed],
+  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -82,7 +137,7 @@ export function EventComments({
       }
       if (data.comment) {
         queryClient.setQueryData<Comment[]>(["events", eventId, "comments"], (prev) =>
-          prev ? [...prev, data.comment!] : [data.comment!]
+          prev ? [...prev, data.comment!] : [data.comment!],
         );
       }
       setBody("");
@@ -94,88 +149,102 @@ export function EventComments({
   }
 
   return (
-    <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <h2 className="text-lg font-semibold text-slate-900">Kommentare</h2>
-      <p className="mt-1 text-sm text-slate-600">
-        Alle mit Zugriff auf dieses Event können hier Fragen stellen, antworten und sich austauschen.
-      </p>
-
-      {loading ? (
-        <p className="mt-4 text-sm text-slate-500">Kommentare werden geladen…</p>
-      ) : queryError ? (
-        <p className="mt-4 text-sm text-red-600">{queryError instanceof Error ? queryError.message : "Laden fehlgeschlagen"}</p>
-      ) : (
-        <ul className="mt-4 space-y-4" aria-label="Kommentare">
-          {comments.length === 0 ? (
-            <li className="text-sm text-slate-500">Noch keine Kommentare. Starte die Unterhaltung.</li>
-          ) : (
-            comments.map((c) => (
-              <li
-                key={c.id}
-                className="rounded-xl border border-slate-100 bg-slate-50/80 p-3 sm:p-4"
-              >
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <span className="font-medium text-slate-800">
-                    {getPersonDisplayLabel({
-                      name: c.authorName,
-                      email: c.authorEmail,
-                    })}
-                  </span>
-                  <time
-                    dateTime={c.createdAt}
-                    className="text-xs text-slate-500"
-                  >
-                    {formatCommentDate(c.createdAt)}
-                  </time>
+    <section className="mt-6 border-t border-slate-200 pt-5 dark:border-white/10">
+      <div
+        className="max-h-[min(50vh,22rem)] min-h-[4rem] space-y-3 overflow-y-auto"
+        aria-label="Verlauf"
+      >
+        {loading ? (
+          <p className="text-sm text-slate-500">Wird geladen…</p>
+        ) : queryError ? (
+          <p className="text-sm text-red-600 dark:text-red-400">
+            {queryError instanceof Error ? queryError.message : "Laden fehlgeschlagen"}
+          </p>
+        ) : timeline.length === 0 ? (
+          <p className="text-sm text-slate-500">Noch keine Nachrichten.</p>
+        ) : (
+          timeline.map((entry) => {
+            if (entry.kind === "system") {
+              return (
+                <div
+                  key={entry.id}
+                  className="flex gap-3 border-l-2 border-teal-500/50 py-0.5 pl-3 dark:border-teal-500/40"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-slate-500">{formatTimelineTime(entry.createdAt)}</p>
+                    <p className="mt-1 text-sm text-slate-700">
+                      Event angelegt ·{" "}
+                      <span className={authorHighlightClassName}>{entry.creatorLabel}</span>
+                    </p>
+                  </div>
                 </div>
-                <p className="mt-2 whitespace-pre-wrap wrap-break-word text-sm text-slate-700">
-                  {c.body}
-                </p>
-              </li>
-            ))
-          )}
-        </ul>
-      )}
+              );
+            }
+            const c = entry.comment;
+            const author = getPersonDisplayLabel({
+              name: c.authorName,
+              email: c.authorEmail,
+            });
+            return (
+              <div key={c.id} className="flex justify-start">
+                <div className="max-w-[min(100%,28rem)] rounded-2xl rounded-tl-md bg-slate-100 px-3 py-2 shadow-sm ring-1 ring-slate-200/60 dark:bg-white/10 dark:ring-white/10">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
+                    <span className={`text-xs ${authorHighlightClassName}`}>{author}</span>
+                    <time dateTime={c.createdAt} className="text-[11px] text-slate-500">
+                      {formatTimelineTime(c.createdAt)}
+                    </time>
+                  </div>
+                  <p className="mt-1 whitespace-pre-wrap wrap-break-word text-sm text-slate-800">
+                    {c.body}
+                  </p>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
 
-      {allowGuestView ? (
-        <p className="mt-4 text-sm text-slate-600">
-          <a href={buildLoginPath(signInCallbackPath)} className="font-medium text-teal-700 hover:text-teal-800">
-            Melde dich an
-          </a>
-          , um zu kommentieren.
-        </p>
-      ) : (
-        <form onSubmit={handleSubmit} className="mt-4">
-          <label htmlFor="event-comment-body" className="sr-only">
-            Neuer Kommentar
-          </label>
-          <textarea
-            id="event-comment-body"
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="Frage stellen, antworten, mitreden…"
-            rows={3}
-            maxLength={2000}
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-            disabled={submitting}
-          />
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs text-slate-500">
-              {body.length}/2000 Zeichen
-            </span>
-            <button
-              type="submit"
-              disabled={!body.trim() || submitting}
-              className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-50"
+      <div className="mt-4">
+        {allowGuestView ? (
+          <p className="text-sm text-slate-600">
+            <a
+              href={buildLoginPath(signInCallbackPath)}
+              className="font-medium text-teal-600 hover:text-teal-700"
             >
-              {submitting ? "Wird gesendet…" : "Kommentar senden"}
-            </button>
-          </div>
-          {submitError ? (
-            <p className="mt-2 text-sm text-red-600">{submitError}</p>
-          ) : null}
-        </form>
-      )}
+              Melde dich an
+            </a>
+            , um zu schreiben.
+          </p>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+            <label htmlFor="event-comment-body" className="sr-only">
+              Nachricht
+            </label>
+            <div className="flex items-end gap-2">
+              <textarea
+                id="event-comment-body"
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                placeholder="Nachricht schreiben …"
+                rows={2}
+                maxLength={2000}
+                className="min-h-[44px] w-full min-w-0 flex-1 resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/40 dark:border-white/12 dark:bg-white/5"
+                disabled={submitting}
+              />
+              <button
+                type="submit"
+                disabled={!body.trim() || submitting}
+                className="inline-flex h-[44px] shrink-0 items-center justify-center rounded-xl bg-teal-600 px-4 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
+              >
+                {submitting ? "…" : "Senden"}
+              </button>
+            </div>
+            {submitError ? (
+              <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>
+            ) : null}
+          </form>
+        )}
+      </div>
     </section>
   );
 }

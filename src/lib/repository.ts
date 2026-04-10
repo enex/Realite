@@ -153,6 +153,7 @@ export type PublicEventSharePreview = {
   startsAt: Date;
   endsAt: Date;
   joinMode: EventJoinMode;
+  createdAt: Date;
   createdByName: string | null;
   createdByEmail: string | null;
   color: string | null;
@@ -2227,6 +2228,7 @@ export async function getPublicEventSharePreviewById(
       startsAt: events.startsAt,
       endsAt: events.endsAt,
       joinMode: events.joinMode,
+      createdAt: events.createdAt,
       createdByName: users.name,
       createdByEmail: users.email,
       color: events.color,
@@ -2322,6 +2324,7 @@ export async function getVisibleEventForUserById(input: {
       color: events.color,
       placeImageUrl: events.placeImageUrl,
       linkPreviewImageUrl: events.linkPreviewImageUrl,
+      createdAt: events.createdAt,
     })
     .from(events)
     .leftJoin(groups, eq(events.groupId, groups.id))

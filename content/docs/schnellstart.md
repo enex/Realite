@@ -70,13 +70,11 @@ Nach dem Login landest du in **Jetzt**. Dort siehst du zuerst, was gerade releva
 
 ## 5. Erstes Event erstellen
 
-Lege ein Event mit Titel, Uhrzeit und Hashtags an.
+Lege ein Event mit Titel, Uhrzeit und **Wer soll das sehen?** an (Öffentlich, Kontakte, Freunde von Freunden oder nur eine Gruppe).
 
 Tipps:
 
-- Nutze `#alle`, wenn der Termin für alle sichtbar sein soll.
-- Nutze `#kontakte`, wenn der Termin für dein Netzwerk gedacht ist.
-- Nutze `#freunde+`, wenn dein Netzwerk plus Freunde deiner Kontakte das Event sehen dürfen soll.
+- Sichtbarkeit steuerst du im Formular; zusätzlich kannst du im **Titel** weiterhin z. B. `#alle`, `#kontakte`, `#freunde+` oder `#date` verwenden, wenn du die gleichen Regeln wie in der Hilfe zu Events kennst.
 
 ## 6. Vorschläge prüfen
 

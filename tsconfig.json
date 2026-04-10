@@ -8,7 +8,8 @@
       "webworker"
     ],
     "types": [
-      "@serwist/next/typings"
+      "@serwist/next/typings",
+      "google.maps"
     ],
     "allowJs": false,
     "skipLibCheck": true,

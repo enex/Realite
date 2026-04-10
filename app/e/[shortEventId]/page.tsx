@@ -118,6 +118,12 @@ export default async function EventShortcutPage({
           eventId={preview.id}
           allowGuestView
           signInCallbackPath={`/e/${shortEventId}`}
+          eventCreatedAtIso={preview.createdAt.toISOString()}
+          eventCreatorLabel={getPersonDisplayLabel({
+            name: preview.createdByName,
+            email: preview.createdByEmail,
+            allowEmail: false,
+          })}
         />
       </main>
     );
@@ -138,16 +144,40 @@ export default async function EventShortcutPage({
     : null;
 
   const acceptedBy = acceptedByEventId.get(eventId) ?? [];
+  const acceptedParticipantNamesLine =
+    acceptedBy.length > 0
+      ? acceptedBy
+          .map((u) =>
+            getPersonDisplayLabel({
+              name: u.name,
+              email: u.email,
+              allowEmail: false,
+            }),
+          )
+          .join(", ")
+      : null;
   const suggestionForFlow = suggestion && event.createdBy !== user.id ? suggestion : null;
   const activityCard = getCardSurfaceMeta("activity");
   const suggestionCard = getCardSurfaceMeta("suggestion");
+  const canInviteViaGoogle =
+    event.createdBy === user.id &&
+    event.sourceProvider === "google" &&
+    Boolean(event.sourceEventId);
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm">
-        <Link href="/" className="font-semibold text-teal-700 hover:text-teal-800">
+        <Link href="/" className="font-semibold text-teal-600 hover:text-teal-700">
           ← Zum Dashboard
         </Link>
+        {canInviteViaGoogle ? (
+          <a
+            href="#event-invite"
+            className="font-semibold text-teal-600 hover:text-teal-700"
+          >
+            Jemanden einladen
+          </a>
+        ) : null}
       </div>
 
       <SharedEventContent
@@ -169,24 +199,9 @@ export default async function EventShortcutPage({
         showCreatorEmail
         sourceProvider={event.sourceProvider}
         sourceEventId={event.sourceEventId}
+        acceptedParticipantCount={acceptedBy.length}
+        acceptedParticipantNamesLine={acceptedParticipantNamesLine}
       />
-
-      {acceptedBy.length > 0 && (
-        <section className={`mt-4 ${activityCard.insetClassName}`}>
-          <p className="text-sm font-semibold text-slate-900">Zusagen</p>
-          <p className="mt-1 text-sm text-slate-700">
-            Zugesagt: {acceptedBy
-              .map((u) =>
-                getPersonDisplayLabel({
-                  name: u.name,
-                  email: u.email,
-                  allowEmail: false,
-                }),
-              )
-              .join(", ")}
-          </p>
-        </section>
-      )}
 
       {event.allowOnSiteVisibility && presenceSummary ? (
         <EventPresencePanel
@@ -208,13 +223,9 @@ export default async function EventShortcutPage({
         />
       ) : null}
 
-      {event.createdBy === user.id &&
-        event.sourceProvider === "google" &&
-        event.sourceEventId && (
-          <section className="mt-4">
-            <EventInviteSection eventId={event.id} currentUserEmail={user.email} />
-          </section>
-        )}
+      {canInviteViaGoogle ? (
+        <EventInviteSection eventId={event.id} currentUserEmail={user.email} />
+      ) : null}
 
       {suggestionForFlow ? (
         <section className={`mt-4 ${suggestionCard.sectionClassName} sm:p-6`}>
@@ -247,7 +258,15 @@ export default async function EventShortcutPage({
         </section>
       ) : null}
 
-      <EventComments eventId={event.id} />
+      <EventComments
+        eventId={event.id}
+        eventCreatedAtIso={event.createdAt.toISOString()}
+        eventCreatorLabel={getPersonDisplayLabel({
+          name: event.createdByName,
+          email: event.createdByEmail,
+          allowEmail: false,
+        })}
+      />
     </main>
   );
 }

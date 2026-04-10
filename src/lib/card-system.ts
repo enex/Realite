@@ -56,7 +56,7 @@ export function getCardSurfaceMeta(surface: CardSurface): CardSurfaceMeta {
     accentTextClassName: visualPriority.accentTextClassName,
     actionClassName:
       surface === "presence"
-        ? "rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+        ? "rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-teal-600 dark:hover:bg-teal-500"
         : "rounded-md border border-teal-200 bg-teal-700 px-3 py-1 text-xs font-semibold text-white hover:bg-teal-800"
   };
 }
