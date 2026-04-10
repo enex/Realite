@@ -21,8 +21,9 @@ export function getGroupManagementState(group: Pick<GroupManagementItem, "eventC
     return {
       label: "Aktiv genutzt",
       description: "Hier laufen bereits sichtbare Aktivitäten oder bestätigte Planung.",
-      badgeClassName: "bg-teal-100 text-teal-700",
-      cardClassName: "border-teal-200 bg-teal-50/70 hover:border-teal-300 hover:bg-teal-50",
+      badgeClassName: "bg-teal-100 text-teal-800",
+      cardClassName:
+        "border-teal-200 bg-teal-50/70 hover:border-teal-300 hover:bg-teal-50 dark:border-teal-500/35 dark:bg-teal-950/50 dark:hover:border-teal-500/55 dark:hover:bg-teal-950/65",
       rank: 0,
     };
   }
@@ -31,8 +32,10 @@ export function getGroupManagementState(group: Pick<GroupManagementItem, "eventC
     return {
       label: "Kreis steht",
       description: "Kontakte sind gepflegt. Jetzt fehlt vor allem konkrete Aktivität.",
-      badgeClassName: "bg-sky-100 text-sky-700",
-      cardClassName: "border-sky-200 bg-sky-50/70 hover:border-sky-300 hover:bg-sky-50",
+      badgeClassName:
+        "bg-sky-100 text-sky-900 dark:bg-sky-900/75 dark:text-sky-50 dark:ring-1 dark:ring-sky-500/35",
+      cardClassName:
+        "border-sky-200 bg-sky-50/70 hover:border-sky-300 hover:bg-sky-50 dark:border-sky-500/30 dark:bg-sky-950/50 dark:hover:border-sky-500/50 dark:hover:bg-sky-900/45",
       rank: 1,
     };
   }
@@ -40,8 +43,9 @@ export function getGroupManagementState(group: Pick<GroupManagementItem, "eventC
   return {
     label: "Wartet auf Pflege",
     description: "Diese Gruppe ist angelegt, aber noch ohne Kontakte oder Events.",
-    badgeClassName: "bg-amber-100 text-amber-700",
-    cardClassName: "border-amber-200 bg-amber-50/70 hover:border-amber-300 hover:bg-amber-50",
+    badgeClassName: "bg-amber-100 text-amber-800",
+    cardClassName:
+      "border-amber-200 bg-amber-50/70 hover:border-amber-300 hover:bg-amber-50 dark:border-amber-500/30 dark:bg-amber-950/40 dark:hover:border-amber-500/50 dark:hover:bg-amber-950/55",
     rank: 2,
   };
 }

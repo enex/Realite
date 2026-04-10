@@ -467,7 +467,7 @@ export function SmartMeetingsCard({
               Vorschläge
             </a>.
           </p>
-          <div className="mt-4 rounded-xl border border-slate-200 bg-white/80 p-4">
+          <div className="mt-4 rounded-xl border border-slate-200 bg-white/80 p-4 dark:border-white/12 dark:bg-[var(--app-surface)]">
             <p className={managePage.eyebrowClassName}>Jetzt hier sinnvoll</p>
             <p className="mt-2 text-sm font-semibold text-slate-900">{overview.nextStepTitle}</p>
             <p className="mt-2 text-sm leading-6 text-slate-600">{overview.nextStepDescription}</p>
@@ -529,7 +529,7 @@ export function SmartMeetingsCard({
 
       {expanded ? (
         <form onSubmit={submitSmartMeeting} className={`mt-4 grid gap-3 ${smartMeetingCard.insetClassName}`}>
-          <div className="rounded-xl border border-slate-200 bg-white/80 p-4">
+          <div className="rounded-xl border border-slate-200 bg-white/80 p-4 dark:border-white/12 dark:bg-[var(--app-surface)]">
             <p className={managePage.eyebrowClassName}>Neuer Orga-Lauf</p>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               Nutze Smart Treffen nur für planbare Gruppenkoordination: Suchfenster festlegen, Mindestzahl definieren und
@@ -736,7 +736,7 @@ export function SmartMeetingsCard({
             ) : (
               <p className="mt-1 text-xs text-slate-600">Noch kein aktiver Terminversuch.</p>
             )}
-            <div className="mt-3 rounded-xl border border-slate-200 bg-white/80 p-3">
+            <div className="mt-3 rounded-xl border border-slate-200 bg-white/80 p-3 dark:border-white/12 dark:bg-[var(--app-surface)]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">{stage.eyebrow}</p>
               <p className="mt-2 text-sm font-semibold text-slate-900">{stage.title}</p>
               <p className="mt-1 text-sm leading-6 text-slate-600">{stage.description}</p>

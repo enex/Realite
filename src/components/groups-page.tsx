@@ -244,7 +244,7 @@ export function GroupsPage({
                         {state.label}
                       </span>
                       {group.syncProvider === "google_contacts" && group.syncEnabled ? (
-                        <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-teal-700 ring-1 ring-teal-200">
+                        <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-teal-700 ring-1 ring-teal-200 dark:bg-teal-950/55 dark:ring-teal-500/40">
                           Sync
                         </span>
                       ) : null}
@@ -263,11 +263,11 @@ export function GroupsPage({
                             email={contact.email}
                             image={contact.image}
                             size="xs"
-                            className="ring-2 ring-white"
+                            className="ring-2 ring-white dark:ring-[var(--app-background)]"
                           />
                         ))}
                         {group.contactCount > 4 ? (
-                          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] font-semibold text-slate-600 ring-2 ring-white">
+                          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] font-semibold text-slate-600 ring-2 ring-white dark:border-white/12 dark:bg-[var(--app-surface)] dark:text-slate-300 dark:ring-[var(--app-background)]">
                             +{group.contactCount - 4}
                           </span>
                         ) : null}
