@@ -78,8 +78,8 @@ export function AppShell({ user, children }: AppShellProps) {
                   href={item.href}
                   className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${
                     active
-                      ? "bg-teal-100 text-teal-900 dark:bg-teal-950/55 dark:text-teal-100"
-                      : "text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/6"
+                      ? "bg-teal-100 text-teal-900 dark:bg-teal-950/55"
+                      : "text-slate-700 hover:bg-slate-100 dark:hover:bg-white/6"
                   }`}
                 >
                   {item.label}
@@ -93,7 +93,7 @@ export function AppShell({ user, children }: AppShellProps) {
             className="inline-flex items-center rounded-full border border-slate-200 bg-white p-1 transition hover:border-teal-200 hover:bg-teal-50 dark:border-white/12 dark:bg-[var(--app-background)] dark:hover:border-teal-500/35 dark:hover:bg-teal-950/30 sm:gap-2 sm:pr-3"
           >
             <UserAvatar name={user.name} email={user.email} image={user.image ?? null} size="sm" />
-            <span className="hidden max-w-44 truncate text-sm font-medium text-slate-700 dark:text-slate-200 sm:block">
+            <span className="hidden max-w-44 truncate text-sm font-medium text-slate-900 sm:block">
               Mein Profil
             </span>
           </Link>
@@ -121,18 +121,18 @@ export function AppShell({ user, children }: AppShellProps) {
                   aria-label={item.label}
                   aria-current={active ? "page" : undefined}
                   className={`flex min-h-[50px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-0.5 pb-1.5 pt-1.5 transition [-webkit-tap-highlight-color:transparent] active:opacity-70 ${
-                    active ? "text-teal-600 dark:text-teal-400" : "text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+                    active ? "text-teal-600" : "text-slate-400 hover:text-slate-600"
                   }`}
                 >
                   <Icon
                     size={26}
                     weight={active ? "fill" : "regular"}
                     aria-hidden
-                    className={`shrink-0 ${active ? "text-teal-600 dark:text-teal-400" : "text-slate-400 dark:text-slate-500"}`}
+                    className={`shrink-0 ${active ? "text-teal-600" : "text-slate-400"}`}
                   />
                   <span
                     className={`max-w-full px-0.5 text-center text-[13px] leading-[1.15] tracking-[-0.01em] ${
-                      active ? "font-semibold text-teal-700 dark:text-teal-300" : "font-normal text-slate-500 dark:text-slate-400"
+                      active ? "font-semibold text-teal-700" : "font-normal text-slate-500"
                     }`}
                   >
                     {item.tabLabel}

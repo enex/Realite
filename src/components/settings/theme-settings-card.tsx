@@ -43,8 +43,10 @@ export function ThemeSettingsCard() {
   if (!mounted) {
     return (
       <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/12 dark:bg-[var(--app-surface)] dark:shadow-[0_1px_0_0_rgba(255,255,255,0.04)]">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Darstellung</p>
-        <h2 className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">Erscheinungsbild</h2>
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
+          Darstellung
+        </p>
+        <h2 className="mt-1 text-lg font-semibold text-slate-900">Erscheinungsbild</h2>
         <div className="mt-4 grid grid-cols-3 gap-3">
           {THEME_OPTIONS.map((option) => (
             <div
@@ -59,9 +61,9 @@ export function ThemeSettingsCard() {
 
   return (
     <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/12 dark:bg-[var(--app-surface)] dark:shadow-[0_1px_0_0_rgba(255,255,255,0.04)]">
-      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Darstellung</p>
-      <h2 className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">Erscheinungsbild</h2>
-      <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Darstellung</p>
+      <h2 className="mt-1 text-lg font-semibold text-slate-900">Erscheinungsbild</h2>
+      <p className="mt-2 text-sm text-slate-600">
         Wähle, ob Realite im hellen oder dunklen Modus angezeigt wird, oder folge der Einstellung deines Geräts.
       </p>
 
@@ -85,16 +87,16 @@ export function ThemeSettingsCard() {
                 className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
                   isActive
                     ? "bg-teal-700 text-white dark:bg-teal-600"
-                    : "bg-slate-100 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-700 dark:bg-white/8 dark:text-slate-400 dark:group-hover:bg-white/12 dark:group-hover:text-slate-200"
+                    : "bg-slate-100 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-700 dark:bg-white/8 dark:group-hover:bg-white/12"
                 }`}
               >
                 <Icon size={22} weight={isActive ? "fill" : "regular"} />
               </div>
               <div>
-                <p className={`text-sm font-semibold ${isActive ? "text-teal-900 dark:text-teal-100" : "text-slate-700 dark:text-slate-300"}`}>
+                <p className={`text-sm font-semibold ${isActive ? "text-teal-900" : "text-slate-700"}`}>
                   {option.label}
                 </p>
-                <p className={`mt-0.5 text-[11px] leading-tight ${isActive ? "text-teal-700 dark:text-teal-300/90" : "text-slate-500 dark:text-slate-500"}`}>
+                <p className={`mt-0.5 text-[11px] leading-tight ${isActive ? "text-teal-700" : "text-slate-500"}`}>
                   {option.description}
                 </p>
               </div>
@@ -111,7 +113,7 @@ export function ThemeSettingsCard() {
       </div>
 
       {theme === "system" ? (
-        <p className="mt-3 text-xs text-slate-500 dark:text-slate-500">
+        <p className="mt-3 text-xs text-slate-500">
           Dein Gerät nutzt gerade den {resolvedTheme === "dark" ? "dunklen" : "hellen"} Modus.
         </p>
       ) : null}
