@@ -50,12 +50,16 @@ export async function handleSocialSignInRequest(request: Request, provider: "goo
   const auth = getAuth();
   const requestUrl = new URL(request.url);
   const callbackURL = getCallbackUrl(requestUrl);
+  const oauthQuery = requestUrl.searchParams.get("oauthQuery") ?? undefined;
+
+  const body = {
+    provider,
+    callbackURL,
+    ...(oauthQuery ? { oauth_query: oauthQuery } : {}),
+  };
 
   const signInResponse = await auth.api.signInSocial({
-    body: {
-      provider,
-      callbackURL
-    },
+    body: body as typeof body & Record<string, unknown>,
     headers: new Headers(request.headers),
     asResponse: true
   });
@@ -85,22 +89,27 @@ export async function handleDevSignInRequest(request: Request) {
   const auth = getAuth();
   const requestUrl = new URL(request.url);
   const callbackURL = getCallbackUrl(requestUrl);
+  const oauthQuery = requestUrl.searchParams.get("oauthQuery") ?? undefined;
+  const oauthBody = oauthQuery ? { oauth_query: oauthQuery } : {};
   const email = process.env.DEV_LOGIN_EMAIL?.trim() || "dev-login@realite.local";
   const password = process.env.DEV_LOGIN_PASSWORD?.trim() || "realite-dev-login";
   const name = process.env.DEV_LOGIN_NAME?.trim() || "Realite Dev";
   const headers = createDevAuthHeaders(request, requestUrl);
 
-  const signIn = async () =>
-    auth.api.signInEmail({
-      body: {
-        email,
-        password,
-        callbackURL,
-        rememberMe: true
-      },
+  const signIn = async () => {
+    const emailBody = {
+      email,
+      password,
+      callbackURL,
+      rememberMe: true as const,
+      ...oauthBody,
+    };
+    return auth.api.signInEmail({
+      body: emailBody as typeof emailBody & Record<string, unknown>,
       headers,
       asResponse: true
     });
+  };
 
   let signInResponse = await signIn();
 
@@ -111,7 +120,7 @@ export async function handleDevSignInRequest(request: Request) {
         password,
         name,
         callbackURL,
-        rememberMe: true
+        rememberMe: true,
       },
       headers,
       asResponse: true

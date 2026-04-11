@@ -33,7 +33,7 @@ export default async function MpcOAuthLoginPage({
         </p>
         <div className="mt-7">
           {providers.length > 0 ? (
-            <AuthProviderButtons callbackUrl={currentPath} providers={providers} />
+            <AuthProviderButtons callbackUrl={currentPath} providers={providers} oauthQuery={queryString || null} />
           ) : (
             <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
               Aktuell ist kein Login-Provider für dieses Deployment konfiguriert.

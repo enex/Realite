@@ -11,6 +11,7 @@ import {
 type AuthProviderButtonsProps = {
   callbackUrl: string;
   providers: readonly AuthProviderDefinition[];
+  oauthQuery?: string | null;
 };
 
 function ProviderIcon({ providerId }: { providerId: AuthProviderDefinition["id"] }) {
@@ -58,7 +59,7 @@ function ProviderIcon({ providerId }: { providerId: AuthProviderDefinition["id"]
   );
 }
 
-export function AuthProviderButtons({ callbackUrl, providers }: AuthProviderButtonsProps) {
+export function AuthProviderButtons({ callbackUrl, providers, oauthQuery }: AuthProviderButtonsProps) {
   const microsoftEnabled = useRealiteFeatureFlag(MICROSOFT_AUTH_FLAG, false);
   const visibleProviders = getVisibleAuthProviders(providers, {
     microsoftEnabled,
@@ -77,7 +78,7 @@ export function AuthProviderButtons({ callbackUrl, providers }: AuthProviderButt
       {visibleProviders.map((provider) => (
         <a
           key={provider.id}
-          href={buildAuthStartPath(provider.id, callbackUrl) ?? "/login"}
+          href={buildAuthStartPath(provider.id, callbackUrl, oauthQuery) ?? "/login"}
           className="group flex items-center gap-4 rounded-2xl border border-border bg-card px-4 py-3.5 text-left shadow-[0_12px_30px_-24px_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5 hover:border-teal-300 hover:bg-teal-50 dark:hover:border-teal-700 dark:hover:bg-teal-950/60"
         >
           <ProviderIcon providerId={provider.id} />

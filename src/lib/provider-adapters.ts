@@ -326,17 +326,23 @@ export function getPrimaryAuthProvider() {
 export function buildAuthStartPath(
   providerId: AuthProviderId,
   callbackUrl?: string | null,
+  oauthQuery?: string | null,
 ) {
   const provider = AUTH_PROVIDER_DEFINITIONS.find((definition) => definition.id === providerId);
   if (!provider?.loginStartPath) {
     return null;
   }
 
-  if (!callbackUrl) {
-    return provider.loginStartPath;
+  const params = new URLSearchParams();
+  if (callbackUrl) {
+    params.set("callbackUrl", callbackUrl);
+  }
+  if (oauthQuery) {
+    params.set("oauthQuery", oauthQuery);
   }
 
-  return `${provider.loginStartPath}?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+  const qs = params.toString();
+  return qs ? `${provider.loginStartPath}?${qs}` : provider.loginStartPath;
 }
 
 export function buildLoginPath(callbackUrl?: string | null) {
