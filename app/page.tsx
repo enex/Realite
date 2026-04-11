@@ -83,14 +83,14 @@ function LandingHeader({ signInHref }: { signInHref: string }) {
     >
       <a
         href="/"
-        className="text-center text-lg font-black tracking-wide sm:text-left [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]"
+        className="text-center text-lg font-black tracking-wide text-slate-950 dark:text-slate-50 sm:text-left [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]"
       >
         REALITE
       </a>
       <nav className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center sm:gap-3">
         <a
           href="/docs"
-          className="rounded-full border border-emerald-950/15 px-4 py-2.5 text-center text-xs font-semibold tracking-wide text-slate-700 transition hover:border-emerald-950/25 hover:bg-emerald-950/5 sm:px-4 sm:py-2"
+          className="rounded-full border border-emerald-950/15 px-4 py-2.5 text-center text-xs font-semibold tracking-wide text-slate-700 transition hover:border-emerald-950/25 hover:bg-emerald-950/5 dark:border-white/18 dark:text-slate-200 dark:hover:border-white/25 dark:hover:bg-slate-900/5 sm:px-4 sm:py-2"
         >
           Dokumentation
         </a>
@@ -127,7 +127,7 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
           </a>
           <a
             href="#so-funktioniert-es"
-            className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-emerald-950/15 bg-white/72 px-6 py-3.5 text-base font-semibold text-slate-800 transition hover:bg-white active:bg-emerald-950/5 dark:border-white/15 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/14 dark:active:bg-white/8 sm:min-h-0 sm:py-3 sm:text-sm"
+            className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-emerald-950/15 bg-white/72 px-6 py-3.5 text-base font-semibold text-slate-800 transition hover:bg-white active:bg-emerald-950/5 dark:border-white/22 dark:bg-white/16 dark:text-slate-100 dark:hover:bg-white/22 dark:active:bg-white/14 sm:min-h-0 sm:py-3 sm:text-sm"
           >
             So funktioniert&apos;s
           </a>
@@ -150,10 +150,10 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
           loading="lazy"
         />
         <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-900/70 dark:text-emerald-400/85">Von Menschen wie dir</p>
-        <h2 className="mt-2 text-xl font-bold text-slate-950 sm:text-2xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+        <h2 className="mt-2 text-xl font-bold text-slate-950 dark:text-slate-50 sm:text-2xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
           Offene Einladungen
         </h2>
-        <p className="mt-2 text-sm leading-6 text-slate-700">
+        <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-slate-300">
           {publicAlleEvents.length > 0
             ? `${publicAlleEvents.length} Einladung(en), formuliert wie an Freunde – nicht wie eine Veranstaltungsliste.`
             : "Noch lädt niemand öffentlich ein. Schreib deinen Impuls so, wie du’s jemandem sagen würdest: z. B. „Wir grillen Sonntag, komm dazu“."}
