@@ -139,8 +139,7 @@
   background-color: var(--app-surface);
 }
 :root.dark [class*="bg-white\\/"] {
-  /* Für backdrop-blur / Glass: warm, nicht matschig-grau */
-  --color-white: #2a2724;
+  --color-white: #1c1a17;
 }
 :root.dark .bg-slate-900 {
   background-color: #2a231c;
