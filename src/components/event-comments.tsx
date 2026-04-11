@@ -18,15 +18,15 @@ type Comment = {
 
 type TimelineEntry =
   | {
-      kind: "system";
-      id: string;
-      createdAt: string;
-      creatorLabel: string;
-    }
+    kind: "system";
+    id: string;
+    createdAt: string;
+    creatorLabel: string;
+  }
   | {
-      kind: "comment";
-      comment: Comment;
-    };
+    kind: "comment";
+    comment: Comment;
+  };
 
 type EventCommentsProps = {
   eventId: string;
@@ -226,9 +226,9 @@ export function EventComments({
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 placeholder="Nachricht schreiben …"
-                rows={2}
+                rows={1}
                 maxLength={2000}
-                className="min-h-[44px] w-full min-w-0 flex-1 resize-y rounded-xl border border-border bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/40 dark:border-white/12 dark:bg-card/5"
+                className="w-full min-w-0 flex-1 resize-y rounded-xl border border-border bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/40 dark:border-white/12 dark:bg-card/5"
                 disabled={submitting}
               />
               <button

@@ -472,7 +472,7 @@ export function SmartMeetingsCard({
             <p className="mt-2 text-sm font-semibold text-foreground">{overview.nextStepTitle}</p>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">{overview.nextStepDescription}</p>
           </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-4 grid gap-3 grid-cols-2">
             <div className={smartMeetingCard.statClassName}>
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Freigabe</p>
               <p className="mt-1 text-xl font-semibold text-foreground">{overview.awaitingApprovalCount}</p>

@@ -78,7 +78,7 @@ export function AuthProviderButtons({ callbackUrl, providers }: AuthProviderButt
         <a
           key={provider.id}
           href={buildAuthStartPath(provider.id, callbackUrl) ?? "/login"}
-          className="group flex items-center gap-4 rounded-2xl border border-border bg-card px-4 py-3.5 text-left shadow-[0_12px_30px_-24px_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5 hover:border-teal-300 hover:bg-teal-50"
+          className="group flex items-center gap-4 rounded-2xl border border-border bg-card px-4 py-3.5 text-left shadow-[0_12px_30px_-24px_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5 hover:border-teal-300 hover:bg-teal-50 dark:hover:border-teal-700 dark:hover:bg-teal-950/60"
         >
           <ProviderIcon providerId={provider.id} />
           <div className="min-w-0 flex-1">
@@ -95,7 +95,7 @@ export function AuthProviderButtons({ callbackUrl, providers }: AuthProviderButt
           <svg
             viewBox="0 0 24 24"
             aria-hidden="true"
-            className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-teal-700"
+            className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-teal-700 dark:group-hover:text-teal-400"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
