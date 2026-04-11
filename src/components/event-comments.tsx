@@ -149,19 +149,19 @@ export function EventComments({
   }
 
   return (
-    <section className="mt-6 border-t border-slate-200 pt-5 dark:border-white/10">
+    <section className="mt-6 border-t border-border pt-5 dark:border-white/10">
       <div
         className="max-h-[min(50vh,22rem)] min-h-[4rem] space-y-3 overflow-y-auto"
         aria-label="Verlauf"
       >
         {loading ? (
-          <p className="text-sm text-slate-500">Wird geladen…</p>
+          <p className="text-sm text-muted-foreground">Wird geladen…</p>
         ) : queryError ? (
           <p className="text-sm text-red-600 dark:text-red-400">
             {queryError instanceof Error ? queryError.message : "Laden fehlgeschlagen"}
           </p>
         ) : timeline.length === 0 ? (
-          <p className="text-sm text-slate-500">Noch keine Nachrichten.</p>
+          <p className="text-sm text-muted-foreground">Noch keine Nachrichten.</p>
         ) : (
           timeline.map((entry) => {
             if (entry.kind === "system") {
@@ -171,8 +171,8 @@ export function EventComments({
                   className="flex gap-3 border-l-2 border-teal-500/50 py-0.5 pl-3 dark:border-teal-500/40"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs text-slate-500">{formatTimelineTime(entry.createdAt)}</p>
-                    <p className="mt-1 text-sm text-slate-700">
+                    <p className="text-xs text-muted-foreground">{formatTimelineTime(entry.createdAt)}</p>
+                    <p className="mt-1 text-sm text-foreground">
                       Event angelegt ·{" "}
                       <span className={authorHighlightClassName}>{entry.creatorLabel}</span>
                     </p>
@@ -187,14 +187,14 @@ export function EventComments({
             });
             return (
               <div key={c.id} className="flex justify-start">
-                <div className="max-w-[min(100%,28rem)] rounded-2xl rounded-tl-md bg-slate-100 px-3 py-2 shadow-sm ring-1 ring-slate-200/60 dark:bg-white/10 dark:ring-white/10">
+                <div className="max-w-[min(100%,28rem)] rounded-2xl rounded-tl-md bg-muted px-3 py-2 shadow-sm ring-1 ring-border/60 dark:bg-card/10 dark:ring-white/10">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
                     <span className={`text-xs ${authorHighlightClassName}`}>{author}</span>
-                    <time dateTime={c.createdAt} className="text-[11px] text-slate-500">
+                    <time dateTime={c.createdAt} className="text-[11px] text-muted-foreground">
                       {formatTimelineTime(c.createdAt)}
                     </time>
                   </div>
-                  <p className="mt-1 whitespace-pre-wrap wrap-break-word text-sm text-slate-800">
+                  <p className="mt-1 whitespace-pre-wrap wrap-break-word text-sm text-foreground">
                     {c.body}
                   </p>
                 </div>
@@ -206,7 +206,7 @@ export function EventComments({
 
       <div className="mt-4">
         {allowGuestView ? (
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             <a
               href={buildLoginPath(signInCallbackPath)}
               className="font-medium text-teal-600 hover:text-teal-700"
@@ -228,7 +228,7 @@ export function EventComments({
                 placeholder="Nachricht schreiben …"
                 rows={2}
                 maxLength={2000}
-                className="min-h-[44px] w-full min-w-0 flex-1 resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/40 dark:border-white/12 dark:bg-white/5"
+                className="min-h-[44px] w-full min-w-0 flex-1 resize-y rounded-xl border border-border bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/40 dark:border-white/12 dark:bg-card/5"
                 disabled={submitting}
               />
               <button

@@ -67,10 +67,10 @@ export function PwaInstallBanner() {
     <div
       role="region"
       aria-label="App installieren"
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white px-4 py-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] sm:bottom-auto sm:top-4 sm:left-1/2 sm:right-auto sm:w-full sm:max-w-md sm:-translate-x-1/2 sm:rounded-lg sm:border sm:shadow-md"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card px-4 py-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] sm:bottom-auto sm:top-4 sm:left-1/2 sm:right-auto sm:w-full sm:max-w-md sm:-translate-x-1/2 sm:rounded-lg sm:border sm:shadow-md"
     >
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-slate-700">
+        <p className="text-sm text-foreground">
           Realite als App installieren für schnelleren Zugriff.
         </p>
         <div className="flex shrink-0 items-center gap-2">
@@ -84,7 +84,7 @@ export function PwaInstallBanner() {
           <button
             type="button"
             onClick={handleDismiss}
-            className="rounded-lg px-2 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+            className="rounded-lg px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
             aria-label="Schließen"
           >
             ✕

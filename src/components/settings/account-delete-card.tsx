@@ -18,7 +18,7 @@ export function AccountDeleteCard({ busy, error, onDelete }: AccountDeleteCardPr
       </p>
 
       {error ? (
-        <div className="mt-4 rounded-lg border border-red-300 bg-white/70 px-4 py-3 text-sm text-red-800">{error}</div>
+        <div className="mt-4 rounded-lg border border-red-300 bg-card/70 px-4 py-3 text-sm text-red-800">{error}</div>
       ) : null}
 
       <div className="mt-4">

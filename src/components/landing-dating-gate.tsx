@@ -20,5 +20,5 @@ export function LandingDatingGate({ children }: { children: React.ReactNode }) {
 export function LandingDatingBadge() {
   const enabled = useRealiteFeatureFlag(DATING_MODE_FLAG, false);
   if (!enabled) return null;
-  return <span className="rounded-lg border border-white/20 bg-teal-800/60 px-3 py-1.5 text-xs font-medium text-slate-300">Dating optional</span>;
+  return <span className="rounded-lg border border-white/20 bg-teal-800/60 px-3 py-1.5 text-xs font-medium text-muted-foreground">Dating optional</span>;
 }

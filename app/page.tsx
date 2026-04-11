@@ -32,7 +32,7 @@ export default async function HomePage({
     const publicAlleEvents = await listPublicAlleEvents(8);
 
     return (
-      <main className="relative isolate min-h-dvh overflow-hidden bg-[#f6f0e6] text-slate-950 dark:bg-[var(--app-background)] dark:text-slate-900">
+      <main className="relative isolate min-h-dvh overflow-hidden bg-background text-foreground">
         <div
           className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_90%_45%_at_50%_-10%,rgba(251,191,36,0.18),transparent),radial-gradient(ellipse_55%_35%_at_90%_20%,rgba(16,185,129,0.10),transparent),radial-gradient(ellipse_45%_28%_at_8%_62%,rgba(244,114,182,0.08),transparent),linear-gradient(180deg,#f6f0e6_0%,#f5f3ec_30%,#eef6f1_68%,#f7f4ee_100%)] dark:bg-[radial-gradient(ellipse_90%_50%_at_50%_-12%,rgba(90,175,150,0.11),transparent),radial-gradient(ellipse_55%_38%_at_92%_18%,rgba(251,191,36,0.055),transparent),radial-gradient(ellipse_48%_32%_at_6%_58%,rgba(244,114,182,0.045),transparent),linear-gradient(180deg,#0e0d0b_0%,#12100e_38%,#161412_72%,#181614_100%)]"
           aria-hidden
@@ -78,19 +78,19 @@ function formatOpenInvitationWhenLine(startsAt: Date, endsAt: Date): string {
 function LandingHeader({ signInHref }: { signInHref: string }) {
   return (
     <header
-      className="realite-reveal flex flex-col gap-3 rounded-2xl border border-emerald-950/10 bg-white/78 px-4 py-3.5 shadow-[0_16px_40px_-28px_rgba(15,23,42,0.45)] backdrop-blur-sm dark:border-white/12 dark:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.55)] sm:flex-row sm:items-center sm:justify-between sm:rounded-full sm:px-5 sm:py-2.5"
+      className="realite-reveal flex flex-col gap-3 rounded-2xl border border-emerald-950/10 bg-card/78 px-4 py-3.5 shadow-[0_16px_40px_-28px_rgba(15,23,42,0.45)] backdrop-blur-sm dark:border-white/12 dark:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.55)] sm:flex-row sm:items-center sm:justify-between sm:rounded-full sm:px-5 sm:py-2.5"
       style={{ animationDelay: "40ms" }}
     >
       <a
         href="/"
-        className="text-center text-lg font-black tracking-wide text-slate-950 sm:text-left [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]"
+        className="text-center text-lg font-black tracking-wide text-foreground sm:text-left [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]"
       >
         REALITE
       </a>
       <nav className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center sm:gap-3">
         <a
           href="/docs"
-          className="rounded-full border border-emerald-950/15 px-4 py-2.5 text-center text-xs font-semibold tracking-wide text-slate-700 transition hover:border-emerald-950/25 hover:bg-emerald-950/5 dark:border-white/18 dark:text-slate-800 dark:hover:border-white/25 dark:hover:bg-white/6 sm:px-4 sm:py-2"
+          className="rounded-full border border-emerald-950/15 px-4 py-2.5 text-center text-xs font-semibold tracking-wide text-foreground transition hover:border-emerald-950/25 hover:bg-emerald-950/5 dark:border-white/18 dark:text-foreground dark:hover:border-white/25 dark:hover:bg-card/6 sm:px-4 sm:py-2"
         >
           Dokumentation
         </a>
@@ -109,13 +109,13 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
   return (
     <section className="mt-8 grid items-start gap-10 sm:mt-12 sm:gap-12 lg:mt-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
       <div className="realite-reveal min-w-0" style={{ animationDelay: "140ms" }}>
-        <p className="realite-float inline-flex rounded-full border border-emerald-900/10 bg-white/82 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900 dark:border-emerald-400/20 dark:text-emerald-800 sm:px-4 sm:text-xs sm:tracking-[0.16em]">
+        <p className="realite-float inline-flex rounded-full border border-emerald-900/10 bg-card/82 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900 dark:border-emerald-400/20 dark:text-emerald-800 sm:px-4 sm:text-xs sm:tracking-[0.16em]">
           ✦ Kostenlos · Kein Download nötig
         </p>
-        <h1 className="mt-6 max-w-2xl text-[2rem] font-black leading-[1.05] tracking-tight text-slate-950 sm:mt-8 sm:text-5xl sm:leading-[1.05] lg:text-6xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+        <h1 className="mt-6 max-w-2xl text-[2rem] font-black leading-[1.05] tracking-tight text-foreground sm:mt-8 sm:text-5xl sm:leading-[1.05] lg:text-6xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
           Weniger organisieren. Mehr zusammen erleben.
         </h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-slate-700 sm:mt-5 sm:text-lg sm:leading-8">
+        <p className="mt-4 max-w-2xl text-base leading-7 text-foreground sm:mt-5 sm:text-lg sm:leading-8">
           47 Nachrichten im Gruppenthread – und am Ende trifft sich trotzdem niemand. Realite macht aus einem freien Abend ein echtes Erlebnis, direkt mit deinen Leuten.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:mt-9 sm:flex-row sm:flex-wrap sm:items-center">
@@ -127,12 +127,12 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
           </a>
           <a
             href="#so-funktioniert-es"
-            className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-emerald-950/15 bg-white/72 px-6 py-3.5 text-base font-semibold text-slate-800 transition hover:bg-white active:bg-emerald-950/5 dark:border-white/25 dark:bg-white/18 dark:text-slate-900 dark:hover:bg-white/24 dark:active:bg-white/16 sm:min-h-0 sm:py-3 sm:text-sm"
+            className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-emerald-950/15 bg-card/72 px-6 py-3.5 text-base font-semibold text-foreground transition hover:bg-card active:bg-emerald-950/5 dark:border-white/25 dark:bg-card/18 dark:text-foreground dark:hover:bg-card/24 dark:active:bg-card/16 sm:min-h-0 sm:py-3 sm:text-sm"
           >
             So funktioniert&apos;s
           </a>
         </div>
-        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-600">
+        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5"><span className="text-emerald-700">✓</span> Kalender bleibt privat</span>
           <span className="flex items-center gap-1.5"><span className="text-emerald-700">✓</span> Kein Spam an Kontakte</span>
           <span className="flex items-center gap-1.5"><span className="text-emerald-700">✓</span> In 30 Sekunden dabei</span>
@@ -140,20 +140,20 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
       </div>
 
       <aside
-        className="realite-reveal overflow-hidden rounded-[28px] border border-emerald-950/10 bg-white/82 p-5 shadow-[0_30px_80px_-44px_rgba(15,23,42,0.55)] backdrop-blur-sm dark:border-white/12 dark:shadow-[0_30px_80px_-44px_rgba(0,0,0,0.55)] sm:p-6"
+        className="realite-reveal overflow-hidden rounded-[28px] border border-emerald-950/10 bg-card/82 p-5 shadow-[0_30px_80px_-44px_rgba(15,23,42,0.55)] backdrop-blur-sm dark:border-white/12 dark:shadow-[0_30px_80px_-44px_rgba(0,0,0,0.55)] sm:p-6"
         style={{ animationDelay: "240ms" }}
       >
         <img
           src="/landing/realite-hero-photo.png"
           alt="Freunde treffen sich spontan für eine gemeinsame Aktivität"
-          className="h-52 w-full rounded-[22px] border border-emerald-950/10 bg-[#ebe4d5] object-cover dark:border-white/10 dark:bg-slate-800 sm:h-64"
+          className="h-52 w-full rounded-[22px] border border-emerald-950/10 bg-[#ebe4d5] object-cover dark:border-white/10 dark:bg-muted sm:h-64"
           loading="lazy"
         />
         <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-900/70 dark:text-emerald-600">Von Menschen wie dir</p>
-        <h2 className="mt-2 text-xl font-bold text-slate-950 sm:text-2xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+        <h2 className="mt-2 text-xl font-bold text-foreground sm:text-2xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
           Offene Einladungen
         </h2>
-        <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-slate-600">
+        <p className="mt-2 text-sm leading-6 text-foreground dark:text-muted-foreground">
           {publicAlleEvents.length > 0
             ? `${publicAlleEvents.length} Einladung(en), formuliert wie an Freunde – nicht wie eine Veranstaltungsliste.`
             : "Noch lädt niemand öffentlich ein. Schreib deinen Impuls so, wie du’s jemandem sagen würdest: z. B. „Wir grillen Sonntag, komm dazu“."}
@@ -172,10 +172,10 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
                   </a>
                 ) : null}
                 <div className="p-4">
-                  <a href={`/e/${shortenUUID(event.id)}`} className="wrap-break-word font-semibold text-slate-900 hover:text-emerald-800">
+                  <a href={`/e/${shortenUUID(event.id)}`} className="wrap-break-word font-semibold text-foreground hover:text-emerald-800">
                     {event.title.replace(/#[^\s]+/gi, "").trim()}
                   </a>
-                  <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     {formatOpenInvitationWhenLine(new Date(event.startsAt), new Date(event.endsAt))}
                   </p>
                 </div>
@@ -183,7 +183,7 @@ function HeroSection({ signInHref, publicAlleEvents }: { signInHref: string; pub
             );
           })}
           {publicAlleEvents.length === 0 ? (
-            <article className="rounded-2xl border border-dashed border-emerald-950/15 bg-[#f8f4ec] p-4 text-sm text-slate-600 dark:border-white/18 dark:bg-[#1e1c19] dark:text-slate-400">
+            <article className="rounded-2xl border border-dashed border-emerald-950/15 bg-[#f8f4ec] p-4 text-sm text-muted-foreground dark:border-white/18 dark:bg-[#1e1c19] dark:text-muted-foreground">
               Noch keine offenen Einladungen – du kannst die erste schreiben.
             </article>
           ) : null}
@@ -232,13 +232,13 @@ function ProblemSection({ signInHref }: { signInHref: string }) {
   return (
     <section className="mt-12 sm:mt-14 lg:mt-16" aria-labelledby="was-du-tun-kannst">
       <div className="realite-reveal" style={{ animationDelay: "260ms" }}>
-        <p className="inline-flex rounded-full border border-rose-900/10 bg-white/82 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-rose-700 dark:border-rose-400/20 dark:text-rose-400">
+        <p className="inline-flex rounded-full border border-rose-900/10 bg-card/82 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-rose-700 dark:border-rose-400/20 dark:text-rose-400">
           Klingt bekannt?
         </p>
-        <h2 id="was-du-tun-kannst" className="mt-3 text-2xl font-black text-slate-950 sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+        <h2 id="was-du-tun-kannst" className="mt-3 text-2xl font-black text-foreground sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
           Social Media hat dieses Problem nicht gelöst.
         </h2>
-        <p className="mt-3 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg">
+        <p className="mt-3 max-w-2xl text-base leading-7 text-foreground sm:text-lg">
           Instagram zeigt dir das Leben der anderen. WhatsApp macht aus einem spontanen Plan schnell einen langen Abstimmungsthread.
         </p>
       </div>
@@ -246,19 +246,19 @@ function ProblemSection({ signInHref }: { signInHref: string }) {
         {PROBLEM_POINTS.map((option, index) => (
           <article
             key={option.title}
-            className="realite-reveal flex flex-col rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.35)] backdrop-blur-sm dark:border-white/10 dark:shadow-[0_22px_60px_-38px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-5"
+            className="realite-reveal flex flex-col rounded-2xl border border-border bg-card/80 p-4 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.35)] backdrop-blur-sm dark:border-white/10 dark:shadow-[0_22px_60px_-38px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-5"
             style={{ animationDelay: `${320 + index * 80}ms` }}
           >
             <div className="flex items-center gap-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-500/15 text-xl border border-rose-500/20" aria-hidden="true">{option.icon}</span>
-              <h3 className="text-base font-bold text-slate-950 sm:text-lg [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+              <h3 className="text-base font-bold text-foreground sm:text-lg [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
                 {option.title}
               </h3>
             </div>
-            <p className="mt-3 flex-1 text-sm leading-6 text-slate-600">{option.text}</p>
+            <p className="mt-3 flex-1 text-sm leading-6 text-muted-foreground">{option.text}</p>
             <a
               href={option.useSignIn ? signInHref : option.href}
-              className="mt-4 inline-flex w-fit items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-white hover:text-slate-950 dark:border-white/12 dark:bg-white/6 dark:text-slate-800 dark:hover:bg-white/10 dark:hover:text-slate-950"
+              className="mt-4 inline-flex w-fit items-center justify-center rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-card hover:text-foreground dark:border-white/12 dark:bg-card/6 dark:text-foreground dark:hover:bg-card/10 dark:hover:text-foreground"
             >
               {option.cta}
             </a>
@@ -273,7 +273,7 @@ function ComparisonSection() {
   return (
     <section className="mt-12 sm:mt-14">
       <div className="realite-reveal grid gap-4 sm:grid-cols-2" style={{ animationDelay: "340ms" }}>
-        <div className="rounded-2xl border border-rose-200 bg-white/74 p-5 shadow-[0_22px_60px_-40px_rgba(244,63,94,0.32)] dark:border-rose-500/25 dark:bg-rose-950/20 dark:shadow-[0_22px_60px_-40px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-6">
+        <div className="rounded-2xl border border-rose-200 bg-card/74 p-5 shadow-[0_22px_60px_-40px_rgba(244,63,94,0.32)] dark:border-rose-500/25 dark:bg-rose-950/20 dark:shadow-[0_22px_60px_-40px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-6">
           <p className="text-xs font-bold uppercase tracking-widest text-rose-700 dark:text-red-700">😩 Bisher</p>
           <ul className="mt-4 space-y-2.5 text-sm leading-6 text-rose-950/75 dark:text-red-800">
             <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-rose-500">✗</span>30+ Nachrichten für ein einziges Treffen</li>
@@ -326,15 +326,15 @@ const SOLUTION_CARDS = [
 function SolutionSection() {
   return (
     <section className="mt-14 sm:mt-16 lg:mt-20">
-      <div className="rounded-[32px] border border-white/50 bg-white/38 px-4 py-6 shadow-[0_30px_80px_-48px_rgba(15,23,42,0.18)] backdrop-blur-[2px] dark:border-white/10 dark:bg-white/[0.06] dark:shadow-[0_30px_80px_-48px_rgba(0,0,0,0.4)] sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <div className="rounded-[32px] border border-white/50 bg-card/38 px-4 py-6 shadow-[0_30px_80px_-48px_rgba(15,23,42,0.18)] backdrop-blur-[2px] dark:border-white/10 dark:bg-card/[0.06] dark:shadow-[0_30px_80px_-48px_rgba(0,0,0,0.4)] sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="realite-reveal" style={{ animationDelay: "300ms" }}>
-          <p className="inline-flex rounded-full border border-emerald-900/10 bg-white/82 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900 dark:border-emerald-400/15 dark:text-emerald-800">
+          <p className="inline-flex rounded-full border border-emerald-900/10 bg-card/82 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900 dark:border-emerald-400/15 dark:text-emerald-800">
             Die Lösung
           </p>
-          <h2 className="mt-3 text-2xl font-black text-slate-950 sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+          <h2 className="mt-3 text-2xl font-black text-foreground sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
             Aus Plänen werden echte Erlebnisse.
           </h2>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-slate-700 sm:text-lg">
+          <p className="mt-3 max-w-3xl text-base leading-7 text-foreground sm:text-lg">
             Nicht noch eine Social-App. Realite aktiviert bestehende Kontakte, macht spontane Chancen sichtbar und senkt die Hürde, wirklich loszugehen.
           </p>
         </div>
@@ -342,19 +342,19 @@ function SolutionSection() {
           {SOLUTION_CARDS.map((card, index) => (
             <article
               key={card.title}
-              className="realite-reveal overflow-hidden rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.35)] backdrop-blur-sm dark:border-white/10 dark:shadow-[0_22px_60px_-38px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-5"
+              className="realite-reveal overflow-hidden rounded-2xl border border-border bg-card/80 p-4 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.35)] backdrop-blur-sm dark:border-white/10 dark:shadow-[0_22px_60px_-38px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-5"
               style={{ animationDelay: `${380 + index * 100}ms` }}
             >
-              <div className="relative overflow-hidden rounded-[22px] border border-emerald-950/10 bg-[#efe8da] dark:border-white/10 dark:bg-slate-800/90">
+              <div className="relative overflow-hidden rounded-[22px] border border-emerald-950/10 bg-[#efe8da] dark:border-white/10 dark:bg-muted/90">
                 <img src={card.image} alt={card.imageAlt} className="h-44 w-full object-cover sm:h-48" loading="lazy" />
                 <span className={`absolute left-4 top-4 flex h-11 w-11 items-center justify-center rounded-2xl border text-2xl shadow-sm ${card.iconBg}`} aria-hidden="true">
                   {card.icon}
                 </span>
               </div>
-              <h3 className="mt-4 text-lg font-bold text-slate-950 [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+              <h3 className="mt-4 text-lg font-bold text-foreground [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
                 {card.title}
               </h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{card.text}</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{card.text}</p>
             </article>
           ))}
         </div>
@@ -400,13 +400,13 @@ function CoreConceptsSection() {
   return (
     <section className="mt-14 sm:mt-16 lg:mt-20">
       <div className="realite-reveal" style={{ animationDelay: "560ms" }}>
-        <p className="inline-flex rounded-full border border-emerald-900/10 bg-white/82 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900 dark:border-emerald-400/15 dark:text-emerald-800">
+        <p className="inline-flex rounded-full border border-emerald-900/10 bg-card/82 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900 dark:border-emerald-400/15 dark:text-emerald-800">
           Wie Realite funktioniert
         </p>
-        <h2 className="mt-3 text-2xl font-black text-slate-950 sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+        <h2 className="mt-3 text-2xl font-black text-foreground sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
           Kein Event-Portal. Kein Chat. Etwas Neues.
         </h2>
-        <p className="mt-3 max-w-3xl text-base leading-7 text-slate-700 sm:text-lg">
+        <p className="mt-3 max-w-3xl text-base leading-7 text-foreground sm:text-lg">
           Realite nutzt Kalender und Kontakte als Kontext, nicht als öffentlichen Feed. Genau das macht die App nützlich statt aufdringlich.
         </p>
       </div>
@@ -414,14 +414,14 @@ function CoreConceptsSection() {
         {CORE_CONCEPTS.map((concept, index) => (
           <article
             key={concept.title}
-            className="realite-reveal rounded-2xl border border-slate-200 bg-white/76 p-5 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.30)] backdrop-blur-sm dark:border-white/10 dark:shadow-[0_22px_60px_-38px_rgba(0,0,0,0.42)] sm:rounded-3xl"
+            className="realite-reveal rounded-2xl border border-border bg-card/76 p-5 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.30)] backdrop-blur-sm dark:border-white/10 dark:shadow-[0_22px_60px_-38px_rgba(0,0,0,0.42)] sm:rounded-3xl"
             style={{ animationDelay: `${640 + index * 90}ms` }}
           >
             <span className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border text-xl ${concept.iconBg}`} aria-hidden="true">{concept.icon}</span>
-            <h3 className="mt-3 text-base font-bold text-slate-950 sm:text-lg [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+            <h3 className="mt-3 text-base font-bold text-foreground sm:text-lg [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
               {concept.title}
             </h3>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{concept.text}</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{concept.text}</p>
           </article>
         ))}
       </div>
@@ -431,9 +431,9 @@ function CoreConceptsSection() {
       >
         <div className="flex items-center gap-3">
           <span className="text-2xl" aria-hidden="true">🔐</span>
-          <h3 className="text-lg font-bold text-slate-950 [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">Datenschutz & Vertrauen</h3>
+          <h3 className="text-lg font-bold text-foreground [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">Datenschutz & Vertrauen</h3>
         </div>
-        <ul className="mt-3 grid gap-2 text-sm leading-6 text-slate-700 sm:grid-cols-2">
+        <ul className="mt-3 grid gap-2 text-sm leading-6 text-foreground sm:grid-cols-2">
           <li className="flex items-center gap-2"><span className="text-emerald-600">✓</span> Dein Kalender bleibt privat.</li>
           <li className="flex items-center gap-2"><span className="text-emerald-600">✓</span> Kontakte werden nicht gespammt.</li>
           <li className="flex items-center gap-2"><span className="text-emerald-600">✓</span> Keine automatischen Einträge bei anderen.</li>
@@ -450,16 +450,16 @@ function ProductFlowSection() {
     <section className="mt-14 sm:mt-16 lg:mt-20" aria-labelledby="produktfluss">
       <div className="rounded-[32px] border border-emerald-950/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.5),rgba(237,246,241,0.72))] px-4 py-6 shadow-[0_28px_70px_-48px_rgba(15,23,42,0.16)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(30,28,25,0.92),rgba(20,31,28,0.55))] dark:shadow-[0_28px_70px_-48px_rgba(0,0,0,0.4)] sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="realite-reveal" style={{ animationDelay: "620ms" }}>
-          <p className="inline-flex rounded-full border border-amber-900/10 bg-white/82 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-800 dark:border-amber-400/18 dark:text-amber-800">
+          <p className="inline-flex rounded-full border border-amber-900/10 bg-card/82 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-800 dark:border-amber-400/18 dark:text-amber-800">
             Produktfluss statt Linkliste
           </p>
           <h2
             id="produktfluss"
-            className="mt-3 text-2xl font-black text-slate-950 sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]"
+            className="mt-3 text-2xl font-black text-foreground sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]"
           >
             Vier klare Wege statt einer chaotischen Eventliste.
           </h2>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-slate-700 sm:text-lg">
+          <p className="mt-3 max-w-3xl text-base leading-7 text-foreground sm:text-lg">
             Nach dem Login trennt Realite bewusst zwischen entdecken, reagieren und verwalten. So bleibt sofort klar, was gerade dran ist.
           </p>
         </div>
@@ -467,23 +467,23 @@ function ProductFlowSection() {
           {APP_SHELL_SECTIONS.map((section, index) => (
             <article
               key={section.href}
-              className="realite-reveal rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.30)] backdrop-blur-sm dark:border-white/10 dark:shadow-[0_22px_60px_-38px_rgba(0,0,0,0.42)] sm:rounded-3xl"
+              className="realite-reveal rounded-2xl border border-border bg-card/80 p-5 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.30)] backdrop-blur-sm dark:border-white/10 dark:shadow-[0_22px_60px_-38px_rgba(0,0,0,0.42)] sm:rounded-3xl"
               style={{ animationDelay: `${700 + index * 80}ms` }}
             >
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800/80 dark:text-emerald-700">{section.intent}</p>
-              <h3 className="mt-3 text-lg font-bold text-slate-950 [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+              <h3 className="mt-3 text-lg font-bold text-foreground [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
                 {section.label}
               </h3>
-              <p className="mt-2 text-sm font-medium leading-6 text-slate-900">{section.focus}</p>
-              <p className="mt-2.5 text-sm leading-6 text-slate-600">{section.whenToUse}</p>
+              <p className="mt-2 text-sm font-medium leading-6 text-foreground">{section.focus}</p>
+              <p className="mt-2.5 text-sm leading-6 text-muted-foreground">{section.whenToUse}</p>
             </article>
           ))}
         </div>
         <div
-          className="realite-reveal mt-6 rounded-2xl border border-slate-200 bg-white/72 p-5 text-sm leading-6 text-slate-700 dark:border-white/10 dark:bg-white/6 dark:text-slate-700 sm:mt-8 sm:rounded-3xl sm:p-6"
+          className="realite-reveal mt-6 rounded-2xl border border-border bg-card/72 p-5 text-sm leading-6 text-foreground dark:border-white/10 dark:bg-card/6 dark:text-foreground sm:mt-8 sm:rounded-3xl sm:p-6"
           style={{ animationDelay: "1060ms" }}
         >
-          <span className="font-semibold text-slate-950">Wichtig:</span> <strong>Events</strong> bleibt deine persönliche
+          <span className="font-semibold text-foreground">Wichtig:</span> <strong>Events</strong> bleibt deine persönliche
           Planungs- und Kalenderansicht. <strong>Gruppen</strong> bleibt der Ort für Kreise, Einladungen und
           Sichtbarkeit. Realite trennt beides absichtlich, damit Verwaltung nicht wie Discovery aussieht.
         </div>
@@ -501,13 +501,13 @@ function DatingSpotlightSection() {
       >
         <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-8">
           <div className="order-2 lg:order-1">
-            <p className="inline-flex rounded-lg border border-amber-300 bg-white/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-800 dark:border-amber-500/35 dark:bg-white/8 dark:text-amber-800 sm:text-xs">
+            <p className="inline-flex rounded-lg border border-amber-300 bg-card/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-800 dark:border-amber-500/35 dark:bg-card/8 dark:text-amber-800 sm:text-xs">
               Optional: Dating
             </p>
-            <h3 className="mt-4 text-xl font-black text-slate-950 sm:text-2xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+            <h3 className="mt-4 text-xl font-black text-foreground sm:text-2xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
               Kleine Date-Ecke, ohne Druck.
             </h3>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-700 sm:text-base">
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-foreground sm:text-base">
               Wenn du willst, kannst du über{" "}
               <span className="rounded bg-amber-100 px-1.5 py-0.5 font-mono text-[13px] text-amber-900 dark:bg-amber-950/60 dark:text-amber-800">
                 #date
@@ -516,13 +516,13 @@ function DatingSpotlightSection() {
             </p>
             <a
               href="/docs/events-und-matching"
-              className="mt-5 inline-flex min-h-[44px] items-center justify-center rounded-xl border border-amber-300 bg-white/65 px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-white active:bg-amber-50 dark:border-amber-500/35 dark:bg-white/12 dark:text-slate-900 dark:hover:bg-white/18 dark:active:bg-white/10 sm:min-h-0"
+              className="mt-5 inline-flex min-h-[44px] items-center justify-center rounded-xl border border-amber-300 bg-card/65 px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-card active:bg-amber-50 dark:border-amber-500/35 dark:bg-card/12 dark:text-foreground dark:hover:bg-card/18 dark:active:bg-card/10 sm:min-h-0"
             >
               Mehr zum Matching
             </a>
           </div>
           <div className="order-1 lg:order-2">
-            <div className="overflow-hidden rounded-[24px] border border-amber-200/80 bg-white/70 shadow-[0_18px_50px_-34px_rgba(120,53,15,0.45)] dark:border-white/12 dark:bg-white/8 dark:shadow-[0_18px_50px_-34px_rgba(0,0,0,0.5)]">
+            <div className="overflow-hidden rounded-[24px] border border-amber-200/80 bg-card/70 shadow-[0_18px_50px_-34px_rgba(120,53,15,0.45)] dark:border-white/12 dark:bg-card/8 dark:shadow-[0_18px_50px_-34px_rgba(0,0,0,0.5)]">
               <img
                 src="/landing/realite-join-photo.png"
                 alt="Menschen treffen sich offen und ungezwungen bei einem Abend in der Stadt"
@@ -564,16 +564,16 @@ function AudienceSection() {
   return (
     <section className="mt-14 sm:mt-16 lg:mt-20">
       <div className="realite-reveal" style={{ animationDelay: "1180ms" }}>
-        <h2 className="text-2xl font-black text-slate-950 sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+        <h2 className="text-2xl font-black text-foreground sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
           Für wen ist Realite?
         </h2>
-        <p className="mt-3 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg">
+        <p className="mt-3 max-w-2xl text-base leading-7 text-foreground sm:text-lg">
           Für Leute, die mehr gemeinsam erleben wollen, ohne dafür noch mehr Zeit in Apps zu verbringen.
         </p>
       </div>
       <div className="mt-6 grid gap-5 sm:mt-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
         <article
-          className="realite-reveal overflow-hidden rounded-[28px] border border-slate-200 bg-white/80 shadow-[0_24px_70px_-40px_rgba(15,23,42,0.28)] dark:border-white/10 dark:shadow-[0_24px_70px_-40px_rgba(0,0,0,0.45)]"
+          className="realite-reveal overflow-hidden rounded-[28px] border border-border bg-card/80 shadow-[0_24px_70px_-40px_rgba(15,23,42,0.28)] dark:border-white/10 dark:shadow-[0_24px_70px_-40px_rgba(0,0,0,0.45)]"
           style={{ animationDelay: "1220ms" }}
         >
           <img
@@ -586,10 +586,10 @@ function AudienceSection() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800/80 dark:text-emerald-700">
               Im echten Leben
             </p>
-            <h3 className="text-xl font-bold text-slate-950 sm:text-2xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+            <h3 className="text-xl font-bold text-foreground sm:text-2xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
               Für Leute mit Freundeskreis, aber ohne Lust auf Organisationsmüdigkeit.
             </h3>
-            <p className="max-w-xl text-sm leading-7 text-slate-600 sm:text-base">
+            <p className="max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
               Realite ist für spontane Abende, bestehende Kontakte, kleine Gruppen und echte Aktivitäten. Nicht für endlose Chats, nicht für einen Feed voller Fremder.
             </p>
           </div>
@@ -599,7 +599,7 @@ function AudienceSection() {
           {AUDIENCE_STORIES.map((persona, index) => (
             <article
               key={persona.label}
-              className="realite-reveal rounded-2xl border border-slate-200 bg-white/78 p-4 shadow-[0_20px_55px_-38px_rgba(15,23,42,0.24)] backdrop-blur-sm dark:border-white/10 dark:shadow-[0_20px_55px_-38px_rgba(0,0,0,0.4)] sm:p-5"
+              className="realite-reveal rounded-2xl border border-border bg-card/78 p-4 shadow-[0_20px_55px_-38px_rgba(15,23,42,0.24)] backdrop-blur-sm dark:border-white/10 dark:shadow-[0_20px_55px_-38px_rgba(0,0,0,0.4)] sm:p-5"
               style={{ animationDelay: `${1280 + index * 70}ms` }}
             >
               <div className="flex items-start gap-3">
@@ -610,10 +610,10 @@ function AudienceSection() {
                   {persona.emoji}
                 </span>
                 <div>
-                  <h3 className="text-base font-bold text-slate-950 [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+                  <h3 className="text-base font-bold text-foreground [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
                     {persona.label}
                   </h3>
-                  <p className="mt-1.5 text-sm leading-6 text-slate-600">{persona.text}</p>
+                  <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{persona.text}</p>
                 </div>
               </div>
             </article>
@@ -649,10 +649,10 @@ function HowItWorksSection({ signInHref }: { signInHref: string }) {
   return (
     <section id="so-funktioniert-es" className="mt-14 sm:mt-16 lg:mt-20">
       <div className="realite-reveal mb-6 sm:mb-8" style={{ animationDelay: "820ms" }}>
-        <p className="inline-flex rounded-full border border-emerald-900/10 bg-white/82 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900 dark:border-emerald-400/15 dark:text-emerald-800">
+        <p className="inline-flex rounded-full border border-emerald-900/10 bg-card/82 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900 dark:border-emerald-400/15 dark:text-emerald-800">
           So einfach geht&apos;s
         </p>
-        <h2 className="mt-3 text-2xl font-black text-slate-950 sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+        <h2 className="mt-3 text-2xl font-black text-foreground sm:text-3xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
           In 3 Schritten zum ersten echten Erlebnis.
         </h2>
       </div>
@@ -660,7 +660,7 @@ function HowItWorksSection({ signInHref }: { signInHref: string }) {
         {HOW_IT_WORKS_STEPS.map((step, index) => (
           <article
             key={step.title}
-            className="realite-reveal relative rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.30)] backdrop-blur-sm dark:border-white/10 dark:shadow-[0_22px_60px_-38px_rgba(0,0,0,0.42)] sm:rounded-3xl sm:p-6"
+            className="realite-reveal relative rounded-2xl border border-border bg-card/80 p-5 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.30)] backdrop-blur-sm dark:border-white/10 dark:shadow-[0_22px_60px_-38px_rgba(0,0,0,0.42)] sm:rounded-3xl sm:p-6"
             style={{ animationDelay: `${840 + index * 120}ms` }}
           >
             <div className="flex items-start justify-between gap-3">
@@ -671,10 +671,10 @@ function HowItWorksSection({ signInHref }: { signInHref: string }) {
                 {step.badge}
               </span>
             </div>
-            <h3 className="mt-3 text-lg font-bold text-slate-950 sm:text-xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
+            <h3 className="mt-3 text-lg font-bold text-foreground sm:text-xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
               {step.title}
             </h3>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{step.text}</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.text}</p>
           </article>
         ))}
       </div>
@@ -685,7 +685,7 @@ function HowItWorksSection({ signInHref }: { signInHref: string }) {
       >
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div>
-            <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-100">
+            <p className="inline-flex rounded-full border border-white/20 bg-card/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-100">
               Jetzt kostenlos starten
             </p>
             <h2 className="mt-4 max-w-3xl text-[1.9rem] font-black leading-tight text-white sm:text-3xl lg:text-[3.4rem] [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]">
@@ -703,7 +703,7 @@ function HowItWorksSection({ signInHref }: { signInHref: string }) {
               </a>
               <a
                 href="/docs/schnellstart"
-                className="inline-flex min-h-[54px] items-center justify-center rounded-2xl border border-white/20 bg-white/8 px-6 py-3.5 text-base font-semibold text-white/92 transition hover:bg-white/14 active:bg-white/8 sm:min-h-0 sm:py-3.5"
+                className="inline-flex min-h-[54px] items-center justify-center rounded-2xl border border-white/20 bg-card/8 px-6 py-3.5 text-base font-semibold text-white/92 transition hover:bg-card/14 active:bg-card/8 sm:min-h-0 sm:py-3.5"
               >
                 Schnellstart lesen
               </a>
@@ -715,7 +715,7 @@ function HowItWorksSection({ signInHref }: { signInHref: string }) {
             </div>
           </div>
 
-          <aside className="rounded-[28px] border border-white/12 bg-white/10 p-4 backdrop-blur-sm sm:p-5">
+          <aside className="rounded-[28px] border border-white/12 bg-card/10 p-4 backdrop-blur-sm sm:p-5">
             <div className="overflow-hidden rounded-[22px] border border-white/10">
               <img
                 src="/landing/realite-hero-photo.png"

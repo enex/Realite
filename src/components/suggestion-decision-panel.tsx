@@ -90,9 +90,9 @@ export function SuggestionDecisionPanel(props: SuggestionDecisionPanelProps) {
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <h2 className="text-lg font-semibold text-slate-900">Möchtest du teilnehmen?</h2>
-      <p className="mt-2 text-sm text-slate-600">
+    <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+      <h2 className="text-lg font-semibold text-foreground">Möchtest du teilnehmen?</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
         Deine Antwort wird gespeichert und verbessert die nächsten Vorschläge.
       </p>
 
@@ -112,18 +112,18 @@ export function SuggestionDecisionPanel(props: SuggestionDecisionPanelProps) {
             setSavedMessage(null);
           }}
           disabled={busy}
-          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 disabled:opacity-50"
+          className="rounded-lg border border-input px-4 py-2 text-sm font-semibold text-foreground disabled:opacity-50"
         >
           Nein
         </button>
       </div>
 
       {showDeclineForm ? (
-        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-sm font-semibold text-slate-800">Warum nicht? (Mehrfachauswahl möglich)</p>
+        <div className="mt-5 rounded-xl border border-border bg-muted p-4">
+          <p className="text-sm font-semibold text-foreground">Warum nicht? (Mehrfachauswahl möglich)</p>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {sortedReasons.map((reason) => (
-              <label key={reason} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
+              <label key={reason} className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm">
                 <input
                   type="checkbox"
                   checked={selectedReasons.includes(reason)}
@@ -135,7 +135,7 @@ export function SuggestionDecisionPanel(props: SuggestionDecisionPanelProps) {
             ))}
           </div>
 
-          <label className="mt-4 block text-sm text-slate-700" htmlFor="decline-note">
+          <label className="mt-4 block text-sm text-foreground" htmlFor="decline-note">
             Optional: Wenn folgendes anders wäre, dann ja
           </label>
           <textarea
@@ -143,7 +143,7 @@ export function SuggestionDecisionPanel(props: SuggestionDecisionPanelProps) {
             value={note}
             onChange={(event) => setNote(event.target.value.slice(0, 300))}
             placeholder="z. B. anderer Ort, spätere Uhrzeit, andere Gruppe"
-            className="mt-2 min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="mt-2 min-h-24 w-full rounded-lg border border-input px-3 py-2 text-sm"
             disabled={busy}
           />
 
@@ -151,7 +151,7 @@ export function SuggestionDecisionPanel(props: SuggestionDecisionPanelProps) {
             type="button"
             onClick={() => sendDecision("declined")}
             disabled={busy}
-            className="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
           >
             Absage speichern
           </button>

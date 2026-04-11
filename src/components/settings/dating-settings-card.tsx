@@ -41,9 +41,9 @@ export function DatingSettingsCard({
   }
 
   return (
-    <section id="dating" className="mt-6 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section id="dating" className="mt-6 scroll-mt-24 rounded-2xl border border-border bg-card p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold text-slate-900">Dating-Modus (`#date`)</h2>
+        <h2 className="text-lg font-semibold text-foreground">Dating-Modus (`#date`)</h2>
         <span
           className={`rounded-full px-3 py-1 text-xs font-semibold ${
             status.unlocked ? "bg-teal-100 text-teal-700" : "bg-amber-100 text-amber-700"
@@ -53,17 +53,17 @@ export function DatingSettingsCard({
         </span>
       </div>
 
-      <p className="mt-2 text-sm text-slate-600">
+      <p className="mt-2 text-sm text-muted-foreground">
         Wenn freigeschaltet, kannst du Events mit `#date` als geschützten Unterfall deiner normalen Aktivitätsplanung
         erstellen. Diese Events sind nur für Nutzer sichtbar, die gegenseitig mit dir matchen.
       </p>
 
-      <p className="mt-2 text-xs text-slate-500">
+      <p className="mt-2 text-xs text-muted-foreground">
         Realite behandelt Dating damit nicht als eigenen Produktkern oder offenen Personenfeed, sondern als bewusst begrenzte
         Relevanz-Sichtbarkeit für konkrete Aktivitäten.
       </p>
 
-      {loading ? <p className="mt-3 text-sm text-slate-500">Lade Dating-Einstellungen...</p> : null}
+      {loading ? <p className="mt-3 text-sm text-muted-foreground">Lade Dating-Einstellungen...</p> : null}
 
       {!status.unlocked && missingRequirementLabels.length ? (
         <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
@@ -72,21 +72,21 @@ export function DatingSettingsCard({
       ) : null}
 
       {status.age !== null ? (
-        <p className="mt-2 text-xs text-slate-500">Aktuelles Alter (aus Geburtsjahr): {status.age}</p>
+        <p className="mt-2 text-xs text-muted-foreground">Aktuelles Alter (aus Geburtsjahr): {status.age}</p>
       ) : null}
 
       <form onSubmit={onSubmit} className="mt-4 grid gap-3 sm:grid-cols-2">
-        <label className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 sm:col-span-2">
+        <label className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 sm:col-span-2">
           <input
             type="checkbox"
             checked={form.enabled}
             onChange={(event) => onFormChange({ ...form, enabled: event.target.checked })}
             disabled={busy}
           />
-          <span className="text-sm text-slate-700">Dating-Modus aktivieren</span>
+          <span className="text-sm text-foreground">Dating-Modus aktivieren</span>
         </label>
 
-        <label className="grid gap-1 text-sm text-slate-700">
+        <label className="grid gap-1 text-sm text-foreground">
           <span>Geburtsjahr</span>
           <input
             type="number"
@@ -99,12 +99,12 @@ export function DatingSettingsCard({
                 birthYear: event.target.value ? Number(event.target.value) : null
               })
             }
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-input px-3 py-2 text-sm"
             disabled={busy}
           />
         </label>
 
-        <label className="grid gap-1 text-sm text-slate-700">
+        <label className="grid gap-1 text-sm text-foreground">
           <span>Geschlecht</span>
           <select
             value={form.gender ?? ""}
@@ -114,7 +114,7 @@ export function DatingSettingsCard({
                 gender: event.target.value ? (event.target.value as DatingGender) : null
               })
             }
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-input px-3 py-2 text-sm"
             disabled={busy}
           >
             <option value="">Bitte wählen</option>
@@ -126,44 +126,44 @@ export function DatingSettingsCard({
           </select>
         </label>
 
-        <label className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2">
+        <label className="flex items-center gap-2 rounded-lg border border-border px-3 py-2">
           <input
             type="checkbox"
             checked={form.isSingle}
             onChange={(event) => onFormChange({ ...form, isSingle: event.target.checked })}
             disabled={busy}
           />
-          <span className="text-sm text-slate-700">Ich bin single</span>
+          <span className="text-sm text-foreground">Ich bin single</span>
         </label>
 
-        <label className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2">
+        <label className="flex items-center gap-2 rounded-lg border border-border px-3 py-2">
           <input
             type="checkbox"
             checked={form.soughtOnlySingles}
             onChange={(event) => onFormChange({ ...form, soughtOnlySingles: event.target.checked })}
             disabled={busy}
           />
-          <span className="text-sm text-slate-700">Ich suche nur Singles</span>
+          <span className="text-sm text-foreground">Ich suche nur Singles</span>
         </label>
 
-        <div className="rounded-lg border border-slate-200 p-3 sm:col-span-2">
-          <p className="text-sm font-medium text-slate-800">Ich suche</p>
+        <div className="rounded-lg border border-border p-3 sm:col-span-2">
+          <p className="text-sm font-medium text-foreground">Ich suche</p>
           <div className="mt-2 grid gap-2 sm:grid-cols-3">
             {GENDER_OPTIONS.map((gender) => (
-              <label key={gender} className="flex items-center gap-2 rounded border border-slate-200 px-2 py-1 text-sm">
+              <label key={gender} className="flex items-center gap-2 rounded border border-border px-2 py-1 text-sm">
                 <input
                   type="checkbox"
                   checked={form.soughtGenders.includes(gender)}
                   onChange={() => toggleSoughtGender(gender)}
                   disabled={busy}
                 />
-                <span className="text-slate-700">{GENDER_LABELS[gender]}</span>
+                <span className="text-foreground">{GENDER_LABELS[gender]}</span>
               </label>
             ))}
           </div>
         </div>
 
-        <label className="grid gap-1 text-sm text-slate-700">
+        <label className="grid gap-1 text-sm text-foreground">
           <span>Gesuchtes Alter von</span>
           <input
             type="number"
@@ -176,12 +176,12 @@ export function DatingSettingsCard({
                 soughtAgeMin: event.target.value ? Number(event.target.value) : null
               })
             }
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-input px-3 py-2 text-sm"
             disabled={busy}
           />
         </label>
 
-        <label className="grid gap-1 text-sm text-slate-700">
+        <label className="grid gap-1 text-sm text-foreground">
           <span>Gesuchtes Alter bis</span>
           <input
             type="number"
@@ -194,7 +194,7 @@ export function DatingSettingsCard({
                 soughtAgeMax: event.target.value ? Number(event.target.value) : null
               })
             }
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-input px-3 py-2 text-sm"
             disabled={busy}
           />
         </label>
@@ -202,7 +202,7 @@ export function DatingSettingsCard({
         <button
           type="submit"
           disabled={busy}
-          className="w-fit rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 sm:col-span-2"
+          className="w-fit rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50 sm:col-span-2"
         >
           Dating-Profil speichern
         </button>

@@ -101,8 +101,8 @@ export default async function EventShortcutPage({
           showCreatorEmail={false}
         />
 
-        <section className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-5">
-          <p className="text-sm font-medium text-slate-700">
+        <section className="mt-4 rounded-2xl border border-border bg-muted p-5">
+          <p className="text-sm font-medium text-foreground">
             Melde dich an, um zuzusagen, abzusagen oder zu kommentieren.
           </p>
           <a
@@ -111,7 +111,7 @@ export default async function EventShortcutPage({
           >
             Jetzt anmelden
           </a>
-          <p className="mt-2 text-xs text-slate-500">Du wählst den verfügbaren Login danach selbst aus.</p>
+          <p className="mt-2 text-xs text-muted-foreground">Du wählst den verfügbaren Login danach selbst aus.</p>
         </section>
 
         <EventComments
@@ -240,13 +240,13 @@ export default async function EventShortcutPage({
             creatorName={event.createdByName ?? event.createdByEmail}
           />
           <div className={`mt-4 ${activityCard.insetClassName}`}>
-            <p className="text-sm text-slate-600">Warum wurde dir das vorgeschlagen?</p>
-            <p className="mt-2 text-sm text-slate-800">{suggestionForFlow.reason}</p>
+            <p className="text-sm text-muted-foreground">Warum wurde dir das vorgeschlagen?</p>
+            <p className="mt-2 text-sm text-foreground">{suggestionForFlow.reason}</p>
           </div>
         </section>
       ) : suggestion ? (
         <section className={`mt-4 ${suggestionCard.sectionClassName} sm:p-6`}>
-          <p className="text-sm text-slate-700">
+          <p className="text-sm text-foreground">
             Für dieses Event gibt es einen persönlichen Vorschlag mit Status <strong>{suggestion.status}</strong>.
           </p>
           <Link

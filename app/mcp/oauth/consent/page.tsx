@@ -27,17 +27,17 @@ export default async function MpcOAuthConsentPage({
       : [];
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center px-6 py-16 text-slate-900">
-      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center px-6 py-16 text-foreground">
+      <div className="rounded-3xl border border-border bg-card p-8 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-700">Realite MCP</p>
         <h1 className="mt-3 text-3xl font-bold tracking-tight">Zugriff bestätigen</h1>
-        <p className="mt-4 text-sm leading-6 text-slate-600">
-          Der Client <span className="font-semibold text-slate-900">{clientId}</span> moechte auf dein Realite-Konto
+        <p className="mt-4 text-sm leading-6 text-muted-foreground">
+          Der Client <span className="font-semibold text-foreground">{clientId}</span> moechte auf dein Realite-Konto
           zugreifen.
         </p>
-        <div className="mt-6 rounded-2xl bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Angeforderte Scopes</p>
-          <ul className="mt-3 space-y-2 text-sm text-slate-700">
+        <div className="mt-6 rounded-2xl bg-muted p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Angeforderte Scopes</p>
+          <ul className="mt-3 space-y-2 text-sm text-foreground">
             {scopes.length > 0 ? scopes.map((scope) => <li key={scope}>{scope}</li>) : <li>Standard-Zugriff</li>}
           </ul>
         </div>
@@ -57,7 +57,7 @@ export default async function MpcOAuthConsentPage({
             <input type="hidden" name="accept" value="false" />
             <button
               type="submit"
-              className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-full border border-input px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
             >
               Ablehnen
             </button>

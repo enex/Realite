@@ -50,29 +50,29 @@ function AttendeeResponsesSummary({
     : undefined;
 
   return (
-    <div className="mt-4 space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
-      <p className="text-sm font-semibold text-slate-900">Zusagen</p>
+    <div className="mt-4 space-y-2 rounded-xl border border-border bg-muted p-4">
+      <p className="text-sm font-semibold text-foreground">Zusagen</p>
       {myStatus === "accepted" && (
         <p className="text-sm font-medium text-teal-700">Du hast zugesagt.</p>
       )}
       {myStatus === "declined" && (
-        <p className="text-sm text-slate-600">Du hast abgesagt.</p>
+        <p className="text-sm text-muted-foreground">Du hast abgesagt.</p>
       )}
       {myStatus && myStatus !== "accepted" && myStatus !== "declined" && (
-        <p className="text-sm text-slate-600">Deine Antwort steht noch aus.</p>
+        <p className="text-sm text-muted-foreground">Deine Antwort steht noch aus.</p>
       )}
       {accepted.length > 0 && (
-        <p className="text-xs text-slate-600">
+        <p className="text-xs text-muted-foreground">
           Zugesagt: {accepted.map((r) => r.email).join(", ")}
         </p>
       )}
       {declined.length > 0 && (
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted-foreground">
           Abgesagt: {declined.map((r) => r.email).join(", ")}
         </p>
       )}
       {pending.length > 0 && (
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted-foreground">
           Ausstehend: {pending.map((r) => r.email).join(", ")}
         </p>
       )}
@@ -229,16 +229,16 @@ export function EventInviteSection({ eventId, currentUserEmail }: EventInviteSec
   return (
     <section
       id="event-invite"
-      className="mt-4 scroll-mt-20 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 dark:border-white/12 dark:bg-[var(--app-surface)] dark:shadow-none"
+      className="mt-4 scroll-mt-20 rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6 dark:border-white/12 dark:bg-[var(--app-surface)] dark:shadow-none"
     >
-      <h2 className="text-lg font-semibold text-slate-900">Jemanden einladen</h2>
-      <p className="mt-1 text-sm text-slate-600">
+      <h2 className="text-lg font-semibold text-foreground">Jemanden einladen</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
         Die Person erhält eine Einladung per E-Mail über Google Kalender.
       </p>
 
       {inviteData.suggestedContacts.length > 0 && !searchQuery.trim() && (
         <div className="mt-3">
-          <p className="text-xs font-medium text-slate-500">Aus deinen Kontakten</p>
+          <p className="text-xs font-medium text-muted-foreground">Aus deinen Kontakten</p>
           <ul className="mt-2 flex flex-wrap gap-2">
             {inviteData.suggestedContacts.slice(0, 3).map((contact) => (
               <li key={contact.email}>
@@ -246,7 +246,7 @@ export function EventInviteSection({ eventId, currentUserEmail }: EventInviteSec
                   type="button"
                   onClick={() => invite(contact.email)}
                   disabled={invitingEmail !== null}
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:border-teal-500 hover:bg-teal-50 hover:text-teal-800 disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-full border border-input bg-card px-3 py-1.5 text-sm text-foreground hover:border-teal-500 hover:bg-teal-50 hover:text-teal-800 disabled:opacity-50"
                 >
                   {contact.image ? (
                     <img
@@ -255,13 +255,13 @@ export function EventInviteSection({ eventId, currentUserEmail }: EventInviteSec
                       className="h-6 w-6 rounded-full object-cover"
                     />
                   ) : (
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-xs font-medium text-slate-600">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
                       {(contact.name ?? contact.email).slice(0, 1).toUpperCase()}
                     </span>
                   )}
                   {contact.name ?? contact.email}
                   {invitingEmail === contact.email && (
-                    <span className="text-slate-400">…</span>
+                    <span className="text-muted-foreground">…</span>
                   )}
                 </button>
               </li>
@@ -282,15 +282,15 @@ export function EventInviteSection({ eventId, currentUserEmail }: EventInviteSec
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => searchQuery.trim() && setOpen(true)}
           onKeyDown={handleKeyDown}
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+          className="w-full rounded-lg border border-input bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
           autoComplete="off"
         />
         {searching && (
-          <p className="mt-1 text-xs text-slate-500">Suche …</p>
+          <p className="mt-1 text-xs text-muted-foreground">Suche …</p>
         )}
         {open && (searchQuery.trim() || displayList.length > 0) && (
           <ul
-            className="mt-1 max-h-48 overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-sm"
+            className="mt-1 max-h-48 overflow-auto rounded-lg border border-border bg-card py-1 shadow-sm"
             role="listbox"
           >
             {canInviteByEmail && (
@@ -300,7 +300,7 @@ export function EventInviteSection({ eventId, currentUserEmail }: EventInviteSec
                 className={`cursor-pointer px-3 py-2 text-sm ${
                   selectedIndex === -1
                     ? "bg-teal-50 text-teal-800"
-                    : "text-slate-700 hover:bg-slate-50"
+                    : "text-foreground hover:bg-muted"
                 }`}
                 onMouseEnter={() => setSelectedIndex(-1)}
                 onClick={() => invite(searchQuery.trim())}
@@ -318,7 +318,7 @@ export function EventInviteSection({ eventId, currentUserEmail }: EventInviteSec
                   className={`flex cursor-pointer items-center gap-2 px-3 py-2 text-sm ${
                     selectedIndex === idx
                       ? "bg-teal-50 text-teal-800"
-                      : "text-slate-700 hover:bg-slate-50"
+                      : "text-foreground hover:bg-muted"
                   }`}
                   onMouseEnter={() => setSelectedIndex(idx)}
                   onClick={() => invite(c.email)}
@@ -330,7 +330,7 @@ export function EventInviteSection({ eventId, currentUserEmail }: EventInviteSec
                       className="h-6 w-6 rounded-full object-cover"
                     />
                   ) : (
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-xs font-medium text-slate-600">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
                       {(c.name ?? c.email).slice(0, 1).toUpperCase()}
                     </span>
                   )}
@@ -349,7 +349,7 @@ export function EventInviteSection({ eventId, currentUserEmail }: EventInviteSec
       )}
 
       {inviteData.alreadyInvitedEmails.length > 0 && (
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="mt-3 text-xs text-muted-foreground">
           Bereits eingeladen: {inviteData.alreadyInvitedEmails.length} Person(en)
         </p>
       )}

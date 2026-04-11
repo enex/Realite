@@ -15,12 +15,11 @@ export function Toaster() {
       position="bottom-center"
       toastOptions={{
         classNames: {
-          toast:
-            "!border-teal-200 !bg-teal-50 !text-teal-800 !shadow-md",
-          title: "!text-teal-900 !font-semibold",
-          description: "!text-teal-700",
-          loading: "!border-teal-200 !bg-teal-50 !text-teal-800",
-          closeButton: "!text-teal-600 !border-teal-200 hover:!bg-teal-100",
+          toast: "!border-border !bg-card !text-foreground !shadow-md",
+          title: "!font-semibold !text-foreground",
+          description: "!text-muted-foreground",
+          loading: "!border-border !bg-card !text-foreground",
+          closeButton: "!border-border !text-muted-foreground hover:!bg-muted",
         },
       }}
       className="toaster"

@@ -24,11 +24,11 @@ export default async function MpcOAuthLoginPage({
   const providers = getAvailableAuthProviders();
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center px-6 py-16 text-slate-900">
-      <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-[0_30px_80px_-48px_rgba(15,23,42,0.45)]">
+    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center px-6 py-16 text-foreground">
+      <div className="rounded-[32px] border border-border bg-card p-8 shadow-[0_30px_80px_-48px_rgba(15,23,42,0.45)]">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-700">Realite MCP</p>
         <h1 className="mt-3 text-3xl font-bold tracking-tight">Anmeldung für MCP-Zugriff</h1>
-        <p className="mt-3 text-base leading-7 text-slate-600">
+        <p className="mt-3 text-base leading-7 text-muted-foreground">
           Wähle einen verfügbaren Kontopfad. Der Zugang für Realite und die spätere MCP-Freigabe bleibt danach derselbe.
         </p>
         <div className="mt-7">
@@ -40,7 +40,7 @@ export default async function MpcOAuthLoginPage({
             </p>
           )}
         </div>
-        <p className="mt-6 text-xs text-slate-500">Nach dem Login bestätigst du im nächsten Schritt nur noch den MCP-Zugriff.</p>
+        <p className="mt-6 text-xs text-muted-foreground">Nach dem Login bestätigst du im nächsten Schritt nur noch den MCP-Zugriff.</p>
       </div>
     </main>
   );

@@ -20,14 +20,14 @@ describe("visual priority", () => {
   test("keeps planning surfaces neutral and management-focused", () => {
     const meta = getVisualPriorityMeta("planning");
 
-    expect(meta.sectionClassName).toContain("white");
-    expect(meta.badgeClassName).toContain("slate");
+    expect(meta.sectionClassName).toContain("bg-card");
+    expect(meta.badgeClassName).toContain("muted");
   });
 
   test("falls back to neutral styling for unexpected priorities", () => {
     const meta = getVisualPriorityMeta("activity" as never);
 
-    expect(meta.sectionClassName).toContain("slate");
-    expect(meta.badgeClassName).toContain("slate");
+    expect(meta.sectionClassName).toContain("border-border");
+    expect(meta.badgeClassName).toContain("ring-border");
   });
 });

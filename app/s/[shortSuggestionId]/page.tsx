@@ -140,7 +140,7 @@ export default async function SuggestionShortcutPage({
             href={`/api/suggestions/${encodeURIComponent(suggestion.id)}/calendar-link`}
             target="_blank"
             rel="noreferrer noopener"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:border-slate-400"
+            className="inline-flex items-center gap-2 rounded-lg border border-input bg-card px-3 py-2 text-sm font-semibold text-foreground hover:border-muted-foreground"
           >
             <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-none stroke-current" strokeWidth="2">
               <path d="M12 20h9" />
@@ -164,9 +164,9 @@ export default async function SuggestionShortcutPage({
         <EventInviteSection eventId={suggestion.eventId} currentUserEmail={user.email} />
       ) : null}
 
-      <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <p className="text-sm text-slate-600">Warum wurde dir das vorgeschlagen?</p>
-        <p className="mt-2 text-sm text-slate-800">{suggestion.reason}</p>
+      <section className="mt-4 rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+        <p className="text-sm text-muted-foreground">Warum wurde dir das vorgeschlagen?</p>
+        <p className="mt-2 text-sm text-foreground">{suggestion.reason}</p>
       </section>
 
       <EventComments eventId={suggestion.eventId} />

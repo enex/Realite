@@ -1,170 +1,195 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+/* shadcn/ui: Dark Mode über Klasse am Root (next-themes) */
+@custom-variant dark (&:is(.dark *));
 
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/*
+ * Realite: leicht warme Neutrals, Primary = Marken-Teal (#2F5D50).
+ * Werte an shadcn „neutral“ angelehnt (OKLCH).
+ */
 :root {
   color-scheme: light;
-  --app-primary: #2f5d50;
-  --app-primary-dark: #1e3a34;
-  --app-background: #f5f1e8;
-  --app-surface: #fbf8f2;
-  --app-accent: #c76b4f;
+  --radius: 0.625rem;
 
-  --color-slate-50: #fbf8f2;
-  --color-slate-100: #f5f1e8;
-  --color-slate-200: #e7dfcf;
-  --color-slate-300: #d3c8b2;
-  --color-slate-400: #b39f82;
-  --color-slate-500: #958468;
-  --color-slate-600: #76664f;
-  --color-slate-700: #5d503d;
-  --color-slate-800: #463c2d;
-  --color-slate-900: #2f281f;
-  --color-slate-950: #1f1a14;
+  --background: oklch(0.97 0.012 85);
+  --foreground: oklch(0.22 0.02 75);
+  --card: oklch(0.995 0.008 85);
+  --card-foreground: oklch(0.22 0.02 75);
+  --popover: oklch(0.995 0.008 85);
+  --popover-foreground: oklch(0.22 0.02 75);
 
-  --color-teal-50: #eef6f2;
-  --color-teal-100: #d7e8e0;
-  --color-teal-200: #b2d3c6;
-  --color-teal-300: #86b7a8;
-  --color-teal-400: #679b8b;
-  --color-teal-500: #4d8172;
-  --color-teal-600: #3d6f61;
-  --color-teal-700: #2f5d50;
-  --color-teal-800: #254842;
-  --color-teal-900: #1e3a34;
+  --primary: oklch(0.39 0.055 168);
+  --primary-foreground: oklch(0.99 0.005 168);
 
-  --color-emerald-50: #eef6f2;
-  --color-emerald-100: #d7e8e0;
-  --color-emerald-200: #b2d3c6;
-  --color-emerald-300: #86b7a8;
-  --color-emerald-400: #679b8b;
-  --color-emerald-500: #4d8172;
-  --color-emerald-600: #3d6f61;
-  --color-emerald-700: #2f5d50;
-  --color-emerald-800: #254842;
-  --color-emerald-900: #1e3a34;
+  --secondary: oklch(0.95 0.015 85);
+  --secondary-foreground: oklch(0.28 0.02 75);
 
-  --color-amber-50: #fdf4f1;
-  --color-amber-100: #f8e7e1;
-  --color-amber-200: #f2d2c7;
-  --color-amber-300: #e7b2a3;
-  --color-amber-400: #d88973;
-  --color-amber-500: #c76b4f;
-  --color-amber-600: #b65e44;
-  --color-amber-700: #964c38;
-  --color-amber-800: #773a2a;
-  --color-amber-900: #5a2d21;
+  --muted: oklch(0.94 0.012 85);
+  --muted-foreground: oklch(0.48 0.02 75);
 
-  --color-rose-400: #d88973;
-  --color-rose-500: #c76b4f;
+  --accent: oklch(0.94 0.02 168);
+  --accent-foreground: oklch(0.28 0.04 168);
 
-  --color-indigo-100: #d7e8e0;
-  --color-indigo-700: #2f5d50;
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --border: oklch(0.88 0.015 85);
+  --input: oklch(0.88 0.015 85);
+  --ring: oklch(0.39 0.055 168);
+
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  --sidebar: oklch(0.97 0.012 85);
+  --sidebar-foreground: oklch(0.22 0.02 75);
+  --sidebar-primary: oklch(0.39 0.055 168);
+  --sidebar-primary-foreground: oklch(0.99 0.005 168);
+  --sidebar-accent: oklch(0.94 0.012 85);
+  --sidebar-accent-foreground: oklch(0.22 0.02 75);
+  --sidebar-border: oklch(0.88 0.015 85);
+  --sidebar-ring: oklch(0.39 0.055 168);
+
+  /* Legacy-Aliase (bestehende Klassen mit var(--app-*)) */
+  --app-background: var(--background);
+  --app-surface: var(--card);
+  --app-primary: oklch(0.39 0.055 168);
+  --app-primary-dark: oklch(0.28 0.045 168);
+  --app-accent: oklch(0.55 0.09 45);
 }
 
 .dark {
   color-scheme: dark;
-  --app-primary: #5aaf96;
-  --app-primary-dark: #3d8772;
-  /* Warm charcoal: leicht mehr Tiefe als reines Grau */
-  --app-background: #12100e;
-  --app-surface: #1e1c19;
-  --app-accent: #d9a08a;
+  --background: oklch(0.16 0.012 85);
+  --foreground: oklch(0.96 0.01 85);
+  --card: oklch(0.2 0.014 85);
+  --card-foreground: oklch(0.96 0.01 85);
+  --popover: oklch(0.2 0.014 85);
+  --popover-foreground: oklch(0.96 0.01 85);
 
-  --color-slate-50: #171513;
-  --color-slate-100: #1c1a17;
-  --color-slate-200: #2e2b27;
-  --color-slate-300: #45413b;
-  --color-slate-400: #7a7268;
-  --color-slate-500: #9a9286;
-  --color-slate-600: #b0a89a;
-  --color-slate-700: #cac2b4;
-  --color-slate-800: #e3dcd0;
-  --color-slate-900: #f2ebe0;
-  --color-slate-950: #faf6ef;
+  --primary: oklch(0.72 0.09 168);
+  --primary-foreground: oklch(0.16 0.02 168);
 
-  /* Monoton von dunkel (50) zu hell (900); 700 = Akzent */
-  --color-teal-50: #141f1c;
-  --color-teal-100: #182520;
-  --color-teal-200: #1f332c;
-  --color-teal-300: #2a453c;
-  --color-teal-400: #3a5f52;
-  --color-teal-500: #4a8574;
-  --color-teal-600: #52957f;
-  --color-teal-700: #5aaf96;
-  --color-teal-800: #86c9b4;
-  --color-teal-900: #b8e5d4;
+  --secondary: oklch(0.26 0.014 85);
+  --secondary-foreground: oklch(0.96 0.01 85);
 
-  --color-emerald-50: #141f1c;
-  --color-emerald-100: #182520;
-  --color-emerald-200: #1f332c;
-  --color-emerald-300: #2a453c;
-  --color-emerald-400: #3a5f52;
-  --color-emerald-500: #4a8574;
-  --color-emerald-600: #52957f;
-  --color-emerald-700: #5aaf96;
-  --color-emerald-800: #86c9b4;
-  --color-emerald-900: #b8e5d4;
+  --muted: oklch(0.26 0.014 85);
+  --muted-foreground: oklch(0.72 0.015 85);
 
-  --color-amber-50: #2a1f18;
-  --color-amber-100: #33241c;
-  --color-amber-200: #443020;
-  --color-amber-300: #5a3b2c;
-  --color-amber-400: #8b5a3f;
-  --color-amber-500: #c77b56;
-  --color-amber-600: #d89470;
-  --color-amber-700: #e4ad8e;
-  --color-amber-800: #edc5ad;
-  --color-amber-900: #f5ddce;
+  --accent: oklch(0.28 0.03 168);
+  --accent-foreground: oklch(0.92 0.02 168);
 
-  --color-rose-400: #e49a86;
-  --color-rose-500: #e09880;
+  --destructive: oklch(0.65 0.2 25);
+  --destructive-foreground: oklch(0.98 0.01 25);
 
-  --color-red-50: #2d1a1a;
-  --color-red-200: #5a2525;
-  --color-red-700: #f28080;
-  --color-red-800: #e87070;
-  --color-red-900: #fcc;
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.72 0.09 168);
 
-  --color-indigo-100: #1e332d;
-  --color-indigo-700: #5aaf96;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+
+  --sidebar: oklch(0.18 0.012 85);
+  --sidebar-foreground: oklch(0.96 0.01 85);
+  --sidebar-primary: oklch(0.72 0.09 168);
+  --sidebar-primary-foreground: oklch(0.16 0.02 168);
+  --sidebar-accent: oklch(0.26 0.014 85);
+  --sidebar-accent-foreground: oklch(0.96 0.01 85);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.72 0.09 168);
+
+  --app-background: var(--background);
+  --app-surface: var(--card);
+  --app-primary: oklch(0.72 0.09 168);
+  --app-primary-dark: oklch(0.55 0.07 168);
+  --app-accent: oklch(0.78 0.08 45);
 }
 
-/*
- * Dark mode surface overrides:
- * bg-white → dark surface, bg-white/XX → dark frosted surface.
- * bg-slate-900/950 stay dark (buttons, overlays, code blocks).
- */
-:root.dark .bg-white {
-  background-color: var(--app-surface);
-}
-:root.dark [class*="bg-white\\/"] {
-  --color-white: #1c1a17;
-}
-:root.dark .bg-slate-900 {
-  background-color: #2a231c;
-}
-:root.dark .bg-slate-950 {
-  background-color: #1a1510;
-}
-:root.dark [class*="bg-slate-900\\/"] {
-  --color-slate-900: #2a231c;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply overflow-x-hidden bg-background text-foreground antialiased;
+  }
+
+  .dark input,
+  .dark select,
+  .dark textarea {
+    @apply bg-card text-foreground;
+  }
+
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    @apply text-muted-foreground;
+  }
 }
 
-/* Docs code blocks: keep dark bg + light text in both themes */
+/* Docs: Code-Blöcke dunkel halten (Lesbarkeit in beiden Themes) */
 .dark .docs-markdown pre {
-  background-color: #2a231c;
-  color: #f0ebe4;
-}
-.dark .docs-markdown code {
-  background-color: #32302d;
+  background-color: oklch(0.22 0.015 85);
+  color: oklch(0.96 0.01 85);
 }
 
-body {
-  font-family: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
-  background-color: var(--app-background);
-  color: var(--color-slate-900);
-  overflow-x: hidden;
+.docs-markdown pre {
+  background-color: oklch(0.22 0.015 85);
+  color: oklch(0.96 0.01 85);
+}
+
+.dark .docs-markdown code {
+  background-color: oklch(0.26 0.014 85);
+}
+
+.docs-markdown code {
+  background-color: oklch(0.94 0.012 85);
 }
 
 @keyframes realite-fade-up {
@@ -208,28 +233,15 @@ body {
   }
 }
 
-button  {
+button {
   cursor: pointer;
 }
 
-/* Dark mode form controls */
-.dark input,
-.dark select,
-.dark textarea {
-  background-color: var(--app-surface);
-  color: var(--color-slate-900);
-}
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: var(--color-slate-500);
-}
-
-/* Scrollbar: dezenter im Dark Mode */
 .dark {
-  scrollbar-color: var(--color-slate-300) var(--color-slate-100);
+  scrollbar-color: oklch(0.4 0.02 85) oklch(0.22 0.014 85);
 }
 
-/* Google Places: Vorschlagsliste über Modals (z. B. Event-Dialog z-[101]) */
+/* Google Places: Vorschlagsliste über Modals (z. B. Event-Dialog z-[101]) */
 .pac-container {
   z-index: 200 !important;
 }

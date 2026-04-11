@@ -16,7 +16,7 @@ type FlowCardProps = {
 };
 
 const baseClassName =
-  "rounded-xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-teal-300 hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60";
+  "rounded-xl border border-border bg-muted p-4 text-left transition hover:border-teal-300 hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60";
 
 export function FlowCard({ eyebrow, title, description, intent, href, onClick, disabled = false }: FlowCardProps) {
   const eyebrowClassName = getPageIntentMeta(intent).eyebrowClassName;

@@ -23,7 +23,7 @@ const AVAILABILITY_STYLES: Record<
   },
   planned: {
     label: "Geplant",
-    className: "border-slate-200 bg-slate-100 text-slate-700",
+    className: "border-border bg-muted text-foreground",
   },
   fallback_only: {
     label: "Fallback",
@@ -62,14 +62,14 @@ const SUMMARY_ITEMS = [
 
 function CapabilityRow({ capability }: { capability: CalendarCapabilityDefinition }) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+    <article className="rounded-2xl border border-border bg-muted p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="max-w-2xl">
-          <h3 className="text-sm font-semibold text-slate-900">{capability.label}</h3>
-          <p className="mt-1 text-sm leading-6 text-slate-700">{capability.description}</p>
+          <h3 className="text-sm font-semibold text-foreground">{capability.label}</h3>
+          <p className="mt-1 text-sm leading-6 text-foreground">{capability.description}</p>
         </div>
       </div>
-      <p className="mt-3 text-xs leading-5 text-slate-500">{capability.fallback}</p>
+      <p className="mt-3 text-xs leading-5 text-muted-foreground">{capability.fallback}</p>
       <div className="mt-4 flex flex-wrap gap-2">
         {(
           Object.entries(capability.availability) as Array<
@@ -83,7 +83,7 @@ function CapabilityRow({ capability }: { capability: CalendarCapabilityDefinitio
               className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${style.className}`}
             >
               <span>{PROVIDER_LABELS[providerId]}</span>
-              <span aria-hidden="true" className="text-slate-300">
+              <span aria-hidden="true" className="text-muted-foreground">
                 ·
               </span>
               <span>{style.label}</span>
@@ -100,18 +100,18 @@ export function ProviderCapabilityCard() {
   const providerExtras = getCalendarCapabilitiesByLayer("provider_extra");
 
   return (
-    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-900">Kalender-Kern und Provider-Pfade</h2>
-      <p className="mt-2 text-sm leading-6 text-slate-700">
+    <section className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <h2 className="text-lg font-semibold text-foreground">Kalender-Kern und Provider-Pfade</h2>
+      <p className="mt-2 text-sm leading-6 text-foreground">
         Realite trennt hier bewusst zwischen gemeinsamem Produktkern und technischen Provider-Unterschieden. So bleibt
         klar, welche Kalenderfunktionen später für Apple und Microsoft anschließen sollen und wo Realite im Zweifel
         immer auf den Link-, Sichtbarkeits- und Join-Flow zurückfällt.
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         {SUMMARY_ITEMS.map((item) => (
-          <article key={item.title} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-sm font-semibold text-slate-900">{item.title}</h3>
-            <p className="mt-1 text-sm leading-6 text-slate-700">{item.description}</p>
+          <article key={item.title} className="rounded-2xl border border-border bg-muted p-4">
+            <h3 className="text-sm font-semibold text-foreground">{item.title}</h3>
+            <p className="mt-1 text-sm leading-6 text-foreground">{item.description}</p>
           </article>
         ))}
       </div>
@@ -127,8 +127,8 @@ export function ProviderCapabilityCard() {
         return (
           <div key={layer} className="mt-5">
             <div className="mb-3">
-              <h3 className="text-sm font-semibold text-slate-900">{section.title}</h3>
-              <p className="mt-1 text-xs leading-5 text-slate-500">{section.description}</p>
+              <h3 className="text-sm font-semibold text-foreground">{section.title}</h3>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">{section.description}</p>
             </div>
             <div className="grid gap-3">
               {sectionCapabilities.map((capability) => (

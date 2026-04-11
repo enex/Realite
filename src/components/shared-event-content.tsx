@@ -85,7 +85,7 @@ function getSchedulePhase(
 }
 
 const metaPillClassName =
-  "inline-flex max-w-full items-center rounded-full border border-slate-200/90 bg-slate-50/90 px-3 py-1 text-xs font-medium text-slate-800 shadow-sm dark:border-white/12 dark:bg-white/5";
+  "inline-flex max-w-full items-center rounded-full border border-border/90 bg-muted/90 px-3 py-1 text-xs font-medium text-foreground shadow-sm dark:border-white/12 dark:bg-card/5";
 
 function EventCoverImage({
   placeImageUrl,
@@ -144,8 +144,8 @@ export function SharedEventContent(props: SharedEventContentProps) {
     phase.emphasis === "live"
       ? "font-semibold text-teal-600"
       : phase.emphasis === "muted"
-        ? "text-slate-500"
-        : "text-slate-700";
+        ? "text-muted-foreground"
+        : "text-foreground";
 
   const acceptedN = props.acceptedParticipantCount ?? 0;
   const acceptedTitle = props.acceptedParticipantNamesLine?.trim() ?? undefined;
@@ -162,7 +162,7 @@ export function SharedEventContent(props: SharedEventContentProps) {
             <p className={managementPage.eyebrowClassName}>Gruppe: {props.groupName}</p>
           ) : null}
           <h1
-            className={`${props.groupName ? pageTitleClassName : "text-2xl font-semibold tracking-tight text-slate-900"} sm:text-3xl`}
+            className={`${props.groupName ? pageTitleClassName : "text-2xl font-semibold tracking-tight text-foreground"} sm:text-3xl`}
           >
             {props.title}
           </h1>
@@ -173,7 +173,7 @@ export function SharedEventContent(props: SharedEventContentProps) {
             href={originalEditUrl}
             target="_blank"
             rel="noreferrer noopener"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400 dark:border-white/15 dark:bg-white/5 dark:hover:border-white/25"
+            className="inline-flex items-center gap-2 rounded-lg border border-input bg-card px-3 py-2 text-xs font-semibold text-foreground hover:border-muted-foreground dark:border-white/15 dark:bg-card/5 dark:hover:border-white/25"
           >
             <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-none stroke-current" strokeWidth="2">
               <path d="M12 20h9" />
@@ -195,9 +195,9 @@ export function SharedEventContent(props: SharedEventContentProps) {
         {endsAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
       </p>
 
-      <p className="mt-2 text-sm text-slate-600">
-        <span className="text-slate-500">Dauer</span> {durationLabel}
-        <span className="mx-2 text-slate-400" aria-hidden="true">
+      <p className="mt-2 text-sm text-muted-foreground">
+        <span className="text-muted-foreground">Dauer</span> {durationLabel}
+        <span className="mx-2 text-muted-foreground" aria-hidden="true">
           ·
         </span>
         <span className={phaseClassName}>{phase.label}</span>
@@ -254,7 +254,7 @@ export function SharedEventContent(props: SharedEventContentProps) {
       {location ? (
         <EventLocationDetails location={location} />
       ) : (
-        <p className="mt-4 text-sm text-slate-500">Kein Ort angegeben.</p>
+        <p className="mt-4 text-sm text-muted-foreground">Kein Ort angegeben.</p>
       )}
 
       {sanitizedDescriptionHtml ? (
@@ -266,7 +266,7 @@ export function SharedEventContent(props: SharedEventContentProps) {
           />
         </section>
       ) : (
-        <p className="mt-4 text-sm text-slate-500">Keine Beschreibung.</p>
+        <p className="mt-4 text-sm text-muted-foreground">Keine Beschreibung.</p>
       )}
     </section>
   );

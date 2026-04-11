@@ -24,6 +24,6 @@ describe("page hierarchy", () => {
   test("maps page intents to stable eyebrow tones", () => {
     expect(getPageIntentMeta("discover").eyebrowClassName).toContain("teal");
     expect(getPageIntentMeta("react").eyebrowClassName).toContain("amber");
-    expect(getPageIntentMeta("manage").eyebrowClassName).toContain("slate");
+    expect(getPageIntentMeta("manage").eyebrowClassName).toContain("muted-foreground");
   });
 });

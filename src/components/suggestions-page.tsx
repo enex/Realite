@@ -195,7 +195,7 @@ export function SuggestionsPage({
     <AppShell user={{ name: profileName, email: profileEmail, image: profileImage }}>
       <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-xl font-bold text-slate-900">Vorschläge</h1>
+          <h1 className="text-xl font-bold text-foreground">Vorschläge</h1>
           <button
             onClick={runSuggestions}
             disabled={busy}
@@ -211,11 +211,11 @@ export function SuggestionsPage({
           </div>
         ) : null}
         <CalendarReconnectBanner calendarConnectionState={data.me.calendarConnectionState} />
-        {loading && data.suggestions.length === 0 ? <p className="mt-6 text-sm text-slate-500">Lade Vorschläge…</p> : null}
+        {loading && data.suggestions.length === 0 ? <p className="mt-6 text-sm text-muted-foreground">Lade Vorschläge…</p> : null}
 
         {actionableSuggestions.length > 0 ? (
           <section className="mt-5 space-y-3">
-            <h2 className="text-sm font-semibold text-slate-500">
+            <h2 className="text-sm font-semibold text-muted-foreground">
               {actionableSuggestions.length} offen
             </h2>
             {actionableSuggestions.map((suggestion) => (
@@ -230,15 +230,15 @@ export function SuggestionsPage({
             ))}
           </section>
         ) : !loading ? (
-          <div className="mt-8 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
-            <p className="text-sm font-medium text-slate-700">Keine offenen Vorschläge</p>
-            <p className="mt-1 text-sm text-slate-500">Starte ein neues Matching oder warte auf neue Aktivitäten.</p>
+          <div className="mt-8 rounded-xl border border-dashed border-border bg-muted px-4 py-8 text-center">
+            <p className="text-sm font-medium text-foreground">Keine offenen Vorschläge</p>
+            <p className="mt-1 text-sm text-muted-foreground">Starte ein neues Matching oder warte auf neue Aktivitäten.</p>
           </div>
         ) : null}
 
         {historySuggestions.length > 0 ? (
           <section className="mt-8 space-y-3">
-            <h2 className="text-sm font-semibold text-slate-500">Verlauf</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground">Verlauf</h2>
             {historySuggestions.map((suggestion) => (
               <SuggestionCard
                 key={suggestion.id}
@@ -282,10 +282,10 @@ function SuggestionCard({
         isSelected
           ? "border-teal-300 bg-teal-50 shadow-sm"
           : isActionable
-            ? "border-amber-200 bg-white hover:border-amber-300"
+            ? "border-amber-200 bg-card hover:border-amber-300"
             : suggestion.status === "accepted"
-              ? "border-slate-200 bg-white"
-              : "border-slate-200 bg-slate-50"
+              ? "border-border bg-card"
+              : "border-border bg-muted"
       }`}
       style={suggestion.color && !isSelected ? { borderLeftWidth: "4px", borderLeftColor: suggestion.color } : undefined}
     >
@@ -303,11 +303,11 @@ function SuggestionCard({
           </div>
           <a
             href={`/e/${shortenUUID(suggestion.eventId)}`}
-            className="mt-2 block font-medium text-slate-900 hover:text-teal-700"
+            className="mt-2 block font-medium text-foreground hover:text-teal-700"
           >
             {suggestion.title.replace(/#[^\s]+/gi, "").trim()}
           </a>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             {start.toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" })}
             {" · "}
             {start.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
@@ -332,7 +332,7 @@ function SuggestionCard({
               <button
                 onClick={() => onDecide(suggestion.id, "declined")}
                 disabled={busy}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
+                className="rounded-lg border border-input bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:bg-muted disabled:opacity-50"
               >
                 Nein
               </button>
@@ -347,7 +347,7 @@ function SuggestionCard({
           ) : (
             <a
               href={`/s/${shortenUUID(suggestion.id)}`}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+              className="rounded-lg border border-input bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:bg-muted"
             >
               {nextAction.ctaLabel}
             </a>

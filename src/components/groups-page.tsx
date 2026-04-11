@@ -151,10 +151,10 @@ export function GroupsPage({
     <AppShell user={{ name: profileName, email: profileEmail, image: profileImage }}>
       <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-xl font-bold text-slate-900">Gruppen</h1>
+          <h1 className="text-xl font-bold text-foreground">Gruppen</h1>
           <button
             onClick={() => setShowGroupForm((v) => !v)}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700"
+            className="rounded-lg border border-input px-3 py-1.5 text-sm font-semibold text-foreground"
           >
             {showGroupForm ? "Schließen" : "Neue Gruppe"}
           </button>
@@ -178,31 +178,31 @@ export function GroupsPage({
         ) : null}
 
         {showGroupForm ? (
-          <form onSubmit={createGroup} className="mt-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <form onSubmit={createGroup} className="mt-4 rounded-xl border border-border bg-card p-4 shadow-sm">
             <div className="grid gap-3 sm:grid-cols-2">
               <input
                 value={groupForm.name}
                 onChange={(e) => setGroupForm((s) => ({ ...s, name: e.target.value }))}
                 placeholder="Gruppenname"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-input px-3 py-2 text-sm"
                 required
               />
               <input
                 value={groupForm.hashtags}
                 onChange={(e) => setGroupForm((s) => ({ ...s, hashtags: e.target.value }))}
                 placeholder="#alle, #kontakte"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-input px-3 py-2 text-sm"
               />
               <input
                 value={groupForm.description}
                 onChange={(e) => setGroupForm((s) => ({ ...s, description: e.target.value }))}
                 placeholder="Beschreibung (optional)"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
+                className="w-full rounded-lg border border-input px-3 py-2 text-sm sm:col-span-2"
               />
               <select
                 value={groupForm.visibility}
                 onChange={(e) => setGroupForm((s) => ({ ...s, visibility: e.target.value as "public" | "private" }))}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-input px-3 py-2 text-sm"
               >
                 <option value="private">Privat</option>
                 <option value="public">Öffentlich</option>
@@ -211,19 +211,19 @@ export function GroupsPage({
             <button
               type="submit"
               disabled={busy}
-              className="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              className="mt-3 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
             >
               Erstellen
             </button>
           </form>
         ) : null}
 
-        {loading && data.groups.length === 0 ? <p className="mt-6 text-sm text-slate-500">Lade Gruppen…</p> : null}
+        {loading && data.groups.length === 0 ? <p className="mt-6 text-sm text-muted-foreground">Lade Gruppen…</p> : null}
 
         {visibleGroups.length === 0 && !loading && !showGroupForm ? (
-          <div className="mt-8 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
-            <p className="text-sm font-medium text-slate-700">Noch keine Gruppen</p>
-            <p className="mt-1 text-sm text-slate-500">Erstelle deine erste Gruppe, um Kontakte und Sichtbarkeit zu organisieren.</p>
+          <div className="mt-8 rounded-xl border border-dashed border-border bg-muted px-4 py-8 text-center">
+            <p className="text-sm font-medium text-foreground">Noch keine Gruppen</p>
+            <p className="mt-1 text-sm text-muted-foreground">Erstelle deine erste Gruppe, um Kontakte und Sichtbarkeit zu organisieren.</p>
           </div>
         ) : null}
 
@@ -238,19 +238,19 @@ export function GroupsPage({
                   className={`rounded-xl border p-4 transition ${state.cardClassName}`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="truncate font-semibold text-slate-900">{group.name}</p>
+                    <p className="truncate font-semibold text-foreground">{group.name}</p>
                     <div className="flex shrink-0 gap-1.5">
                       <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${state.badgeClassName}`}>
                         {state.label}
                       </span>
                       {group.syncProvider === "google_contacts" && group.syncEnabled ? (
-                        <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-teal-700 ring-1 ring-teal-200 dark:bg-teal-950/55 dark:ring-teal-500/40">
+                        <span className="rounded-full bg-card px-2 py-0.5 text-[11px] font-semibold text-teal-700 ring-1 ring-teal-200 dark:bg-teal-950/55 dark:ring-teal-500/40">
                           Sync
                         </span>
                       ) : null}
                     </div>
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {group.contactCount} Kontakte · {group.eventCount} Events · {group.visibility === "public" ? "öffentlich" : "privat"}
                   </p>
                   {group.contacts.length > 0 ? (
@@ -267,7 +267,7 @@ export function GroupsPage({
                           />
                         ))}
                         {group.contactCount > 4 ? (
-                          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] font-semibold text-slate-600 ring-2 ring-white dark:border-white/12 dark:bg-[var(--app-surface)] dark:text-slate-300 dark:ring-[var(--app-background)]">
+                          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-border bg-card text-[10px] font-semibold text-muted-foreground ring-2 ring-white dark:border-white/12 dark:bg-[var(--app-surface)] dark:text-muted-foreground dark:ring-[var(--app-background)]">
                             +{group.contactCount - 4}
                           </span>
                         ) : null}
@@ -281,17 +281,17 @@ export function GroupsPage({
         ) : null}
 
         {datingModeEnabled ? (
-          <section className="mt-6 rounded-xl border border-slate-200 bg-white p-4">
+          <section className="mt-6 rounded-xl border border-border bg-card p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="font-semibold text-slate-900">#date</p>
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="font-semibold text-foreground">#date</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   {data.dating.unlocked ? "Freigeschaltet" : data.dating.enabled ? "Aktiv, noch nicht vollständig" : "Nicht aktiviert"}
                 </p>
               </div>
               <a
                 href="/settings#dating"
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700"
+                className="rounded-lg border border-input px-3 py-1.5 text-xs font-semibold text-foreground"
               >
                 Profil öffnen
               </a>
@@ -301,19 +301,19 @@ export function GroupsPage({
 
         {hiddenGroups.length > 0 ? (
           <section className="mt-6">
-            <h2 className="text-sm font-semibold text-slate-500">Versteckt</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground">Versteckt</h2>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               {hiddenGroups.map((group) => (
                 <Link
                   key={group.id}
                   href={`/groups/${group.id}`}
-                  className="rounded-lg border border-slate-200 p-3 transition hover:border-amber-300 hover:bg-amber-50"
+                  className="rounded-lg border border-border p-3 transition hover:border-amber-300 hover:bg-amber-50"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <p className="truncate font-medium text-slate-900">{group.name}</p>
+                    <p className="truncate font-medium text-foreground">{group.name}</p>
                     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700">Versteckt</span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">{group.contactCount} Kontakte · {group.eventCount} Events</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{group.contactCount} Kontakte · {group.eventCount} Events</p>
                 </Link>
               ))}
             </div>

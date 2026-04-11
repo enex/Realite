@@ -1,20 +1,20 @@
 export type PageIntent = "discover" | "react" | "manage";
 
 export const surfaceShellClassName =
-  "rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/12 dark:bg-[var(--app-surface)] dark:shadow-none";
+  "rounded-2xl border border-border bg-card shadow-sm dark:border-white/12 dark:bg-[var(--app-surface)] dark:shadow-none";
 export const pageShellClassName = `${surfaceShellClassName} p-6`;
 export const insetShellClassName = "rounded-2xl border p-4";
 export const eyebrowBaseClassName = "text-[11px] font-semibold uppercase tracking-[0.16em]";
-/** Slate-Tokens sind in globals.css pro Theme gemappt; kein extra dark:text-slate-* (invertierte Skala). */
-export const pageTitleClassName = "mt-2 text-2xl font-semibold tracking-tight text-slate-900";
-export const pageLeadClassName = "mt-2 max-w-2xl text-sm leading-6 text-slate-600";
-export const pageMetaClassName = "mt-1 text-xs text-slate-500";
-export const sectionTitleClassName = "mt-2 text-lg font-semibold tracking-tight text-slate-900";
-export const sectionBodyClassName = "mt-2 text-sm leading-6 text-slate-600";
-export const statLabelClassName = "text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500";
-export const statValueClassName = "mt-1 text-xl font-semibold text-slate-900";
-export const detailLabelClassName = "text-sm font-semibold text-slate-900";
-export const detailBodyClassName = "mt-1 text-sm leading-6 text-slate-700";
+/** Semantische Textfarben (foreground / muted-foreground) aus globals.css / shadcn-Theme. */
+export const pageTitleClassName = "mt-2 text-2xl font-semibold tracking-tight text-foreground";
+export const pageLeadClassName = "mt-2 max-w-2xl text-sm leading-6 text-muted-foreground";
+export const pageMetaClassName = "mt-1 text-xs text-muted-foreground";
+export const sectionTitleClassName = "mt-2 text-lg font-semibold tracking-tight text-foreground";
+export const sectionBodyClassName = "mt-2 text-sm leading-6 text-muted-foreground";
+export const statLabelClassName = "text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground";
+export const statValueClassName = "mt-1 text-xl font-semibold text-foreground";
+export const detailLabelClassName = "text-sm font-semibold text-foreground";
+export const detailBodyClassName = "mt-1 text-sm leading-6 text-foreground";
 
 export function getPageIntentMeta(intent: PageIntent) {
   switch (intent) {
@@ -28,7 +28,7 @@ export function getPageIntentMeta(intent: PageIntent) {
       };
     case "manage":
       return {
-        eyebrowClassName: `${eyebrowBaseClassName} text-slate-500`,
+        eyebrowClassName: `${eyebrowBaseClassName} text-muted-foreground`,
       };
   }
 }

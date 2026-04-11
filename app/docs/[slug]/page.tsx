@@ -40,15 +40,15 @@ export default async function DocsDetailPage({ params }: { params: Promise<{ slu
         </a>
       </div>
 
-      <article className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+      <article className="rounded-2xl border border-border bg-card p-8 shadow-sm">
         <div
-          className="docs-markdown text-slate-800 [&_a]:text-teal-700 [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-slate-300 [&_blockquote]:pl-4 [&_code]:rounded [&_code]:bg-slate-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-2xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-xl [&_h3]:font-semibold [&_li]:mb-1 [&_p]:mb-3 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-slate-900 [&_pre]:p-4 [&_pre]:text-slate-100 [&_ul]:list-disc [&_ul]:pl-6"
+          className="docs-markdown text-foreground [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-input [&_blockquote]:pl-4 [&_code]:rounded [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-2xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-xl [&_h3]:font-semibold [&_li]:mb-1 [&_p]:mb-3 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:p-4 [&_ul]:list-disc [&_ul]:pl-6"
           dangerouslySetInnerHTML={{ __html: rendered.html }}
         />
       </article>
 
-      <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Weitere Seiten</p>
+      <section className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Weitere Seiten</p>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {allPages
             .filter((entry) => entry.slug !== slug)
@@ -56,7 +56,7 @@ export default async function DocsDetailPage({ params }: { params: Promise<{ slu
               <a
                 key={entry.slug}
                 href={`/docs/${entry.slug}`}
-                className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 transition hover:border-teal-300 hover:bg-teal-50"
+                className="rounded-lg border border-border px-3 py-2 text-sm text-foreground transition hover:border-teal-300 hover:bg-teal-50"
               >
                 {entry.title}
               </a>

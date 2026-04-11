@@ -219,7 +219,7 @@ export function SettingsPage({
         {datingModeEnabled && dating.error ? (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{dating.error}</div>
         ) : null}
-        {loading ? <p className="mt-6 text-slate-600">Lade Einstellungen...</p> : null}
+        {loading ? <p className="mt-6 text-muted-foreground">Lade Einstellungen...</p> : null}
 
         <ThemeSettingsCard />
 

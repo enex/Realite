@@ -10,10 +10,10 @@ export default function DocsIndexPage() {
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-      <header className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+      <header className="rounded-2xl border border-border bg-card p-8 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-wide text-teal-700">Realite Docs</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">So nutzt du Realite</h1>
-        <p className="mt-3 max-w-3xl text-slate-600">
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground">So nutzt du Realite</h1>
+        <p className="mt-3 max-w-3xl text-muted-foreground">
           Diese Dokumentation erklärt, was Realite ist und wie du Gruppen, Kontakte, Events und Matching effektiv
           einsetzt.
         </p>
@@ -24,10 +24,10 @@ export default function DocsIndexPage() {
           <a
             key={page.slug}
             href={`/docs/${page.slug}`}
-            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-teal-300 hover:bg-teal-50"
+            className="rounded-xl border border-border bg-card p-5 shadow-sm transition hover:border-teal-300 hover:bg-teal-50"
           >
-            <p className="text-lg font-semibold text-slate-900">{page.title}</p>
-            <p className="mt-1 text-sm text-slate-600">{page.description}</p>
+            <p className="text-lg font-semibold text-foreground">{page.title}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{page.description}</p>
           </a>
         ))}
       </section>

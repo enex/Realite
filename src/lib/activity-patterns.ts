@@ -26,7 +26,7 @@ export function getSuggestionStatusMeta(status: SuggestionStatus) {
       return {
         label: "Abgelehnt",
         description: "Diesen Vorschlag hast du bewusst aussortiert",
-        className: "bg-slate-200 text-slate-800"
+        className: "bg-muted text-foreground"
       };
   }
 }
@@ -63,7 +63,7 @@ export function getEventPatternMeta(input: { isOwnEvent: boolean; isAccepted: bo
     return {
       label: "Du dabei",
       description: "Du hast bereits zugesagt",
-      badgeClassName: "bg-white text-teal-800 ring-1 ring-teal-200",
+      badgeClassName: "bg-card text-teal-800 ring-1 ring-teal-200",
       actionLabel: "Details ansehen",
       priority: "momentum" as const
     };
@@ -73,7 +73,7 @@ export function getEventPatternMeta(input: { isOwnEvent: boolean; isAccepted: bo
     return {
       label: "Deine Planung",
       description: "Von dir angelegt",
-      badgeClassName: "bg-slate-100 text-slate-700",
+      badgeClassName: "bg-muted text-foreground",
       actionLabel: "Verwalten",
       priority: "planning" as const
     };

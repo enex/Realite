@@ -36,7 +36,7 @@ export function UserAvatar({ name, email, image, size = "md", className = "" }: 
 
   return (
     <span
-      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 font-semibold text-slate-700 ${SIZE_STYLES[size]} ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted font-semibold text-foreground ${SIZE_STYLES[size]} ${className}`}
       aria-hidden="true"
     >
       {image ? (

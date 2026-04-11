@@ -349,21 +349,21 @@ export function GroupDetail({
           Kontakte-Sync Warnung: {data.sync.contactsWarning}
         </div>
       ) : null}
-      {loading ? <p className="mt-6 text-slate-600">Lade Daten...</p> : null}
+      {loading ? <p className="mt-6 text-muted-foreground">Lade Daten...</p> : null}
 
       {!loading && !group ? (
-        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-sm text-slate-600">Gruppe nicht gefunden oder keine Berechtigung.</p>
+        <section className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <p className="text-sm text-muted-foreground">Gruppe nicht gefunden oder keine Berechtigung.</p>
         </section>
       ) : null}
 
       {group ? (
         <>
-          <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="break-words text-lg font-semibold text-slate-900">{group.name}</p>
+                  <p className="break-words text-lg font-semibold text-foreground">{group.name}</p>
                   {group.syncProvider === "google_contacts" && group.syncEnabled ? (
                     <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-semibold text-teal-700">
                       Google Kontakte Sync
@@ -397,10 +397,10 @@ export function GroupDetail({
                     </span>
                   ) : null}
                 </div>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted-foreground">
                   {group.visibility === "public" ? "öffentlich" : "privat"} · {group.eventCount} Events · {group.contactCount} Kontakte
                 </p>
-                {group.description ? <p className="mt-1 text-sm text-slate-600">{group.description}</p> : null}
+                {group.description ? <p className="mt-1 text-sm text-muted-foreground">{group.description}</p> : null}
               </div>
               <div className="flex flex-col items-start gap-2 sm:items-end">
                 <div className="flex flex-wrap gap-2 sm:justify-end">
@@ -418,11 +418,11 @@ export function GroupDetail({
                     type="button"
                     onClick={() => setShowActions((state) => !state)}
                     aria-expanded={showActions}
-                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+                    className="rounded-lg border border-input px-4 py-2 text-sm font-semibold text-foreground"
                   >
                     {showActions ? "Aktionen ausblenden" : "Aktionen"}
                   </button>
-                  <a href="/groups" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
+                  <a href="/groups" className="rounded-lg border border-input px-4 py-2 text-sm font-semibold text-foreground">
                     Zur Gruppenliste
                   </a>
                 </div>
@@ -430,12 +430,12 @@ export function GroupDetail({
             </div>
 
             {showActions ? (
-              <div className="mt-4 border-t border-slate-200 pt-4">
+              <div className="mt-4 border-t border-border pt-4">
                 <div>
                   <button
                     onClick={createInvite}
                     disabled={busy}
-                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 disabled:opacity-50"
+                    className="rounded-lg border border-input px-4 py-2 text-sm font-semibold text-foreground disabled:opacity-50"
                   >
                     Invite-Link erstellen
                   </button>
@@ -478,17 +478,17 @@ export function GroupDetail({
                 ) : null}
 
                 <form onSubmit={saveHashtags} className="mt-4 space-y-2">
-                  <label className="text-sm font-medium text-slate-700">Hashtags bearbeiten</label>
+                  <label className="text-sm font-medium text-foreground">Hashtags bearbeiten</label>
                   <input
                     value={hashtagsInput}
                     onChange={(event) => setHashtagsInput(event.target.value)}
                     placeholder={datingModeEnabled ? "#kontakte, #dating" : "#kontakte"}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className="w-full rounded-lg border border-input px-3 py-2 text-sm"
                   />
                   <button
                     type="submit"
                     disabled={busy}
-                    className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                    className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
                   >
                     Speichern
                   </button>
@@ -498,9 +498,9 @@ export function GroupDetail({
           </section>
 
           <section className="mt-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-900">Mitglieder & Kontakte</h2>
-              <p className="mt-1 text-sm text-slate-600">Alle bekannten Kontakte in dieser Gruppe.</p>
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-foreground">Mitglieder & Kontakte</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Alle bekannten Kontakte in dieser Gruppe.</p>
 
               <form onSubmit={addMemberByEmail} className="mt-4 flex flex-col gap-2 sm:flex-row">
                 <input
@@ -508,35 +508,35 @@ export function GroupDetail({
                   value={memberEmail}
                   onChange={(event) => setMemberEmail(event.target.value)}
                   placeholder="person@mail.com"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-input px-3 py-2 text-sm"
                   required
                 />
                 <button
                   type="submit"
                   disabled={busy}
-                  className="rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50 sm:w-auto"
+                  className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-50 sm:w-auto"
                 >
                   Hinzufügen
                 </button>
               </form>
 
               <div className="mt-4 space-y-2">
-                {group.contacts.length === 0 ? <p className="text-sm text-slate-500">Keine Kontakte vorhanden.</p> : null}
+                {group.contacts.length === 0 ? <p className="text-sm text-muted-foreground">Keine Kontakte vorhanden.</p> : null}
                 {group.contacts.map((contact) => (
                   <div
                     key={`${group.id}:${contact.email}`}
-                    className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2"
+                    className="flex items-center justify-between rounded-md border border-border px-3 py-2"
                   >
                     <div className="flex min-w-0 items-center gap-2">
                       <UserAvatar name={contact.name} email={contact.email} image={contact.image} size="sm" />
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-slate-900">
+                        <p className="truncate text-sm font-medium text-foreground">
                           {contact.name ?? contact.emails.join(", ")}
                         </p>
-                        {contact.name ? <p className="truncate text-xs text-slate-500">{contact.emails.join(", ")}</p> : null}
+                        {contact.name ? <p className="truncate text-xs text-muted-foreground">{contact.emails.join(", ")}</p> : null}
                       </div>
                     </div>
-                    <span className="shrink-0 pl-2 text-xs text-slate-500">
+                    <span className="shrink-0 pl-2 text-xs text-muted-foreground">
                       {contact.emails.some((email) => email === normalizedUserEmail)
                         ? "Du"
                         : contact.isRegistered
@@ -549,33 +549,33 @@ export function GroupDetail({
             </div>
           </section>
 
-          <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">Events der Gruppe</h2>
+          <section className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-foreground">Events der Gruppe</h2>
             <div className="mt-4 space-y-2">
               {groupEvents.length === 0 ? (
-                <p className="text-sm text-slate-500">Keine Events in dieser Gruppe.</p>
+                <p className="text-sm text-muted-foreground">Keine Events in dieser Gruppe.</p>
               ) : null}
               {groupEvents.map((event) => {
                 const coverUrl = event.placeImageUrl ?? event.linkPreviewImageUrl ?? null;
                 return (
-                  <article key={event.id} className="overflow-hidden rounded-md border border-slate-200">
+                  <article key={event.id} className="overflow-hidden rounded-md border border-border">
                     <div className="flex">
                       {coverUrl ? (
-                        <a href={`/e/${shortenUUID(event.id)}`} className="block h-16 w-20 shrink-0 bg-slate-100 sm:h-20 sm:w-24">
+                        <a href={`/e/${shortenUUID(event.id)}`} className="block h-16 w-20 shrink-0 bg-muted sm:h-20 sm:w-24">
                           <EventImage src={coverUrl} className="h-full w-full object-cover" />
                         </a>
                       ) : null}
                       <div className="min-w-0 flex-1 p-3">
                         <a
                           href={`/e/${shortenUUID(event.id)}`}
-                          className="break-words text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-teal-500"
+                          className="break-words text-sm font-medium text-foreground underline decoration-border underline-offset-2 hover:decoration-teal-500"
                         >
                           {event.title}
                         </a>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted-foreground">
                           {new Date(event.startsAt).toLocaleString("de-DE")} - {new Date(event.endsAt).toLocaleTimeString("de-DE")}
                         </p>
-                        {event.tags.length ? <p className="mt-1 text-xs text-slate-600">{event.tags.join(" · ")}</p> : null}
+                        {event.tags.length ? <p className="mt-1 text-xs text-muted-foreground">{event.tags.join(" · ")}</p> : null}
                       </div>
                     </div>
                   </article>

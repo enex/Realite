@@ -16,7 +16,7 @@ describe("card system", () => {
     const meta = getCardSurfaceMeta("smart_meeting");
 
     expect(meta.priority).toBe("planning");
-    expect(meta.actionClassName).toContain("border-slate-300");
-    expect(meta.badgeClassName).toContain("slate");
+    expect(meta.actionClassName).toContain("border-input");
+    expect(meta.badgeClassName).toContain("muted");
   });
 });

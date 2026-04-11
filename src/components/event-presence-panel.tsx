@@ -39,16 +39,16 @@ type EventPresencePanelProps = {
 
 /** Eigene Shell: keine „reaction“-Gradienten — im Dark Mode nur App-Surface + klare Kontraste. */
 const shellClassName =
-  "mt-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/12 dark:bg-[var(--app-surface)] dark:shadow-none sm:p-6";
+  "mt-4 rounded-2xl border border-border bg-card p-6 shadow-sm dark:border-white/12 dark:bg-[var(--app-surface)] dark:shadow-none sm:p-6";
 
 const insetClassName =
-  "rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/[0.06]";
+  "rounded-xl border border-border bg-muted p-4 dark:border-white/10 dark:bg-card/[0.06]";
 
 const primaryBtnClassName =
   "rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50";
 
 const secondaryBtnClassName =
-  "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/20 dark:bg-white/10 dark:hover:bg-white/15";
+  "rounded-lg border border-input bg-card px-4 py-2 text-sm font-semibold text-foreground shadow-sm hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/20 dark:bg-card/10 dark:hover:bg-card/15";
 
 export function EventPresencePanel(props: EventPresencePanelProps) {
   const [status, setStatus] = useState<EventPresenceStatus | null>(
@@ -159,30 +159,30 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
   return (
     <section className={shellClassName}>
       <p className="text-sm font-semibold text-teal-600">Vor Ort Status</p>
-      <h2 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">{panelCopy.title}</h2>
-      <p className="mt-2 text-sm leading-relaxed text-slate-700">{panelCopy.description}</p>
-      <p className="mt-3 text-sm leading-relaxed text-slate-700">
-        <span className="font-semibold text-slate-900">{statusMeta.label}</span>
-        <span className="text-slate-500"> · </span>
+      <h2 className="mt-1 text-lg font-semibold tracking-tight text-foreground">{panelCopy.title}</h2>
+      <p className="mt-2 text-sm leading-relaxed text-foreground">{panelCopy.description}</p>
+      <p className="mt-3 text-sm leading-relaxed text-foreground">
+        <span className="font-semibold text-foreground">{statusMeta.label}</span>
+        <span className="text-muted-foreground"> · </span>
         {activeVisibleUntilLabel ? (
           <span>sichtbar bis {activeVisibleUntilLabel}</span>
         ) : (
           <span>{statusMeta.description}</span>
         )}
       </p>
-      <p className="mt-2 text-sm leading-relaxed text-slate-700">
-        <span className="font-semibold text-slate-900">{windowCopy.label}</span>
-        <span className="text-slate-500"> · </span>
+      <p className="mt-2 text-sm leading-relaxed text-foreground">
+        <span className="font-semibold text-foreground">{windowCopy.label}</span>
+        <span className="text-muted-foreground"> · </span>
         <span>{windowCopy.description}</span>
       </p>
 
       {presenceWindow.canCheckIn ? (
-        <label className="mt-4 block text-sm text-slate-700">
-          <span className="font-semibold text-slate-900">Sichtbar bis</span>
+        <label className="mt-4 block text-sm text-foreground">
+          <span className="font-semibold text-foreground">Sichtbar bis</span>
           <select
             value={selectedVisibleUntilIso}
             onChange={(event) => setSelectedVisibleUntilIso(event.target.value)}
-            className="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm dark:border-white/15 dark:bg-[#2a2825] dark:text-slate-100"
+            className="mt-2 block w-full rounded-lg border border-input bg-card px-3 py-2.5 text-sm text-foreground shadow-sm dark:border-white/15 dark:bg-card dark:text-foreground"
           >
             {selectOptions.map((option) => (
               <option key={option.value} value={option.visibleUntil.toISOString()}>
@@ -218,16 +218,16 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
       </div>
 
       <div className={`mt-4 ${insetClassName}`}>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground dark:text-muted-foreground">
           {audienceRuleCopy.title}
         </p>
-        <p className="mt-2 text-sm leading-relaxed text-slate-700">{audienceRuleCopy.description}</p>
-        <p className="mt-3 text-sm font-semibold text-slate-900">{audienceCopy.title}</p>
+        <p className="mt-2 text-sm leading-relaxed text-foreground">{audienceRuleCopy.description}</p>
+        <p className="mt-3 text-sm font-semibold text-foreground">{audienceCopy.title}</p>
         {checkedInUsers.length > 0 ? (
-          <ul className="mt-2 space-y-2 text-sm text-slate-700">
+          <ul className="mt-2 space-y-2 text-sm text-foreground">
             {checkedInUsers.map((user) => (
               <li key={user.userId}>
-                <span className="font-medium text-slate-900">
+                <span className="font-medium text-foreground">
                   {getPersonDisplayLabel({
                     name: user.name,
                     email: user.email,
@@ -239,7 +239,7 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
             ))}
           </ul>
         ) : audienceCopy.description ? (
-          <p className="mt-2 text-sm leading-relaxed text-slate-700">{audienceCopy.description}</p>
+          <p className="mt-2 text-sm leading-relaxed text-foreground">{audienceCopy.description}</p>
         ) : null}
       </div>
 

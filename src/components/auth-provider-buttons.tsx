@@ -16,7 +16,7 @@ type AuthProviderButtonsProps = {
 function ProviderIcon({ providerId }: { providerId: AuthProviderDefinition["id"] }) {
   if (providerId === "google") {
     return (
-      <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-card shadow-sm">
         <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
           <path fill="#4285F4" d="M21.6 12.23c0-.68-.06-1.33-.17-1.96H12v3.7h5.39a4.61 4.61 0 0 1-2 3.03v2.52h3.23c1.89-1.75 2.98-4.32 2.98-7.29Z" />
           <path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.62-2.45l-3.23-2.52c-.9.6-2.05.95-3.39.95-2.6 0-4.8-1.75-5.58-4.1H3.08v2.58A9.99 9.99 0 0 0 12 22Z" />
@@ -29,7 +29,7 @@ function ProviderIcon({ providerId }: { providerId: AuthProviderDefinition["id"]
 
   if (providerId === "apple") {
     return (
-      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-sm">
+      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-foreground text-background shadow-sm">
         <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-current">
           <path d="M16.37 12.2c.02 2.14 1.88 2.85 1.9 2.86-.02.05-.3 1.03-.99 2.04-.6.87-1.22 1.73-2.2 1.75-.96.02-1.27-.57-2.37-.57-1.11 0-1.45.55-2.35.59-.95.03-1.67-.95-2.28-1.82-1.24-1.79-2.19-5.05-.92-7.26.63-1.1 1.76-1.8 2.99-1.82.93-.02 1.82.63 2.37.63.55 0 1.58-.78 2.66-.67.45.02 1.72.18 2.53 1.36-.07.04-1.51.88-1.49 2.91Zm-1.88-5.58c.5-.61.84-1.46.75-2.3-.72.03-1.59.48-2.11 1.08-.46.53-.87 1.39-.76 2.21.8.06 1.62-.4 2.12-.99Z" />
         </svg>
@@ -39,7 +39,7 @@ function ProviderIcon({ providerId }: { providerId: AuthProviderDefinition["id"]
 
   if (providerId === "microsoft") {
     return (
-      <span className="grid h-11 w-11 grid-cols-2 grid-rows-2 gap-0.5 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+      <span className="grid h-11 w-11 grid-cols-2 grid-rows-2 gap-0.5 rounded-2xl border border-border bg-card p-2 shadow-sm">
         <span className="rounded-sm bg-[#f25022]" />
         <span className="rounded-sm bg-[#7fba00]" />
         <span className="rounded-sm bg-[#00a4ef]" />
@@ -78,24 +78,24 @@ export function AuthProviderButtons({ callbackUrl, providers }: AuthProviderButt
         <a
           key={provider.id}
           href={buildAuthStartPath(provider.id, callbackUrl) ?? "/login"}
-          className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-left shadow-[0_12px_30px_-24px_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5 hover:border-teal-300 hover:bg-teal-50"
+          className="group flex items-center gap-4 rounded-2xl border border-border bg-card px-4 py-3.5 text-left shadow-[0_12px_30px_-24px_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5 hover:border-teal-300 hover:bg-teal-50"
         >
           <ProviderIcon providerId={provider.id} />
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-slate-900">Weiter mit {provider.label}</p>
+              <p className="text-sm font-semibold text-foreground">Weiter mit {provider.label}</p>
               {provider.status === "dev_only" ? (
                 <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-700">
                   Dev
                 </span>
               ) : null}
             </div>
-            <p className="mt-0.5 text-xs text-slate-500">{provider.description}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{provider.description}</p>
           </div>
           <svg
             viewBox="0 0 24 24"
             aria-hidden="true"
-            className="h-4 w-4 shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-teal-700"
+            className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-teal-700"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"

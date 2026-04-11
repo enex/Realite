@@ -42,16 +42,16 @@ export function ThemeSettingsCard() {
 
   if (!mounted) {
     return (
-      <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/12 dark:bg-[var(--app-surface)] dark:shadow-[0_1px_0_0_rgba(255,255,255,0.04)]">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
+      <section className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm dark:border-white/12 dark:bg-[var(--app-surface)] dark:shadow-[0_1px_0_0_rgba(255,255,255,0.04)]">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Darstellung
         </p>
-        <h2 className="mt-1 text-lg font-semibold text-slate-900">Erscheinungsbild</h2>
+        <h2 className="mt-1 text-lg font-semibold text-foreground">Erscheinungsbild</h2>
         <div className="mt-4 grid grid-cols-3 gap-3">
           {THEME_OPTIONS.map((option) => (
             <div
               key={option.value}
-              className="h-24 animate-pulse rounded-xl border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-slate-800/50"
+              className="h-24 animate-pulse rounded-xl border border-border bg-muted dark:border-white/10 dark:bg-muted/50"
             />
           ))}
         </div>
@@ -60,10 +60,10 @@ export function ThemeSettingsCard() {
   }
 
   return (
-    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/12 dark:bg-[var(--app-surface)] dark:shadow-[0_1px_0_0_rgba(255,255,255,0.04)]">
-      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Darstellung</p>
-      <h2 className="mt-1 text-lg font-semibold text-slate-900">Erscheinungsbild</h2>
-      <p className="mt-2 text-sm text-slate-600">
+    <section className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm dark:border-white/12 dark:bg-[var(--app-surface)] dark:shadow-[0_1px_0_0_rgba(255,255,255,0.04)]">
+      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">Darstellung</p>
+      <h2 className="mt-1 text-lg font-semibold text-foreground">Erscheinungsbild</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
         Wähle, ob Realite im hellen oder dunklen Modus angezeigt wird, oder folge der Einstellung deines Geräts.
       </p>
 
@@ -80,23 +80,23 @@ export function ThemeSettingsCard() {
               className={`group relative flex flex-col items-center gap-2 rounded-xl border-2 px-3 py-4 text-center transition-all ${
                 isActive
                   ? "border-teal-500 bg-teal-50 shadow-sm dark:border-teal-500/80 dark:bg-teal-950/50 dark:shadow-[0_0_0_1px_rgba(90,175,150,0.2)]"
-                  : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-white/12 dark:bg-[var(--app-background)] dark:hover:border-white/20 dark:hover:bg-white/5"
+                  : "border-border bg-card hover:border-input hover:bg-muted dark:border-white/12 dark:bg-[var(--app-background)] dark:hover:border-white/20 dark:hover:bg-card/5"
               }`}
             >
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
                   isActive
                     ? "bg-teal-700 text-white dark:bg-teal-600"
-                    : "bg-slate-100 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-700 dark:bg-white/8 dark:group-hover:bg-white/12"
+                    : "bg-muted text-muted-foreground group-hover:bg-muted group-hover:text-foreground dark:bg-card/8 dark:group-hover:bg-card/12"
                 }`}
               >
                 <Icon size={22} weight={isActive ? "fill" : "regular"} />
               </div>
               <div>
-                <p className={`text-sm font-semibold ${isActive ? "text-teal-900" : "text-slate-700"}`}>
+                <p className={`text-sm font-semibold ${isActive ? "text-teal-900" : "text-foreground"}`}>
                   {option.label}
                 </p>
-                <p className={`mt-0.5 text-[11px] leading-tight ${isActive ? "text-teal-700" : "text-slate-500"}`}>
+                <p className={`mt-0.5 text-[11px] leading-tight ${isActive ? "text-teal-700" : "text-muted-foreground"}`}>
                   {option.description}
                 </p>
               </div>
@@ -113,7 +113,7 @@ export function ThemeSettingsCard() {
       </div>
 
       {theme === "system" ? (
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="mt-3 text-xs text-muted-foreground">
           Dein Gerät nutzt gerade den {resolvedTheme === "dark" ? "dunklen" : "hellen"} Modus.
         </p>
       ) : null}

@@ -1,15 +1,15 @@
 export type VisualPriority = "reaction" | "momentum" | "planning" | "neutral";
 
 const NEUTRAL_VISUAL_PRIORITY_META = {
-  sectionClassName: "border-slate-200 bg-slate-50/60 shadow-sm",
-  itemClassName: "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50",
-  insetClassName: "border-slate-200 bg-white/80 dark:border-white/12 dark:bg-[var(--app-surface)]",
-  mutedInsetClassName: "border-dashed border-slate-200 bg-white/80 dark:border-white/12 dark:bg-[var(--app-surface)]",
-  badgeClassName: "bg-white text-slate-700 ring-1 ring-slate-200",
-  eyebrowClassName: "text-slate-500",
-  accentTextClassName: "text-slate-700",
-  actionRowClassName: "border-slate-200 bg-white text-slate-700",
-  statClassName: "border-slate-200 bg-white",
+  sectionClassName: "border-border bg-muted/60 shadow-sm",
+  itemClassName: "border-border bg-card hover:border-input hover:bg-muted",
+  insetClassName: "border-border bg-card/80 dark:border-white/12",
+  mutedInsetClassName: "border-dashed border-border bg-card/80 dark:border-white/12",
+  badgeClassName: "bg-card text-foreground ring-1 ring-border",
+  eyebrowClassName: "text-muted-foreground",
+  accentTextClassName: "text-foreground",
+  actionRowClassName: "border-border bg-card text-foreground",
+  statClassName: "border-border bg-card",
 };
 
 export function getVisualPriorityMeta(priority: VisualPriority) {
@@ -18,51 +18,51 @@ export function getVisualPriorityMeta(priority: VisualPriority) {
       /* Light: warm amber. Dark: neutrale App-Oberfläche — keine invertierten dark:text-amber-200/-100 (wären dunkel). */
       return {
         sectionClassName:
-          "border-amber-200 bg-gradient-to-br from-amber-50 to-white shadow-sm dark:border-white/12 dark:bg-[var(--app-surface)] dark:bg-none dark:shadow-none",
+          "border-amber-200 bg-gradient-to-br from-amber-50 to-card shadow-sm dark:border-white/12 dark:bg-card dark:bg-none dark:shadow-none",
         itemClassName:
-          "border-amber-200 bg-white hover:border-amber-300 hover:bg-amber-50/70 dark:border-white/12 dark:bg-white/5 dark:hover:bg-white/[0.07]",
+          "border-amber-200 bg-card hover:border-amber-300 hover:bg-amber-50/70 dark:border-white/12 dark:bg-card/5 dark:hover:bg-card/[0.07]",
         insetClassName:
           "border-amber-200 bg-amber-50/70 dark:border-white/10 dark:bg-black/25",
         mutedInsetClassName:
-          "border-dashed border-amber-300 bg-white/80 dark:border-white/10 dark:bg-black/20",
+          "border-dashed border-amber-300 bg-card/80 dark:border-white/10 dark:bg-black/20",
         badgeClassName:
-          "bg-amber-100 text-amber-900 dark:bg-white/10 dark:text-amber-900",
+          "bg-amber-100 text-amber-900 dark:bg-card/10 dark:text-amber-900",
         eyebrowClassName: "text-amber-700",
         accentTextClassName: "text-amber-800",
         actionRowClassName:
-          "border-amber-200 bg-white text-amber-900 dark:border-white/10 dark:bg-[var(--app-surface)] dark:text-amber-900",
-        statClassName: "border-amber-200 bg-white/80 dark:border-white/10 dark:bg-black/20",
+          "border-amber-200 bg-card text-amber-900 dark:border-white/10 dark:text-amber-900",
+        statClassName: "border-amber-200 bg-card/80 dark:border-white/10 dark:bg-black/20",
       };
     case "momentum":
       return {
         sectionClassName:
-          "border-teal-200 bg-gradient-to-br from-teal-50 to-white shadow-sm dark:border-white/12 dark:bg-[var(--app-surface)] dark:bg-none dark:shadow-none",
+          "border-teal-200 bg-gradient-to-br from-teal-50 to-card shadow-sm dark:border-white/12 dark:bg-card dark:bg-none dark:shadow-none",
         itemClassName:
-          "border-teal-200 bg-white hover:border-teal-300 hover:bg-teal-50/60 dark:border-white/12 dark:bg-white/5 dark:hover:border-teal-500/30 dark:hover:bg-teal-950/25",
+          "border-teal-200 bg-card hover:border-teal-300 hover:bg-teal-50/60 dark:border-white/12 dark:bg-card/5 dark:hover:border-primary/30 dark:hover:bg-primary/15",
         insetClassName:
-          "border-teal-200 bg-teal-50/70 dark:border-white/10 dark:bg-teal-950/35",
+          "border-teal-200 bg-teal-50/70 dark:border-white/10 dark:bg-primary/20",
         mutedInsetClassName:
-          "border-dashed border-teal-200 bg-white/80 dark:border-teal-500/25 dark:bg-teal-950/20",
+          "border-dashed border-teal-200 bg-card/80 dark:border-primary/25 dark:bg-primary/15",
         badgeClassName:
-          "bg-white text-teal-800 ring-1 ring-teal-200 dark:bg-teal-950/50 dark:text-teal-900 dark:ring-teal-500/30",
+          "bg-card text-teal-800 ring-1 ring-teal-200 dark:bg-primary/25 dark:text-teal-100 dark:ring-primary/30",
         eyebrowClassName: "text-teal-700",
         accentTextClassName: "text-teal-800",
         actionRowClassName:
-          "border-teal-200 bg-white text-teal-900 dark:border-white/12 dark:bg-[var(--app-surface)] dark:text-teal-900",
+          "border-teal-200 bg-card text-teal-900 dark:border-white/12 dark:text-teal-100",
         statClassName:
-          "border-teal-200 bg-white/80 dark:border-white/10 dark:bg-teal-950/30",
+          "border-teal-200 bg-card/80 dark:border-white/10 dark:bg-primary/20",
       };
     case "planning":
       return {
-        sectionClassName: "border-slate-200 bg-white shadow-sm",
-        itemClassName: "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50",
-        insetClassName: "border-slate-200 bg-slate-50/80",
-        mutedInsetClassName: "border-dashed border-slate-200 bg-slate-50/80",
-        badgeClassName: "bg-slate-100 text-slate-700",
-        eyebrowClassName: "text-slate-500",
-        accentTextClassName: "text-slate-700",
-        actionRowClassName: "border-slate-200 bg-slate-50 text-slate-700",
-        statClassName: "border-slate-200 bg-slate-50",
+        sectionClassName: "border-border bg-card shadow-sm",
+        itemClassName: "border-border bg-card hover:border-input hover:bg-muted",
+        insetClassName: "border-border bg-muted/80",
+        mutedInsetClassName: "border-dashed border-border bg-muted/80",
+        badgeClassName: "bg-muted text-foreground",
+        eyebrowClassName: "text-muted-foreground",
+        accentTextClassName: "text-foreground",
+        actionRowClassName: "border-border bg-muted text-foreground",
+        statClassName: "border-border bg-muted",
       };
     case "neutral":
       return NEUTRAL_VISUAL_PRIORITY_META;

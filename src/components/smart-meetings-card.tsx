@@ -179,7 +179,7 @@ function SmartMeetingApprovalPanel({
         {run.approvalCandidates.map((candidate) => (
           <label
             key={candidate.email}
-            className="flex items-start gap-2 rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm text-slate-700"
+            className="flex items-start gap-2 rounded-lg border border-amber-200 bg-card px-3 py-2 text-sm text-foreground"
           >
             <input
               type="checkbox"
@@ -189,8 +189,8 @@ function SmartMeetingApprovalPanel({
               className="mt-0.5"
             />
             <span>
-              <span className="block font-medium text-slate-900">{candidate.label}</span>
-              <span className="block text-xs text-slate-500">{candidate.email}</span>
+              <span className="block font-medium text-foreground">{candidate.label}</span>
+              <span className="block text-xs text-muted-foreground">{candidate.email}</span>
             </span>
           </label>
         ))}
@@ -200,7 +200,7 @@ function SmartMeetingApprovalPanel({
           type="button"
           onClick={onApprove}
           disabled={busy}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
         >
           Kalendereinladungen senden
         </button>
@@ -208,7 +208,7 @@ function SmartMeetingApprovalPanel({
           type="button"
           onClick={onReject}
           disabled={busy}
-          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 disabled:opacity-50"
+          className="rounded-lg border border-input px-4 py-2 text-sm font-semibold text-foreground disabled:opacity-50"
         >
           Diesen Versand ablehnen
         </button>
@@ -442,8 +442,8 @@ export function SmartMeetingsCard({
           <p className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${smartMeetingCard.eyebrowClassName}`}>
             Gruppen-Orga unter Events
           </p>
-          <h2 className="text-lg font-semibold text-slate-900">Smart Treffen</h2>
-          <p className="mt-1 text-sm text-slate-600">{overview.description}</p>
+          <h2 className="text-lg font-semibold text-foreground">Smart Treffen</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{overview.description}</p>
         </div>
         <button
           onClick={() => setExpanded((current) => !current)}
@@ -456,8 +456,8 @@ export function SmartMeetingsCard({
       <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
         <div className={smartMeetingCard.insetClassName}>
           <p className={managePage.eyebrowClassName}>Orga-Ablauf statt Discovery</p>
-          <h3 className="mt-2 text-base font-semibold text-slate-900">{overview.title}</h3>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
+          <h3 className="mt-2 text-base font-semibold text-foreground">{overview.title}</h3>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
             Smart Treffen ordnet Gruppen-Orga, Suchfenster und Freigaben. Der spontane Einstieg bleibt bewusst in{" "}
             <a href="/now" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">
               Jetzt
@@ -467,57 +467,57 @@ export function SmartMeetingsCard({
               Vorschläge
             </a>.
           </p>
-          <div className="mt-4 rounded-xl border border-slate-200 bg-white/80 p-4 dark:border-white/12 dark:bg-[var(--app-surface)]">
+          <div className="mt-4 rounded-xl border border-border bg-card/80 p-4 dark:border-white/12 dark:bg-[var(--app-surface)]">
             <p className={managePage.eyebrowClassName}>Jetzt hier sinnvoll</p>
-            <p className="mt-2 text-sm font-semibold text-slate-900">{overview.nextStepTitle}</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{overview.nextStepDescription}</p>
+            <p className="mt-2 text-sm font-semibold text-foreground">{overview.nextStepTitle}</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{overview.nextStepDescription}</p>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <div className={smartMeetingCard.statClassName}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Freigabe</p>
-              <p className="mt-1 text-xl font-semibold text-slate-900">{overview.awaitingApprovalCount}</p>
-              <p className="mt-1 text-xs text-slate-500">Teilnehmerlisten warten auf deine bewusste Freigabe.</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Freigabe</p>
+              <p className="mt-1 text-xl font-semibold text-foreground">{overview.awaitingApprovalCount}</p>
+              <p className="mt-1 text-xs text-muted-foreground">Teilnehmerlisten warten auf deine bewusste Freigabe.</p>
             </div>
             <div className={smartMeetingCard.statClassName}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Suche / Zusagen</p>
-              <p className="mt-1 text-xl font-semibold text-slate-900">{overview.activeRunCount}</p>
-              <p className="mt-1 text-xs text-slate-500">Läufe mit aktiver Terminprüfung oder offenem Antwortfenster.</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Suche / Zusagen</p>
+              <p className="mt-1 text-xl font-semibold text-foreground">{overview.activeRunCount}</p>
+              <p className="mt-1 text-xs text-muted-foreground">Läufe mit aktiver Terminprüfung oder offenem Antwortfenster.</p>
             </div>
             <div className={smartMeetingCard.statClassName}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Gesichert</p>
-              <p className="mt-1 text-xl font-semibold text-slate-900">{overview.securedCount}</p>
-              <p className="mt-1 text-xs text-slate-500">Gruppen-Termine mit erreichter Mindestzahl.</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Gesichert</p>
+              <p className="mt-1 text-xl font-semibold text-foreground">{overview.securedCount}</p>
+              <p className="mt-1 text-xs text-muted-foreground">Gruppen-Termine mit erreichter Mindestzahl.</p>
             </div>
             <div className={smartMeetingCard.statClassName}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Pausiert / beendet</p>
-              <p className="mt-1 text-xl font-semibold text-slate-900">{overview.pausedCount + overview.exhaustedCount}</p>
-              <p className="mt-1 text-xs text-slate-500">Läufe ohne aktiven Suchstand, aber mit sichtbarer Orga-Historie.</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Pausiert / beendet</p>
+              <p className="mt-1 text-xl font-semibold text-foreground">{overview.pausedCount + overview.exhaustedCount}</p>
+              <p className="mt-1 text-xs text-muted-foreground">Läufe ohne aktiven Suchstand, aber mit sichtbarer Orga-Historie.</p>
             </div>
           </div>
         </div>
 
         <div className={smartMeetingCard.mutedInsetClassName}>
           <p className={managePage.eyebrowClassName}>Rückwege</p>
-          <h3 className="mt-2 text-base font-semibold text-slate-900">Von Planung zurück in den Aktivitätsfluss</h3>
+          <h3 className="mt-2 text-base font-semibold text-foreground">Von Planung zurück in den Aktivitätsfluss</h3>
           <div className="mt-4 space-y-3">
-            <a href="/now" className="block rounded-xl border border-slate-200 bg-white p-4 transition hover:border-teal-300 hover:bg-teal-50">
+            <a href="/now" className="block rounded-xl border border-border bg-card p-4 transition hover:border-teal-300 hover:bg-teal-50">
               <p className={discoverPage.eyebrowClassName}>Zurück zu Jetzt</p>
-              <p className="mt-2 text-base font-semibold text-slate-900">Spontane Aktivitäten prüfen</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
+              <p className="mt-2 text-base font-semibold text-foreground">Spontane Aktivitäten prüfen</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 Öffne wieder offene Aktivitäten, sichtbares Momentum und direkte Mitmach-Einstiege.
               </p>
             </a>
             <a
               href={pendingSuggestionCount > 0 ? "/suggestions" : "#events"}
-              className="block rounded-xl border border-slate-200 bg-white p-4 transition hover:border-amber-300 hover:bg-amber-50"
+              className="block rounded-xl border border-border bg-card p-4 transition hover:border-amber-300 hover:bg-amber-50"
             >
               <p className={pendingSuggestionCount > 0 ? reactPage.eyebrowClassName : managePage.eyebrowClassName}>
                 {pendingSuggestionCount > 0 ? "Reagieren zuerst" : "Sozialkalender"}
               </p>
-              <p className="mt-2 text-base font-semibold text-slate-900">
+              <p className="mt-2 text-base font-semibold text-foreground">
                 {pendingSuggestionCount > 0 ? "Offene Vorschläge klären" : "Bestätigte Planung im Blick behalten"}
               </p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 {pendingSuggestionCount > 0
                   ? `${pendingSuggestionCount} ${pendingSuggestionCount === 1 ? "Vorschlag wartet" : "Vorschläge warten"} auf deine Entscheidung, bevor mehr Gruppen-Orga nötig ist.`
                   : "Springe zurück in den Sozialkalender mit Zusagen, eigener Planung und weiterem Kalenderkontext."}
@@ -529,9 +529,9 @@ export function SmartMeetingsCard({
 
       {expanded ? (
         <form onSubmit={submitSmartMeeting} className={`mt-4 grid gap-3 ${smartMeetingCard.insetClassName}`}>
-          <div className="rounded-xl border border-slate-200 bg-white/80 p-4 dark:border-white/12 dark:bg-[var(--app-surface)]">
+          <div className="rounded-xl border border-border bg-card/80 p-4 dark:border-white/12 dark:bg-[var(--app-surface)]">
             <p className={managePage.eyebrowClassName}>Neuer Orga-Lauf</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
               Nutze Smart Treffen nur für planbare Gruppenkoordination: Suchfenster festlegen, Mindestzahl definieren und
               spätere Kalendereinladungen bewusst freigeben.
             </p>
@@ -540,14 +540,14 @@ export function SmartMeetingsCard({
             value={form.title}
             onChange={(event) => setForm((state) => ({ ...state, title: event.target.value }))}
             placeholder="Titel"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-input px-3 py-2 text-sm"
             required
           />
           <div className="grid gap-3 sm:grid-cols-2">
             <select
               value={form.groupId}
               onChange={(event) => setForm((state) => ({ ...state, groupId: event.target.value }))}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-input px-3 py-2 text-sm"
               required
             >
               <option value="">Gruppe wählen</option>
@@ -561,11 +561,11 @@ export function SmartMeetingsCard({
               value={form.tags}
               onChange={(event) => setForm((state) => ({ ...state, tags: event.target.value }))}
               placeholder="#abendessen, #sport"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-input px-3 py-2 text-sm"
             />
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
-            <label className="text-xs text-slate-600">
+            <label className="text-xs text-muted-foreground">
               Dauer (Minuten)
               <input
                 type="number"
@@ -575,10 +575,10 @@ export function SmartMeetingsCard({
                 onChange={(event) =>
                   setForm((state) => ({ ...state, durationMinutes: Number.parseInt(event.target.value || "15", 10) || 15 }))
                 }
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-input px-3 py-2 text-sm"
               />
             </label>
-            <label className="text-xs text-slate-600">
+            <label className="text-xs text-muted-foreground">
               Mindestzusagen
               <input
                 type="number"
@@ -591,10 +591,10 @@ export function SmartMeetingsCard({
                     minAcceptedParticipants: Number.parseInt(event.target.value || "1", 10) || 1
                   }))
                 }
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-input px-3 py-2 text-sm"
               />
             </label>
-            <label className="text-xs text-slate-600">
+            <label className="text-xs text-muted-foreground">
               Antwortfrist (Stunden)
               <input
                 type="number"
@@ -607,34 +607,34 @@ export function SmartMeetingsCard({
                     responseWindowHours: Number.parseInt(event.target.value || "1", 10) || 1
                   }))
                 }
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-input px-3 py-2 text-sm"
               />
             </label>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="text-xs text-slate-600">
+            <label className="text-xs text-muted-foreground">
               Suche ab
               <input
                 type="datetime-local"
                 value={form.searchWindowStart}
                 onChange={(event) => setForm((state) => ({ ...state, searchWindowStart: event.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-input px-3 py-2 text-sm"
                 required
               />
             </label>
-            <label className="text-xs text-slate-600">
+            <label className="text-xs text-muted-foreground">
               Suche bis
               <input
                 type="datetime-local"
                 value={form.searchWindowEnd}
                 onChange={(event) => setForm((state) => ({ ...state, searchWindowEnd: event.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-input px-3 py-2 text-sm"
                 required
               />
             </label>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="text-xs text-slate-600">
+            <label className="text-xs text-muted-foreground">
               Slot-Intervall (Minuten)
               <input
                 type="number"
@@ -647,10 +647,10 @@ export function SmartMeetingsCard({
                     slotIntervalMinutes: Number.parseInt(event.target.value || "15", 10) || 15
                   }))
                 }
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-input px-3 py-2 text-sm"
               />
             </label>
-            <label className="text-xs text-slate-600">
+            <label className="text-xs text-muted-foreground">
               Max. neue Vorschläge
               <input
                 type="number"
@@ -660,7 +660,7 @@ export function SmartMeetingsCard({
                 onChange={(event) =>
                   setForm((state) => ({ ...state, maxAttempts: Number.parseInt(event.target.value || "1", 10) || 1 }))
                 }
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-input px-3 py-2 text-sm"
               />
             </label>
           </div>
@@ -668,7 +668,7 @@ export function SmartMeetingsCard({
             <button
               type="submit"
               disabled={busy}
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
             >
               {editingId ? "Änderungen speichern" : "Orga-Lauf starten"}
             </button>
@@ -676,13 +676,13 @@ export function SmartMeetingsCard({
               <button
                 type="button"
                 onClick={cancelEditing}
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+                className="rounded-lg border border-input px-4 py-2 text-sm font-semibold text-foreground"
               >
                 Abbrechen
               </button>
             ) : null}
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             Shortcut für normale Events: `!min=3 !frist=24h !fenster=24h` direkt im Titel. Danach erscheint ebenfalls erst ein
             freizugebender Teilnehmer-Vorschlag, bevor Kalendereinladungen gesendet werden.
           </p>
@@ -692,8 +692,8 @@ export function SmartMeetingsCard({
       <div className="mt-4 space-y-2">
         {smartMeetings.length === 0 ? (
           <div className={smartMeetingCard.mutedInsetClassName}>
-            <p className="text-sm font-semibold text-slate-900">Noch kein Smart-Treffen-Lauf vorhanden.</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
+            <p className="text-sm font-semibold text-foreground">Noch kein Smart-Treffen-Lauf vorhanden.</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
               Lege hier nur dann einen Gruppenlauf an, wenn du aktiv einen gemeinsamen Termin koordinieren willst. Für spontane
               offene Aktivitäten bleibst du besser in{" "}
               <a href="/now" className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800">
@@ -708,9 +708,9 @@ export function SmartMeetingsCard({
           return (
           <article key={meeting.id} className={smartMeetingCard.itemClassName}>
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm font-semibold text-slate-900">{meeting.title}</p>
+              <p className="text-sm font-semibold text-foreground">{meeting.title}</p>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                <span className="inline-flex items-center rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold text-foreground">
                   {stage.badge}
                 </span>
                 <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${smartMeetingCard.badgeClassName}`}>
@@ -719,27 +719,27 @@ export function SmartMeetingsCard({
                 <button
                   type="button"
                   onClick={() => startEditing(meeting)}
-                  className="rounded border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  className="rounded border border-input px-2 py-1 text-xs font-medium text-foreground hover:bg-muted"
                 >
                   Bearbeiten
                 </button>
               </div>
             </div>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               Gruppe {meeting.groupName} · Min {meeting.minAcceptedParticipants} Zusagen · Frist {meeting.responseWindowHours}h
             </p>
             {meeting.latestRun ? (
-              <p className="mt-1 text-xs text-slate-600">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {runStatusLabel(meeting.latestRun.status)} · Versuch {meeting.latestRun.attempt}/{meeting.maxAttempts} · Zusagen{" "}
                 {meeting.latestRun.acceptedCount}/{meeting.latestRun.participantCount} · {new Date(meeting.latestRun.startsAt).toLocaleString("de-DE")}
               </p>
             ) : (
-              <p className="mt-1 text-xs text-slate-600">Noch kein aktiver Terminversuch.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Noch kein aktiver Terminversuch.</p>
             )}
-            <div className="mt-3 rounded-xl border border-slate-200 bg-white/80 p-3 dark:border-white/12 dark:bg-[var(--app-surface)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">{stage.eyebrow}</p>
-              <p className="mt-2 text-sm font-semibold text-slate-900">{stage.title}</p>
-              <p className="mt-1 text-sm leading-6 text-slate-600">{stage.description}</p>
+            <div className="mt-3 rounded-xl border border-border bg-card/80 p-3 dark:border-white/12 dark:bg-[var(--app-surface)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{stage.eyebrow}</p>
+              <p className="mt-2 text-sm font-semibold text-foreground">{stage.title}</p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">{stage.description}</p>
             </div>
             {meeting.latestRun?.statusReason ? (
               <p className="mt-1 text-xs text-amber-700">{meeting.latestRun.statusReason}</p>

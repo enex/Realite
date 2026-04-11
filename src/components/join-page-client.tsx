@@ -27,9 +27,9 @@ export function JoinPageClient({ token }: { token: string }) {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-xl items-center justify-center px-4 py-16">
-      <section className="w-full rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-900">Gruppe beitreten</h1>
-        <p className="mt-3 text-slate-600">{message}</p>
+      <section className="w-full rounded-2xl border border-border bg-card p-8 shadow-sm">
+        <h1 className="text-2xl font-semibold text-foreground">Gruppe beitreten</h1>
+        <p className="mt-3 text-muted-foreground">{message}</p>
         <div className="mt-6 flex gap-3">
           <button
             onClick={joinGroup}
@@ -38,7 +38,7 @@ export function JoinPageClient({ token }: { token: string }) {
           >
             {state === "joining" ? "Wird beigetreten..." : "Jetzt beitreten"}
           </button>
-          <a href="/" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
+          <a href="/" className="rounded-lg border border-input px-4 py-2 text-sm font-semibold text-foreground">
             Zur App
           </a>
         </div>
