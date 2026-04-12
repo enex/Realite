@@ -20,7 +20,11 @@ function rewriteAbsoluteUrl(value: unknown, origin: string) {
 
   try {
     const url = new URL(value);
-    return new URL(`${url.pathname}${url.search}${url.hash}`, origin).toString();
+    let rewritten = new URL(`${url.pathname}${url.search}${url.hash}`, origin).toString();
+    if (!value.endsWith("/") && rewritten.endsWith("/")) {
+      rewritten = rewritten.slice(0, -1);
+    }
+    return rewritten;
   } catch {
     return value;
   }
