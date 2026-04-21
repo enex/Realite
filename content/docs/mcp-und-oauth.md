@@ -28,6 +28,8 @@ Der Zugriff läuft über OAuth mit Better Auth. Dein MCP-Client bekommt also kei
 4. Du bestätigst den Zugriff auf dein Realite-Konto.
 5. Danach kann der MCP-Client Tools und Resources von Realite nutzen.
 
+Wenn du in Realite bereits angemeldet bist, setzt Realite den OAuth-Flow direkt fort. Du musst die Anmeldung in diesem Fall nicht noch einmal manuell neu anstossen.
+
 ## Welche Berechtigungen werden angefragt?
 
 Realite verwendet für MCP aktuell diese Scopes:
