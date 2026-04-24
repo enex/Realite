@@ -19,6 +19,7 @@ const authBaseUrl = process.env.BETTER_AUTH_URL ?? process.env.NEXTAUTH_URL ?? "
 const authSecret = process.env.BETTER_AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
 export const AUTH_ISSUER = process.env.BETTER_AUTH_ISSUER ?? authBaseUrl;
 export const MCP_RESOURCE_AUDIENCE = `${authBaseUrl}/api/mcp`;
+export const MCP_RESOURCE_ALIAS_AUDIENCE = `${authBaseUrl}/mcp`;
 const mcpScopes = ["realite:read", "realite:write"] as const;
 const oauthScopes = ["openid", "profile", "email", "offline_access", ...mcpScopes] as const;
 
@@ -72,7 +73,7 @@ function createAuth() {
         loginPage: "/mcp/oauth/login",
         consentPage: "/mcp/oauth/consent",
         scopes: [...oauthScopes],
-        validAudiences: [MCP_RESOURCE_AUDIENCE],
+        validAudiences: [MCP_RESOURCE_AUDIENCE, MCP_RESOURCE_ALIAS_AUDIENCE],
         clientRegistrationDefaultScopes: [...oauthScopes],
         clientRegistrationAllowedScopes: [...oauthScopes],
         allowDynamicClientRegistration: true,

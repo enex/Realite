@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { getMcpCorsHeaders } from "@/src/lib/mcp-cors";
 import {
+  MCP_RESOURCE_ALIAS_PATH,
   getMcpProtectedResourceMetadata,
   getMcpProtectedResourceMetadataUrl
 } from "@/src/lib/mcp-oauth-metadata";
@@ -22,6 +23,24 @@ describe("mcp oauth metadata", () => {
     });
     expect(getMcpProtectedResourceMetadataUrl(request)).toBe(
       "https://realite.app/.well-known/oauth-protected-resource/api/mcp"
+    );
+  });
+
+  test("advertises alias metadata when a client connects through /mcp", () => {
+    const request = new Request("http://internal.local/.well-known/oauth-protected-resource/mcp", {
+      headers: {
+        "x-forwarded-proto": "https",
+        "x-forwarded-host": "realite.app"
+      }
+    });
+
+    expect(getMcpProtectedResourceMetadata(request, MCP_RESOURCE_ALIAS_PATH)).toEqual({
+      resource: "https://realite.app/mcp",
+      authorization_servers: ["https://realite.app"],
+      scopes_supported: ["realite:read", "realite:write"]
+    });
+    expect(getMcpProtectedResourceMetadataUrl(request, MCP_RESOURCE_ALIAS_PATH)).toBe(
+      "https://realite.app/.well-known/oauth-protected-resource/mcp"
     );
   });
 

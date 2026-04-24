@@ -16,7 +16,9 @@ Der Zugriff läuft über OAuth mit Better Auth. Dein MCP-Client bekommt also kei
 ## Wichtige URLs
 
 - MCP-Endpunkt: `/api/mcp`
+- kompatibler Alias für Clients mit Standardpfad: `/mcp`
 - OAuth Protected Resource Metadata: `/.well-known/oauth-protected-resource/api/mcp`
+- OAuth Protected Resource Metadata für den Alias: `/.well-known/oauth-protected-resource/mcp`
 - OAuth Protected Resource Metadata Fallback: `/.well-known/oauth-protected-resource`
 - OAuth Authorization Server Metadata: `/.well-known/oauth-authorization-server`
 - OpenID-Konfiguration: `/.well-known/openid-configuration`
@@ -47,6 +49,7 @@ Realite verwendet für MCP aktuell diese Scopes:
 ## Hinweise für MCP-Clients
 
 - Der MCP-Transport läuft über HTTP `POST` auf `/api/mcp`.
+- Falls ein Client automatisch den Standardpfad `/mcp` verwendet, akzeptiert Realite auch diesen Alias.
 - Der Endpunkt ist OAuth-geschützt und erwartet ein Bearer-Token.
 - Für Discovery sollte der Client die Protected-Resource-Metadata lesen statt feste Auth-URLs anzunehmen.
 - Browser-basierte Clients können den `WWW-Authenticate`-Header lesen; darüber findet der Client die passende `resource_metadata`-URL.
@@ -59,8 +62,9 @@ Realite verwendet für MCP aktuell diese Scopes:
 Meist fehlt das Bearer-Token oder der Client nutzt die OAuth-Metadaten nicht korrekt. Prüfe insbesondere:
 
 - ob `/.well-known/oauth-protected-resource/api/mcp` erreichbar ist
+- ob bei Nutzung des Alias auch `/.well-known/oauth-protected-resource/mcp` erreichbar ist
 - ob alternativ `/.well-known/oauth-protected-resource` erreichbar ist
-- ob der Client wirklich ein Access Token für die Resource `/api/mcp` anfordert
+- ob der Client wirklich ein Access Token für die Resource `/api/mcp` oder `/mcp` anfordert
 - ob die Anmeldung und die Consent-Seite vollständig abgeschlossen wurden
 
 ### MCP Inspector im Browser zeigt CORS-Fehler
@@ -70,9 +74,11 @@ Wenn du den MCP Inspector lokal im Browser nutzt, kommen Requests typischerweise
 Realite erlaubt dafür CORS auf den Discovery- und MCP-Endpunkten:
 
 - `/.well-known/oauth-protected-resource/api/mcp`
+- `/.well-known/oauth-protected-resource/mcp`
 - `/.well-known/oauth-authorization-server`
 - `/.well-known/openid-configuration`
 - `/api/mcp`
+- `/mcp`
 
 Falls du eine andere Origin verwenden willst, setze `MCP_ALLOWED_ORIGINS` als kommaseparierte Liste (z. B. `http://localhost:6274,http://localhost:3001`).
 
@@ -83,7 +89,7 @@ Hinweis: Für den Browser-Inspector muss CORS nicht nur auf den `/.well-known`- 
 - `issuer`: Wer hat das Access Token ausgestellt (der OAuth-Server).  
   Realite erwartet hier die eigene Origin (z. B. `https://realite.app`).
 - `audience`: Für welche Resource ist das Token gedacht.  
-  Realite erwartet hier den MCP-Resource-Endpunkt `https://realite.app/api/mcp`.
+  Realite erwartet hier den MCP-Resource-Endpunkt `https://realite.app/api/mcp` oder den kompatiblen Alias `https://realite.app/mcp`.
 
 Wenn `issuer` oder `audience` nicht zum Token passen, lehnt Realite den Zugriff auf `/api/mcp` mit `401` ab.
 

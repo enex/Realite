@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { buildMcpCorsPreflightResponse, getMcpCorsHeaders } from "@/src/lib/mcp-cors";
-import { MCP_RESOURCE_PATH, getMcpProtectedResourceMetadata } from "@/src/lib/mcp-oauth-metadata";
+import { getMcpProtectedResourceMetadata, isMcpResourcePath } from "@/src/lib/mcp-oauth-metadata";
 
 export const runtime = "nodejs";
 
@@ -10,11 +10,12 @@ export async function GET(
   context: { params: Promise<{ resource: string[] }> }
 ) {
   const { resource } = await context.params;
-  if (`/${resource.join("/")}` !== MCP_RESOURCE_PATH) {
+  const resourcePath = `/${resource.join("/")}`;
+  if (!isMcpResourcePath(resourcePath)) {
     return NextResponse.json({ error: "Protected resource not found" }, { status: 404 });
   }
 
-  const metadata = getMcpProtectedResourceMetadata(request);
+  const metadata = getMcpProtectedResourceMetadata(request, resourcePath);
 
   return NextResponse.json(metadata, {
     headers: {
