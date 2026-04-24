@@ -26,7 +26,7 @@ function parseOpenIntentions(value: string | null | undefined) {
 
 function cleanTitle(value: string) {
   const cleaned = value.replace(/#[^\s]+/gi, "").replace(/\s+/g, " ").trim();
-  return cleaned.length > 34 ? `${cleaned.slice(0, 31).trimEnd()}...` : cleaned;
+  return cleaned.length > 24 ? `${cleaned.slice(0, 21).trimEnd()}...` : cleaned;
 }
 
 function formatActivityTime(startsAt: Date) {
@@ -55,7 +55,7 @@ export default async function WeeklyShareOgImage({
     ...activities.slice(0, 3).map((activity) => ({
       eyebrow: formatActivityTime(activity.startsAt),
       title: cleanTitle(activity.title),
-      detail: activity.location?.trim() ? `${activity.location.trim()} · Komm mit` : "Komm mit und mach mit",
+      detail: "Komm mit",
       kind: "event" as const,
     })),
     ...openIntentions.slice(0, Math.max(0, 3 - activities.length)).map((intention) => ({
@@ -85,13 +85,13 @@ export default async function WeeklyShareOgImage({
           display: "flex",
           padding: 54,
           background:
-            "radial-gradient(circle at 18% 18%, rgba(54, 211, 153, 0.42), transparent 28%), radial-gradient(circle at 84% 18%, rgba(251, 146, 60, 0.45), transparent 30%), linear-gradient(135deg, #16130f 0%, #272016 50%, #f3ead8 50%, #efe1c3 100%)",
+            "radial-gradient(circle at 16% 18%, rgba(54, 211, 153, 0.42), transparent 28%), radial-gradient(circle at 88% 18%, rgba(251, 146, 60, 0.34), transparent 30%), linear-gradient(135deg, #16130f 0%, #272016 52%, #f3ead8 52%, #efe1c3 100%)",
           color: "#f8f1e2",
           fontFamily: "Arial, sans-serif",
         }}
       >
-        <div style={{ display: "flex", width: "100%", gap: 44 }}>
-          <div style={{ display: "flex", flex: 1, flexDirection: "column", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", width: "100%", gap: 34 }}>
+          <div style={{ display: "flex", width: 450, flexDirection: "column", justifyContent: "space-between" }}>
             <div
               style={{
                 display: "flex",
@@ -107,13 +107,13 @@ export default async function WeeklyShareOgImage({
               Wochenstatus
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <div style={{ display: "flex", fontSize: 68, fontWeight: 900, letterSpacing: -4, lineHeight: 0.95 }}>
+              <div style={{ display: "flex", fontSize: 62, fontWeight: 900, letterSpacing: -4, lineHeight: 0.95 }}>
                 Geh mit.
               </div>
-              <div style={{ display: "flex", fontSize: 68, fontWeight: 900, letterSpacing: -4, lineHeight: 0.95 }}>
+              <div style={{ display: "flex", fontSize: 62, fontWeight: 900, letterSpacing: -4, lineHeight: 0.95 }}>
                 Mach mit.
               </div>
-              <div style={{ display: "flex", marginTop: 18, fontSize: 34, lineHeight: 1.18, color: "#c8f7e2" }}>
+              <div style={{ display: "flex", marginTop: 18, fontSize: 30, lineHeight: 1.18, color: "#c8f7e2" }}>
                 {owner} lädt dich zu echten Vorhaben ein.
               </div>
             </div>
@@ -125,10 +125,10 @@ export default async function WeeklyShareOgImage({
           <div
             style={{
               display: "flex",
-              width: 430,
+              width: 590,
               flexDirection: "column",
               justifyContent: "center",
-              gap: 18,
+              gap: 14,
               color: "#21160e",
             }}
           >
@@ -138,17 +138,17 @@ export default async function WeeklyShareOgImage({
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  borderRadius: 34,
+                  borderRadius: 28,
                   background: card.kind === "event" ? "#fffaf0" : "#134e4a",
                   color: card.kind === "event" ? "#21160e" : "#ecfeff",
-                  padding: "24px 28px",
+                  padding: "18px 24px",
                   boxShadow: "0 18px 45px rgba(32, 24, 15, 0.22)",
-                  transform: `translateX(${index === 1 ? -34 : 0}px) rotate(${index === 0 ? -2 : index === 1 ? 2 : -1}deg)`,
+                  transform: `translateX(${index === 1 ? -24 : 0}px) rotate(${index === 0 ? -1 : index === 1 ? 1 : -1}deg)`,
                 }}
               >
-                <div style={{ display: "flex", fontSize: 22, fontWeight: 800, opacity: 0.72 }}>{card.eyebrow}</div>
-                <div style={{ display: "flex", marginTop: 6, fontSize: 42, fontWeight: 900 }}>{card.title}</div>
-                <div style={{ display: "flex", marginTop: 8, fontSize: 24, fontWeight: 700, opacity: 0.72 }}>{card.detail}</div>
+                <div style={{ display: "flex", fontSize: 22, fontWeight: 900, opacity: 0.72 }}>{card.eyebrow}</div>
+                <div style={{ display: "flex", marginTop: 4, fontSize: 44, fontWeight: 900, lineHeight: 1.02 }}>{card.title}</div>
+                <div style={{ display: "flex", marginTop: 6, fontSize: 25, fontWeight: 800, opacity: 0.72 }}>{card.detail}</div>
               </div>
             ))}
           </div>
