@@ -54,6 +54,7 @@ export function getMcpCorsHeaders(
     "Access-Control-Allow-Methods": allowedMethods,
     "Access-Control-Allow-Headers":
       requestedHeaders ?? "Authorization, Content-Type, Accept, MCP-Protocol-Version",
+    "Access-Control-Expose-Headers": "WWW-Authenticate",
     "Access-Control-Allow-Credentials": "true",
     "Access-Control-Max-Age": "600",
     Vary: "Origin"

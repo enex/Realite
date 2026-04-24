@@ -17,6 +17,7 @@ Der Zugriff läuft über OAuth mit Better Auth. Dein MCP-Client bekommt also kei
 
 - MCP-Endpunkt: `/api/mcp`
 - OAuth Protected Resource Metadata: `/.well-known/oauth-protected-resource/api/mcp`
+- OAuth Protected Resource Metadata Fallback: `/.well-known/oauth-protected-resource`
 - OAuth Authorization Server Metadata: `/.well-known/oauth-authorization-server`
 - OpenID-Konfiguration: `/.well-known/openid-configuration`
 
@@ -48,6 +49,7 @@ Realite verwendet für MCP aktuell diese Scopes:
 - Der MCP-Transport läuft über HTTP `POST` auf `/api/mcp`.
 - Der Endpunkt ist OAuth-geschützt und erwartet ein Bearer-Token.
 - Für Discovery sollte der Client die Protected-Resource-Metadata lesen statt feste Auth-URLs anzunehmen.
+- Browser-basierte Clients können den `WWW-Authenticate`-Header lesen; darüber findet der Client die passende `resource_metadata`-URL.
 - Realite nutzt den angemeldeten Better-Auth-User als Grundlage und synchronisiert daraus den internen App-User.
 
 ## Typische Probleme
@@ -57,6 +59,7 @@ Realite verwendet für MCP aktuell diese Scopes:
 Meist fehlt das Bearer-Token oder der Client nutzt die OAuth-Metadaten nicht korrekt. Prüfe insbesondere:
 
 - ob `/.well-known/oauth-protected-resource/api/mcp` erreichbar ist
+- ob alternativ `/.well-known/oauth-protected-resource` erreichbar ist
 - ob der Client wirklich ein Access Token für die Resource `/api/mcp` anfordert
 - ob die Anmeldung und die Consent-Seite vollständig abgeschlossen wurden
 

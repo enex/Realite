@@ -211,6 +211,13 @@
       "when": 1774561685354,
       "tag": "0029_melodic_chat",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1774620000000,
+      "tag": "0030_weekly_share_campaigns",
+      "breakpoints": true
     }
   ]
 }

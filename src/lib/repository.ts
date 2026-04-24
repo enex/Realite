@@ -17,6 +17,9 @@ import {
   tagPreferences,
   userSettings,
   users,
+  weeklyShareCampaigns,
+  weeklyShareReferrals,
+  weeklyShareVisits,
 } from "@/src/db/schema";
 import {
   getEventPresenceWindow,
@@ -57,6 +60,7 @@ import {
   parseDecisionReasons,
   serializeDecisionReasons,
 } from "@/src/lib/suggestion-feedback";
+import makeConvertor from "@/src/lib/utils/short-uuid";
 
 export type GroupVisibility = "public" | "private";
 export type { EventJoinMode } from "@/src/lib/event-join-modes";
@@ -202,6 +206,32 @@ export type UserProfileOverview = {
   events: UserProfileEvent[];
 };
 
+export type WeeklyShareCampaignSummary = {
+  id: string;
+  token: string;
+  weekStartsOn: Date;
+  shouldPrompt: boolean;
+  sharedAt: Date | null;
+  dismissedAt: Date | null;
+  visitCount: number;
+  knownVisitors: Array<{
+    id: string;
+    name: string | null;
+    email: string;
+    image: string | null;
+    firstVisitedAt: Date;
+    lastVisitedAt: Date;
+  }>;
+  pendingReferrals: Array<{
+    id: string;
+    userId: string;
+    name: string | null;
+    email: string;
+    image: string | null;
+    createdAt: Date;
+  }>;
+};
+
 export type UserDatingProfile = DatingProfile;
 export type DateHashtagStatus = {
   profile: UserDatingProfile;
@@ -212,6 +242,7 @@ export type DateHashtagStatus = {
 
 const GOOGLE_CONTACTS_PROVIDER = "google_contacts";
 const MY_CONTACTS_SYNC_REFERENCE = "contactGroups/myContacts";
+const WEEKLY_SHARE_TOKEN = makeConvertor(makeConvertor.constants.flickrBase58);
 
 function normalizeTags(tags: string[]) {
   const normalized = normalizeDateTags(
@@ -275,6 +306,25 @@ function isKontakteGroupName(name: string) {
 
 function normalizeEmail(value: string) {
   return value.trim().toLowerCase();
+}
+
+export function getWeeklyShareWeekStart(now = new Date()) {
+  const weekStart = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+  ));
+  const day = weekStart.getUTCDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  weekStart.setUTCDate(weekStart.getUTCDate() + mondayOffset);
+  weekStart.setUTCHours(0, 0, 0, 0);
+  return weekStart;
+}
+
+function truncateHeaderValue(value: string | null, maxLength = 512) {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+  return trimmed.slice(0, maxLength);
 }
 
 function normalizeSuggestionDeliveryMode(
@@ -1163,6 +1213,241 @@ export async function ensureKontakteGroupForUser(userId: string) {
     ...group,
     hashtags: parseGroupHashtags(group.hashtag),
   };
+}
+
+export async function getOrCreateCurrentWeeklyShareCampaign(input: {
+  userId: string;
+  now?: Date;
+}) {
+  const db = getDb();
+  const weekStartsOn = getWeeklyShareWeekStart(input.now ?? new Date());
+  const [campaign] = await db
+    .insert(weeklyShareCampaigns)
+    .values({
+      userId: input.userId,
+      token: WEEKLY_SHARE_TOKEN.generate(),
+      weekStartsOn,
+    })
+    .onConflictDoUpdate({
+      target: [weeklyShareCampaigns.userId, weeklyShareCampaigns.weekStartsOn],
+      set: { userId: input.userId },
+    })
+    .returning();
+
+  if (!campaign) {
+    throw new RepositoryValidationError("Wochenlink konnte nicht erstellt werden");
+  }
+
+  return campaign;
+}
+
+export async function markWeeklyShareCampaignShared(input: {
+  userId: string;
+  token: string;
+}) {
+  const db = getDb();
+  const [campaign] = await db
+    .update(weeklyShareCampaigns)
+    .set({ sharedAt: new Date() })
+    .where(
+      and(
+        eq(weeklyShareCampaigns.userId, input.userId),
+        eq(weeklyShareCampaigns.token, input.token),
+      ),
+    )
+    .returning();
+
+  if (!campaign) {
+    throw new RepositoryValidationError("Wochenlink nicht gefunden");
+  }
+
+  return campaign;
+}
+
+export async function dismissWeeklySharePrompt(input: {
+  userId: string;
+  token: string;
+}) {
+  const db = getDb();
+  const [campaign] = await db
+    .update(weeklyShareCampaigns)
+    .set({ dismissedAt: new Date() })
+    .where(
+      and(
+        eq(weeklyShareCampaigns.userId, input.userId),
+        eq(weeklyShareCampaigns.token, input.token),
+      ),
+    )
+    .returning();
+
+  if (!campaign) {
+    throw new RepositoryValidationError("Wochenlink nicht gefunden");
+  }
+
+  return campaign;
+}
+
+export async function getWeeklyShareCampaignByToken(token: string) {
+  const db = getDb();
+  const [campaign] = await db
+    .select({
+      id: weeklyShareCampaigns.id,
+      token: weeklyShareCampaigns.token,
+      weekStartsOn: weeklyShareCampaigns.weekStartsOn,
+      createdAt: weeklyShareCampaigns.createdAt,
+      ownerUserId: users.id,
+      ownerName: users.name,
+      ownerEmail: users.email,
+      ownerImage: users.image,
+    })
+    .from(weeklyShareCampaigns)
+    .innerJoin(users, eq(weeklyShareCampaigns.userId, users.id))
+    .where(eq(weeklyShareCampaigns.token, token))
+    .limit(1);
+
+  return campaign ?? null;
+}
+
+export async function recordWeeklyShareVisit(input: {
+  token: string;
+  visitorUserId?: string | null;
+  referrer?: string | null;
+  userAgent?: string | null;
+}) {
+  const campaign = await getWeeklyShareCampaignByToken(input.token);
+  if (!campaign) {
+    return null;
+  }
+
+  const db = getDb();
+  await db.insert(weeklyShareVisits).values({
+    campaignId: campaign.id,
+    visitorUserId: input.visitorUserId ?? null,
+    referrer: truncateHeaderValue(input.referrer ?? null),
+    userAgent: truncateHeaderValue(input.userAgent ?? null),
+  });
+
+  if (input.visitorUserId && input.visitorUserId !== campaign.ownerUserId) {
+    const [visitor] = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        image: users.image,
+      })
+      .from(users)
+      .where(eq(users.id, input.visitorUserId))
+      .limit(1);
+
+    if (visitor) {
+      const kontakteGroup = await ensureKontakteGroupForUser(campaign.ownerUserId);
+      await db
+        .insert(groupContacts)
+        .values({
+          groupId: kontakteGroup.id,
+          email: normalizeEmail(visitor.email),
+          name: visitor.name,
+          image: visitor.image,
+          source: "weekly_share",
+          sourceReference: visitor.id,
+          updatedAt: new Date(),
+        })
+        .onConflictDoUpdate({
+          target: [groupContacts.groupId, groupContacts.email],
+          set: {
+            name: visitor.name,
+            image: visitor.image,
+            source: "weekly_share",
+            sourceReference: visitor.id,
+            updatedAt: new Date(),
+          },
+        });
+
+      await db
+        .insert(weeklyShareReferrals)
+        .values({
+          campaignId: campaign.id,
+          ownerUserId: campaign.ownerUserId,
+          referredUserId: visitor.id,
+        })
+        .onConflictDoNothing({
+          target: [weeklyShareReferrals.ownerUserId, weeklyShareReferrals.referredUserId],
+        });
+    }
+  }
+
+  return campaign;
+}
+
+export async function getWeeklyShareCampaignSummary(userId: string): Promise<WeeklyShareCampaignSummary> {
+  const db = getDb();
+  const campaign = await getOrCreateCurrentWeeklyShareCampaign({ userId });
+
+  const [visitCountRow, knownVisitRows, pendingReferralRows] = await Promise.all([
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(weeklyShareVisits)
+      .where(eq(weeklyShareVisits.campaignId, campaign.id)),
+    db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        image: users.image,
+        firstVisitedAt: sql<Date>`min(${weeklyShareVisits.createdAt})`,
+        lastVisitedAt: sql<Date>`max(${weeklyShareVisits.createdAt})`,
+      })
+      .from(weeklyShareVisits)
+      .innerJoin(users, eq(weeklyShareVisits.visitorUserId, users.id))
+      .where(eq(weeklyShareVisits.campaignId, campaign.id))
+      .groupBy(users.id, users.name, users.email, users.image)
+      .orderBy(sql`max(${weeklyShareVisits.createdAt}) desc`)
+      .limit(12),
+    db
+      .select({
+        id: weeklyShareReferrals.id,
+        userId: users.id,
+        name: users.name,
+        email: users.email,
+        image: users.image,
+        createdAt: weeklyShareReferrals.createdAt,
+      })
+      .from(weeklyShareReferrals)
+      .innerJoin(users, eq(weeklyShareReferrals.referredUserId, users.id))
+      .where(
+        and(
+          eq(weeklyShareReferrals.ownerUserId, userId),
+          sql`${weeklyShareReferrals.acknowledgedAt} is null`,
+        ),
+      )
+      .orderBy(desc(weeklyShareReferrals.createdAt))
+      .limit(6),
+  ]);
+
+  return {
+    id: campaign.id,
+    token: campaign.token,
+    weekStartsOn: campaign.weekStartsOn,
+    shouldPrompt: !campaign.sharedAt && !campaign.dismissedAt,
+    sharedAt: campaign.sharedAt,
+    dismissedAt: campaign.dismissedAt,
+    visitCount: visitCountRow[0]?.count ?? 0,
+    knownVisitors: knownVisitRows,
+    pendingReferrals: pendingReferralRows,
+  };
+}
+
+export async function acknowledgeWeeklyShareReferrals(userId: string) {
+  const db = getDb();
+  await db
+    .update(weeklyShareReferrals)
+    .set({ acknowledgedAt: new Date() })
+    .where(
+      and(
+        eq(weeklyShareReferrals.ownerUserId, userId),
+        sql`${weeklyShareReferrals.acknowledgedAt} is null`,
+      ),
+    );
 }
 
 export async function upsertGoogleContactsLabelGroup(input: {

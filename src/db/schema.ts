@@ -223,6 +223,75 @@ export const groupContacts = pgTable(
   ],
 );
 
+export const weeklyShareCampaigns = pgTable(
+  "weekly_share_campaigns",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    token: text("token").notNull(),
+    weekStartsOn: timestamp("week_starts_on", { withTimezone: true }).notNull(),
+    sharedAt: timestamp("shared_at", { withTimezone: true }),
+    dismissedAt: timestamp("dismissed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex().on(table.userId, table.weekStartsOn),
+    uniqueIndex().on(table.token),
+    index().on(table.userId, table.createdAt),
+  ],
+);
+
+export const weeklyShareVisits = pgTable(
+  "weekly_share_visits",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    campaignId: uuid("campaign_id")
+      .notNull()
+      .references(() => weeklyShareCampaigns.id, { onDelete: "cascade" }),
+    visitorUserId: uuid("visitor_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    referrer: text("referrer"),
+    userAgent: text("user_agent"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index().on(table.campaignId, table.createdAt),
+    index().on(table.visitorUserId),
+  ],
+);
+
+export const weeklyShareReferrals = pgTable(
+  "weekly_share_referrals",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    campaignId: uuid("campaign_id")
+      .notNull()
+      .references(() => weeklyShareCampaigns.id, { onDelete: "cascade" }),
+    ownerUserId: uuid("owner_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    referredUserId: uuid("referred_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    acknowledgedAt: timestamp("acknowledged_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex().on(table.ownerUserId, table.referredUserId),
+    index().on(table.ownerUserId, table.acknowledgedAt),
+    index().on(table.campaignId),
+  ],
+);
+
 export const inviteLinks = pgTable(
   "invite_links",
   {

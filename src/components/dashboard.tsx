@@ -150,6 +150,30 @@ type DashboardPayload = {
   events: EventItem[];
   suggestions: Suggestion[];
   smartMeetings: SmartMeeting[];
+  weeklyShare: {
+    token: string;
+    weekStartsOn: string;
+    shouldPrompt: boolean;
+    sharedAt: string | null;
+    dismissedAt: string | null;
+    visitCount: number;
+    knownVisitors: Array<{
+      id: string;
+      name: string | null;
+      email: string;
+      image: string | null;
+      firstVisitedAt: string;
+      lastVisitedAt: string;
+    }>;
+    pendingReferrals: Array<{
+      id: string;
+      userId: string;
+      name: string | null;
+      email: string;
+      image: string | null;
+      createdAt: string;
+    }>;
+  };
   acceptedByEventId?: Record<string, AcceptedUser[]>;
 };
 
@@ -186,7 +210,17 @@ const emptyPayload: DashboardPayload = {
   groups: [],
   events: [],
   suggestions: [],
-  smartMeetings: []
+  smartMeetings: [],
+  weeklyShare: {
+    token: "",
+    weekStartsOn: "",
+    shouldPrompt: false,
+    sharedAt: null,
+    dismissedAt: null,
+    visitCount: 0,
+    knownVisitors: [],
+    pendingReferrals: []
+  }
 };
 
 export function Dashboard({
@@ -444,6 +478,44 @@ export function Dashboard({
     }
   }
 
+  async function markWeeklyShare(action: "shared" | "dismissed") {
+    if (!data.weeklyShare.token) return;
+    await fetch("/api/weekly-share/current", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: data.weeklyShare.token, action }),
+    });
+    await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+  }
+
+  async function shareWeeklyStatus() {
+    const sharePath = `/w/${encodeURIComponent(data.weeklyShare.token)}`;
+    const shareUrl = `${window.location.origin}${sharePath}`;
+    const shareData = {
+      title: "Meine Vorhaben diese Woche",
+      text: "Ich teile meine Vorhaben diese Woche auf Realite. Schau rein, wenn du mitmachen willst.",
+      url: shareUrl,
+    };
+
+    try {
+      if (navigator.share && navigator.canShare?.(shareData) !== false) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Link kopiert. Du kannst ihn jetzt in deinem Status teilen.");
+      }
+      await markWeeklyShare("shared");
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      toast.error("Teilen ist fehlgeschlagen. Der Link wurde nicht veröffentlicht.");
+    }
+  }
+
+  async function acknowledgeWeeklyShareReferrals() {
+    await fetch("/api/weekly-share/referrals/ack", { method: "POST" });
+    await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+  }
+
   return (
     <AppShell user={{ name: profileName, email: profileEmail, image: profileImage }}>
       <main className="mx-auto w-full max-w-3xl px-4 py-4 sm:py-6 sm:px-6 lg:px-8">
@@ -483,6 +555,13 @@ export function Dashboard({
         {data.sync.warning ? <SyncWarning>{data.sync.warning}</SyncWarning> : null}
         {data.sync.contactsWarning ? <SyncWarning>{data.sync.contactsWarning}</SyncWarning> : null}
         {data.sync.smartWarning ? <SyncWarning>{data.sync.smartWarning}</SyncWarning> : null}
+
+        <WeeklyShareCard
+          weeklyShare={data.weeklyShare}
+          onShare={shareWeeklyStatus}
+          onDismiss={() => markWeeklyShare("dismissed")}
+          onAcknowledgeReferrals={acknowledgeWeeklyShareReferrals}
+        />
 
         {/* Quick Share (nur /now) */}
         {!isEventsView ? (
@@ -596,6 +675,110 @@ function SyncWarning({ children }: { children: React.ReactNode }) {
     <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-500/35 dark:bg-amber-950/40 dark:text-amber-100">
       {children}
     </div>
+  );
+}
+
+function WeeklyShareCard({
+  weeklyShare,
+  onShare,
+  onDismiss,
+  onAcknowledgeReferrals,
+}: {
+  weeklyShare: DashboardPayload["weeklyShare"];
+  onShare: () => void;
+  onDismiss: () => void;
+  onAcknowledgeReferrals: () => void;
+}) {
+  const hasPrompt = weeklyShare.shouldPrompt;
+  const hasStats = weeklyShare.visitCount > 0 || weeklyShare.knownVisitors.length > 0;
+  const hasReferrals = weeklyShare.pendingReferrals.length > 0;
+
+  if (!hasPrompt && !hasStats && !hasReferrals) {
+    return null;
+  }
+
+  const sharePath = weeklyShare.token ? `/w/${weeklyShare.token}` : "";
+
+  return (
+    <section className="mt-4 overflow-hidden rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 via-stone-50 to-teal-50 p-4 text-sm shadow-sm dark:border-orange-500/30 dark:from-orange-950/35 dark:via-card dark:to-teal-950/35">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-orange-700 dark:text-orange-200">
+            Wochenstatus
+          </p>
+          <h2 className="mt-1 text-base font-bold text-foreground">
+            Teile deine Vorhaben einmal diese Woche
+          </h2>
+          <p className="mt-1 max-w-xl text-muted-foreground">
+            Realite erstellt dafür einen eindeutigen Link mit schöner Vorschau. Du entscheidest im Systemdialog, ob du ihn
+            z. B. in WhatsApp Status teilst.
+          </p>
+        </div>
+        {hasPrompt ? (
+          <div className="flex shrink-0 gap-2">
+            <button
+              type="button"
+              onClick={onDismiss}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
+            >
+              Später
+            </button>
+            <button
+              type="button"
+              onClick={onShare}
+              className="rounded-lg bg-teal-700 px-3 py-2 text-xs font-semibold text-white hover:bg-teal-800"
+            >
+              Jetzt teilen
+            </button>
+          </div>
+        ) : null}
+      </div>
+
+      {sharePath ? (
+        <p className="mt-3 break-all rounded-xl bg-white/60 px-3 py-2 text-xs text-muted-foreground dark:bg-black/15">
+          Link: {sharePath}
+        </p>
+      ) : null}
+
+      {hasStats ? (
+        <div className="mt-3 rounded-xl bg-white/65 p-3 dark:bg-black/15">
+          <p className="font-semibold text-foreground">{weeklyShare.visitCount} Aufruf(e) diese Woche</p>
+          {weeklyShare.knownVisitors.length > 0 ? (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Bekannte Besucher:{" "}
+              {weeklyShare.knownVisitors
+                .map((visitor) => getPersonDisplayLabel({ name: visitor.name, email: visitor.email, allowEmail: false }))
+                .join(", ")}
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Wer nicht angemeldet ist, wird nur als Aufruf gezählt.
+            </p>
+          )}
+        </div>
+      ) : null}
+
+      {hasReferrals ? (
+        <div className="mt-3 rounded-xl border border-teal-200 bg-teal-50 p-3 dark:border-teal-500/30 dark:bg-teal-950/30">
+          <p className="font-semibold text-teal-950 dark:text-teal-50">
+            Neuer Kontakt über deinen Status-Link
+          </p>
+          <p className="mt-1 text-xs text-teal-800 dark:text-teal-100/80">
+            {weeklyShare.pendingReferrals
+              .map((referral) => getPersonDisplayLabel({ name: referral.name, email: referral.email, allowEmail: false }))
+              .join(", ")}{" "}
+            wurde in deinen Kontakten sichtbar.
+          </p>
+          <button
+            type="button"
+            onClick={onAcknowledgeReferrals}
+            className="mt-2 rounded-lg bg-teal-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-800"
+          >
+            Gesehen
+          </button>
+        </div>
+      ) : null}
+    </section>
   );
 }
 

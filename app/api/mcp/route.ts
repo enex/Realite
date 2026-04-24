@@ -2,22 +2,19 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 
 import { buildMcpCorsPreflightResponse, getMcpCorsHeaders } from "@/src/lib/mcp-cors";
 import { createRealiteMcpServer } from "@/src/lib/mcp";
+import { getMcpProtectedResourceMetadataUrl } from "@/src/lib/mcp-oauth-metadata";
 import { getRequestOrigin } from "@/src/lib/request-origin";
 import { getServerClient } from "@/src/lib/server-client";
 import { requireAppUserFromAuthUserId } from "@/src/lib/session";
 
 export const runtime = "nodejs";
 
-function getProtectedResourceMetadataUrl(request: Request) {
-  return `${getRequestOrigin(request)}/.well-known/oauth-protected-resource/api/mcp`;
-}
-
 function unauthorizedResponse(request: Request, message: string) {
   const corsHeaders = getMcpCorsHeaders(request, "POST, OPTIONS");
   return new Response(message, {
     status: 401,
     headers: {
-      "WWW-Authenticate": `Bearer resource_metadata="${getProtectedResourceMetadataUrl(request)}"`,
+      "WWW-Authenticate": `Bearer resource_metadata="${getMcpProtectedResourceMetadataUrl(request)}"`,
       "Content-Type": "text/plain; charset=utf-8",
       ...corsHeaders
     }

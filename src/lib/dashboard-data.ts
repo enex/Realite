@@ -5,6 +5,7 @@ import {
   getAcceptedUsersForEventIds,
   getDateHashtagStatus,
   getGoogleConnection,
+  getWeeklyShareCampaignSummary,
   listGroupContactsForUser,
   listGroupsForUser,
   listSuggestionsForUser,
@@ -26,7 +27,7 @@ export async function buildDashboardPayload(user: DashboardUser) {
   });
   const syncState = getDashboardSyncSnapshot(user.id);
 
-  const [groups, events, suggestions, connection, groupContacts, dating, smartMeetings, writableCalendars, readableCalendars] = await Promise.all([
+  const [groups, events, suggestions, connection, groupContacts, dating, smartMeetings, writableCalendars, readableCalendars, weeklyShare] = await Promise.all([
     listGroupsForUser(user.id),
     listVisibleEventsForUser(user.id),
     listSuggestionsForUser(user.id),
@@ -35,7 +36,8 @@ export async function buildDashboardPayload(user: DashboardUser) {
     getDateHashtagStatus(user.id),
     listSmartMeetingsForUser(user.id),
     listWritableCalendars(user.id),
-    listReadableCalendars(user.id)
+    listReadableCalendars(user.id),
+    getWeeklyShareCampaignSummary(user.id)
   ]);
   const calendarConnectionState = deriveCalendarConnectionState({
     hasConnection: Boolean(connection),
@@ -120,6 +122,21 @@ export async function buildDashboardPayload(user: DashboardUser) {
       endsAt: suggestion.endsAt.toISOString(),
       createdAt: suggestion.createdAt.toISOString()
     })),
+    weeklyShare: {
+      ...weeklyShare,
+      weekStartsOn: weeklyShare.weekStartsOn.toISOString(),
+      sharedAt: weeklyShare.sharedAt?.toISOString() ?? null,
+      dismissedAt: weeklyShare.dismissedAt?.toISOString() ?? null,
+      knownVisitors: weeklyShare.knownVisitors.map((visitor) => ({
+        ...visitor,
+        firstVisitedAt: visitor.firstVisitedAt.toISOString(),
+        lastVisitedAt: visitor.lastVisitedAt.toISOString()
+      })),
+      pendingReferrals: weeklyShare.pendingReferrals.map((referral) => ({
+        ...referral,
+        createdAt: referral.createdAt.toISOString()
+      }))
+    },
     acceptedByEventId: acceptedByEventIdJson,
     smartMeetings: smartMeetings.map((meeting) => ({
       ...meeting,

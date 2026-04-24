@@ -218,6 +218,21 @@ Kalenderlinks in Realite:
 **Event-Links ohne Anmeldung:** Öffentliche Events (`/e/...`) lassen sich auch ohne Konto öffnen. Du siehst Titel, Termin, Ort, Beschreibung, den Erstellernamen (falls hinterlegt) sowie vorhandene Kommentare. E-Mail-Adressen von Erstellern und Kommentierenden werden auf dieser Gastansicht nicht öffentlich angezeigt. Sobald du zusagen, absagen oder kommentieren willst, wirst du zur Anmeldung weitergeleitet und danach zurück auf die Eventseite gebracht. Dort wählst du den verfügbaren Login für dieses Deployment selbst aus.
 - Titel von Realite-Kalendereinträgen enthalten keine Hashtags:  
   Bei neuen Vorschlägen `[Realite Vorschlag] <Titel ohne Hashtags>`, bei Zusage `[Realite] <Titel ohne Hashtags>`.
+
+## Wochenstatus teilen
+
+Einmal pro Kalenderwoche zeigt Realite im Bereich **Was geht?** einen Hinweis, deine Vorhaben zu teilen. Der Button **Jetzt teilen** öffnet die Share-Funktion deines Geräts oder Browsers. Dort entscheidest du selbst, ob du den Link z. B. in WhatsApp Status, in einer Nachricht oder an anderer Stelle teilst.
+
+Dabei gilt:
+
+- Realite veröffentlicht nichts automatisch.
+- Für jede Woche entsteht ein eigener Link unter `/w/...`.
+- Der Link hat ein eigenes Vorschaubild, damit er in Status- und Messenger-Ansichten gut erkennbar ist.
+- Realite zählt, wie oft der Link geöffnet wurde.
+- Angemeldete Personen werden für dich namentlich als Besucher sichtbar; nicht angemeldete Personen zählen nur als Aufruf.
+- Wenn sich jemand über deinen Wochenstatus-Link anmeldet, erscheint diese Person in deinen Kontakten und du siehst im Dashboard einen Hinweis.
+
+Die Kontakt-Verknüpfung entsteht nur über diesen bewusst geöffneten Link. Sie ersetzt keine automatische Kontaktfreigabe und verschickt keine Nachrichten an deine Kontakte.
 - In der Beschreibung wird dafür eine einzelne Zeile ergänzt: `Realite-Link (automatisch ergänzt): <Link>`.
 - Wenn ein Event aus Google Kalender in Realite importiert wird, ergänzt Realite im Google-Termin automatisch einen `realite.app/e/...`-Link in der Beschreibung.
 - Dieser automatisch ergänzte Realite-Text wird beim Import in Realite ignoriert, damit Beschreibungen in Realite sauber bleiben.
