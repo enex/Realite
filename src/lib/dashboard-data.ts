@@ -20,6 +20,14 @@ type DashboardUser = {
   image: string | null;
 };
 
+export function toDashboardIsoString(value: Date | string | number) {
+  return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
+}
+
+function toNullableDashboardIsoString(value: Date | string | number | null) {
+  return value === null ? null : toDashboardIsoString(value);
+}
+
 export async function buildDashboardPayload(user: DashboardUser) {
   triggerDashboardBackgroundSync(user.id);
   ensureCalendarWatchesForUser(user.id).catch((err) => {
@@ -105,52 +113,52 @@ export async function buildDashboardPayload(user: DashboardUser) {
     },
     groups: groups.map((group) => ({
       ...group,
-      createdAt: group.createdAt.toISOString(),
+      createdAt: toDashboardIsoString(group.createdAt),
       eventCount: groupEventCounts.get(group.id) ?? 0,
       contactCount: contactsByGroup.get(group.id)?.length ?? 0,
       contacts: contactsByGroup.get(group.id) ?? []
     })),
     events: events.map((event) => ({
       ...event,
-      startsAt: event.startsAt.toISOString(),
-      endsAt: event.endsAt.toISOString(),
+      startsAt: toDashboardIsoString(event.startsAt),
+      endsAt: toDashboardIsoString(event.endsAt),
       isAvailable: true
     })),
     suggestions: suggestions.map((suggestion) => ({
       ...suggestion,
-      startsAt: suggestion.startsAt.toISOString(),
-      endsAt: suggestion.endsAt.toISOString(),
-      createdAt: suggestion.createdAt.toISOString()
+      startsAt: toDashboardIsoString(suggestion.startsAt),
+      endsAt: toDashboardIsoString(suggestion.endsAt),
+      createdAt: toDashboardIsoString(suggestion.createdAt)
     })),
     weeklyShare: {
       ...weeklyShare,
-      weekStartsOn: weeklyShare.weekStartsOn.toISOString(),
+      weekStartsOn: toDashboardIsoString(weeklyShare.weekStartsOn),
       openIntentions: weeklyShare.openIntentions,
-      sharedAt: weeklyShare.sharedAt?.toISOString() ?? null,
-      dismissedAt: weeklyShare.dismissedAt?.toISOString() ?? null,
+      sharedAt: toNullableDashboardIsoString(weeklyShare.sharedAt),
+      dismissedAt: toNullableDashboardIsoString(weeklyShare.dismissedAt),
       knownVisitors: weeklyShare.knownVisitors.map((visitor) => ({
         ...visitor,
-        firstVisitedAt: visitor.firstVisitedAt.toISOString(),
-        lastVisitedAt: visitor.lastVisitedAt.toISOString()
+        firstVisitedAt: toDashboardIsoString(visitor.firstVisitedAt),
+        lastVisitedAt: toDashboardIsoString(visitor.lastVisitedAt)
       })),
       pendingReferrals: weeklyShare.pendingReferrals.map((referral) => ({
         ...referral,
-        createdAt: referral.createdAt.toISOString()
+        createdAt: toDashboardIsoString(referral.createdAt)
       }))
     },
     acceptedByEventId: acceptedByEventIdJson,
     smartMeetings: smartMeetings.map((meeting) => ({
       ...meeting,
-      searchWindowStart: meeting.searchWindowStart.toISOString(),
-      searchWindowEnd: meeting.searchWindowEnd.toISOString(),
-      createdAt: meeting.createdAt.toISOString(),
-      updatedAt: meeting.updatedAt.toISOString(),
+      searchWindowStart: toDashboardIsoString(meeting.searchWindowStart),
+      searchWindowEnd: toDashboardIsoString(meeting.searchWindowEnd),
+      createdAt: toDashboardIsoString(meeting.createdAt),
+      updatedAt: toDashboardIsoString(meeting.updatedAt),
       latestRun: meeting.latestRun
         ? {
             ...meeting.latestRun,
-            startsAt: meeting.latestRun.startsAt.toISOString(),
-            endsAt: meeting.latestRun.endsAt.toISOString(),
-            responseDeadlineAt: meeting.latestRun.responseDeadlineAt.toISOString()
+            startsAt: toDashboardIsoString(meeting.latestRun.startsAt),
+            endsAt: toDashboardIsoString(meeting.latestRun.endsAt),
+            responseDeadlineAt: toDashboardIsoString(meeting.latestRun.responseDeadlineAt)
           }
         : null
     }))
