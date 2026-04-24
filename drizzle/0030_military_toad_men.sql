@@ -3,10 +3,13 @@ CREATE TABLE IF NOT EXISTS "weekly_share_campaigns" (
 	"user_id" uuid NOT NULL,
 	"token" text NOT NULL,
 	"week_starts_on" timestamp with time zone NOT NULL,
+	"open_intentions" text DEFAULT '' NOT NULL,
 	"shared_at" timestamp with time zone,
 	"dismissed_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
+--> statement-breakpoint
+ALTER TABLE "weekly_share_campaigns" ADD COLUMN IF NOT EXISTS "open_intentions" text DEFAULT '' NOT NULL;
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "weekly_share_referrals" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,

@@ -210,6 +210,7 @@ export type WeeklyShareCampaignSummary = {
   id: string;
   token: string;
   weekStartsOn: Date;
+  openIntentions: string[];
   shouldPrompt: boolean;
   sharedAt: Date | null;
   dismissedAt: Date | null;
@@ -230,6 +231,16 @@ export type WeeklyShareCampaignSummary = {
     image: string | null;
     createdAt: Date;
   }>;
+};
+
+export type WeeklyShareActivity = {
+  id: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+  startsAt: Date;
+  endsAt: Date;
+  joinMode: EventJoinMode;
 };
 
 export type UserDatingProfile = DatingProfile;
@@ -325,6 +336,14 @@ function truncateHeaderValue(value: string | null, maxLength = 512) {
   const trimmed = value?.trim();
   if (!trimmed) return null;
   return trimmed.slice(0, maxLength);
+}
+
+function parseOpenIntentions(value: string | null | undefined) {
+  return normalizeStringList((value ?? "").split("\n")).slice(0, 8);
+}
+
+function serializeOpenIntentions(values: string[]) {
+  return parseOpenIntentions(values.join("\n")).join("\n");
 }
 
 function normalizeSuggestionDeliveryMode(
@@ -1241,6 +1260,30 @@ export async function getOrCreateCurrentWeeklyShareCampaign(input: {
   return campaign;
 }
 
+export async function updateWeeklyShareOpenIntentions(input: {
+  userId: string;
+  token: string;
+  intentions: string[];
+}) {
+  const db = getDb();
+  const [campaign] = await db
+    .update(weeklyShareCampaigns)
+    .set({ openIntentions: serializeOpenIntentions(input.intentions) })
+    .where(
+      and(
+        eq(weeklyShareCampaigns.userId, input.userId),
+        eq(weeklyShareCampaigns.token, input.token),
+      ),
+    )
+    .returning();
+
+  if (!campaign) {
+    throw new RepositoryValidationError("Wochenlink nicht gefunden");
+  }
+
+  return campaign;
+}
+
 export async function markWeeklyShareCampaignShared(input: {
   userId: string;
   token: string;
@@ -1294,6 +1337,7 @@ export async function getWeeklyShareCampaignByToken(token: string) {
       id: weeklyShareCampaigns.id,
       token: weeklyShareCampaigns.token,
       weekStartsOn: weeklyShareCampaigns.weekStartsOn,
+      openIntentions: weeklyShareCampaigns.openIntentions,
       createdAt: weeklyShareCampaigns.createdAt,
       ownerUserId: users.id,
       ownerName: users.name,
@@ -1428,6 +1472,7 @@ export async function getWeeklyShareCampaignSummary(userId: string): Promise<Wee
     id: campaign.id,
     token: campaign.token,
     weekStartsOn: campaign.weekStartsOn,
+    openIntentions: parseOpenIntentions(campaign.openIntentions),
     shouldPrompt: !campaign.sharedAt && !campaign.dismissedAt,
     sharedAt: campaign.sharedAt,
     dismissedAt: campaign.dismissedAt,
@@ -1435,6 +1480,32 @@ export async function getWeeklyShareCampaignSummary(userId: string): Promise<Wee
     knownVisitors: knownVisitRows,
     pendingReferrals: pendingReferralRows,
   };
+}
+
+export async function listWeeklySharePublicActivities(ownerUserId: string): Promise<WeeklyShareActivity[]> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: events.id,
+      title: events.title,
+      description: events.description,
+      location: events.location,
+      startsAt: events.startsAt,
+      endsAt: events.endsAt,
+      joinMode: events.joinMode,
+    })
+    .from(events)
+    .where(
+      and(
+        eq(events.createdBy, ownerUserId),
+        eq(events.visibility, "public"),
+        gt(events.endsAt, new Date()),
+      ),
+    )
+    .orderBy(events.startsAt)
+    .limit(6);
+
+  return rows;
 }
 
 export async function acknowledgeWeeklyShareReferrals(userId: string) {

@@ -228,6 +228,8 @@ Dabei gilt:
 - Realite veröffentlicht nichts automatisch.
 - Für jede Woche entsteht ein eigener Link unter `/w/...`.
 - Der Link hat ein eigenes Vorschaubild, damit er in Status- und Messenger-Ansichten gut erkennbar ist.
+- Die Seite zeigt deine kommenden öffentlichen Vorhaben und optional offene Ideen ohne festen Termin.
+- Wer den Link öffnet, kann öffentliche Vorhaben direkt öffnen und dort mitmachen.
 - Realite zählt, wie oft der Link geöffnet wurde.
 - Angemeldete Personen werden für dich namentlich als Besucher sichtbar; nicht angemeldete Personen zählen nur als Aufruf.
 - Wenn sich jemand über deinen Wochenstatus-Link anmeldet, erscheint diese Person in deinen Kontakten und du siehst im Dashboard einen Hinweis.

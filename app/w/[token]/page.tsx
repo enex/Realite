@@ -6,14 +6,35 @@ import { notFound } from "next/navigation";
 import { buildLoginPath } from "@/src/lib/provider-adapters";
 import {
   getWeeklyShareCampaignByToken,
+  listWeeklySharePublicActivities,
   recordWeeklyShareVisit,
 } from "@/src/lib/repository";
 import { requireAppUser } from "@/src/lib/session";
+import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
 export const dynamic = "force-dynamic";
 
 function getOwnerLabel(ownerName: string | null, ownerEmail: string) {
   return ownerName?.trim() || ownerEmail.split("@")[0] || "Jemand";
+}
+
+function parseOpenIntentions(value: string | null | undefined) {
+  return (value ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .slice(0, 8);
+}
+
+function formatActivityTime(startsAt: Date, endsAt: Date) {
+  const day = startsAt.toLocaleDateString("de-DE", {
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit",
+  });
+  const start = startsAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  const end = endsAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  return `${day} · ${start}-${end}`;
 }
 
 export async function generateMetadata({
@@ -81,6 +102,10 @@ export default async function WeeklySharePage({
   const owner = getOwnerLabel(campaign.ownerName, campaign.ownerEmail);
   const isOwner = user?.id === campaign.ownerUserId;
   const loginPath = buildLoginPath(`/w/${encodeURIComponent(token)}`);
+  const [activities] = await Promise.all([
+    listWeeklySharePublicActivities(campaign.ownerUserId),
+  ]);
+  const openIntentions = parseOpenIntentions(campaign.openIntentions);
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#f4efe2] text-[#231f18]">
@@ -103,11 +128,11 @@ export default async function WeeklySharePage({
               Wochenstatus
             </p>
             <h1 className="mt-5 text-4xl font-black leading-[0.95] tracking-[-0.04em] sm:text-6xl">
-              {owner} will diese Woche nicht nur schreiben.
+              {owner}s Woche kann richtig gut werden.
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-7 text-[#5c5142]">
-              Realite sammelt konkrete Vorhaben statt endloser Chat-Abstimmung. Öffne die App, sieh passende Aktivitäten
-              und werde sichtbar als Kontakt, wenn du dich über diesen Link anmeldest.
+              Realite macht aus losen Ideen konkrete Treffen. Such dir ein Vorhaben aus, mach direkt mit und hilf dabei,
+              dass gutes Sozialleben mühelos passiert.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -144,16 +169,40 @@ export default async function WeeklySharePage({
             <div className="absolute -right-5 -top-5 h-24 w-24 rounded-full bg-orange-400" aria-hidden />
             <div className="absolute bottom-8 right-8 h-16 w-16 rounded-full border-8 border-teal-300/80" aria-hidden />
             <div className="relative grid gap-4">
-              {["Heute spontan?", "Freitag raus?", "Sonntag Kaffee?"].map((label, index) => (
-                <div
-                  key={label}
-                  className="rounded-3xl border border-white/10 bg-white/[0.08] p-4 backdrop-blur"
-                  style={{ transform: `translateX(${index * 12}px)` }}
-                >
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-teal-100/80">Vorhaben</p>
-                  <p className="mt-2 text-2xl font-black">{label}</p>
-                  <p className="mt-1 text-sm text-white/65">Ein Link, klare Sichtbarkeit, direkt reagieren.</p>
+              {activities.length > 0 ? (
+                activities.map((activity, index) => (
+                  <a
+                    key={activity.id}
+                    href={`/e/${shortenUUID(activity.id)}`}
+                    className="block rounded-3xl border border-white/10 bg-white/[0.08] p-4 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/[0.12]"
+                    style={{ transform: `translateX(${Math.min(index, 2) * 12}px)` }}
+                  >
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-teal-100/80">
+                      {formatActivityTime(activity.startsAt, activity.endsAt)}
+                    </p>
+                    <p className="mt-2 text-2xl font-black">{activity.title.replace(/#[^\s]+/gi, "").trim()}</p>
+                    <p className="mt-1 text-sm text-white/65">
+                      {activity.location?.trim() ? `${activity.location} · ` : ""}Direkt öffnen und mitmachen.
+                    </p>
+                  </a>
+                ))
+              ) : (
+                <div className="rounded-3xl border border-white/10 bg-white/[0.08] p-4 backdrop-blur">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-teal-100/80">Noch offen</p>
+                  <p className="mt-2 text-2xl font-black">Frag nach einem Plan</p>
+                  <p className="mt-1 text-sm text-white/65">Hier erscheinen öffentliche Vorhaben, sobald sie geteilt sind.</p>
                 </div>
+              )}
+              {openIntentions.map((intention, index) => (
+                <a
+                  key={`${intention}-${index}`}
+                  href={user ? "/now" : loginPath}
+                  className="block rounded-3xl border border-orange-200/30 bg-orange-300/15 p-4 backdrop-blur transition hover:-translate-y-0.5 hover:bg-orange-300/25"
+                >
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-orange-100/80">Offene Idee</p>
+                  <p className="mt-2 text-2xl font-black">{intention}</p>
+                  <p className="mt-1 text-sm text-white/65">Melde dich an und mach daraus ein echtes Treffen.</p>
+                </a>
               ))}
             </div>
           </aside>

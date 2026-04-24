@@ -57,14 +57,14 @@ export default async function WeeklyShareOgImage({
               Wochenstatus
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <div style={{ fontSize: 76, fontWeight: 900, letterSpacing: -4, lineHeight: 0.95 }}>
-                Nicht chatten.
+              <div style={{ fontSize: 70, fontWeight: 900, letterSpacing: -4, lineHeight: 0.95 }}>
+                Geiles
               </div>
-              <div style={{ fontSize: 76, fontWeight: 900, letterSpacing: -4, lineHeight: 0.95 }}>
-                Mitmachen.
+              <div style={{ fontSize: 70, fontWeight: 900, letterSpacing: -4, lineHeight: 0.95 }}>
+                Sozialleben.
               </div>
-              <div style={{ marginTop: 18, fontSize: 34, lineHeight: 1.18, color: "#c8f7e2" }}>
-                {owner} teilt konkrete Vorhaben auf Realite.
+              <div style={{ display: "flex", marginTop: 18, fontSize: 34, lineHeight: 1.18, color: "#c8f7e2" }}>
+                {owner} teilt echte Vorhaben auf Realite.
               </div>
             </div>
             <div style={{ display: "flex", fontSize: 30, fontWeight: 800, color: "#f8f1e2" }}>

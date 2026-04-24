@@ -125,6 +125,7 @@ export async function buildDashboardPayload(user: DashboardUser) {
     weeklyShare: {
       ...weeklyShare,
       weekStartsOn: weeklyShare.weekStartsOn.toISOString(),
+      openIntentions: weeklyShare.openIntentions,
       sharedAt: weeklyShare.sharedAt?.toISOString() ?? null,
       dismissedAt: weeklyShare.dismissedAt?.toISOString() ?? null,
       knownVisitors: weeklyShare.knownVisitors.map((visitor) => ({

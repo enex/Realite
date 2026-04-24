@@ -232,6 +232,7 @@ export const weeklyShareCampaigns = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     token: text("token").notNull(),
     weekStartsOn: timestamp("week_starts_on", { withTimezone: true }).notNull(),
+    openIntentions: text("open_intentions").notNull().default(""),
     sharedAt: timestamp("shared_at", { withTimezone: true }),
     dismissedAt: timestamp("dismissed_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })

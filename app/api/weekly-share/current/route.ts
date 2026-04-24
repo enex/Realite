@@ -4,12 +4,14 @@ import { z } from "zod";
 import {
   dismissWeeklySharePrompt,
   markWeeklyShareCampaignShared,
+  updateWeeklyShareOpenIntentions,
 } from "@/src/lib/repository";
 import { requireAppUser } from "@/src/lib/session";
 
 const bodySchema = z.object({
   token: z.string().trim().min(8),
-  action: z.enum(["shared", "dismissed"]),
+  action: z.enum(["shared", "dismissed", "intentions"]),
+  intentions: z.array(z.string().trim().min(1).max(80)).max(8).optional(),
 });
 
 export async function POST(request: Request) {
@@ -25,8 +27,14 @@ export async function POST(request: Request) {
 
   if (parsed.data.action === "shared") {
     await markWeeklyShareCampaignShared({ userId: user.id, token: parsed.data.token });
-  } else {
+  } else if (parsed.data.action === "dismissed") {
     await dismissWeeklySharePrompt({ userId: user.id, token: parsed.data.token });
+  } else {
+    await updateWeeklyShareOpenIntentions({
+      userId: user.id,
+      token: parsed.data.token,
+      intentions: parsed.data.intentions ?? [],
+    });
   }
 
   return NextResponse.json({ ok: true });

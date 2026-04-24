@@ -1,5 +1,5 @@
 {
-  "id": "bd1ada18-6a34-45f3-9cdc-81f681d445ce",
+  "id": "8bd45995-2c28-4b1a-aa3d-fac64a6dd854",
   "prevId": "505db45b-b061-4a10-bf63-a4945ea505b6",
   "version": "7",
   "dialect": "postgresql",
@@ -2467,6 +2467,13 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true
+        },
+        "open_intentions": {
+          "name": "open_intentions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
         },
         "shared_at": {
           "name": "shared_at",
