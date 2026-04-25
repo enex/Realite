@@ -16,6 +16,7 @@ import { getSuggestionSettingsMessaging } from "@/src/lib/calendar-messaging";
 import { getPageIntentMeta, pageLeadClassName, pageMetaClassName, pageShellClassName, pageTitleClassName } from "@/src/lib/page-hierarchy";
 import { useDatingSettings } from "@/src/components/settings/use-dating-settings";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
+import { MCP_SERVER_FLAG } from "@/src/lib/posthog/flag-keys";
 
 type WritableCalendar = {
   id: string;
@@ -115,6 +116,7 @@ export function SettingsPage({
 
   const dating = useDatingSettings();
   const datingModeEnabled = useRealiteFeatureFlag("dating-mode", false);
+  const mcpServerEnabled = useRealiteFeatureFlag(MCP_SERVER_FLAG, false);
 
   useEffect(() => {
     if (queryData?.settings) {
@@ -255,7 +257,7 @@ export function SettingsPage({
           />
         ) : null}
 
-        <MpcSettingsCard />
+        {mcpServerEnabled ? <MpcSettingsCard /> : null}
 
         <AccountDeleteCard busy={deleteBusy} error={deleteError} onDelete={deleteAccount} />
       </main>

@@ -1,4 +1,5 @@
-import { listDocsPages } from "@/src/lib/docs";
+import { DocsIndexContent } from "@/src/components/docs/docs-index-content";
+import { listDocsPages } from "@/src/lib/docs-pages";
 
 export const metadata = {
   title: "Realite Docs",
@@ -19,18 +20,7 @@ export default function DocsIndexPage() {
         </p>
       </header>
 
-      <section className="mt-6 grid gap-4 sm:grid-cols-2">
-        {pages.map((page) => (
-          <a
-            key={page.slug}
-            href={`/docs/${page.slug}`}
-            className="rounded-xl border border-border bg-card p-5 shadow-sm transition hover:border-teal-300 hover:bg-teal-50"
-          >
-            <p className="text-lg font-semibold text-foreground">{page.title}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{page.description}</p>
-          </a>
-        ))}
-      </section>
+      <DocsIndexContent pages={pages} />
     </main>
   );
 }
