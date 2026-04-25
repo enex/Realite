@@ -29,6 +29,36 @@ function cleanTitle(value: string) {
   return cleaned.length > 24 ? `${cleaned.slice(0, 21).trimEnd()}...` : cleaned;
 }
 
+function cleanDetail(value: string) {
+  const cleaned = value.replace(/\b\d{5}\b/g, "").replace(/\s+/g, " ").replace(/^,\s*|\s*,$/g, "").trim();
+  return cleaned.length > 26 ? `${cleaned.slice(0, 23).trimEnd()}...` : cleaned;
+}
+
+function getActivityDetail(location: string | null) {
+  const normalized = location?.trim();
+  if (!normalized) {
+    return "Direkt dabei sein";
+  }
+
+  const parts = normalized
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  const postalCity = parts.find((part) => /\b\d{5}\b/.test(part));
+  if (postalCity) {
+    return cleanDetail(postalCity) || "Direkt dabei sein";
+  }
+
+  const withoutCountry = parts.filter((part) => !/^(deutschland|germany)$/i.test(part));
+  const shortTail = [...withoutCountry].reverse().find((part) => part.length <= 26);
+  if (shortTail) {
+    return cleanDetail(shortTail);
+  }
+
+  return cleanDetail(parts[0] ?? normalized);
+}
+
 function formatActivityTime(startsAt: Date) {
   return startsAt.toLocaleDateString("de-DE", {
     weekday: "short",
@@ -55,7 +85,7 @@ export default async function WeeklyShareOgImage({
     ...activities.slice(0, 3).map((activity) => ({
       eyebrow: formatActivityTime(activity.startsAt),
       title: cleanTitle(activity.title),
-      detail: "Komm mit",
+      detail: getActivityDetail(activity.location),
       kind: "event" as const,
     })),
     ...openIntentions.slice(0, Math.max(0, 3 - activities.length)).map((intention) => ({
