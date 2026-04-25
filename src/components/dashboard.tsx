@@ -480,7 +480,7 @@ export function Dashboard({
     }
   }
 
-  async function markWeeklyShare(action: "shared" | "dismissed") {
+  async function markWeeklyShare(action: "shared") {
     if (!data.weeklyShare.token) return;
     await fetch("/api/weekly-share/current", {
       method: "POST",
@@ -488,17 +488,6 @@ export function Dashboard({
       body: JSON.stringify({ token: data.weeklyShare.token, action }),
     });
     await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
-  }
-
-  async function saveWeeklyShareIntentions(intentions: string[]) {
-    if (!data.weeklyShare.token) return;
-    await fetch("/api/weekly-share/current", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: data.weeklyShare.token, action: "intentions", intentions }),
-    });
-    await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
-    toast.success("Vorhaben gespeichert.");
   }
 
   async function shareWeeklyStatus() {
@@ -572,8 +561,6 @@ export function Dashboard({
         <WeeklyShareCard
           weeklyShare={data.weeklyShare}
           onShare={shareWeeklyStatus}
-          onDismiss={() => markWeeklyShare("dismissed")}
-          onSaveIntentions={saveWeeklyShareIntentions}
           onAcknowledgeReferrals={acknowledgeWeeklyShareReferrals}
         />
 
@@ -695,37 +682,14 @@ function SyncWarning({ children }: { children: React.ReactNode }) {
 function WeeklyShareCard({
   weeklyShare,
   onShare,
-  onDismiss,
-  onSaveIntentions,
   onAcknowledgeReferrals,
 }: {
   weeklyShare: DashboardPayload["weeklyShare"];
   onShare: () => void;
-  onDismiss: () => void;
-  onSaveIntentions: (intentions: string[]) => void;
   onAcknowledgeReferrals: () => void;
 }) {
-  const [intentionsText, setIntentionsText] = useState(weeklyShare.openIntentions.join("\n"));
-  const hasPrompt = weeklyShare.shouldPrompt;
   const hasStats = weeklyShare.visitCount > 0 || weeklyShare.knownVisitors.length > 0;
   const hasReferrals = weeklyShare.pendingReferrals.length > 0;
-  const hasIntentions = weeklyShare.openIntentions.length > 0;
-
-  useEffect(() => {
-    setIntentionsText(weeklyShare.openIntentions.join("\n"));
-  }, [weeklyShare.openIntentions]);
-
-  if (!hasPrompt && !hasStats && !hasReferrals && !hasIntentions) {
-    return null;
-  }
-
-  const normalizedIntentions = intentionsText
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .slice(0, 8);
-  const savedIntentionsText = weeklyShare.openIntentions.join("\n");
-  const intentionsChanged = intentionsText.trim() !== savedIntentionsText.trim();
 
   return (
     <section className="mt-4 overflow-hidden rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 via-stone-50 to-teal-50 p-4 text-sm shadow-sm dark:border-orange-500/30 dark:from-orange-950/35 dark:via-card dark:to-teal-950/35">
@@ -742,49 +706,13 @@ function WeeklyShareCard({
             z. B. in WhatsApp Status teilst.
           </p>
         </div>
-        {hasPrompt ? (
-          <div className="flex shrink-0 gap-2">
-            <button
-              type="button"
-              onClick={onDismiss}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
-            >
-              Später
-            </button>
-            <button
-              type="button"
-              onClick={onShare}
-              className="rounded-lg bg-teal-700 px-3 py-2 text-xs font-semibold text-white hover:bg-teal-800"
-            >
-              Jetzt teilen
-            </button>
-          </div>
-        ) : null}
-      </div>
-
-      <div className="mt-3 rounded-xl bg-white/65 p-3 dark:bg-black/15">
-        <label htmlFor="weekly-share-intentions" className="text-xs font-semibold text-foreground">
-          Offene Vorhaben ohne festen Termin
-        </label>
-        <textarea
-          id="weekly-share-intentions"
-          value={intentionsText}
-          onChange={(event) => setIntentionsText(event.target.value)}
-          rows={2}
-          placeholder={"z. B. mal wieder Bouldern gehen\nz. B. nächste Woche Sauna"}
-          className="mt-2 w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
-        />
-        <div className="mt-2 flex items-center justify-between gap-3">
-          <p className="text-xs text-muted-foreground">
-            Eine Zeile pro Vorhaben. Diese Punkte erscheinen auf deinem Wochenstatus-Link.
-          </p>
+        <div className="flex shrink-0 gap-2">
           <button
             type="button"
-            disabled={!intentionsChanged}
-            onClick={() => onSaveIntentions(normalizedIntentions)}
-            className="shrink-0 rounded-lg border border-teal-700 px-3 py-1.5 text-xs font-semibold text-teal-800 transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:border-border disabled:text-muted-foreground dark:text-teal-100 dark:hover:bg-teal-950/30"
+            onClick={onShare}
+            className="rounded-lg bg-teal-700 px-3 py-2 text-xs font-semibold text-white hover:bg-teal-800"
           >
-            Speichern
+            Jetzt teilen
           </button>
         </div>
       </div>
