@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
+import { UserAvatar } from "@/src/components/user-avatar";
 import { buildLoginPath } from "@/src/lib/provider-adapters";
 
 type Overview = {
@@ -32,6 +32,7 @@ type Participant = {
   userId: string;
   name: string | null;
   email: string;
+  image: string | null;
   presenceStatus: string;
   visibleUntilIso: string;
   unlockedProfile: boolean;
@@ -67,6 +68,7 @@ type DatingProfileRow = {
   profileUpdatedAt: string;
   userName: string | null;
   userEmail: string;
+  userImage: string | null;
   userCreatedAt: string;
 };
 
@@ -91,9 +93,13 @@ export function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("Übersicht");
   const [authReady, setAuthReady] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
-  const [adminUiConfig, setAdminUiConfig] = useState<AdminUiConfig | null>(null);
+  const [adminUiConfig, setAdminUiConfig] = useState<AdminUiConfig | null>(
+    null,
+  );
   const [authVia, setAuthVia] = useState<"email" | "secret" | null>(null);
-  const [adminDisplayEmail, setAdminDisplayEmail] = useState<string | null>(null);
+  const [adminDisplayEmail, setAdminDisplayEmail] = useState<string | null>(
+    null,
+  );
   const [secretInput, setSecretInput] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -165,7 +171,9 @@ export function AdminDashboard() {
   }, [runAuthCheck]);
 
   const loadOverview = useCallback(async () => {
-    const response = await fetch("/api/admin/singles-here/overview", { credentials: "include" });
+    const response = await fetch("/api/admin/singles-here/overview", {
+      credentials: "include",
+    });
     if (!response.ok) {
       setErrorBanner("Übersicht konnte nicht geladen werden.");
       return;
@@ -178,7 +186,9 @@ export function AdminDashboard() {
   }, []);
 
   const loadEvents = useCallback(async () => {
-    const response = await fetch("/api/admin/singles-here/events", { credentials: "include" });
+    const response = await fetch("/api/admin/singles-here/events", {
+      credentials: "include",
+    });
     if (!response.ok) {
       setErrorBanner("Eventliste konnte nicht geladen werden.");
       return;
@@ -195,12 +205,17 @@ export function AdminDashboard() {
       limit: "30",
       offset: String(offset),
     });
-    const response = await fetch(`/api/admin/dating-profiles?${qs}`, { credentials: "include" });
+    const response = await fetch(`/api/admin/dating-profiles?${qs}`, {
+      credentials: "include",
+    });
     if (!response.ok) {
       setErrorBanner("Profile konnten nicht geladen werden.");
       return;
     }
-    const body = await parseJsonSafe<{ profiles: DatingProfileRow[]; total: number }>(response);
+    const body = await parseJsonSafe<{
+      profiles: DatingProfileRow[];
+      total: number;
+    }>(response);
     setErrorBanner(null);
     if (body) {
       setProfiles(body.profiles);
@@ -276,7 +291,10 @@ export function AdminDashboard() {
 
   async function handleLeaveAdmin() {
     if (authVia === "secret") {
-      await fetch("/api/admin/logout", { method: "POST", credentials: "include" });
+      await fetch("/api/admin/logout", {
+        method: "POST",
+        credentials: "include",
+      });
     }
     setLoggedIn(false);
     setAuthVia(null);
@@ -294,16 +312,23 @@ export function AdminDashboard() {
     if (!detailSlug) {
       return;
     }
-    if (!window.confirm("Check-in beenden? Der Nutzer ist danach nicht mehr als vor Ort sichtbar.")) {
+    if (
+      !window.confirm(
+        "Check-in beenden? Der Nutzer ist danach nicht mehr als vor Ort sichtbar.",
+      )
+    ) {
       return;
     }
     const enc = encodeURIComponent(detailSlug);
-    const response = await fetch(`/api/admin/singles-here/events/${enc}/force-leave`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ userId }),
-    });
+    const response = await fetch(
+      `/api/admin/singles-here/events/${enc}/force-leave`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ userId }),
+      },
+    );
     if (!response.ok) {
       setErrorBanner("Aktion fehlgeschlagen.");
       return;
@@ -369,37 +394,47 @@ export function AdminDashboard() {
     return (
       <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 p-4">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Realite Admin</h1>
+          <h1 className="text-xl font-semibold tracking-tight">
+            Realite Admin
+          </h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Monitoring für Singles hier / Vor-Ort. Zugang nur für eingetragene Admin-E-Mails oder (optional)
-            Geheimnis-Login.
+            Monitoring für Singles hier / Vor-Ort. Zugang nur für eingetragene
+            Admin-E-Mails oder (optional) Geheimnis-Login.
           </p>
         </div>
 
-        {loginError ? <p className="text-destructive text-sm">{loginError}</p> : null}
+        {loginError ? (
+          <p className="text-destructive text-sm">{loginError}</p>
+        ) : null}
 
         {adminUiConfig?.enabled && adminUiConfig.emailLoginEnabled ? (
           <div className="border-border bg-card rounded-xl border p-4 space-y-3">
             <p className="text-sm font-medium">Mit Realite anmelden</p>
             <p className="text-muted-foreground text-xs leading-relaxed">
-              Wenn deine E-Mail in <span className="font-mono">REALITE_ADMIN_EMAILS</span> auf dem Server eingetragen
-              ist und du hier mit Realite eingeloggt bist, solltest du die Inhalte sofort sehen. Sonst hier anmelden
-              und wieder auf <span className="font-mono">/admin</span> gehen.
+              Wenn deine E-Mail in{" "}
+              <span className="font-mono">REALITE_ADMIN_EMAILS</span> auf dem
+              Server eingetragen ist und du hier mit Realite eingeloggt bist,
+              solltest du die Inhalte sofort sehen. Sonst hier anmelden und
+              wieder auf <span className="font-mono">/admin</span> gehen.
             </p>
-            <Link
+            <a
               href={loginPath}
               className="bg-primary text-primary-foreground inline-flex w-full items-center justify-center rounded-lg py-3 text-center text-sm font-medium hover:opacity-90"
             >
               Zu Realite anmelden
-            </Link>
+            </a>
           </div>
         ) : null}
 
         {adminUiConfig?.enabled && adminUiConfig.secretLoginEnabled ? (
-          <form onSubmit={handleLogin} className="flex flex-col gap-3 border-border rounded-xl border p-4 space-y-1">
+          <form
+            onSubmit={handleLogin}
+            className="flex flex-col gap-3 border-border rounded-xl border p-4 space-y-1"
+          >
             <p className="text-sm font-medium">Geheimnis-Login</p>
             <p className="text-muted-foreground text-[11px] leading-relaxed">
-              Optional für Notfall-Zugriff ohne persönlicher Realite-Session (Cookie, begrenzte Gültigkeit).
+              Optional für Notfall-Zugriff ohne persönlicher Realite-Session
+              (Cookie, begrenzte Gültigkeit).
             </p>
             <label className="text-sm font-medium" htmlFor="admin-secret">
               REALITE_ADMIN_SECRET
@@ -434,7 +469,9 @@ export function AdminDashboard() {
           <h1 className="text-xl font-semibold tracking-tight">Admin</h1>
           <p className="text-muted-foreground text-xs">
             Singles hier · Mobil
-            {authVia === "email" && adminDisplayEmail ? <> · {adminDisplayEmail}</> : null}
+            {authVia === "email" && adminDisplayEmail ? (
+              <> · {adminDisplayEmail}</>
+            ) : null}
             {authVia === "secret" ? <> · Secret-Login</> : null}
           </p>
         </div>
@@ -465,11 +502,16 @@ export function AdminDashboard() {
       </nav>
 
       {errorBanner ? (
-        <p className="text-destructive bg-destructive/10 rounded-lg px-3 py-2 text-sm">{errorBanner}</p>
+        <p className="text-destructive bg-destructive/10 rounded-lg px-3 py-2 text-sm">
+          {errorBanner}
+        </p>
       ) : null}
 
       {tab === "Übersicht" ? (
-        <OverviewPane overview={overview} onRefresh={() => void loadOverview()} />
+        <OverviewPane
+          overview={overview}
+          onRefresh={() => void loadOverview()}
+        />
       ) : null}
 
       {tab === "Singles hier" ? (
@@ -528,13 +570,19 @@ function OverviewPane(props: {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <StatCard label="Jetzt sichtbar (unique)" value={String(overview.distinctUsersCheckedIn)} />
+        <StatCard
+          label="Jetzt sichtbar (unique)"
+          value={String(overview.distinctUsersCheckedIn)}
+        />
         <StatCard
           label="Aktive Events"
           value={String(overview.eventsWithActivePresence)}
           hint={`von ${overview.singlesHereEventCount} Singles-hier`}
         />
-        <StatCard label="Match-Paare (Summe je Event)" value={String(overview.mutualMatchPairCountAmongActive)} />
+        <StatCard
+          label="Match-Paare (Summe je Event)"
+          value={String(overview.mutualMatchPairCountAmongActive)}
+        />
         <StatCard label="Geschlecht (mit Profil)" value="" sub={genderLine} />
       </div>
 
@@ -542,7 +590,9 @@ function OverviewPane(props: {
         <h2 className="mb-2 text-sm font-semibold">Top Events (Check-ins)</h2>
         <ul className="border-border flex flex-col gap-2 rounded-xl border">
           {overview.topEventsByActiveCheckIn.length === 0 ? (
-            <li className="text-muted-foreground p-4 text-sm">Keine aktiven Check-ins.</li>
+            <li className="text-muted-foreground p-4 text-sm">
+              Keine aktiven Check-ins.
+            </li>
           ) : (
             overview.topEventsByActiveCheckIn.map((ev) => (
               <li
@@ -588,10 +638,22 @@ function StatCard(props: {
 }) {
   return (
     <div className="bg-card border-border rounded-xl border p-3">
-      <p className="text-muted-foreground text-[11px] font-medium uppercase tracking-wide">{props.label}</p>
-      {props.value ? <p className="mt-1 text-2xl font-semibold tabular-nums">{props.value}</p> : null}
-      {props.hint ? <p className="text-muted-foreground mt-1 text-[11px]">{props.hint}</p> : null}
-      {props.sub ? <p className="text-muted-foreground mt-2 text-[11px] leading-snug">{props.sub}</p> : null}
+      <p className="text-muted-foreground text-[11px] font-medium uppercase tracking-wide">
+        {props.label}
+      </p>
+      {props.value ? (
+        <p className="mt-1 text-2xl font-semibold tabular-nums">
+          {props.value}
+        </p>
+      ) : null}
+      {props.hint ? (
+        <p className="text-muted-foreground mt-1 text-[11px]">{props.hint}</p>
+      ) : null}
+      {props.sub ? (
+        <p className="text-muted-foreground mt-2 text-[11px] leading-snug">
+          {props.sub}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -620,10 +682,15 @@ function SinglesPane(props: {
       {!props.detailSlug ? (
         <ul className="border-border flex flex-col gap-2 rounded-xl border">
           {props.events.length === 0 ? (
-            <li className="text-muted-foreground p-4 text-sm">Keine Singles-hier-Events.</li>
+            <li className="text-muted-foreground p-4 text-sm">
+              Keine Singles-hier-Events.
+            </li>
           ) : (
             props.events.map((ev) => (
-              <li key={ev.id} className="border-border border-b last:border-b-0">
+              <li
+                key={ev.id}
+                className="border-border border-b last:border-b-0"
+              >
                 <button
                   type="button"
                   className="hover:bg-muted/50 flex w-full flex-col items-start gap-1 p-4 text-left"
@@ -631,9 +698,12 @@ function SinglesPane(props: {
                 >
                   <span className="text-sm font-medium">{ev.name}</span>
                   <span className="text-muted-foreground text-xs">
-                    {ev.activeCheckedInCount} sichtbar · {windowLabel(ev.presenceWindowState)}
+                    {ev.activeCheckedInCount} sichtbar ·{" "}
+                    {windowLabel(ev.presenceWindowState)}
                   </span>
-                  <span className="text-muted-foreground font-mono text-[10px]">{ev.slug}</span>
+                  <span className="text-muted-foreground font-mono text-[10px]">
+                    {ev.slug}
+                  </span>
                 </button>
               </li>
             ))
@@ -677,20 +747,30 @@ function EventDetailView(props: {
     <div className="flex flex-col gap-4">
       <div className="bg-card border-border rounded-xl border p-4">
         <h2 className="text-base font-semibold">{detail.event.name}</h2>
-        <p className="text-muted-foreground mt-1 text-xs">{detail.event.publicPath}</p>
+        <p className="text-muted-foreground mt-1 text-xs">
+          {detail.event.publicPath}
+        </p>
         <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
           <div>
-            <p className="text-muted-foreground text-[10px] uppercase">Sichtbar</p>
-            <p className="font-semibold tabular-nums">{detail.activeCheckedInCount}</p>
+            <p className="text-muted-foreground text-[10px] uppercase">
+              Sichtbar
+            </p>
+            <p className="font-semibold tabular-nums">
+              {detail.activeCheckedInCount}
+            </p>
           </div>
           <div>
-            <p className="text-muted-foreground text-[10px] uppercase">Matches (Paare)</p>
-            <p className="font-semibold tabular-nums">{detail.mutualMatchPairCount}</p>
+            <p className="text-muted-foreground text-[10px] uppercase">
+              Matches (Paare)
+            </p>
+            <p className="font-semibold tabular-nums">
+              {detail.mutualMatchPairCount}
+            </p>
           </div>
         </div>
         <p className="text-muted-foreground mt-3 text-[11px]">
-          Frauen {g.woman ?? 0} · Männer {g.man ?? 0} · Divers {g.non_binary ?? 0} · offen/unbekannt{" "}
-          {g.unknown ?? 0}
+          Frauen {g.woman ?? 0} · Männer {g.man ?? 0} · Divers{" "}
+          {g.non_binary ?? 0} · offen/unbekannt {g.unknown ?? 0}
         </p>
       </div>
 
@@ -698,13 +778,26 @@ function EventDetailView(props: {
       <ul className="flex flex-col gap-3">
         {detail.participants.map((p) => (
           <li key={p.userId} className="bg-muted/40 rounded-xl p-4">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <span className="font-medium">{p.name ?? "(ohne Name)"}</span>
-              <span className="text-muted-foreground text-[10px] font-mono">{p.userId.slice(0, 8)}…</span>
+            <div className="flex items-center gap-3">
+              <UserAvatar
+                name={p.name}
+                email={p.email}
+                image={p.image}
+                size="sm"
+              />
+              <div className="flex min-w-0 flex-1 items-baseline justify-between gap-2">
+                <span className="font-medium">{p.name ?? "(ohne Name)"}</span>
+                <span className="text-muted-foreground text-[10px] font-mono">
+                  {p.userId.slice(0, 8)}…
+                </span>
+              </div>
             </div>
-            <p className="text-muted-foreground mt-1 truncate text-xs">{p.email}</p>
+            <p className="text-muted-foreground mt-1 truncate text-xs">
+              {p.email}
+            </p>
             <p className="text-muted-foreground mt-2 text-[11px]">
-              Status: {p.presenceStatus} · Profil Dating: {p.unlockedProfile ? "vollständig" : "unvollständig"}
+              Status: {p.presenceStatus} · Profil Dating:{" "}
+              {p.unlockedProfile ? "vollständig" : "unvollständig"}
               {p.gender ? ` · ${p.gender}` : ""}
               {p.age != null ? ` · ${p.age} J.` : ""}
             </p>
@@ -757,13 +850,34 @@ function ProfilesPane(props: {
       </p>
       <ul className="flex flex-col gap-2">
         {props.profiles.map((p) => (
-          <li key={p.userId} className="bg-card border-border rounded-xl border p-3">
-            <div className="flex justify-between gap-2">
-              <span className="text-sm font-medium">{p.userName ?? p.userEmail}</span>
-              <span className="text-muted-foreground text-[10px]">{p.enabled ? "an" : "aus"}</span>
+          <li
+            key={p.userId}
+            className="bg-card border-border rounded-xl border p-3"
+          >
+            <div className="flex items-center gap-3">
+              <UserAvatar
+                name={p.userName}
+                email={p.userEmail}
+                image={p.userImage}
+                size="sm"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex justify-between gap-2">
+                  <span className="text-sm font-medium">
+                    {p.userName ?? p.userEmail}
+                  </span>
+                  <span className="text-muted-foreground text-[10px]">
+                    {p.enabled ? "an" : "aus"}
+                  </span>
+                </div>
+                <p className="text-muted-foreground truncate text-xs">
+                  {p.userEmail}
+                </p>
+                <p className="text-muted-foreground mt-1 text-[10px] font-mono">
+                  {p.userId}
+                </p>
+              </div>
             </div>
-            <p className="text-muted-foreground truncate text-xs">{p.userEmail}</p>
-            <p className="text-muted-foreground mt-1 text-[10px] font-mono">{p.userId}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               <button
                 type="button"

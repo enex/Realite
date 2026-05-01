@@ -2,8 +2,12 @@ import { desc, eq, sql as dsql } from "drizzle-orm";
 
 import { getDb } from "@/src/db/client";
 import { datingProfiles, users } from "@/src/db/schema";
+import { resolveProfileImageReadUrl } from "@/src/lib/profile-image-storage";
 
-export async function listDatingProfilesForAdmin(input: { limit: number; offset: number }) {
+export async function listDatingProfilesForAdmin(input: {
+  limit: number;
+  offset: number;
+}) {
   const db = getDb();
   const limit = Math.min(100, Math.max(1, input.limit));
   const offset = Math.max(0, input.offset);
@@ -26,6 +30,7 @@ export async function listDatingProfilesForAdmin(input: { limit: number; offset:
       profileUpdatedAt: datingProfiles.updatedAt,
       userName: users.name,
       userEmail: users.email,
+      userImage: users.image,
       userCreatedAt: users.createdAt,
     })
     .from(datingProfiles)
@@ -34,5 +39,14 @@ export async function listDatingProfilesForAdmin(input: { limit: number; offset:
     .limit(limit)
     .offset(offset);
 
-  return { profiles: rows, total };
+  const profilesWithImages = await Promise.all(
+    rows.map(async (row) => ({
+      ...row,
+      userImage: await resolveProfileImageReadUrl(row.userImage).catch(
+        () => row.userImage ?? null,
+      ),
+    })),
+  );
+
+  return { profiles: profilesWithImages, total };
 }

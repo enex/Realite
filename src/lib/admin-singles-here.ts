@@ -11,12 +11,17 @@ import {
 import { getEventPresenceWindow } from "@/src/lib/event-presence";
 import type { EventPresenceStatus } from "@/src/lib/event-presence";
 import { getDatingProfileMapForUsers } from "@/src/lib/repository";
-import { normalizeSinglesHereSlug, SINGLES_HERE_SOURCE_PROVIDER } from "@/src/lib/singles-here";
+import { resolveProfileImageReadUrl } from "@/src/lib/profile-image-storage";
+import {
+  normalizeSinglesHereSlug,
+  SINGLES_HERE_SOURCE_PROVIDER,
+} from "@/src/lib/singles-here";
 
 export type SinglesHereAdminParticipant = {
   userId: string;
   name: string | null;
   email: string;
+  image: string | null;
   presenceStatus: EventPresenceStatus;
   visibleUntilIso: string;
   unlockedProfile: boolean;
@@ -25,7 +30,11 @@ export type SinglesHereAdminParticipant = {
 };
 
 function activeCheckedInUserIds(input: {
-  rows: Array<{ userId: string; status: EventPresenceStatus; visibleUntil: Date }>;
+  rows: Array<{
+    userId: string;
+    status: EventPresenceStatus;
+    visibleUntil: Date;
+  }>;
   startsAt: Date;
   endsAt: Date;
   now: Date;
@@ -48,7 +57,10 @@ function activeCheckedInUserIds(input: {
     .map((row) => row.userId);
 }
 
-async function countMutualMatchPairsAsync(userIds: string[], now: Date): Promise<number> {
+async function countMutualMatchPairsAsync(
+  userIds: string[],
+  now: Date,
+): Promise<number> {
   if (userIds.length < 2) {
     return 0;
   }
@@ -70,7 +82,10 @@ async function countMutualMatchPairsAsync(userIds: string[], now: Date): Promise
   return pairs;
 }
 
-export async function listSinglesHereEventsForAdmin(input: { now: Date; maxRows: number }) {
+export async function listSinglesHereEventsForAdmin(input: {
+  now: Date;
+  maxRows: number;
+}) {
   const db = getDb();
   const rows = await db
     .select({
@@ -144,9 +159,14 @@ export async function listSinglesHereEventsForAdmin(input: { now: Date; maxRows:
 
 export async function getSinglesHereAdminOverview(input: { now: Date }) {
   const now = input.now;
-  const eventSummaries = await listSinglesHereEventsForAdmin({ now, maxRows: 80 });
+  const eventSummaries = await listSinglesHereEventsForAdmin({
+    now,
+    maxRows: 80,
+  });
 
-  const activeByEvent = eventSummaries.filter((e) => e.activeCheckedInCount > 0);
+  const activeByEvent = eventSummaries.filter(
+    (e) => e.activeCheckedInCount > 0,
+  );
   const uniqueUserIds = new Set<string>();
   for (const e of activeByEvent) {
     for (const id of e.activeCheckedInUserIds) {
@@ -177,15 +197,22 @@ export async function getSinglesHereAdminOverview(input: { now: Date }) {
 
   let mutualPairsTotal = 0;
   for (const e of activeByEvent) {
-    mutualPairsTotal += await countMutualMatchPairsAsync(e.activeCheckedInUserIds, now);
+    mutualPairsTotal += await countMutualMatchPairsAsync(
+      e.activeCheckedInUserIds,
+      now,
+    );
   }
 
   const topEvents = [...eventSummaries]
-    .filter((e) => e.presenceWindowState !== "ended" || e.activeCheckedInCount > 0)
+    .filter(
+      (e) => e.presenceWindowState !== "ended" || e.activeCheckedInCount > 0,
+    )
     .sort((a, b) => b.activeCheckedInCount - a.activeCheckedInCount)
     .slice(0, 12);
 
-  const topEventsPublic = topEvents.map(({ activeCheckedInUserIds: _omit, ...rest }) => rest);
+  const topEventsPublic = topEvents.map(
+    ({ activeCheckedInUserIds: _omit, ...rest }) => rest,
+  );
 
   return {
     generatedAtIso: now.toISOString(),
@@ -198,7 +225,10 @@ export async function getSinglesHereAdminOverview(input: { now: Date }) {
   };
 }
 
-export async function getSinglesHereEventAdminDetail(input: { slug: string; now: Date }) {
+export async function getSinglesHereEventAdminDetail(input: {
+  slug: string;
+  now: Date;
+}) {
   const normalized = normalizeSinglesHereSlug(input.slug);
   const db = getDb();
   const [ev] = await db
@@ -231,6 +261,7 @@ export async function getSinglesHereEventAdminDetail(input: { slug: string; now:
       visibleUntil: eventPresences.visibleUntil,
       name: users.name,
       email: users.email,
+      image: users.image,
     })
     .from(eventPresences)
     .innerJoin(users, eq(eventPresences.userId, users.id))
@@ -250,28 +281,43 @@ export async function getSinglesHereEventAdminDetail(input: { slug: string; now:
     endsAt: ev.endsAt,
     now,
   });
-  const profileMap = await getDatingProfileMapForUsers(presRows.map((r) => r.userId));
+  const profileMap = await getDatingProfileMapForUsers(
+    presRows.map((r) => r.userId),
+  );
 
-  const participants: SinglesHereAdminParticipant[] = presRows.map((row) => {
-    const prof = profileMap.get(row.userId);
-    const st = prof ? getDatingProfileStatus(prof, now) : null;
-    const age =
-      prof?.birthYear != null ? getAgeFromBirthYear(prof.birthYear, now) : null;
-    return {
-      userId: row.userId,
-      name: row.name,
-      email: row.email,
-      presenceStatus: row.status,
-      visibleUntilIso: row.visibleUntil.toISOString(),
-      unlockedProfile: st?.unlocked ?? false,
-      gender: prof?.gender ?? null,
-      age,
-    };
-  });
+  const participants: SinglesHereAdminParticipant[] = await Promise.all(
+    presRows.map(async (row) => {
+      const prof = profileMap.get(row.userId);
+      const st = prof ? getDatingProfileStatus(prof, now) : null;
+      const age =
+        prof?.birthYear != null
+          ? getAgeFromBirthYear(prof.birthYear, now)
+          : null;
+      const image = await resolveProfileImageReadUrl(row.image).catch(
+        () => row.image ?? null,
+      );
+      return {
+        userId: row.userId,
+        name: row.name,
+        email: row.email,
+        image,
+        presenceStatus: row.status,
+        visibleUntilIso: row.visibleUntil.toISOString(),
+        unlockedProfile: st?.unlocked ?? false,
+        gender: prof?.gender ?? null,
+        age,
+      };
+    }),
+  );
 
   const mutualPairs = await countMutualMatchPairsAsync(activeIds, now);
 
-  const genderActive: Record<string, number> = { woman: 0, man: 0, non_binary: 0, unknown: 0 };
+  const genderActive: Record<string, number> = {
+    woman: 0,
+    man: 0,
+    non_binary: 0,
+    unknown: 0,
+  };
   for (const uid of activeIds) {
     const p = profileMap.get(uid);
     const st = p ? getDatingProfileStatus(p, now) : null;
