@@ -61,6 +61,7 @@ export default async function EventShortcutPage({
   params: Promise<{ shortEventId: string }>;
 }) {
   const { shortEventId } = await params;
+  const eventPath = `/e/${encodeURIComponent(shortEventId)}`;
 
   let eventId = "";
   try {
@@ -76,13 +77,16 @@ export default async function EventShortcutPage({
     if (!preview) {
       notFound();
     }
-    const signInUrl = buildLoginPath(`/e/${encodeURIComponent(shortEventId)}`);
+    const signInUrl = buildLoginPath(eventPath);
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm">
           <Link href="/" className="font-semibold text-teal-700 hover:text-teal-800">
             ← Realite
           </Link>
+          <a href={`${eventPath}/qr`} className="font-semibold text-teal-700 hover:text-teal-800">
+            QR-Codes drucken
+          </a>
         </div>
 
         <SharedEventContent
@@ -170,14 +174,19 @@ export default async function EventShortcutPage({
         <Link href="/" className="font-semibold text-teal-600 hover:text-teal-700">
           ← Zum Dashboard
         </Link>
-        {canInviteViaGoogle ? (
-          <a
-            href="#event-invite"
-            className="font-semibold text-teal-600 hover:text-teal-700"
-          >
-            Jemanden einladen
+        <div className="flex flex-wrap items-center gap-3">
+          <a href={`${eventPath}/qr`} className="font-semibold text-teal-600 hover:text-teal-700">
+            QR-Codes drucken
           </a>
-        ) : null}
+          {canInviteViaGoogle ? (
+            <a
+              href="#event-invite"
+              className="font-semibold text-teal-600 hover:text-teal-700"
+            >
+              Jemanden einladen
+            </a>
+          ) : null}
+        </div>
       </div>
 
       <SharedEventContent

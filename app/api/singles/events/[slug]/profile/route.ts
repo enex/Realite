@@ -9,14 +9,14 @@ import {
 } from "@/src/lib/repository";
 import { requireAppUser } from "@/src/lib/session";
 
-const imageDataUrlSchema = z
+const imageUrlSchema = z
   .string()
-  .regex(/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/)
-  .max(520_000);
+  .url()
+  .max(1000);
 
 const profileSchema = z.object({
   name: z.string().trim().min(2).max(80),
-  imageDataUrl: imageDataUrlSchema.optional().nullable(),
+  imageUrl: imageUrlSchema.optional().nullable(),
   birthDate: z.string().date(),
   gender: z.enum(["woman", "man", "non_binary"]),
   soughtGenders: z.array(z.enum(["woman", "man", "non_binary"])).min(1).max(3),
@@ -62,7 +62,7 @@ export async function PATCH(
     updateUserDisplayProfile({
       userId: user.id,
       name: parsed.data.name,
-      image: parsed.data.imageDataUrl ?? user.image ?? null,
+      image: parsed.data.imageUrl ?? user.image ?? null,
     }),
     updateUserDatingProfile({
       userId: user.id,

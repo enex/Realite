@@ -64,6 +64,19 @@ Produktlogisch bleibt aber auch hier derselbe Kern:
 - zuerst Aktivitäten, Kreise und Reaktionen
 - danach optional Kalender- und Kontaktkontext
 
+## Ohne Konto starten
+
+Wenn du Realite nur schnell ausprobieren willst, kannst du über **Ohne Konto starten** ohne Google, Apple oder Microsoft hinein.
+
+Dabei gilt:
+
+- Realite legt nur einen temporären Gastzugang für diese Sitzung an
+- du kannst den Kernflow sofort testen: Aktivitäten ansehen, beitreten, reagieren und eigene Schritte ausprobieren
+- Kalender, Kontakte und externe Einladungen werden dabei nicht verbunden
+- nichts wird automatisch veröffentlicht oder an Kontakte gesendet
+
+Der Gastzugang ist bewusst ein niedriger Einstieg. Wenn du Realite dauerhaft nutzen willst, kannst du ihn später unter **Profil & Einstellungen** mit einem echten Login verbinden, damit dein Zugang nicht nur an die aktuelle Sitzung gebunden bleibt.
+
 ## Apple
 
 Apple erscheint jetzt als normaler Login-Pfad, sobald dieses Deployment Apple-Anmeldung technisch freigeschaltet hat.
@@ -110,7 +123,7 @@ Er ist nur für Entwicklung, E2E-Tests und Agent-Arbeit gedacht:
 
 ## Was über alle Pfade gleich bleiben muss
 
-Diese Regeln gelten unabhängig davon, ob du über Google startest oder später über Apple oder Microsoft:
+Diese Regeln gelten unabhängig davon, ob du anonym startest, über Google einsteigst oder später Apple oder Microsoft nutzt:
 
 - Events anlegen, teilen und verwalten
 - Sichtbarkeit wählen

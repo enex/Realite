@@ -218,6 +218,13 @@
       "when": 1777063522535,
       "tag": "0030_military_toad_men",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1777626228029,
+      "tag": "0031_superb_jean_grey",
+      "breakpoints": true
     }
   ]
 }

@@ -11,10 +11,22 @@ import {
 type AuthProviderButtonsProps = {
   callbackUrl: string;
   providers: readonly AuthProviderDefinition[];
+  anonymousEnabled?: boolean;
   oauthQuery?: string | null;
 };
 
 function ProviderIcon({ providerId }: { providerId: AuthProviderDefinition["id"] }) {
+  if (providerId === "anonymous") {
+    return (
+      <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-teal-200 bg-teal-50 text-teal-700 shadow-sm">
+        <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-none stroke-current" strokeWidth="1.8">
+          <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+          <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+        </svg>
+      </span>
+    );
+  }
+
   if (providerId === "google") {
     return (
       <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-card shadow-sm">
@@ -59,9 +71,15 @@ function ProviderIcon({ providerId }: { providerId: AuthProviderDefinition["id"]
   );
 }
 
-export function AuthProviderButtons({ callbackUrl, providers, oauthQuery }: AuthProviderButtonsProps) {
+export function AuthProviderButtons({
+  callbackUrl,
+  providers,
+  anonymousEnabled,
+  oauthQuery,
+}: AuthProviderButtonsProps) {
   const microsoftEnabled = useRealiteFeatureFlag(MICROSOFT_AUTH_FLAG, false);
   const visibleProviders = getVisibleAuthProviders(providers, {
+    anonymousEnabled: anonymousEnabled ?? !oauthQuery,
     microsoftEnabled,
   });
 
@@ -84,7 +102,9 @@ export function AuthProviderButtons({ callbackUrl, providers, oauthQuery }: Auth
           <ProviderIcon providerId={provider.id} />
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-foreground">Weiter mit {provider.label}</p>
+              <p className="text-sm font-semibold text-foreground">
+                {provider.ctaLabel ?? `Weiter mit ${provider.label}`}
+              </p>
               {provider.status === "dev_only" ? (
                 <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-700">
                   Dev

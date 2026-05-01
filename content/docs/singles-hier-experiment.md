@@ -6,15 +6,25 @@ Das Singles-hier Experiment ist eine einfache Event-Unterseite für Orte, an den
 
 Eine Person legt ein Event mit eindeutigem Slug an. Realite erzeugt daraus eine URL und einen QR-Code. Wer den Code scannt, kommt auf dieselbe Eventseite.
 
+Unter `/singles/<slug>/qr` gibt es zusätzlich eine Druckvorlage. Dort kannst du einstellen, wie viele QR-Codes nebeneinander und insgesamt auf dem Blatt stehen. Die Vorlage ist zum Ausdrucken und Ausschneiden gedacht; die einzelnen Codes verweisen weiterhin nur auf dieselbe `/singles/<slug>`-Eventseite. Der Pitch auf dem Schnipsel macht den Mehrwert klar: scannen, bewusst einchecken und nur gegenseitig passende Personen vor Ort sehen.
+
 ## Was Teilnehmende tun
 
 1. Event-QR-Code scannen.
 2. Anmelden.
-3. Name, Bild und Single-Infos ausfuellen.
+3. Zuerst Name, Bild und Single-Infos ausfüllen.
 4. Bewusst **Ich bin hier** wählen.
 5. Die Seite zeigt passende andere Personen, die ebenfalls eingecheckt sind.
 
 Passend bedeutet hier: Beide Dating-Profile akzeptieren gegenseitig Geschlecht und Altersbereich.
+
+Erst nach dem gespeicherten Profil zeigt Realite die Vor-Ort-Ansicht mit passenden Personen. Darunter steht der QR-Code mit dem Hinweis, dass du damit weitere Personen aus deiner Gruppe oder vor Ort auf dieselbe Eventseite einladen kannst.
+
+Wenn dein Profil gespeichert ist, bleibt es über den Profil-Button oben auf der Seite bearbeitbar. Das Formular steht dann nicht dauerhaft im Mittelpunkt.
+
+Das Profilbild wird beim Auswählen in den konfigurierten S3-kompatiblen Speicher hochgeladen und beim Speichern im Realite-Profil hinterlegt. Danach sehen passende eingecheckte Personen dieses Bild in der Vor-Ort-Ansicht. Wenn du dich über Google anmeldest und noch kein eigenes Realite-Profilbild gespeichert hast, übernimmt Realite zunächst das Google-Profilbild.
+
+Die Druckvorlage erreichst du aus diesem QR-Bereich über **Druckvorlage öffnen**.
 
 ## Was nicht automatisch passiert
 
@@ -41,7 +51,7 @@ Beim Erstellen werden vorhandene Realite-Event-Strukturen genutzt:
 Das Experiment bleibt an ein konkretes Event gebunden. Realite zeigt keine offene Personenliste. Sichtbar werden nur Personen, die:
 
 - für dieses Event aktiv eingecheckt sind
-- ein vollstaendiges Single-Profil gespeichert haben
+- ein vollständiges Single-Profil gespeichert haben
 - gegenseitig zu deinen Suchangaben passen
 
-Damit bleibt Presence ein ausdruecklicher Event-Check-in und kein allgemeines People-Browsing.
+Damit bleibt Presence ein ausdrücklicher Event-Check-in und kein allgemeines People-Browsing.

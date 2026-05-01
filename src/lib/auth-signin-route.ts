@@ -46,6 +46,11 @@ function getCallbackUrl(requestUrl: URL) {
   return requestUrl.searchParams.get("callbackURL") ?? requestUrl.searchParams.get("callbackUrl") ?? "/";
 }
 
+function getSafeCallbackLocation(callbackUrl: string, requestUrl: URL) {
+  const url = new URL(callbackUrl, requestUrl.origin);
+  return url.origin === requestUrl.origin ? `${url.pathname}${url.search}${url.hash}` : "/";
+}
+
 export async function handleSocialSignInRequest(request: Request, provider: "google" | "apple" | "microsoft") {
   const auth = getAuth();
   const requestUrl = new URL(request.url);
@@ -67,7 +72,7 @@ export async function handleSocialSignInRequest(request: Request, provider: "goo
   return toRedirectResponse(signInResponse, requestUrl);
 }
 
-function createDevAuthHeaders(request: Request, requestUrl: URL) {
+function createAuthRequestHeaders(request: Request, requestUrl: URL) {
   const headers = new Headers(request.headers);
 
   if (!headers.has("origin")) {
@@ -79,6 +84,25 @@ function createDevAuthHeaders(request: Request, requestUrl: URL) {
   }
 
   return headers;
+}
+
+export async function handleAnonymousSignInRequest(request: Request) {
+  const auth = getAuth();
+  const requestUrl = new URL(request.url);
+  const callbackURL = getCallbackUrl(requestUrl);
+  const signInResponse = await auth.api.signInAnonymous({
+    headers: createAuthRequestHeaders(request, requestUrl),
+    asResponse: true
+  });
+
+  if (signInResponse.ok) {
+    return createRedirectResponse(
+      getSafeCallbackLocation(callbackURL, requestUrl),
+      signInResponse.headers.get("set-cookie")
+    );
+  }
+
+  return signInResponse;
 }
 
 export async function handleDevSignInRequest(request: Request) {
@@ -94,7 +118,7 @@ export async function handleDevSignInRequest(request: Request) {
   const email = process.env.DEV_LOGIN_EMAIL?.trim() || "dev-login@realite.local";
   const password = process.env.DEV_LOGIN_PASSWORD?.trim() || "realite-dev-login";
   const name = process.env.DEV_LOGIN_NAME?.trim() || "Realite Dev";
-  const headers = createDevAuthHeaders(request, requestUrl);
+  const headers = createAuthRequestHeaders(request, requestUrl);
 
   const signIn = async () => {
     const emailBody = {

@@ -14,8 +14,9 @@ export default async function LoginPage({
   const session = await getAuthSession();
   const params = await searchParams;
   const callbackUrl = typeof params.callbackUrl === "string" ? params.callbackUrl : "/";
+  const isAnonymousSession = session?.user.isAnonymous === true;
 
-  if (session?.user.email) {
+  if (session?.user.email && !isAnonymousSession) {
     redirect(callbackUrl as never);
   }
 
@@ -27,11 +28,13 @@ export default async function LoginPage({
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-700">Realite</p>
         <h1 className="mt-3 text-3xl font-bold tracking-tight">Anmelden</h1>
         <p className="mt-3 text-base leading-7 text-muted-foreground">
-          Wähle den Kontopfad, der für dich passt. Events, Gruppen und Vorschläge laufen danach im selben Realite-Kern weiter.
+          {isAnonymousSession
+            ? "Verbinde deinen Gastzugang mit einem echten Login, damit du später wieder zuverlässig zurückkommst."
+            : "Wähle den Kontopfad, der für dich passt. Events, Gruppen und Vorschläge laufen danach im selben Realite-Kern weiter."}
         </p>
         <div className="mt-7">
           {providers.length > 0 ? (
-            <AuthProviderButtons callbackUrl={callbackUrl} providers={providers} />
+            <AuthProviderButtons anonymousEnabled={!isAnonymousSession} callbackUrl={callbackUrl} providers={providers} />
           ) : (
             <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
               Aktuell ist kein Login-Provider konfiguriert. Prüfe die Auth-Umgebungsvariablen für dieses Deployment.

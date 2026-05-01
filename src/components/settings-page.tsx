@@ -89,11 +89,13 @@ async function fetchSettings(): Promise<SettingsPayload> {
 export function SettingsPage({
   userName,
   userEmail,
-  userImage
+  userImage,
+  isAnonymous = false
 }: {
   userName: string;
   userEmail: string;
   userImage: string | null;
+  isAnonymous?: boolean;
 }) {
   const managementPage = getPageIntentMeta("manage");
   const queryClient = useQueryClient();
@@ -112,6 +114,9 @@ export function SettingsPage({
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState(userImage);
+  const [profileImageBusy, setProfileImageBusy] = useState(false);
+  const [profileImageMessage, setProfileImageMessage] = useState<string | null>(null);
   const [suggestionForm, setSuggestionForm] = useState<SuggestionSettingsForm>(emptySettings.settings);
 
   const dating = useDatingSettings();
@@ -157,6 +162,50 @@ export function SettingsPage({
     await dating.save();
   }
 
+  async function uploadProfileImage(file: File | undefined) {
+    if (!file) return;
+
+    setProfileImageBusy(true);
+    setSubmitError(null);
+    setProfileImageMessage(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const uploadResponse = await fetch("/api/profile/image", {
+        method: "POST",
+        body: formData,
+      });
+      const uploadPayload = (await uploadResponse.json()) as {
+        imageUrl?: string;
+        error?: string;
+      };
+      if (!uploadResponse.ok || !uploadPayload.imageUrl) {
+        throw new Error(uploadPayload.error ?? "Profilbild konnte nicht hochgeladen werden");
+      }
+
+      const saveResponse = await fetch("/api/settings/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl: uploadPayload.imageUrl }),
+      });
+      const savePayload = (await saveResponse.json()) as {
+        profile?: { image: string | null };
+        error?: string;
+      };
+      if (!saveResponse.ok || !savePayload.profile) {
+        throw new Error(savePayload.error ?? "Profilbild konnte nicht gespeichert werden");
+      }
+
+      setProfileImage(savePayload.profile.image);
+      setProfileImageMessage("Profilbild gespeichert.");
+    } catch (imageError) {
+      setSubmitError(imageError instanceof Error ? imageError.message : "Unbekannter Fehler");
+    } finally {
+      setProfileImageBusy(false);
+    }
+  }
+
   async function deleteAccount() {
     const confirmed = window.confirm(
       "Möchtest du deinen Account wirklich endgültig löschen? Dabei entfernt Realite auch alle von Realite angelegten Kalendereinträge."
@@ -191,23 +240,38 @@ export function SettingsPage({
       user={{
         name: userName,
         email: userEmail,
-        image: userImage
+        image: profileImage
       }}
     >
       <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
         <header className={pageShellClassName}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-start gap-3">
-              <UserAvatar name={userName} email={userEmail} image={userImage} size="lg" />
+              <UserAvatar name={userName} email={userEmail} image={profileImage} size="lg" />
               <div>
                 <p className={managementPage.eyebrowClassName}>Profil & Einstellungen</p>
                 <h1 className={pageTitleClassName}>{userName}</h1>
-                <p className={pageMetaClassName}>{userEmail}</p>
+                <p className={pageMetaClassName}>{isAnonymous ? "Temporärer Gastzugang" : userEmail}</p>
                 <p className={pageLeadClassName}>
                   {datingModeEnabled
                     ? `${settingsMessaging.lead} Den Dating-Modus für die Smart Group #date steuerst du ebenfalls hier.`
                     : settingsMessaging.lead}
                 </p>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <label className="inline-flex cursor-pointer rounded-lg border border-input px-3 py-2 text-sm font-semibold hover:bg-muted">
+                    {profileImageBusy ? "Lade hoch..." : "Profilbild ändern"}
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="sr-only"
+                      disabled={profileImageBusy}
+                      onChange={(event) => uploadProfileImage(event.target.files?.[0])}
+                    />
+                  </label>
+                  {profileImageMessage ? (
+                    <span className="text-sm text-teal-700">{profileImageMessage}</span>
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>
@@ -222,6 +286,25 @@ export function SettingsPage({
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{dating.error}</div>
         ) : null}
         {loading ? <p className="mt-6 text-muted-foreground">Lade Einstellungen...</p> : null}
+
+        {isAnonymous ? (
+          <section className="mt-4 rounded-lg border border-teal-200 bg-teal-50 px-4 py-4 text-sm text-teal-900">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="font-semibold">Gastzugang sichern</h2>
+                <p className="mt-1 text-teal-800">
+                  Verbinde einen echten Login, damit du diesen Zugang später wieder öffnen kannst.
+                </p>
+              </div>
+              <a
+                href="/login?callbackUrl=%2Fsettings"
+                className="inline-flex rounded-lg bg-teal-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-teal-800"
+              >
+                Konto verbinden
+              </a>
+            </div>
+          </section>
+        ) : null}
 
         <ThemeSettingsCard />
 

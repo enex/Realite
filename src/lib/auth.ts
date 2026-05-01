@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
+import { anonymous } from "better-auth/plugins/anonymous";
 import { jwt } from "better-auth/plugins";
 import { oauthProvider } from "@better-auth/oauth-provider";
 import { headers } from "next/headers";
@@ -63,6 +64,10 @@ function createAuth() {
     }),
     plugins: [
       nextCookies(),
+      anonymous({
+        emailDomainName: "guest.realite.local",
+        generateName: () => "Gast"
+      }),
       jwt({
         disableSettingJwtHeader: true,
         jwt: {

@@ -57,6 +57,7 @@ import {
   isValidSinglesHereSlug,
   normalizeSinglesHereSlug,
 } from "@/src/lib/singles-here";
+import { isStoredProfileImageUrl } from "@/src/lib/profile-image-storage";
 import {
   type DeclineReason,
   createLocationPreferenceTag,
@@ -517,12 +518,15 @@ export async function upsertUser(input: {
     .limit(1);
 
   if (existing[0]) {
+    const existingImage = existing[0].image;
     const [updated] = await db
       .update(users)
       .set({
         email: normalizedEmail,
         name: input.name ?? existing[0].name,
-        image: input.image ?? existing[0].image,
+        image: existingImage && isStoredProfileImageUrl(existingImage)
+          ? existingImage
+          : (input.image ?? existingImage),
         updatedAt: new Date(),
       })
       .where(eq(users.id, existing[0].id))
@@ -576,6 +580,23 @@ export async function updateUserDisplayProfile(input: {
     .set({
       name: input.name.trim(),
       image: input.image ?? null,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, input.userId))
+    .returning();
+
+  return user ?? null;
+}
+
+export async function updateUserProfileImage(input: {
+  userId: string;
+  image: string | null;
+}) {
+  const db = getDb();
+  const [user] = await db
+    .update(users)
+    .set({
+      image: input.image,
       updatedAt: new Date(),
     })
     .where(eq(users.id, input.userId))

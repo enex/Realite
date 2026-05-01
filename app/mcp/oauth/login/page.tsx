@@ -17,7 +17,7 @@ export default async function MpcOAuthLoginPage({
   const queryString = toQueryString(params);
   const currentPath = queryString ? `/mcp/oauth/login?${queryString}` : "/mcp/oauth/login";
 
-  if (session?.user.email) {
+  if (session?.user.email && session.user.isAnonymous !== true) {
     redirect(
       queryString ? `/api/mcp/oauth/continue-login?oauthQuery=${encodeURIComponent(queryString)}` : "/"
     );

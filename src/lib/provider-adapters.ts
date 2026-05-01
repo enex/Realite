@@ -1,4 +1,4 @@
-export type AuthProviderId = "google" | "apple" | "microsoft" | "dev";
+export type AuthProviderId = "anonymous" | "google" | "apple" | "microsoft" | "dev";
 export type CalendarAdapterId = "google" | "apple" | "microsoft";
 
 export type AuthProviderDefinition = {
@@ -8,9 +8,11 @@ export type AuthProviderDefinition = {
   loginStartPath: string | null;
   scopes: string[];
   description: string;
+  ctaLabel?: string;
 };
 
 export type AuthProviderVisibilityOptions = {
+  anonymousEnabled?: boolean;
   microsoftEnabled?: boolean;
 };
 
@@ -67,6 +69,16 @@ export const GOOGLE_AUTH_PROVIDER: AuthProviderDefinition = {
   description: "Konto-Login plus optionaler Kalender- und Kontakte-Kontext.",
 };
 
+export const ANONYMOUS_AUTH_PROVIDER: AuthProviderDefinition = {
+  id: "anonymous",
+  label: "Gastzugang",
+  status: "active",
+  loginStartPath: "/api/auth/signin/anonymous",
+  scopes: [],
+  description: "Sofort testen ohne Google, Kalender oder dauerhaftes Konto.",
+  ctaLabel: "Ohne Konto starten",
+};
+
 export const APPLE_AUTH_PROVIDER: AuthProviderDefinition = {
   id: "apple",
   label: "Apple",
@@ -95,6 +107,7 @@ export const DEV_AUTH_PROVIDER: AuthProviderDefinition = {
 };
 
 export const AUTH_PROVIDER_DEFINITIONS = [
+  ANONYMOUS_AUTH_PROVIDER,
   GOOGLE_AUTH_PROVIDER,
   APPLE_AUTH_PROVIDER,
   MICROSOFT_AUTH_PROVIDER,
@@ -289,6 +302,8 @@ export function isDevelopmentAuthMode() {
 
 export function isAuthProviderEnabled(providerId: AuthProviderId) {
   switch (providerId) {
+    case "anonymous":
+      return true;
     case "google":
       return hasGoogleAuthCredentials();
     case "apple":
@@ -311,6 +326,10 @@ export function getVisibleAuthProviders(
   options: AuthProviderVisibilityOptions = {},
 ) {
   return providers.filter((provider) => {
+    if (provider.id === "anonymous") {
+      return options.anonymousEnabled ?? true;
+    }
+
     if (provider.id === "microsoft") {
       return options.microsoftEnabled ?? false;
     }

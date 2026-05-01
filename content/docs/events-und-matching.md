@@ -219,6 +219,24 @@ Kalenderlinks in Realite:
 - Titel von Realite-Kalendereinträgen enthalten keine Hashtags:  
   Bei neuen Vorschlägen `[Realite Vorschlag] <Titel ohne Hashtags>`, bei Zusage `[Realite] <Titel ohne Hashtags>`.
 
+## QR-Codes für Aushänge und Flyer
+
+Auf der Eventseite kannst du **QR-Codes drucken** öffnen. Die Druckseite erzeugt eine Ausschneidevorlage mit mehreren identischen QR-Codes, die direkt auf den bestehenden Event-Link (`/e/...`) zeigen.
+
+Du kannst einstellen:
+
+- wie viele QR-Codes nebeneinander stehen
+- wie viele Codes insgesamt gedruckt werden
+
+Beim Drucken blendet Realite die Einstellungen aus und zeigt nur die QR-Karten mit Titel, klarem Scan-Pitch und Link. Ort und Zeit stehen bewusst nicht auf den Schnipseln. Der Pitch erklärt den Mehrwert: Event öffnen, direkt zusagen und der Gruppe zeigen, dass man dabei ist. So kannst du die Seite ausdrucken, ausschneiden und z. B. bei einem Event auslegen.
+
+Wichtig zur Sichtbarkeit:
+
+- Der QR-Code ändert keine Event-Sichtbarkeit.
+- Öffentliche Events können über den Link ohne Konto angesehen werden.
+- Nicht-öffentliche Events bleiben nur für Personen sichtbar, die das Event in Realite sehen dürfen.
+- Zusagen, Kommentare oder andere Aktionen erfordern weiterhin die normale Anmeldung und Berechtigung.
+
 ## Wochenstatus teilen
 
 Einmal pro Kalenderwoche zeigt Realite im Bereich **Was geht?** einen Hinweis, deine Vorhaben zu teilen. Der Button **Jetzt teilen** öffnet die Share-Funktion deines Geräts oder Browsers. Dort entscheidest du selbst, ob du den Link z. B. in WhatsApp Status, in einer Nachricht oder an anderer Stelle teilst.

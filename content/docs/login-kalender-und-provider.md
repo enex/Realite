@@ -24,6 +24,10 @@ Sobald du in Realite eingeloggt bist, kannst du den Kern des Produkts nutzen:
 
 Dafür brauchst du **keinen verbundenen Kalender**.
 
+Wenn dein Login-Anbieter ein Profilbild liefert, übernimmt Realite es als Startwert, solange du noch kein eigenes Realite-Profilbild gespeichert hast. Ein später hochgeladenes Profilbild wird im konfigurierten S3-kompatiblen Speicher abgelegt und im Realite-Profil gespeichert.
+
+Für einen schnellen ersten Blick gibt es zusätzlich **Ohne Konto starten**. Das ist ein temporärer Gastzugang ohne Google, Apple oder Microsoft. Er verbindet keinen Kalender und keine Kontakte; du solltest später einen echten Login verbinden, wenn du Realite dauerhaft nutzen willst.
+
 Wenn du Realite bewusst erst ohne Kalender nutzen willst, hilft dir zusätzlich **[Ohne Kalender starten](/docs/ohne-kalender-starten)**.
 
 ## Was zusätzlichen Kalenderzugriff braucht
@@ -91,6 +95,7 @@ Produktlogisch ist Realite schon breiter gedacht. Technisch gibt es heute aber n
 
 Aktuell gilt:
 
+- ein temporärer Gastzugang kann ohne Provider gestartet werden
 - Google und Apple können als sichtbare Login-Pfade parallel erscheinen, sobald das jeweilige Deployment beide technisch freigeschaltet hat
 - in lokaler Entwicklung gibt es zusätzlich einen dev-only Test-Login
 - Kalenderkontext ist heute an Google Kalender angebunden

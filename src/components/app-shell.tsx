@@ -39,11 +39,15 @@ const MOBILE_ITEMS: MobileNavItem[] = [
   { href: "/groups", label: "Gruppen", tabLabel: "Gruppen", intent: "Verwalten", Icon: Users },
 ];
 
+function isGuestEmail(email: string) {
+  return email.toLowerCase().endsWith("@guest.realite.local");
+}
+
 export function AppShell({ user, children }: AppShellProps) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!user.email) return;
+    if (!user.email || isGuestEmail(user.email)) return;
 
     posthog.identify(user.email, {
       email: user.email,
