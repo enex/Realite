@@ -1,5 +1,6 @@
 import {
   GetObjectCommand,
+  ListObjectsV2Command,
   ObjectCannedACL,
   PutObjectCommand,
   S3Client,
@@ -204,4 +205,71 @@ export async function uploadProfileImage(input: ProfileImageUpload) {
   );
 
   return `${getPublicBaseUrl()}/${input.key}`;
+}
+
+export type ListedProfileImageObject = {
+  key: string;
+  lastModified: Date | undefined;
+};
+
+/** Lists object keys under the `profiles/` prefix (paginated). */
+export async function listAllStoredProfileImageObjects(): Promise<
+  ListedProfileImageObject[]
+> {
+  const bucket = requiredEnv("S3_BUCKET");
+  const client = getS3Client();
+  const prefix = `${PROFILE_IMAGE_PATH_PREFIX}/`;
+  const out: ListedProfileImageObject[] = [];
+  let continuationToken: string | undefined;
+  do {
+    const resp = await client.send(
+      new ListObjectsV2Command({
+        Bucket: bucket,
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      }),
+    );
+    for (const obj of resp.Contents ?? []) {
+      if (obj.Key) {
+        out.push({ key: obj.Key, lastModified: obj.LastModified });
+      }
+    }
+    continuationToken = resp.IsTruncated
+      ? resp.NextContinuationToken
+      : undefined;
+  } while (continuationToken);
+  return out;
+}
+
+/** Public object URL for a storage key, matching `uploadProfileImage` return shape. */
+export function buildProfileImagePublicUrlForKey(storageKey: string): string {
+  const trimmed = storageKey.replace(/^\/+/, "");
+  return `${getPublicBaseUrl()}/${trimmed}`;
+}
+
+/**
+ * Parses `profiles/<userId>/<file>` keys produced by the profile image upload API.
+ * Returns null for unknown layouts (other prefixes, nested paths, invalid UUID).
+ */
+export function parseProfileImageUserObjectKey(key: string): {
+  userId: string;
+  fileName: string;
+} | null {
+  const parts = key.split("/").filter(Boolean);
+  if (parts.length !== 3 || parts[0] !== PROFILE_IMAGE_PATH_PREFIX) {
+    return null;
+  }
+  const userId = parts[1]!;
+  const fileName = parts[2]!;
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      userId,
+    )
+  ) {
+    return null;
+  }
+  if (!/\.(jpe?g|png|webp)$/i.test(fileName)) {
+    return null;
+  }
+  return { userId, fileName };
 }

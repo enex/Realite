@@ -16,6 +16,8 @@ Unter `/singles/<slug>/qr` gibt es zusätzlich eine Druckvorlage. Dort kannst du
 4. Bewusst **Ich bin hier** wählen.
 5. Die Seite zeigt passende andere Personen, die ebenfalls eingecheckt sind.
 
+Auf der Eventseite siehst du immer nur **einen** klaren Schritt: Entweder du bist noch nicht eingetragen und kannst dich mit **Ich bin hier** sichtbar machen — oder du bist bereits eingecheckt und kannst mit **Nicht mehr da** die Sichtbarkeit beenden. Beides gleichzeitig als gleichwertige Aktionen gibt es nicht.
+
 Passend bedeutet hier: Beide Dating-Profile akzeptieren gegenseitig Geschlecht und Altersbereich.
 
 Erst nach dem gespeicherten Profil zeigt Realite die Vor-Ort-Ansicht mit passenden Personen. Darunter steht der QR-Code mit dem Hinweis, dass du damit weitere Personen aus deiner Gruppe oder vor Ort auf dieselbe Eventseite einladen kannst.

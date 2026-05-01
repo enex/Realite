@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getEventPresenceDisplayState,
   getEventPresenceWindow,
+  getEventPresenceWindowCopy,
   getEventPresenceWindowOptions,
   type EventPresenceStatus,
   type EventPresenceWindowOption,
@@ -275,6 +276,10 @@ export function SinglesHerePage({
       : null,
   });
   const isCheckedIn = displayState === "checked_in";
+  const presenceWindowDescription = getEventPresenceWindowCopy({
+    startsAt,
+    endsAt,
+  }).description;
 
   const refresh = useCallback(async () => {
     const response = await fetch(`/api/singles/events/${payload.event.slug}`, {
@@ -826,18 +831,13 @@ export function SinglesHerePage({
             className={`grid gap-6 ${profileEditorOpen ? "lg:col-start-1 lg:row-start-2" : "lg:col-span-2"}`}
           >
             <section className="rounded-xl border border-border bg-card p-5">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-xl font-semibold">
-                    Gerade passende Personen
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Insgesamt vor Ort sichtbar: {payload.checkedInCount}
-                  </p>
-                </div>
-                <span className="rounded-full bg-teal-100 px-3 py-1 text-xs font-semibold text-teal-800">
-                  {isCheckedIn ? "Du bist vor Ort" : "Nicht sichtbar"}
-                </span>
+              <div>
+                <h2 className="text-xl font-semibold">
+                  Gerade passende Personen
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Insgesamt vor Ort sichtbar: {payload.checkedInCount}
+                </p>
               </div>
 
               {payload.matchingPeople.length > 0 ? (
@@ -876,39 +876,128 @@ export function SinglesHerePage({
                 </p>
               )}
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
-                <select
-                  value={presenceWindowChoice}
-                  onChange={(event) =>
-                    setPresenceWindowChoice(event.target.value)
-                  }
-                  className="rounded-lg border border-input bg-card px-3 py-2 text-sm"
-                  disabled={!presenceWindow.canCheckIn || busy}
-                >
-                  {windowOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {`${option.label} (${formatTime(option.visibleUntil.toISOString())})`}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  disabled={
-                    busy || !presenceWindow.canCheckIn || !visibleUntilIso
-                  }
-                  onClick={() => updatePresence("checked_in")}
-                  className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                >
-                  Ich bin hier
-                </button>
-                <button
-                  type="button"
-                  disabled={busy || !isCheckedIn}
-                  onClick={() => updatePresence("left")}
-                  className="rounded-lg border border-input px-4 py-2 text-sm font-semibold disabled:opacity-50"
-                >
-                  Nicht mehr da
-                </button>
+              <div className="mt-5 border-t border-border pt-5">
+                <h3 className="text-sm font-semibold text-foreground">
+                  Dein Vor-Ort-Status
+                </h3>
+                {isCheckedIn ? (
+                  <div className="mt-3 grid gap-4">
+                    <div className="rounded-lg border border-teal-200 bg-teal-50 p-4 dark:border-teal-800 dark:bg-teal-950/40">
+                      <p className="text-sm font-semibold text-teal-900 dark:text-teal-100">
+                        Du bist gerade als vor Ort sichtbar eingetragen
+                      </p>
+                      <p className="mt-2 text-sm text-teal-800 dark:text-teal-200">
+                        In der Liste wirst du bis{" "}
+                        <span className="tabular-nums font-semibold">
+                          {payload.currentUserVisibleUntilIso
+                            ? formatTime(payload.currentUserVisibleUntilIso)
+                            : "—"}
+                        </span>{" "}
+                        anderen angezeigt (sofern ihr zueinander passt).
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => updatePresence("left")}
+                      className="w-full rounded-lg border-2 border-input bg-background px-4 py-3 text-sm font-semibold text-foreground shadow-sm hover:bg-muted/60 disabled:opacity-50"
+                    >
+                      Nicht mehr da — Sichtbarkeit beenden
+                    </button>
+                    {presenceWindow.canCheckIn ? (
+                      <div className="rounded-lg border border-border bg-muted/40 p-4">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Zeitfenster ändern (optional)
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Neues Ende wählen und speichern — du bleibst
+                          eingecheckt.
+                        </p>
+                        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
+                          <label className="grid min-w-0 flex-1 gap-1.5 text-sm">
+                            <span className="text-muted-foreground">
+                              Sichtbar bis
+                            </span>
+                            <select
+                              value={presenceWindowChoice}
+                              onChange={(event) =>
+                                setPresenceWindowChoice(event.target.value)
+                              }
+                              className="rounded-lg border border-input bg-card px-3 py-2 text-sm"
+                              disabled={busy}
+                            >
+                              {windowOptions.map((option) => (
+                                <option
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {`${option.label} (${formatTime(option.visibleUntil.toISOString())})`}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <button
+                            type="button"
+                            disabled={busy || !visibleUntilIso}
+                            onClick={() => updatePresence("checked_in")}
+                            className="shrink-0 rounded-lg border border-input bg-card px-4 py-2 text-sm font-semibold hover:bg-muted disabled:opacity-50"
+                          >
+                            Neues Ende speichern
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : presenceWindow.canCheckIn ? (
+                  <div className="mt-3 grid gap-3">
+                    {displayState === "expired" ? (
+                      <p className="text-sm text-muted-foreground">
+                        Dein letztes Zeitfenster ist vorbei. Du kannst dich
+                        erneut bewusst als vor Ort sichtbar eintragen.
+                      </p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Du bist aktuell{" "}
+                        <span className="font-medium text-foreground">
+                          nicht
+                        </span>{" "}
+                        als vor Ort sichtbar. Erst der Button unten trägt dich
+                        ein — nicht automatisch, nicht heimlich.
+                      </p>
+                    )}
+                    <label className="grid gap-1.5 text-sm">
+                      <span className="font-medium text-foreground">
+                        Wie lange sollst du sichtbar sein?
+                      </span>
+                      <select
+                        value={presenceWindowChoice}
+                        onChange={(event) =>
+                          setPresenceWindowChoice(event.target.value)
+                        }
+                        className="rounded-lg border border-input bg-card px-3 py-2 text-sm"
+                        disabled={busy}
+                      >
+                        {windowOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {`${option.label} (${formatTime(option.visibleUntil.toISOString())})`}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <button
+                      type="button"
+                      disabled={busy || !visibleUntilIso}
+                      onClick={() => updatePresence("checked_in")}
+                      className="w-full rounded-lg bg-teal-700 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
+                    >
+                      Ich bin hier — vor Ort sichtbar werden
+                    </button>
+                  </div>
+                ) : (
+                  <p className="mt-3 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
+                    {presenceWindowDescription}
+                  </p>
+                )}
               </div>
             </section>
 

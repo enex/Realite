@@ -4,6 +4,7 @@ import {
   canonicalizeProfileImageUrlForPersistence,
   extractProfileImageStorageKey,
   isStoredProfileImageUrl,
+  parseProfileImageUserObjectKey,
   resolveS3SigningRegion,
 } from "@/src/lib/profile-image-storage";
 
@@ -59,5 +60,32 @@ describe("profile image storage", () => {
         "https://s3.sbg.io.cloud.ovh.net/realite/profiles/u/uuid.webp",
       ),
     ).toBe("profiles/u/uuid.webp");
+  });
+
+  test("parseProfileImageUserObjectKey accepts profiles/<uuid>/<image.ext>", () => {
+    const uid = "0198a1b2-c3d4-7e8f-9a0b-1c2d3e4f5067";
+    expect(parseProfileImageUserObjectKey(`profiles/${uid}/0198a1b2-c3d4-7e8f-9a0b-1c2d3e4f5068.webp`)).toEqual({
+      userId: uid,
+      fileName: "0198a1b2-c3d4-7e8f-9a0b-1c2d3e4f5068.webp",
+    });
+    expect(parseProfileImageUserObjectKey(`profiles/${uid}/file.JPG`)).toEqual({
+      userId: uid,
+      fileName: "file.JPG",
+    });
+  });
+
+  test("parseProfileImageUserObjectKey rejects bad paths", () => {
+    expect(parseProfileImageUserObjectKey("profiles//x.webp")).toBe(null);
+    expect(parseProfileImageUserObjectKey("other/u/x.webp")).toBe(null);
+    expect(
+      parseProfileImageUserObjectKey(
+        "profiles/not-a-uuid/0198a1b2-c3d4-7e8f-9a0b-1c2d3e4f5068.webp",
+      ),
+    ).toBe(null);
+    expect(
+      parseProfileImageUserObjectKey(
+        "profiles/0198a1b2-c3d4-7e8f-9a0b-1c2d3e4f5067/file.gif",
+      ),
+    ).toBe(null);
   });
 });

@@ -81,6 +81,20 @@ type AdminUiConfig = {
   secretLoginEnabled: boolean;
 };
 
+type ReconcileProfileUploadsResponse = {
+  dryRun: boolean;
+  userCountWithUploads: number;
+  updated: Array<{
+    userId: string;
+    from: string | null;
+    to: string;
+    chosenKey: string;
+  }>;
+  skipped: Array<{ userId: string; reason: string }>;
+  ignoredKeys: number;
+  hint?: string;
+};
+
 async function parseJsonSafe<T>(response: Response): Promise<T | null> {
   try {
     return (await response.json()) as T;
@@ -547,73 +561,224 @@ function OverviewPane(props: {
   onRefresh: () => void;
 }) {
   const { overview } = props;
-  if (!overview) {
-    return <p className="text-muted-foreground text-sm">Keine Daten.</p>;
-  }
 
-  const g = overview.genderAmongActiveCheckedIn;
-  const genderLine = `Frauen ${g.woman ?? 0} · Männer ${g.man ?? 0} · Divers ${g.non_binary ?? 0} · Profil offen ${g.unknown ?? 0}`;
+  const g = overview?.genderAmongActiveCheckedIn;
+  const genderLine = g
+    ? `Frauen ${g.woman ?? 0} · Männer ${g.man ?? 0} · Divers ${g.non_binary ?? 0} · Profil offen ${g.unknown ?? 0}`
+    : "";
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-muted-foreground text-xs">
-          Stand: {new Date(overview.generatedAtIso).toLocaleString("de-DE")}
-        </p>
+      {!overview ? (
+        <p className="text-muted-foreground text-sm">Keine Übersichtsdaten.</p>
+      ) : (
+        <>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-muted-foreground text-xs">
+              Stand: {new Date(overview.generatedAtIso).toLocaleString("de-DE")}
+            </p>
+            <button
+              type="button"
+              className="text-primary text-xs font-medium"
+              onClick={props.onRefresh}
+            >
+              Aktualisieren
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <StatCard
+              label="Jetzt sichtbar (unique)"
+              value={String(overview.distinctUsersCheckedIn)}
+            />
+            <StatCard
+              label="Aktive Events"
+              value={String(overview.eventsWithActivePresence)}
+              hint={`von ${overview.singlesHereEventCount} Singles-hier`}
+            />
+            <StatCard
+              label="Match-Paare (Summe je Event)"
+              value={String(overview.mutualMatchPairCountAmongActive)}
+            />
+            <StatCard label="Geschlecht (mit Profil)" value="" sub={genderLine} />
+          </div>
+
+          <section>
+            <h2 className="mb-2 text-sm font-semibold">Top Events (Check-ins)</h2>
+            <ul className="border-border flex flex-col gap-2 rounded-xl border">
+              {overview.topEventsByActiveCheckIn.length === 0 ? (
+                <li className="text-muted-foreground p-4 text-sm">
+                  Keine aktiven Check-ins.
+                </li>
+              ) : (
+                overview.topEventsByActiveCheckIn.map((ev) => (
+                  <li
+                    key={ev.id}
+                    className="border-border flex flex-col gap-1 border-b p-4 last:border-b-0"
+                  >
+                    <div className="flex justify-between gap-2">
+                      <span className="text-sm font-medium">{ev.name}</span>
+                      <span className="text-primary shrink-0 text-sm font-semibold">
+                        {ev.activeCheckedInCount}
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground text-xs">
+                      {windowLabel(ev.presenceWindowState)} · {ev.slug}
+                    </p>
+                  </li>
+                ))
+              )}
+            </ul>
+          </section>
+        </>
+      )}
+
+      <ProfileImageReconcileBlock />
+    </div>
+  );
+}
+
+function ProfileImageReconcileBlock() {
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<ReconcileProfileUploadsResponse | null>(
+    null,
+  );
+  const [error, setError] = useState<string | null>(null);
+
+  async function runPreview() {
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/admin/profile-images/reconcile-uploads", {
+        credentials: "include",
+      });
+      const body = await parseJsonSafe<
+        ReconcileProfileUploadsResponse & { error?: string }
+      >(response);
+      if (!response.ok) {
+        setError(body?.error ?? "Vorschau fehlgeschlagen.");
+        setResult(null);
+        return;
+      }
+      setResult(body);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runExecute() {
+    if (
+      !window.confirm(
+        "Profilbild-URLs in der Datenbank setzen? Nur für Nutzer, bei denen unter profiles/<Nutzer-ID>/ Objekte liegen und noch keine passende Verknüpfung besteht.",
+      )
+    ) {
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/admin/profile-images/reconcile-uploads", {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ dryRun: false }),
+      });
+      const body = await parseJsonSafe<
+        ReconcileProfileUploadsResponse & { error?: string }
+      >(response);
+      if (!response.ok) {
+        setError(body?.error ?? "Verknüpfung fehlgeschlagen.");
+        setResult(null);
+        return;
+      }
+      setResult(body);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="border-border bg-muted/20 rounded-xl border p-4">
+      <h2 className="text-sm font-semibold">Profilbilder nachziehen</h2>
+      <p className="text-muted-foreground mt-2 text-xs leading-relaxed">
+        Hochgeladene Dateien unter{" "}
+        <span className="font-mono text-[10px]">profiles/&lt;Nutzer-ID&gt;/</span>{" "}
+        mit <span className="font-mono text-[10px]">users.image</span> verknüpfen,
+        falls das nach dem Upload fehlte. Pro Nutzer wird das neueste Objekt
+        genutzt.
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
         <button
           type="button"
-          className="text-primary text-xs font-medium"
-          onClick={props.onRefresh}
+          disabled={busy}
+          className="bg-secondary text-secondary-foreground rounded-lg px-3 py-2 text-xs font-medium hover:opacity-90 disabled:opacity-50"
+          onClick={() => void runPreview()}
         >
-          Aktualisieren
+          {busy ? "…" : "Vorschau"}
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          className="bg-primary text-primary-foreground rounded-lg px-3 py-2 text-xs font-medium hover:opacity-90 disabled:opacity-50"
+          onClick={() => void runExecute()}
+        >
+          {busy ? "…" : "Jetzt verknüpfen"}
         </button>
       </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        <StatCard
-          label="Jetzt sichtbar (unique)"
-          value={String(overview.distinctUsersCheckedIn)}
-        />
-        <StatCard
-          label="Aktive Events"
-          value={String(overview.eventsWithActivePresence)}
-          hint={`von ${overview.singlesHereEventCount} Singles-hier`}
-        />
-        <StatCard
-          label="Match-Paare (Summe je Event)"
-          value={String(overview.mutualMatchPairCountAmongActive)}
-        />
-        <StatCard label="Geschlecht (mit Profil)" value="" sub={genderLine} />
-      </div>
-
-      <section>
-        <h2 className="mb-2 text-sm font-semibold">Top Events (Check-ins)</h2>
-        <ul className="border-border flex flex-col gap-2 rounded-xl border">
-          {overview.topEventsByActiveCheckIn.length === 0 ? (
-            <li className="text-muted-foreground p-4 text-sm">
-              Keine aktiven Check-ins.
-            </li>
-          ) : (
-            overview.topEventsByActiveCheckIn.map((ev) => (
-              <li
-                key={ev.id}
-                className="border-border flex flex-col gap-1 border-b p-4 last:border-b-0"
-              >
-                <div className="flex justify-between gap-2">
-                  <span className="text-sm font-medium">{ev.name}</span>
-                  <span className="text-primary shrink-0 text-sm font-semibold">
-                    {ev.activeCheckedInCount}
-                  </span>
-                </div>
-                <p className="text-muted-foreground text-xs">
-                  {windowLabel(ev.presenceWindowState)} · {ev.slug}
-                </p>
-              </li>
-            ))
-          )}
-        </ul>
-      </section>
-    </div>
+      {error ? (
+        <p className="text-destructive mt-3 text-xs">{error}</p>
+      ) : null}
+      {result ? (
+        <div className="border-border mt-3 space-y-2 rounded-lg border bg-background/80 p-3 text-xs">
+          <p className="font-medium">
+            {result.dryRun ? "Vorschau (keine Änderung)" : "Ausgeführt"}
+            {" · "}
+            Nutzer mit Uploads: {result.userCountWithUploads} · Aktualisiert:{" "}
+            {result.updated.length} · Übersprungen: {result.skipped.length} ·
+            Ignorierte Keys: {result.ignoredKeys}
+          </p>
+          {result.hint ? (
+            <p className="text-muted-foreground text-[11px]">{result.hint}</p>
+          ) : null}
+          {result.updated.length > 0 ? (
+            <details className="text-[11px]">
+              <summary className="cursor-pointer font-medium">
+                Aktualisierte Nutzer-IDs ({result.updated.length})
+              </summary>
+              <ul className="mt-2 max-h-40 overflow-y-auto font-mono text-[10px]">
+                {result.updated.map((u) => (
+                  <li key={u.userId} className="break-all py-0.5">
+                    {u.userId} → {u.chosenKey}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ) : null}
+          {result.skipped.length > 0 ? (
+            <details className="text-[11px]">
+              <summary className="cursor-pointer font-medium">
+                Übersprungen ({result.skipped.length})
+              </summary>
+              <ul className="mt-2 max-h-32 overflow-y-auto font-mono text-[10px]">
+                {result.skipped.slice(0, 50).map((s, i) => (
+                  <li
+                    key={`${s.userId}-${s.reason}-${i}`}
+                    className="break-all py-0.5"
+                  >
+                    {s.userId}: {s.reason}
+                  </li>
+                ))}
+                {result.skipped.length > 50 ? (
+                  <li className="text-muted-foreground">
+                    … und {result.skipped.length - 50} weitere
+                  </li>
+                ) : null}
+              </ul>
+            </details>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
   );
 }
 
