@@ -618,8 +618,8 @@ export function SinglesHerePage({
           </form>
           <p className="mt-3 text-xs leading-5 text-muted-foreground">
             {!payload.profileUnlocked && presenceWindow.canCheckIn
-              ? "Wenn du dein Profil speicherst, wirst du automatisch bis Eventende vor Ort sichtbar. Du kannst das jederzeit über den Button „Nicht mehr da" rückgängig machen."
-              : "Sichtbar bist du nur, solange du aktiv eingecheckt bist. Du kannst das jederzeit über den Button „Nicht mehr da" rückgängig machen."}
+              ? 'Wenn du dein Profil speicherst, wirst du automatisch bis Eventende vor Ort sichtbar. Du kannst das jederzeit über den Button „Nicht mehr da" rückgängig machen.'
+              : 'Sichtbar bist du nur, solange du aktiv eingecheckt bist. Du kannst das jederzeit über den Button „Nicht mehr da" rückgängig machen.'}
           </p>
         </section>
         ) : null}
