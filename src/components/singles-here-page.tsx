@@ -17,6 +17,7 @@ import type { SinglesHereClientPayload } from "@/src/lib/singles-here-payload";
 type SinglesHerePageProps = {
   initialPayload: SinglesHereClientPayload;
   currentUserName: string | null;
+  currentUserId: string;
 };
 
 const genderLabels: Record<DatingGender, string> = {
@@ -29,6 +30,11 @@ const genderOptions: DatingGender[] = ["woman", "man", "non_binary"];
 
 function toDateInputValue(birthYear: number | null) {
   return birthYear ? `${birthYear}-01-01` : "";
+}
+
+function toLocalInputValue(date: Date) {
+  const offsetMs = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
 }
 
 function formatDateTime(value: string) {
@@ -77,6 +83,7 @@ function resolvePresenceWindowChoiceValue(
 export function SinglesHerePage({
   initialPayload,
   currentUserName,
+  currentUserId,
 }: SinglesHerePageProps) {
   const [payload, setPayload] = useState(initialPayload);
   const [name, setName] = useState(currentUserName ?? "");
@@ -107,6 +114,19 @@ export function SinglesHerePage({
   const [imageUploading, setImageUploading] = useState(false);
   const [profileEditorOpen, setProfileEditorOpen] = useState(
     !initialPayload.profileUnlocked,
+  );
+
+  const isCreator = currentUserId === initialPayload.event.createdBy;
+  const [eventEditorOpen, setEventEditorOpen] = useState(false);
+  const [editName, setEditName] = useState(initialPayload.event.name);
+  const [editLocation, setEditLocation] = useState(
+    initialPayload.event.location ?? "",
+  );
+  const [editStartsAt, setEditStartsAt] = useState(() =>
+    toLocalInputValue(new Date(initialPayload.event.startsAt)),
+  );
+  const [editEndsAt, setEditEndsAt] = useState(() =>
+    toLocalInputValue(new Date(initialPayload.event.endsAt)),
   );
 
   const startsAt = useMemo(
@@ -267,6 +287,53 @@ export function SinglesHerePage({
     }
   }
 
+  async function saveEvent(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      const response = await fetch(
+        `/api/singles/events/${payload.event.slug}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: editName,
+            location: editLocation || null,
+            startsAt: new Date(editStartsAt).toISOString(),
+            endsAt: new Date(editEndsAt).toISOString(),
+          }),
+        },
+      );
+      const result = (await response.json()) as {
+        error?: string;
+        event?: { name: string; location: string | null; startsAt: string; endsAt: string };
+      };
+      if (!response.ok || !result.event) {
+        throw new Error(result.error ?? "Event konnte nicht gespeichert werden.");
+      }
+
+      setPayload((current) => ({
+        ...current,
+        event: {
+          ...current.event,
+          name: result.event!.name,
+          location: result.event!.location,
+          startsAt: result.event!.startsAt,
+          endsAt: result.event!.endsAt,
+        },
+      }));
+      setMessage("Event gespeichert.");
+      setEventEditorOpen(false);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Unbekannter Fehler");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function updatePresence(status: EventPresenceStatus) {
     setBusy(true);
     setError(null);
@@ -338,7 +405,84 @@ export function SinglesHerePage({
               <PencilSimple size={16} aria-hidden="true" />
             </button>
           ) : null}
+          {isCreator ? (
+            <button
+              type="button"
+              onClick={() => setEventEditorOpen((open) => !open)}
+              aria-expanded={eventEditorOpen}
+              className="inline-flex items-center gap-2 rounded-full border border-input bg-card px-3 py-2 text-sm font-semibold shadow-sm hover:bg-muted"
+            >
+              <PencilSimple size={16} aria-hidden="true" />
+              <span>Event bearbeiten</span>
+            </button>
+          ) : null}
         </div>
+
+        {isCreator && eventEditorOpen ? (
+        <section className="rounded-xl border border-border bg-card p-5 lg:col-span-2">
+          <h2 className="text-xl font-semibold">Event bearbeiten</h2>
+          <form onSubmit={saveEvent} className="mt-4 grid gap-3">
+            <label className="grid gap-1 text-sm">
+              <span>Name</span>
+              <input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="rounded-lg border border-input px-3 py-2"
+                required
+                minLength={2}
+                maxLength={80}
+              />
+            </label>
+            <label className="grid gap-1 text-sm">
+              <span>Ort</span>
+              <input
+                value={editLocation}
+                onChange={(e) => setEditLocation(e.target.value)}
+                className="rounded-lg border border-input px-3 py-2"
+                maxLength={160}
+              />
+            </label>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="grid gap-1 text-sm">
+                <span>Start</span>
+                <input
+                  type="datetime-local"
+                  value={editStartsAt}
+                  onChange={(e) => setEditStartsAt(e.target.value)}
+                  className="rounded-lg border border-input px-3 py-2"
+                  required
+                />
+              </label>
+              <label className="grid gap-1 text-sm">
+                <span>Ende</span>
+                <input
+                  type="datetime-local"
+                  value={editEndsAt}
+                  onChange={(e) => setEditEndsAt(e.target.value)}
+                  className="rounded-lg border border-input px-3 py-2"
+                  required
+                />
+              </label>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={busy}
+                className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              >
+                Speichern
+              </button>
+              <button
+                type="button"
+                onClick={() => setEventEditorOpen(false)}
+                className="rounded-lg border border-input px-4 py-2 text-sm font-semibold hover:bg-muted"
+              >
+                Abbrechen
+              </button>
+            </div>
+          </form>
+        </section>
+        ) : null}
 
         {(!payload.profileUnlocked || profileEditorOpen) ? (
         <section className={`rounded-xl border border-border bg-card p-5 ${payload.profileUnlocked ? "lg:col-start-2 lg:row-start-2" : "lg:col-span-2"}`}>

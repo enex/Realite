@@ -54,6 +54,7 @@ export default async function SinglesHereRoute({
     <SinglesHerePage
       initialPayload={initialPayload}
       currentUserName={user.name}
+      currentUserId={user.id}
     />
   );
 }

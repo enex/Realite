@@ -2441,6 +2441,66 @@ export async function createSinglesHereEvent(input: {
   return mapSinglesHereEventRow(event);
 }
 
+export async function updateSinglesHereEvent(input: {
+  userId: string;
+  slug: string;
+  name: string;
+  location?: string | null;
+  startsAt: Date;
+  endsAt: Date;
+}) {
+  const normalizedSlug = normalizeSinglesHereSlug(input.slug);
+  const name = input.name.trim();
+
+  if (name.length < 2 || name.length > 80) {
+    throw new RepositoryValidationError("Der Eventname muss 2 bis 80 Zeichen lang sein.");
+  }
+
+  if (input.endsAt <= input.startsAt) {
+    throw new RepositoryValidationError("Ende muss nach Start liegen.");
+  }
+
+  const existing = await getSinglesHereEventBySlug(normalizedSlug);
+  if (!existing) {
+    throw new RepositoryValidationError("Event nicht gefunden.");
+  }
+
+  if (existing.createdBy !== input.userId) {
+    throw new RepositoryValidationError("Nur der Ersteller kann dieses Event bearbeiten.");
+  }
+
+  const db = getDb();
+  const [updated] = await db
+    .update(events)
+    .set({
+      title: buildSinglesHereEventTitle(name),
+      location: input.location?.trim() || null,
+      startsAt: input.startsAt,
+      endsAt: input.endsAt,
+    })
+    .where(
+      and(
+        eq(events.sourceProvider, SINGLES_HERE_SOURCE_PROVIDER),
+        eq(events.sourceEventId, normalizedSlug),
+      ),
+    )
+    .returning({
+      id: events.id,
+      title: events.title,
+      location: events.location,
+      startsAt: events.startsAt,
+      endsAt: events.endsAt,
+      createdBy: events.createdBy,
+      sourceEventId: events.sourceEventId,
+    });
+
+  if (!updated) {
+    throw new RepositoryValidationError("Event konnte nicht aktualisiert werden.");
+  }
+
+  return mapSinglesHereEventRow(updated);
+}
+
 export async function upsertExternalPublicEvent(input: {
   userId: string;
   sourceProvider: string;
