@@ -6,6 +6,7 @@ import {
   getSinglesHereEventBySlug,
   getSinglesHerePresence,
 } from "@/src/lib/repository";
+import { buildSinglesHereClientPayload } from "@/src/lib/singles-here-payload";
 import { requireAppUser } from "@/src/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -47,28 +48,12 @@ export default async function SinglesHereRoute({
     notFound();
   }
 
+  const initialPayload = await buildSinglesHereClientPayload(presence, user.image);
+
   return (
     <SinglesHerePage
-      initialPayload={{
-        event: {
-          ...presence.event,
-          startsAt: presence.event.startsAt.toISOString(),
-          endsAt: presence.event.endsAt.toISOString(),
-        },
-        profile: presence.profile,
-        profileUnlocked: presence.profileUnlocked,
-        age: presence.age,
-        currentUserStatus: presence.currentUserStatus,
-        currentUserVisibleUntilIso:
-          presence.currentUserVisibleUntil?.toISOString() ?? null,
-        checkedInCount: presence.checkedInCount,
-        matchingPeople: presence.matchingPeople.map((person) => ({
-          ...person,
-          visibleUntilIso: person.visibleUntil.toISOString(),
-        })),
-      }}
+      initialPayload={initialPayload}
       currentUserName={user.name}
-      currentUserImage={user.image}
     />
   );
 }

@@ -10,6 +10,10 @@ import {
   getVisibleEventForUserById,
   listGroupContactsForUser
 } from "@/src/lib/repository";
+import {
+  mapResolveProfileImageField,
+  resolveProfileImageReadUrl,
+} from "@/src/lib/profile-image-storage";
 import { requireAppUser } from "@/src/lib/session";
 
 const INVITE_SUGGESTION_COUNT = 3;
@@ -103,8 +107,6 @@ export async function GET(
     user.email
   ).filter((c) => !alreadyInvited.includes(c.email));
 
-  const suggestedContacts = uniqueContacts.slice(0, INVITE_SUGGESTION_COUNT);
-
   const url = new URL(request.url);
   const q = url.searchParams.get("q")?.trim();
   let candidates: Array<{ email: string; name: string | null; image: string | null }> =
@@ -129,7 +131,20 @@ export async function GET(
         );
       }
     }
+
+    candidates = await Promise.all(
+      candidates.map(async (candidate) =>
+        ({
+          ...candidate,
+          image: await resolveProfileImageReadUrl(candidate.image),
+        }),
+      ),
+    );
   }
+
+  const suggestedContacts = await Promise.all(
+    uniqueContacts.slice(0, INVITE_SUGGESTION_COUNT).map(mapResolveProfileImageField),
+  );
 
   return NextResponse.json({
     alreadyInvitedEmails: alreadyInvited,

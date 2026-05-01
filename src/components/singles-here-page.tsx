@@ -4,52 +4,19 @@ import { PencilSimple, UserCircle } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 
 import {
-  getDefaultEventPresenceVisibleUntil,
   getEventPresenceDisplayState,
   getEventPresenceWindow,
   getEventPresenceWindowOptions,
   type EventPresenceStatus,
+  type EventPresenceWindowOption,
 } from "@/src/lib/event-presence";
 import type { DatingGender } from "@/src/lib/dating";
-
-type SinglesHerePayload = {
-  event: {
-    id: string;
-    slug: string;
-    name: string;
-    location: string | null;
-    startsAt: string;
-    endsAt: string;
-    createdBy: string;
-  };
-  profile: {
-    userId: string;
-    enabled: boolean;
-    birthYear: number | null;
-    gender: DatingGender | null;
-    isSingle: boolean;
-    soughtGenders: DatingGender[];
-    soughtAgeMin: number | null;
-    soughtAgeMax: number | null;
-    soughtOnlySingles: boolean;
-  };
-  profileUnlocked: boolean;
-  age: number | null;
-  currentUserStatus: EventPresenceStatus | null;
-  currentUserVisibleUntilIso: string | null;
-  checkedInCount: number;
-  matchingPeople: Array<{
-    userId: string;
-    name: string | null;
-    image: string | null;
-    visibleUntilIso: string;
-  }>;
-};
+import { SinglesProfileImageField } from "@/src/components/singles-profile-image-field";
+import type { SinglesHereClientPayload } from "@/src/lib/singles-here-payload";
 
 type SinglesHerePageProps = {
-  initialPayload: SinglesHerePayload;
+  initialPayload: SinglesHereClientPayload;
   currentUserName: string | null;
-  currentUserImage: string | null;
 };
 
 const genderLabels: Record<DatingGender, string> = {
@@ -78,16 +45,47 @@ function formatTime(value: string) {
   }).format(new Date(value));
 }
 
+function resolvePresenceWindowChoiceValue(
+  options: EventPresenceWindowOption[],
+  visibleUntilIso?: string | null,
+): string {
+  if (options.length === 0) {
+    return "";
+  }
+  if (!visibleUntilIso) {
+    return options[0]!.value;
+  }
+  const target = new Date(visibleUntilIso).getTime();
+  if (Number.isNaN(target)) {
+    return options[0]!.value;
+  }
+  let best = options[0]!;
+  let bestDeltaMs = Infinity;
+  for (const opt of options) {
+    const d = Math.abs(opt.visibleUntil.getTime() - target);
+    if (d < bestDeltaMs) {
+      bestDeltaMs = d;
+      best = opt;
+    }
+  }
+  if (bestDeltaMs <= 120_000) {
+    return best.value;
+  }
+  return options[0]!.value;
+}
+
 export function SinglesHerePage({
   initialPayload,
   currentUserName,
-  currentUserImage,
 }: SinglesHerePageProps) {
   const [payload, setPayload] = useState(initialPayload);
   const [name, setName] = useState(currentUserName ?? "");
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(
-    currentUserImage ?? null,
-  );
+  const [profileImageStorageUrl, setProfileImageStorageUrl] = useState<
+    string | null
+  >(initialPayload.viewerProfileImageStorageUrl ?? null);
+  const [profileImageDisplayUrl, setProfileImageDisplayUrl] = useState<
+    string | null
+  >(initialPayload.viewerProfileImageDisplayUrl ?? null);
   const [birthDate, setBirthDate] = useState(
     toDateInputValue(initialPayload.profile.birthYear),
   );
@@ -121,11 +119,30 @@ export function SinglesHerePage({
   );
   const presenceWindow = getEventPresenceWindow({ startsAt, endsAt });
   const windowOptions = getEventPresenceWindowOptions(endsAt);
-  const [visibleUntilIso, setVisibleUntilIso] = useState(
-    initialPayload.currentUserVisibleUntilIso ??
-      getDefaultEventPresenceVisibleUntil(endsAt)?.toISOString() ??
-      "",
+  const windowChoiceKey = windowOptions.map((o) => o.value).join("|");
+  const [presenceWindowChoice, setPresenceWindowChoice] = useState(() =>
+    resolvePresenceWindowChoiceValue(
+      getEventPresenceWindowOptions(new Date(initialPayload.event.endsAt)),
+      initialPayload.currentUserVisibleUntilIso,
+    ),
   );
+  useEffect(() => {
+    setPresenceWindowChoice((current) => {
+      if (windowOptions.some((o) => o.value === current)) {
+        return current;
+      }
+      return resolvePresenceWindowChoiceValue(
+        windowOptions,
+        payload.currentUserVisibleUntilIso,
+      );
+    });
+  }, [windowChoiceKey, payload.currentUserVisibleUntilIso]);
+  const selectedPresenceOption = windowOptions.find(
+    (o) => o.value === presenceWindowChoice,
+  );
+  const visibleUntilIso =
+    selectedPresenceOption?.visibleUntil.toISOString() ?? "";
+
   const displayState = getEventPresenceDisplayState({
     status: payload.currentUserStatus,
     visibleUntil: payload.currentUserVisibleUntilIso
@@ -141,7 +158,10 @@ export function SinglesHerePage({
     if (!response.ok) {
       return;
     }
-    setPayload((await response.json()) as SinglesHerePayload);
+    const data = (await response.json()) as SinglesHereClientPayload;
+    setPayload(data);
+    setProfileImageStorageUrl(data.viewerProfileImageStorageUrl ?? null);
+    setProfileImageDisplayUrl(data.viewerProfileImageDisplayUrl ?? null);
   }
 
   useEffect(() => {
@@ -163,10 +183,6 @@ export function SinglesHerePage({
     if (!file) {
       return;
     }
-    if (file.size > 1_500_000) {
-      setError("Das Bild ist zu groß. Bitte wähle ein Bild unter 1,5 MB.");
-      return;
-    }
 
     setImageUploading(true);
     setError(null);
@@ -181,13 +197,17 @@ export function SinglesHerePage({
       });
       const payload = (await response.json()) as {
         imageUrl?: string;
+        viewerImageUrl?: string;
         error?: string;
       };
       if (!response.ok || !payload.imageUrl) {
         throw new Error(payload.error ?? "Bild konnte nicht hochgeladen werden.");
       }
 
-      setProfileImageUrl(payload.imageUrl);
+      setProfileImageStorageUrl(payload.imageUrl);
+      setProfileImageDisplayUrl(
+        payload.viewerImageUrl ?? payload.imageUrl ?? null,
+      );
       setMessage("Bild hochgeladen. Speichere dein Profil, damit andere es sehen.");
     } catch (uploadError) {
       setError(
@@ -212,7 +232,7 @@ export function SinglesHerePage({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name,
-            imageUrl: profileImageUrl,
+            imageUrl: profileImageStorageUrl,
             birthDate,
             gender,
             soughtGenders,
@@ -223,7 +243,7 @@ export function SinglesHerePage({
       );
       const result = (await response.json()) as {
         error?: string;
-        profile?: SinglesHerePayload["profile"];
+        profile?: SinglesHereClientPayload["profile"];
         profileUnlocked?: boolean;
         age?: number | null;
       };
@@ -305,9 +325,9 @@ export function SinglesHerePage({
               aria-expanded={profileEditorOpen}
               className="inline-flex items-center gap-2 rounded-full border border-input bg-card px-3 py-2 text-sm font-semibold shadow-sm hover:bg-muted"
             >
-              {profileImageUrl ? (
+              {profileImageDisplayUrl || profileImageStorageUrl ? (
                 <img
-                  src={profileImageUrl}
+                  src={(profileImageDisplayUrl ?? profileImageStorageUrl)!}
                   alt=""
                   className="h-7 w-7 rounded-full object-cover"
                 />
@@ -341,31 +361,16 @@ export function SinglesHerePage({
                 required
               />
             </label>
-            <label className="grid gap-1 text-sm">
-              <span>Bild</span>
-              {profileImageUrl ? (
-                <img
-                  src={profileImageUrl}
-                  alt=""
-                  className="h-20 w-20 rounded-full border border-border object-cover"
-                />
-              ) : null}
-              <input
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                disabled={imageUploading}
-                onChange={(event) => handleImageChange(event.target.files?.[0])}
-              />
-              {imageUploading ? (
-                <span className="text-xs text-muted-foreground">
-                  Bild wird hochgeladen...
-                </span>
-              ) : (
-                <span className="text-xs text-muted-foreground">
-                  PNG, JPG oder WebP bis 1,5 MB. Nach dem Hochladen Profil speichern.
-                </span>
-              )}
-            </label>
+            <SinglesProfileImageField
+              previewUrl={profileImageDisplayUrl ?? profileImageStorageUrl}
+              disabled={busy}
+              busy={imageUploading}
+              onFileReady={(file) => void handleImageChange(file)}
+              onError={(msg) => {
+                setError(msg);
+                setMessage(null);
+              }}
+            />
             <label className="grid gap-1 text-sm">
               <span>Geburtstag</span>
               <input
@@ -498,17 +503,16 @@ export function SinglesHerePage({
 
               <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
                 <select
-                  value={visibleUntilIso}
-                  onChange={(event) => setVisibleUntilIso(event.target.value)}
+                  value={presenceWindowChoice}
+                  onChange={(event) =>
+                    setPresenceWindowChoice(event.target.value)
+                  }
                   className="rounded-lg border border-input bg-card px-3 py-2 text-sm"
                   disabled={!presenceWindow.canCheckIn || busy}
                 >
                   {windowOptions.map((option) => (
-                    <option
-                      key={option.value}
-                      value={option.visibleUntil.toISOString()}
-                    >
-                      {option.label} ({formatTime(option.visibleUntil.toISOString())})
+                    <option key={option.value} value={option.value}>
+                      {`${option.label} (${formatTime(option.visibleUntil.toISOString())})`}
                     </option>
                   ))}
                 </select>

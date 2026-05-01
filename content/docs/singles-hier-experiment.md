@@ -22,7 +22,7 @@ Erst nach dem gespeicherten Profil zeigt Realite die Vor-Ort-Ansicht mit passend
 
 Wenn dein Profil gespeichert ist, bleibt es über den Profil-Button oben auf der Seite bearbeitbar. Das Formular steht dann nicht dauerhaft im Mittelpunkt.
 
-Das Profilbild wird beim Auswählen in den konfigurierten S3-kompatiblen Speicher hochgeladen und beim Speichern im Realite-Profil hinterlegt. Danach sehen passende eingecheckte Personen dieses Bild in der Vor-Ort-Ansicht. Wenn du dich über Google anmeldest und noch kein eigenes Realite-Profilbild gespeichert hast, übernimmt Realite zunächst das Google-Profilbild.
+Das Profilbild lädst du über eine gut sichtbare Fläche hoch — per Tipp oder indem du ein Bild dort ablegst. Am Handy kannst du dafür oft direkt ein Selfie aufnehmen oder ein Foto aus der Galerie wählen und den Ausschnitt noch anpassen. So können andere dich vor Ort leichter wiedererkennen. Nach dem Hochladen speicherst du dein Profil; passende eingecheckte Personen sehen dann dieses Bild. Wenn du dich über Google anmeldest und noch kein eigenes Realite-Profilbild gespeichert hast, übernimmt Realite zunächst das Google-Profilbild.
 
 Die Druckvorlage erreichst du aus diesem QR-Bereich über **Druckvorlage öffnen**.
 

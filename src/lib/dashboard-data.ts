@@ -11,6 +11,10 @@ import {
   listSuggestionsForUser,
   listVisibleEventsForUser
 } from "@/src/lib/repository";
+import {
+  mapResolveProfileImageField,
+  resolveProfileImageReadUrl,
+} from "@/src/lib/profile-image-storage";
 import { listSmartMeetingsForUser } from "@/src/lib/smart-meetings";
 
 type DashboardUser = {
@@ -85,12 +89,27 @@ export async function buildDashboardPayload(user: DashboardUser) {
     contactsByGroup.set(contact.groupId, current);
   }
 
+  const resolvedContactsByGroupEntries = await Promise.all(
+    [...contactsByGroup.entries()].map(async ([groupId, contacts]) => {
+      const resolved = await Promise.all(contacts.map(mapResolveProfileImageField));
+      return [groupId, resolved] as const;
+    }),
+  );
+  const resolvedContactsByGroup = new Map(resolvedContactsByGroupEntries);
+
+  const knownVisitorsResolved = await Promise.all(
+    weeklyShare.knownVisitors.map(mapResolveProfileImageField),
+  );
+  const pendingReferralsResolved = await Promise.all(
+    weeklyShare.pendingReferrals.map(mapResolveProfileImageField),
+  );
+
   return {
     me: {
       id: user.id,
       email: user.email,
       name: user.name,
-      image: user.image,
+      image: await resolveProfileImageReadUrl(user.image),
       calendarConnected: calendarConnectionState === "connected",
       calendarConnectionState,
       calendarScope: connection?.scope ?? null
@@ -115,8 +134,8 @@ export async function buildDashboardPayload(user: DashboardUser) {
       ...group,
       createdAt: toDashboardIsoString(group.createdAt),
       eventCount: groupEventCounts.get(group.id) ?? 0,
-      contactCount: contactsByGroup.get(group.id)?.length ?? 0,
-      contacts: contactsByGroup.get(group.id) ?? []
+      contactCount: resolvedContactsByGroup.get(group.id)?.length ?? 0,
+      contacts: resolvedContactsByGroup.get(group.id) ?? []
     })),
     events: events.map((event) => ({
       ...event,
@@ -136,12 +155,12 @@ export async function buildDashboardPayload(user: DashboardUser) {
       openIntentions: weeklyShare.openIntentions,
       sharedAt: toNullableDashboardIsoString(weeklyShare.sharedAt),
       dismissedAt: toNullableDashboardIsoString(weeklyShare.dismissedAt),
-      knownVisitors: weeklyShare.knownVisitors.map((visitor) => ({
+      knownVisitors: knownVisitorsResolved.map((visitor) => ({
         ...visitor,
         firstVisitedAt: toDashboardIsoString(visitor.firstVisitedAt),
         lastVisitedAt: toDashboardIsoString(visitor.lastVisitedAt)
       })),
-      pendingReferrals: weeklyShare.pendingReferrals.map((referral) => ({
+      pendingReferrals: pendingReferralsResolved.map((referral) => ({
         ...referral,
         createdAt: toDashboardIsoString(referral.createdAt)
       }))

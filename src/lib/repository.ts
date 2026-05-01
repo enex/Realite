@@ -57,7 +57,10 @@ import {
   isValidSinglesHereSlug,
   normalizeSinglesHereSlug,
 } from "@/src/lib/singles-here";
-import { isStoredProfileImageUrl } from "@/src/lib/profile-image-storage";
+import {
+  isStoredProfileImageUrl,
+  resolveProfileImageReadUrl,
+} from "@/src/lib/profile-image-storage";
 import {
   type DeclineReason,
   createLocationPreferenceTag,
@@ -3186,17 +3189,20 @@ export async function getSinglesHerePresence(input: {
     currentUserStatus: summary.currentUserStatus,
     currentUserVisibleUntil: summary.currentUserVisibleUntil,
     checkedInCount: summary.checkedInUsers.length,
-    matchingPeople: summary.checkedInUsers
-      .filter((entry) => matchingUserIds.has(entry.userId))
-      .map((entry) => {
-        const person = peopleById.get(entry.userId);
-        return {
-          userId: entry.userId,
-          name: person?.name ?? entry.name,
-          image: person?.image ?? null,
-          visibleUntil: entry.visibleUntil,
-        };
-      }),
+    matchingPeople: await Promise.all(
+      summary.checkedInUsers
+        .filter((entry) => matchingUserIds.has(entry.userId))
+        .map(async (entry) => {
+          const person = peopleById.get(entry.userId);
+          const rawImage = person?.image ?? null;
+          return {
+            userId: entry.userId,
+            name: person?.name ?? entry.name,
+            image: await resolveProfileImageReadUrl(rawImage),
+            visibleUntil: entry.visibleUntil,
+          };
+        }),
+    ),
   };
 }
 
@@ -3484,15 +3490,17 @@ export async function getUserProfileOverview(input: {
     return null;
   }
 
+  const profileHeader = {
+    id: user.id,
+    name: user.name,
+    image: await resolveProfileImageReadUrl(user.image),
+    createdAt: user.createdAt,
+  };
+
   if (!input.viewerUserId) {
     const events = await listPublicAlleEventsForUser(input.profileUserId);
     return {
-      profile: {
-        id: user.id,
-        name: user.name,
-        image: user.image,
-        createdAt: user.createdAt,
-      },
+      profile: profileHeader,
       visibility: "public_alle",
       events: events.map((event) =>
         mapVisibleEventToUserProfileEvent(event, null),
@@ -3506,12 +3514,7 @@ export async function getUserProfileOverview(input: {
 
   if (input.viewerUserId === input.profileUserId) {
     return {
-      profile: {
-        id: user.id,
-        name: user.name,
-        image: user.image,
-        createdAt: user.createdAt,
-      },
+      profile: profileHeader,
       visibility: "owner",
       events: visibleEvents.map((event) =>
         mapVisibleEventToUserProfileEvent(event, null),
@@ -3537,12 +3540,7 @@ export async function getUserProfileOverview(input: {
   }
 
   return {
-    profile: {
-      id: user.id,
-      name: user.name,
-      image: user.image,
-      createdAt: user.createdAt,
-    },
+    profile: profileHeader,
     visibility: "matched",
     events: matchedEvents,
   };

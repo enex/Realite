@@ -6,6 +6,7 @@ import { EventImage } from "@/src/components/event-image";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { buildLoginPath } from "@/src/lib/provider-adapters";
 import { getUserProfileOverview, type UserProfileEvent, type UserProfileVisibility } from "@/src/lib/repository";
+import { resolveProfileImageReadUrl } from "@/src/lib/profile-image-storage";
 import { requireAppUser } from "@/src/lib/session";
 import { enlargeUUID, shortenUUID } from "@/src/lib/utils/short-uuid";
 
@@ -170,6 +171,9 @@ export default async function UserProfilePage({
   }
 
   const viewer = await requireAppUser();
+  const viewerAvatarUrl = viewer
+    ? await resolveProfileImageReadUrl(viewer.image)
+    : null;
   const overview = await getUserProfileOverview({
     profileUserId,
     viewerUserId: viewer?.id ?? null
@@ -225,7 +229,7 @@ export default async function UserProfilePage({
         user={{
           name: viewer.name ?? viewer.email,
           email: viewer.email,
-          image: viewer.image
+          image: viewerAvatarUrl ?? viewer.image
         }}
       >
         {content}

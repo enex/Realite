@@ -4,10 +4,14 @@ import { z } from "zod";
 import {
   updateUserProfileImage,
 } from "@/src/lib/repository";
+import {
+  canonicalizeProfileImageUrlForPersistence,
+  resolveProfileImageReadUrl,
+} from "@/src/lib/profile-image-storage";
 import { requireAppUser } from "@/src/lib/session";
 
 const profileSchema = z.object({
-  imageUrl: z.string().url().max(1000).nullable(),
+  imageUrl: z.string().url().max(4096).nullable(),
 });
 
 export async function PATCH(request: Request) {
@@ -22,16 +26,24 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Ungültiges Profilbild" }, { status: 400 });
   }
 
+  const persistedImageUrl = canonicalizeProfileImageUrlForPersistence(
+    parsed.data.imageUrl,
+  );
+
   const updated = await updateUserProfileImage({
     userId: user.id,
-    image: parsed.data.imageUrl,
+    image: persistedImageUrl,
   });
+
+  const imageForDisplay = await resolveProfileImageReadUrl(
+    updated?.image ?? persistedImageUrl,
+  );
 
   return NextResponse.json({
     profile: {
       name: updated?.name ?? user.name,
       email: updated?.email ?? user.email,
-      image: updated?.image ?? null,
+      image: imageForDisplay,
     },
   });
 }

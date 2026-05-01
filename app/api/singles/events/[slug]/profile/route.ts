@@ -7,12 +7,13 @@ import {
   updateUserDatingProfile,
   updateUserDisplayProfile,
 } from "@/src/lib/repository";
+import { canonicalizeProfileImageUrlForPersistence } from "@/src/lib/profile-image-storage";
 import { requireAppUser } from "@/src/lib/session";
 
 const imageUrlSchema = z
   .string()
   .url()
-  .max(1000);
+  .max(4096);
 
 const profileSchema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -58,11 +59,17 @@ export async function PATCH(
     );
   }
 
+  const rawImageUrl = parsed.data.imageUrl ?? user.image ?? null;
+  const imageForPersist =
+    rawImageUrl === null
+      ? null
+      : canonicalizeProfileImageUrlForPersistence(rawImageUrl) ?? rawImageUrl;
+
   await Promise.all([
     updateUserDisplayProfile({
       userId: user.id,
       name: parsed.data.name,
-      image: parsed.data.imageUrl ?? user.image ?? null,
+      image: imageForPersist,
     }),
     updateUserDatingProfile({
       userId: user.id,

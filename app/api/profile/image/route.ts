@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 
 import {
   PROFILE_IMAGE_PATH_PREFIX,
+  resolveProfileImageReadUrl,
   uploadProfileImage,
 } from "@/src/lib/profile-image-storage";
 import { requireAppUser } from "@/src/lib/session";
@@ -50,7 +51,9 @@ export async function POST(request: Request) {
       body: Buffer.from(await file.arrayBuffer()),
     });
 
-    return NextResponse.json({ imageUrl });
+    const viewerImageUrl = (await resolveProfileImageReadUrl(imageUrl)) ?? imageUrl;
+
+    return NextResponse.json({ imageUrl, viewerImageUrl });
   } catch (error) {
     const message =
       error instanceof Error
