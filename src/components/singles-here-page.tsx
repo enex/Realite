@@ -315,14 +315,15 @@ export function SinglesHerePage({
         throw new Error(result.error ?? "Event konnte nicht gespeichert werden.");
       }
 
+      const updatedEvent = result.event;
       setPayload((current) => ({
         ...current,
         event: {
           ...current.event,
-          name: result.event!.name,
-          location: result.event!.location,
-          startsAt: result.event!.startsAt,
-          endsAt: result.event!.endsAt,
+          name: updatedEvent.name,
+          location: updatedEvent.location,
+          startsAt: updatedEvent.startsAt,
+          endsAt: updatedEvent.endsAt,
         },
       }));
       setMessage("Event gespeichert.");
