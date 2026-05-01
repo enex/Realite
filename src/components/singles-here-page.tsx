@@ -1,7 +1,7 @@
 "use client";
 
 import { PencilSimple, UserCircle } from "@phosphor-icons/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   getEventPresenceDisplayState,
@@ -114,6 +114,13 @@ export function SinglesHerePage({
   const [profileEditorOpen, setProfileEditorOpen] = useState(
     !initialPayload.profileUnlocked,
   );
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!currentUserName) {
+      nameInputRef.current?.focus();
+    }
+  }, [currentUserName]);
 
   const isCreator = currentUserId === initialPayload.event.createdBy;
   const [eventEditorOpen, setEventEditorOpen] = useState(false);
@@ -218,16 +225,24 @@ export function SinglesHerePage({
         error?: string;
       };
       if (!response.ok || !payload.imageUrl) {
-        throw new Error(payload.error ?? "Bild konnte nicht hochgeladen werden.");
+        throw new Error(
+          payload.error ?? "Bild konnte nicht hochgeladen werden.",
+        );
       }
 
       setProfileImageStorageUrl(payload.imageUrl);
       setProfileImageDisplayUrl(
         payload.viewerImageUrl ?? payload.imageUrl ?? null,
       );
-      toast.success("Bild hochgeladen. Speichere dein Profil, damit andere es sehen.");
+      toast.success(
+        "Bild hochgeladen. Speichere dein Profil, damit andere es sehen.",
+      );
     } catch (uploadError) {
-      toast.error(uploadError instanceof Error ? uploadError.message : "Unbekannter Fehler");
+      toast.error(
+        uploadError instanceof Error
+          ? uploadError.message
+          : "Unbekannter Fehler",
+      );
     } finally {
       setImageUploading(false);
     }
@@ -261,7 +276,9 @@ export function SinglesHerePage({
         age?: number | null;
       };
       if (!response.ok || !result.profile) {
-        throw new Error(result.error ?? "Profil konnte nicht gespeichert werden.");
+        throw new Error(
+          result.error ?? "Profil konnte nicht gespeichert werden.",
+        );
       }
 
       setPayload((current) => ({
@@ -274,7 +291,9 @@ export function SinglesHerePage({
       setProfileEditorOpen(false);
       await refresh();
     } catch (saveError) {
-      toast.error(saveError instanceof Error ? saveError.message : "Unbekannter Fehler");
+      toast.error(
+        saveError instanceof Error ? saveError.message : "Unbekannter Fehler",
+      );
     } finally {
       setBusy(false);
     }
@@ -300,10 +319,17 @@ export function SinglesHerePage({
       );
       const result = (await response.json()) as {
         error?: string;
-        event?: { name: string; location: string | null; startsAt: string; endsAt: string };
+        event?: {
+          name: string;
+          location: string | null;
+          startsAt: string;
+          endsAt: string;
+        };
       };
       if (!response.ok || !result.event) {
-        throw new Error(result.error ?? "Event konnte nicht gespeichert werden.");
+        throw new Error(
+          result.error ?? "Event konnte nicht gespeichert werden.",
+        );
       }
 
       const updatedEvent = result.event;
@@ -320,7 +346,9 @@ export function SinglesHerePage({
       toast.success("Event gespeichert.");
       setEventEditorOpen(false);
     } catch (saveError) {
-      toast.error(saveError instanceof Error ? saveError.message : "Unbekannter Fehler");
+      toast.error(
+        saveError instanceof Error ? saveError.message : "Unbekannter Fehler",
+      );
     } finally {
       setBusy(false);
     }
@@ -335,12 +363,15 @@ export function SinglesHerePage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status,
-          visibleUntilIso: status === "checked_in" ? visibleUntilIso : undefined,
+          visibleUntilIso:
+            status === "checked_in" ? visibleUntilIso : undefined,
         }),
       });
       const result = (await response.json()) as { error?: string };
       if (!response.ok) {
-        throw new Error(result.error ?? "Status konnte nicht gespeichert werden.");
+        throw new Error(
+          result.error ?? "Status konnte nicht gespeichert werden.",
+        );
       }
 
       toast.success(
@@ -365,7 +396,9 @@ export function SinglesHerePage({
       <section className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
         <div className="flex flex-wrap items-start justify-between gap-4 lg:col-span-2">
           <div>
-            <p className="text-sm font-semibold text-teal-700">Realite Singles hier</p>
+            <p className="text-sm font-semibold text-teal-700">
+              Realite Singles hier
+            </p>
             <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
               {payload.event.name}
             </h1>
@@ -409,189 +442,202 @@ export function SinglesHerePage({
         </div>
 
         {isCreator && eventEditorOpen ? (
-        <section className="rounded-xl border border-border bg-card p-5 lg:col-span-2">
-          <h2 className="text-xl font-semibold">Event bearbeiten</h2>
-          <form onSubmit={saveEvent} className="mt-4 grid gap-3">
-            <label className="grid gap-1 text-sm">
-              <span>Name</span>
-              <input
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                className="rounded-lg border border-input px-3 py-2"
-                required
-                minLength={2}
-                maxLength={80}
-              />
-            </label>
-            <label className="grid gap-1 text-sm">
-              <span>Ort</span>
-              <input
-                value={editLocation}
-                onChange={(e) => setEditLocation(e.target.value)}
-                className="rounded-lg border border-input px-3 py-2"
-                maxLength={160}
-              />
-            </label>
-            <div className="grid gap-3 sm:grid-cols-2">
+          <section className="rounded-xl border border-border bg-card p-5 lg:col-span-2">
+            <h2 className="text-xl font-semibold">Event bearbeiten</h2>
+            <form onSubmit={saveEvent} className="mt-4 grid gap-3">
               <label className="grid gap-1 text-sm">
-                <span>Start</span>
+                <span>Name</span>
                 <input
-                  type="datetime-local"
-                  value={editStartsAt}
-                  onChange={(e) => setEditStartsAt(e.target.value)}
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
                   className="rounded-lg border border-input px-3 py-2"
                   required
+                  minLength={2}
+                  maxLength={80}
                 />
               </label>
               <label className="grid gap-1 text-sm">
-                <span>Ende</span>
+                <span>Ort</span>
                 <input
-                  type="datetime-local"
-                  value={editEndsAt}
-                  onChange={(e) => setEditEndsAt(e.target.value)}
+                  value={editLocation}
+                  onChange={(e) => setEditLocation(e.target.value)}
                   className="rounded-lg border border-input px-3 py-2"
-                  required
+                  maxLength={160}
                 />
               </label>
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={busy}
-                className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-              >
-                Speichern
-              </button>
-              <button
-                type="button"
-                onClick={() => setEventEditorOpen(false)}
-                className="rounded-lg border border-input px-4 py-2 text-sm font-semibold hover:bg-muted"
-              >
-                Abbrechen
-              </button>
-            </div>
-          </form>
-        </section>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="grid gap-1 text-sm">
+                  <span>Start</span>
+                  <input
+                    type="datetime-local"
+                    value={editStartsAt}
+                    onChange={(e) => setEditStartsAt(e.target.value)}
+                    className="rounded-lg border border-input px-3 py-2"
+                    required
+                  />
+                </label>
+                <label className="grid gap-1 text-sm">
+                  <span>Ende</span>
+                  <input
+                    type="datetime-local"
+                    value={editEndsAt}
+                    onChange={(e) => setEditEndsAt(e.target.value)}
+                    className="rounded-lg border border-input px-3 py-2"
+                    required
+                  />
+                </label>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                >
+                  Speichern
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEventEditorOpen(false)}
+                  className="rounded-lg border border-input px-4 py-2 text-sm font-semibold hover:bg-muted"
+                >
+                  Abbrechen
+                </button>
+              </div>
+            </form>
+          </section>
         ) : null}
 
-        {(!payload.profileUnlocked || profileEditorOpen) ? (
-        <section className={`rounded-xl border border-border bg-card p-5 ${payload.profileUnlocked ? "lg:col-start-2 lg:row-start-2" : "lg:col-span-2"}`}>
-          <h2 className="text-xl font-semibold">
-            {payload.profileUnlocked ? "Profil bearbeiten" : "Profil anlegen"}
-          </h2>
-          {!payload.profileUnlocked ? (
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Lege zuerst dein Profil an. Erst danach kannst du dich vor Ort
-              sichtbar machen und passende andere Personen sehen.
-            </p>
-          ) : null}
-          <form onSubmit={saveProfile} className="mt-4 grid gap-3">
-            <label className="grid gap-1 text-sm">
-              <span>Name</span>
-              <input
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                className="rounded-lg border border-input px-3 py-2"
-                required
+        {!payload.profileUnlocked || profileEditorOpen ? (
+          <section
+            className={`rounded-xl border border-border bg-card p-5 ${payload.profileUnlocked ? "lg:col-start-2 lg:row-start-2" : "lg:col-span-2"}`}
+          >
+            <h2 className="text-xl font-semibold">
+              {payload.profileUnlocked ? "Profil bearbeiten" : "Profil anlegen"}
+            </h2>
+            {!payload.profileUnlocked ? (
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Lege zuerst dein Profil an. Erst danach kannst du dich vor Ort
+                sichtbar machen und passende andere Personen sehen.
+              </p>
+            ) : null}
+            <form onSubmit={saveProfile} className="mt-4 grid gap-3">
+              <label className="grid gap-1 text-sm">
+                <span>Name</span>
+                <input
+                  ref={nameInputRef}
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  className="rounded-lg border border-input px-3 py-2"
+                  required
+                />
+              </label>
+              <SinglesProfileImageField
+                previewUrl={profileImageDisplayUrl ?? profileImageStorageUrl}
+                disabled={busy}
+                busy={imageUploading}
+                onFileReady={(file) => void handleImageChange(file)}
+                onError={(msg) => {
+                  toast.error(msg);
+                }}
               />
-            </label>
-            <SinglesProfileImageField
-              previewUrl={profileImageDisplayUrl ?? profileImageStorageUrl}
-              disabled={busy}
-              busy={imageUploading}
-              onFileReady={(file) => void handleImageChange(file)}
-              onError={(msg) => {
-                toast.error(msg);
-              }}
-            />
-            <label className="grid gap-1 text-sm">
-              <span>Geburtstag</span>
-              <input
-                type="date"
-                value={birthDate}
-                onChange={(event) => setBirthDate(event.target.value)}
-                className="rounded-lg border border-input px-3 py-2"
-                required
-              />
-            </label>
-            <label className="grid gap-1 text-sm">
-              <span>Geschlecht</span>
-              <select
-                value={gender}
-                onChange={(event) => setGender(event.target.value as DatingGender)}
-                className="rounded-lg border border-input px-3 py-2"
-                required
-              >
-                <option value="">Bitte wählen</option>
-                {genderOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {genderLabels[option]}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="rounded-lg border border-border p-3">
-              <p className="text-sm font-medium">Ich suche</p>
-              <div className="mt-2 grid gap-2">
-                {genderOptions.map((option) => (
-                  <label key={option} className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={soughtGenders.includes(option)}
-                      onChange={() => toggleSoughtGender(option)}
-                    />
-                    <span>{genderLabels[option]}</span>
-                  </label>
-                ))}
+              <label className="grid gap-1 text-sm">
+                <span>Geburtstag</span>
+                <input
+                  type="date"
+                  value={birthDate}
+                  onChange={(event) => setBirthDate(event.target.value)}
+                  className="rounded-lg border border-input px-3 py-2"
+                  required
+                />
+              </label>
+              <label className="grid gap-1 text-sm">
+                <span>Geschlecht</span>
+                <select
+                  value={gender}
+                  onChange={(event) =>
+                    setGender(event.target.value as DatingGender)
+                  }
+                  className="rounded-lg border border-input px-3 py-2"
+                  required
+                >
+                  <option value="">Bitte wählen</option>
+                  {genderOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {genderLabels[option]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="rounded-lg border border-border p-3">
+                <p className="text-sm font-medium">Ich suche</p>
+                <div className="mt-2 grid gap-2">
+                  {genderOptions.map((option) => (
+                    <label
+                      key={option}
+                      className="flex items-center gap-2 text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={soughtGenders.includes(option)}
+                        onChange={() => toggleSoughtGender(option)}
+                      />
+                      <span>{genderLabels[option]}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <label className="grid gap-1 text-sm">
-                <span>Alter von</span>
-                <input
-                  type="number"
-                  min={18}
-                  max={99}
-                  value={soughtAgeMin}
-                  onChange={(event) => setSoughtAgeMin(event.target.value)}
-                  className="rounded-lg border border-input px-3 py-2"
-                  required
-                />
-              </label>
-              <label className="grid gap-1 text-sm">
-                <span>Alter bis</span>
-                <input
-                  type="number"
-                  min={18}
-                  max={99}
-                  value={soughtAgeMax}
-                  onChange={(event) => setSoughtAgeMax(event.target.value)}
-                  className="rounded-lg border border-input px-3 py-2"
-                  required
-                />
-              </label>
-            </div>
-            <button
-              type="submit"
-              disabled={busy || imageUploading}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
-            >
-              Profil speichern
-            </button>
-          </form>
-          <p className="mt-3 text-xs leading-5 text-muted-foreground">
-            Realite setzt dich nicht automatisch sichtbar. Sichtbar wirst du erst
-            durch den Button "Ich bin hier" und nur bis zum gewählten Zeitfenster.
-          </p>
-        </section>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="grid gap-1 text-sm">
+                  <span>Alter von</span>
+                  <input
+                    type="number"
+                    min={18}
+                    max={99}
+                    value={soughtAgeMin}
+                    onChange={(event) => setSoughtAgeMin(event.target.value)}
+                    className="rounded-lg border border-input px-3 py-2"
+                    required
+                  />
+                </label>
+                <label className="grid gap-1 text-sm">
+                  <span>Alter bis</span>
+                  <input
+                    type="number"
+                    min={18}
+                    max={99}
+                    value={soughtAgeMax}
+                    onChange={(event) => setSoughtAgeMax(event.target.value)}
+                    className="rounded-lg border border-input px-3 py-2"
+                    required
+                  />
+                </label>
+              </div>
+              <button
+                type="submit"
+                disabled={busy || imageUploading}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+              >
+                Profil speichern
+              </button>
+            </form>
+            <p className="mt-3 text-xs leading-5 text-muted-foreground">
+              Realite setzt dich nicht automatisch sichtbar. Sichtbar wirst du
+              erst durch den Button "Ich bin hier" und nur bis zum gewählten
+              Zeitfenster.
+            </p>
+          </section>
         ) : null}
 
         {payload.profileUnlocked ? (
-          <div className={`grid gap-6 ${profileEditorOpen ? "lg:col-start-1 lg:row-start-2" : "lg:col-span-2"}`}>
+          <div
+            className={`grid gap-6 ${profileEditorOpen ? "lg:col-start-1 lg:row-start-2" : "lg:col-span-2"}`}
+          >
             <section className="rounded-xl border border-border bg-card p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-xl font-semibold">Gerade passende Personen</h2>
+                  <h2 className="text-xl font-semibold">
+                    Gerade passende Personen
+                  </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Insgesamt vor Ort sichtbar: {payload.checkedInCount}
                   </p>
@@ -620,7 +666,9 @@ export function SinglesHerePage({
                         </div>
                       )}
                       <div>
-                        <p className="font-semibold">{person.name ?? "Vor Ort"}</p>
+                        <p className="font-semibold">
+                          {person.name ?? "Vor Ort"}
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           sichtbar bis {formatTime(person.visibleUntilIso)}
                         </p>
@@ -630,7 +678,8 @@ export function SinglesHerePage({
                 </div>
               ) : (
                 <p className="mt-4 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
-                  Noch keine gegenseitig passenden eingecheckten Personen sichtbar.
+                  Noch keine gegenseitig passenden eingecheckten Personen
+                  sichtbar.
                 </p>
               )}
 
@@ -652,9 +701,7 @@ export function SinglesHerePage({
                 <button
                   type="button"
                   disabled={
-                    busy ||
-                    !presenceWindow.canCheckIn ||
-                    !visibleUntilIso
+                    busy || !presenceWindow.canCheckIn || !visibleUntilIso
                   }
                   onClick={() => updatePresence("checked_in")}
                   className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
@@ -680,7 +727,9 @@ export function SinglesHerePage({
                   className="aspect-square w-full max-w-[220px] rounded-lg border border-border bg-white p-2"
                 />
                 <div>
-                  <h2 className="text-xl font-semibold">Weitere Personen einladen</h2>
+                  <h2 className="text-xl font-semibold">
+                    Weitere Personen einladen
+                  </h2>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
                     Wenn ihr als Gruppe vor Ort seid, können andere diesen Code
                     scannen und auf derselben Eventseite einchecken. Erst nach
@@ -700,7 +749,6 @@ export function SinglesHerePage({
             </section>
           </div>
         ) : null}
-
       </section>
     </main>
   );
