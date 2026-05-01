@@ -1,6 +1,9 @@
 import { describe, expect, test } from "bun:test";
 
-import { createAdminSessionCookieValue, verifyAdminSessionCookieValue } from "@/src/lib/admin-session-token";
+import {
+  createAdminSessionCookieValue,
+  verifyAdminSessionCookieValue,
+} from "@/src/lib/admin-session-token";
 
 describe("admin-session-token", () => {
   test("roundtrip and expiry", async () => {
@@ -16,8 +19,6 @@ describe("admin-session-token", () => {
     const secret = "a".repeat(24);
     const token = createAdminSessionCookieValue(secret, 3600);
     const [payload, sig] = token.split(".");
-    expect(payload).toBeDefined();
-    expect(sig).toBeDefined();
     const broken = `${payload.slice(0, -1)}x.${sig}`;
     expect(verifyAdminSessionCookieValue(secret, broken)).toBe(false);
   });

@@ -33,10 +33,34 @@ type MobileNavItem = {
 };
 
 const MOBILE_ITEMS: MobileNavItem[] = [
-  { href: "/now", label: "Jetzt", tabLabel: "Jetzt", intent: "Entdecken", Icon: House },
-  { href: "/suggestions", label: "Vorschläge", tabLabel: "Tipps", intent: "Reagieren", Icon: Sparkle },
-  { href: "/events", label: "Events", tabLabel: "Events", intent: "Verwalten", Icon: CalendarBlank },
-  { href: "/groups", label: "Gruppen", tabLabel: "Gruppen", intent: "Verwalten", Icon: Users },
+  {
+    href: "/now",
+    label: "Jetzt",
+    tabLabel: "Jetzt",
+    intent: "Entdecken",
+    Icon: House,
+  },
+  {
+    href: "/suggestions",
+    label: "Vorschläge",
+    tabLabel: "Tipps",
+    intent: "Reagieren",
+    Icon: Sparkle,
+  },
+  {
+    href: "/events",
+    label: "Events",
+    tabLabel: "Events",
+    intent: "Verwalten",
+    Icon: CalendarBlank,
+  },
+  {
+    href: "/groups",
+    label: "Gruppen",
+    tabLabel: "Gruppen",
+    intent: "Verwalten",
+    Icon: Users,
+  },
 ];
 
 function isGuestEmail(email: string) {
@@ -51,7 +75,7 @@ export function AppShell({ user, children }: AppShellProps) {
 
     posthog.identify(user.email, {
       email: user.email,
-      name: user.name
+      name: user.name,
     });
   }, [user.email, user.name]);
 
@@ -73,7 +97,10 @@ export function AppShell({ user, children }: AppShellProps) {
             <span>Realite</span>
           </a>
 
-          <nav className="hidden items-center gap-1 md:flex" aria-label="Hauptnavigation">
+          <nav
+            className="hidden items-center gap-1 md:flex"
+            aria-label="Hauptnavigation"
+          >
             {APP_SHELL_SECTIONS.map((item) => {
               const active = isAppShellSectionActive(pathname, item.href);
               return (
@@ -94,9 +121,14 @@ export function AppShell({ user, children }: AppShellProps) {
 
           <Link
             href="/settings"
-            className="inline-flex items-center rounded-full border border-border bg-card p-1 transition hover:border-primary/30 hover:bg-muted sm:gap-2 sm:pr-3"
+            className="inline-flex items-center rounded-full border border-border bg-card transition hover:border-primary/30 hover:bg-muted sm:gap-2 sm:pr-3"
           >
-            <UserAvatar name={user.name} email={user.email} image={user.image ?? null} size="sm" />
+            <UserAvatar
+              name={user.name}
+              email={user.email}
+              image={user.image ?? null}
+              size="sm"
+            />
             <span className="hidden max-w-44 truncate text-sm font-medium text-foreground sm:block">
               Mein Profil
             </span>
@@ -104,8 +136,9 @@ export function AppShell({ user, children }: AppShellProps) {
         </div>
       </header>
 
-
-      <div className="pb-[calc(env(safe-area-inset-bottom)+4rem)] md:pb-0">{children}</div>
+      <div className="pb-[calc(env(safe-area-inset-bottom)+4rem)] md:pb-0">
+        {children}
+      </div>
 
       {/* Mobile: Vollbreite Tab-Leiste (iOS-nah: große Ziele, Blur, Haarlinie) */}
       <nav
@@ -125,7 +158,9 @@ export function AppShell({ user, children }: AppShellProps) {
                   aria-label={item.label}
                   aria-current={active ? "page" : undefined}
                   className={`flex min-h-[50px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-0.5 pb-1.5 pt-1.5 transition [-webkit-tap-highlight-color:transparent] active:opacity-70 ${
-                    active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                    active
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <Icon
@@ -136,7 +171,9 @@ export function AppShell({ user, children }: AppShellProps) {
                   />
                   <span
                     className={`max-w-full px-0.5 text-center text-[13px] leading-[1.15] tracking-[-0.01em] ${
-                      active ? "font-semibold text-primary" : "font-normal text-muted-foreground"
+                      active
+                        ? "font-semibold text-primary"
+                        : "font-normal text-muted-foreground"
                     }`}
                   >
                     {item.tabLabel}
