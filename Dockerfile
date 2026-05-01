@@ -1,7 +1,8 @@
 FROM oven/bun:1.2.2-alpine AS deps
 WORKDIR /app
-COPY package.json ./
-RUN bun install
+# bun.lock keeps better-auth ecosystem versions aligned (e.g. oauth-provider ↔ core).
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
 FROM oven/bun:1.2.2-alpine AS builder
 WORKDIR /app
