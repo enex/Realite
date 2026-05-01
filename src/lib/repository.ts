@@ -93,6 +93,7 @@ export type EventPresenceSummary = {
     email: string;
     updatedAt: Date;
     visibleUntil: Date;
+    seatNote: string | null;
   }>;
 };
 
@@ -111,6 +112,7 @@ export type SinglesHerePresencePerson = {
   name: string | null;
   image: string | null;
   visibleUntil: Date;
+  seatNote: string | null;
 };
 
 export type SinglesHerePresence = {
@@ -129,6 +131,7 @@ type EventPresenceRow = {
   status: EventPresenceStatus;
   updatedAt: Date;
   visibleUntil: Date;
+  seatNote: string | null;
   name: string | null;
   email: string;
 };
@@ -3027,6 +3030,7 @@ export async function getEventPresenceSummary(input: {
       status: eventPresences.status,
       updatedAt: eventPresences.updatedAt,
       visibleUntil: eventPresences.visibleUntil,
+      seatNote: eventPresences.seatNote,
       name: users.name,
       email: users.email,
     })
@@ -3087,6 +3091,7 @@ export function buildEventPresenceSummary(input: {
         email: row.email,
         updatedAt: row.updatedAt,
         visibleUntil: row.visibleUntil,
+        seatNote: row.seatNote,
       })),
   };
 }
@@ -3096,6 +3101,7 @@ export async function setEventPresenceStatus(input: {
   eventId: string;
   status: EventPresenceStatus;
   visibleUntil?: Date;
+  seatNote?: string | null;
   now?: Date;
 }) {
   const visibleEvent = await getVisibleEventForUserById({
@@ -3159,6 +3165,7 @@ export async function setEventPresenceStatus(input: {
       userId: input.userId,
       status: input.status,
       visibleUntil: nextVisibleUntil ?? now,
+      seatNote: input.seatNote ?? null,
       updatedAt: now,
     })
     .onConflictDoUpdate({
@@ -3166,6 +3173,7 @@ export async function setEventPresenceStatus(input: {
       set: {
         status: input.status,
         visibleUntil: nextVisibleUntil ?? now,
+        seatNote: input.seatNote ?? null,
         updatedAt: now,
       },
     });
@@ -3176,6 +3184,7 @@ export async function setEventPresenceStatus(input: {
       status: eventPresences.status,
       updatedAt: eventPresences.updatedAt,
       visibleUntil: eventPresences.visibleUntil,
+      seatNote: eventPresences.seatNote,
       name: users.name,
       email: users.email,
     })
@@ -3260,6 +3269,7 @@ export async function getSinglesHerePresence(input: {
             name: person?.name ?? entry.name,
             image: await resolveProfileImageReadUrl(rawImage),
             visibleUntil: entry.visibleUntil,
+            seatNote: entry.seatNote,
           };
         }),
     ),

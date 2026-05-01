@@ -112,6 +112,7 @@ export function SinglesHerePage({
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
+  const [seatNote, setSeatNote] = useState("");
   const [profileEditorOpen, setProfileEditorOpen] = useState(
     !initialPayload.profileUnlocked,
   );
@@ -291,6 +292,7 @@ export function SinglesHerePage({
               body: JSON.stringify({
                 status: "checked_in",
                 visibleUntilIso: endsAt.toISOString(),
+                seatNote: seatNote.trim() || null,
               }),
             },
           );
@@ -381,6 +383,7 @@ export function SinglesHerePage({
         body: JSON.stringify({
           status,
           visibleUntilIso: status === "checked_in" ? visibleUntilIso : undefined,
+          seatNote: status === "checked_in" ? (seatNote.trim() || null) : null,
         }),
       });
       const result = (await response.json()) as { error?: string };
@@ -671,6 +674,11 @@ export function SinglesHerePage({
                         <p className="text-xs text-muted-foreground">
                           sichtbar bis {formatTime(person.visibleUntilIso)}
                         </p>
+                        {person.seatNote ? (
+                          <p className="text-xs text-muted-foreground">
+                            📍 {person.seatNote}
+                          </p>
+                        ) : null}
                       </div>
                     </article>
                   ))}
@@ -682,6 +690,15 @@ export function SinglesHerePage({
               )}
 
               <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
+                <input
+                  type="text"
+                  value={seatNote}
+                  onChange={(event) => setSeatNote(event.target.value)}
+                  placeholder="Sitzplatz / Standort (optional, z. B. Tisch 3)"
+                  maxLength={80}
+                  disabled={!presenceWindow.canCheckIn || busy}
+                  className="rounded-lg border border-input bg-card px-3 py-2 text-sm placeholder:text-muted-foreground disabled:opacity-50 sm:col-span-3"
+                />
                 <select
                   value={presenceWindowChoice}
                   onChange={(event) =>

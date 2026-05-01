@@ -22,6 +22,7 @@ export type SinglesHereClientPayload = {
     name: string | null;
     image: string | null;
     visibleUntilIso: string;
+    seatNote: string | null;
   }>;
   viewerProfileImageStorageUrl: string | null;
   viewerProfileImageDisplayUrl: string | null;
@@ -56,6 +57,7 @@ export async function buildSinglesHereClientPayload(
       name: person.name,
       image: person.image,
       visibleUntilIso: person.visibleUntil.toISOString(),
+      seatNote: person.seatNote,
     })),
     viewerProfileImageStorageUrl,
     viewerProfileImageDisplayUrl,
