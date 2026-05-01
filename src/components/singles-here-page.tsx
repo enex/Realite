@@ -13,6 +13,7 @@ import {
 import type { DatingGender } from "@/src/lib/dating";
 import { SinglesProfileImageField } from "@/src/components/singles-profile-image-field";
 import type { SinglesHereClientPayload } from "@/src/lib/singles-here-payload";
+import { toast } from "@/src/components/toaster";
 
 type SinglesHerePageProps = {
   initialPayload: SinglesHereClientPayload;
@@ -109,9 +110,8 @@ export function SinglesHerePage({
     initialPayload.profile.soughtAgeMax?.toString() ?? "45",
   );
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
+  const [seatNote, setSeatNote] = useState("");
   const [profileEditorOpen, setProfileEditorOpen] = useState(
     !initialPayload.profileUnlocked,
   );
@@ -205,8 +205,6 @@ export function SinglesHerePage({
     }
 
     setImageUploading(true);
-    setError(null);
-    setMessage(null);
 
     try {
       const formData = new FormData();
@@ -228,9 +226,9 @@ export function SinglesHerePage({
       setProfileImageDisplayUrl(
         payload.viewerImageUrl ?? payload.imageUrl ?? null,
       );
-      setMessage("Bild hochgeladen. Speichere dein Profil, damit andere es sehen.");
+      toast("Bild hochgeladen. Speichere dein Profil, damit andere es sehen.");
     } catch (uploadError) {
-      setError(
+      toast.error(
         uploadError instanceof Error ? uploadError.message : "Unbekannter Fehler",
       );
     } finally {
@@ -241,8 +239,8 @@ export function SinglesHerePage({
   async function saveProfile(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setError(null);
-    setMessage(null);
+
+    const isNewProfile = !payload.profileUnlocked;
 
     try {
       const response = await fetch(
@@ -277,11 +275,44 @@ export function SinglesHerePage({
         profileUnlocked: Boolean(result.profileUnlocked),
         age: result.age ?? null,
       }));
-      setMessage("Dein Profil ist gespeichert.");
       setProfileEditorOpen(false);
+
+      if (isNewProfile && presenceWindow.canCheckIn) {
+        try {
+          const presenceResponse = await fetch(
+            `/api/events/${payload.event.id}/presence`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                status: "checked_in",
+                visibleUntilIso: endsAt.toISOString(),
+                seatNote: seatNote.trim() || null,
+              }),
+            },
+          );
+          const presenceResult = (await presenceResponse.json()) as {
+            error?: string;
+          };
+          if (!presenceResponse.ok) {
+            throw new Error(
+              presenceResult.error ??
+                "Status konnte nicht gespeichert werden.",
+            );
+          }
+          toast("Dein Profil ist gespeichert. Du bist jetzt bis Eventende vor Ort sichtbar.");
+        } catch (autoCheckInError) {
+          console.error("Auto-check-in fehlgeschlagen:", autoCheckInError);
+          toast("Dein Profil ist gespeichert.");
+          toast.error("Automatischer Check-in fehlgeschlagen. Bitte nutze den Button „Ich bin hier".");
+        }
+      } else {
+        toast("Dein Profil ist gespeichert.");
+      }
+
       await refresh();
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Unbekannter Fehler");
+      toast.error(saveError instanceof Error ? saveError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -290,8 +321,6 @@ export function SinglesHerePage({
   async function saveEvent(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setError(null);
-    setMessage(null);
 
     try {
       const response = await fetch(
@@ -326,10 +355,10 @@ export function SinglesHerePage({
           endsAt: updatedEvent.endsAt,
         },
       }));
-      setMessage("Event gespeichert.");
+      toast("Event gespeichert.");
       setEventEditorOpen(false);
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Unbekannter Fehler");
+      toast.error(saveError instanceof Error ? saveError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -337,8 +366,6 @@ export function SinglesHerePage({
 
   async function updatePresence(status: EventPresenceStatus) {
     setBusy(true);
-    setError(null);
-    setMessage(null);
 
     try {
       const response = await fetch(`/api/events/${payload.event.id}/presence`, {
@@ -347,6 +374,7 @@ export function SinglesHerePage({
         body: JSON.stringify({
           status,
           visibleUntilIso: status === "checked_in" ? visibleUntilIso : undefined,
+          seatNote: status === "checked_in" ? (seatNote.trim() || null) : null,
         }),
       });
       const result = (await response.json()) as { error?: string };
@@ -354,14 +382,14 @@ export function SinglesHerePage({
         throw new Error(result.error ?? "Status konnte nicht gespeichert werden.");
       }
 
-      setMessage(
+      toast(
         status === "checked_in"
           ? "Du bist jetzt für dieses Event sichtbar."
           : "Du bist nicht mehr vor Ort sichtbar.",
       );
       await refresh();
     } catch (presenceError) {
-      setError(
+      toast.error(
         presenceError instanceof Error
           ? presenceError.message
           : "Unbekannter Fehler",
@@ -511,10 +539,7 @@ export function SinglesHerePage({
               disabled={busy}
               busy={imageUploading}
               onFileReady={(file) => void handleImageChange(file)}
-              onError={(msg) => {
-                setError(msg);
-                setMessage(null);
-              }}
+              onError={(msg) => toast.error(msg)}
             />
             <label className="grid gap-1 text-sm">
               <span>Geburtstag</span>
@@ -592,8 +617,9 @@ export function SinglesHerePage({
             </button>
           </form>
           <p className="mt-3 text-xs leading-5 text-muted-foreground">
-            Realite setzt dich nicht automatisch sichtbar. Sichtbar wirst du erst
-            durch den Button "Ich bin hier" und nur bis zum gewählten Zeitfenster.
+            {!payload.profileUnlocked && presenceWindow.canCheckIn
+              ? "Wenn du dein Profil speicherst, wirst du automatisch bis Eventende vor Ort sichtbar. Du kannst das jederzeit über den Button „Nicht mehr da" rückgängig machen."
+              : "Sichtbar bist du nur, solange du aktiv eingecheckt bist. Du kannst das jederzeit über den Button „Nicht mehr da" rückgängig machen."}
           </p>
         </section>
         ) : null}
@@ -636,6 +662,11 @@ export function SinglesHerePage({
                         <p className="text-xs text-muted-foreground">
                           sichtbar bis {formatTime(person.visibleUntilIso)}
                         </p>
+                        {person.seatNote ? (
+                          <p className="text-xs text-muted-foreground">
+                            📍 {person.seatNote}
+                          </p>
+                        ) : null}
                       </div>
                     </article>
                   ))}
@@ -647,6 +678,15 @@ export function SinglesHerePage({
               )}
 
               <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
+                <input
+                  type="text"
+                  value={seatNote}
+                  onChange={(event) => setSeatNote(event.target.value)}
+                  placeholder="Sitzplatz / Standort (optional, z. B. Tisch 3)"
+                  maxLength={80}
+                  disabled={!presenceWindow.canCheckIn || busy}
+                  className="rounded-lg border border-input bg-card px-3 py-2 text-sm placeholder:text-muted-foreground disabled:opacity-50 sm:col-span-3"
+                />
                 <select
                   value={presenceWindowChoice}
                   onChange={(event) =>
@@ -712,18 +752,6 @@ export function SinglesHerePage({
             </section>
           </div>
         ) : null}
-
-        {(error || message) && (
-          <section
-            className={`rounded-lg border px-3 py-2 text-sm lg:col-span-2 ${
-              error
-                ? "border-red-200 bg-red-50 text-red-800"
-                : "border-teal-200 bg-teal-50 text-teal-800"
-            }`}
-          >
-            {error ?? message}
-          </section>
-        )}
       </section>
     </main>
   );

@@ -12,9 +12,9 @@ Unter `/singles/<slug>/qr` gibt es zusätzlich eine Druckvorlage. Dort kannst du
 
 1. Event-QR-Code scannen.
 2. Anmelden.
-3. Zuerst Name, Bild und Single-Infos ausfüllen.
-4. Bewusst **Ich bin hier** wählen.
-5. Die Seite zeigt passende andere Personen, die ebenfalls eingecheckt sind.
+3. Name, Bild und Single-Infos ausfüllen. Optional: Sitzplatz oder Standort angeben.
+4. Profil speichern. Wenn das Event gerade läuft, checkt Realite dich beim ersten Speichern automatisch bis Eventende ein.
+5. Die Seite zeigt passende andere Personen, die ebenfalls eingecheckt sind – mit ihrem Sitzplatz, falls angegeben.
 
 Passend bedeutet hier: Beide Dating-Profile akzeptieren gegenseitig Geschlecht und Altersbereich.
 
@@ -30,9 +30,10 @@ Die Druckvorlage erreichst du aus diesem QR-Bereich über **Druckvorlage öffnen
 
 - Der Scan macht dich nicht automatisch sichtbar.
 - Dein Standort wird nicht live geteilt.
-- Andere sehen dich erst, wenn du **Ich bin hier** wählst.
-- Deine Sichtbarkeit endet mit dem gewählten Zeitfenster oder spätestens mit dem Eventende.
-- Wenn du **Nicht mehr da** wählst, verschwindest du aus der Vor-Ort-Liste.
+- Andere sehen dich erst, wenn du dein Profil gespeichert hast.
+- Deine Sichtbarkeit endet spätestens mit dem Eventende oder früher, wenn du **Nicht mehr da** wählst.
+- Wenn du **Nicht mehr da** wählst, verschwindest du sofort aus der Vor-Ort-Liste.
+- Wenn du dein Profil nach dem ersten Einchecken erneut bearbeitest, bleibt dein Check-in-Status unverändert.
 
 ## Wer Events erstellen kann
 

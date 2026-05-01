@@ -18,12 +18,14 @@ import {
 } from "@/src/lib/event-presence";
 import { type EventVisibility } from "@/src/lib/event-visibility";
 import { getPersonDisplayLabel } from "@/src/lib/person-display";
+import { toast } from "@/src/components/toaster";
 
 type PresenceUser = {
   userId: string;
   name: string | null;
   email: string;
   visibleUntilIso: string;
+  seatNote: string | null;
 };
 
 type EventPresencePanelProps = {
@@ -59,8 +61,7 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
   );
   const [checkedInUsers, setCheckedInUsers] = useState(props.initialCheckedInUsers);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const [seatNote, setSeatNote] = useState("");
   const startsAt = new Date(props.startsAtIso);
   const endsAt = new Date(props.endsAtIso);
   const presenceWindow = getEventPresenceWindow({ startsAt, endsAt });
@@ -108,8 +109,6 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
 
   async function updateStatus(nextStatus: EventPresenceStatus) {
     setBusy(true);
-    setError(null);
-    setSavedMessage(null);
 
     try {
       const response = await fetch(`/api/events/${props.eventId}/presence`, {
@@ -121,6 +120,7 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
           status: nextStatus,
           visibleUntilIso:
             nextStatus === "checked_in" ? selectedVisibleUntilIso : undefined,
+          seatNote: nextStatus === "checked_in" ? (seatNote.trim() || null) : null,
         }),
       });
       const payload = (await response.json()) as {
@@ -144,11 +144,9 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
       if (payload.summary.currentUserVisibleUntilIso) {
         setSelectedVisibleUntilIso(payload.summary.currentUserVisibleUntilIso);
       }
-      setSavedMessage(
-        getEventPresenceToggleCopy(nextStatus === "checked_in").successMessage,
-      );
+      toast(getEventPresenceToggleCopy(nextStatus === "checked_in").successMessage);
     } catch (requestError) {
-      setError(
+      toast.error(
         requestError instanceof Error ? requestError.message : "Unbekannter Fehler",
       );
     } finally {
@@ -190,6 +188,20 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
               </option>
             ))}
           </select>
+        </label>
+      ) : null}
+
+      {presenceWindow.canCheckIn ? (
+        <label className="mt-3 block text-sm text-foreground">
+          <span className="font-semibold text-foreground">Sitzplatz / Standort</span>
+          <input
+            type="text"
+            value={seatNote}
+            onChange={(event) => setSeatNote(event.target.value)}
+            placeholder="z. B. Tisch 3, Nähe Bar (optional)"
+            maxLength={80}
+            className="mt-2 block w-full rounded-lg border border-input bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground shadow-sm dark:border-white/15 dark:bg-card dark:text-foreground"
+          />
         </label>
       ) : null}
 
@@ -235,6 +247,9 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
                   })}
                 </span>{" "}
                 · sichtbar bis {formatEventPresenceTime(new Date(user.visibleUntilIso))}
+                {user.seatNote ? (
+                  <span className="text-muted-foreground"> · {user.seatNote}</span>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -242,17 +257,6 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
           <p className="mt-2 text-sm leading-relaxed text-foreground">{audienceCopy.description}</p>
         ) : null}
       </div>
-
-      {savedMessage ? (
-        <p className="mt-4 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-800 dark:border-teal-500/35 dark:bg-teal-950/50">
-          {savedMessage}
-        </p>
-      ) : null}
-      {error ? (
-        <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-500/40 dark:bg-red-950/45">
-          {error}
-        </p>
-      ) : null}
     </section>
   );
 }
