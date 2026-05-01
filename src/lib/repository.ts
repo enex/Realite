@@ -85,15 +85,32 @@ export type SuggestionStatus =
   | "declined";
 export type SuggestionDeclineReason = DeclineReason;
 
+export const PRESENCE_LOCATION_NOTE_MAX_LENGTH = 200;
+
+export function normalizePresenceLocationNote(
+  value: string | null | undefined,
+): string | null {
+  if (value == null) {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+  return trimmed.slice(0, PRESENCE_LOCATION_NOTE_MAX_LENGTH);
+}
+
 export type EventPresenceSummary = {
   currentUserStatus: EventPresenceStatus | null;
   currentUserVisibleUntil: Date | null;
+  currentUserPresenceLocationNote: string | null;
   checkedInUsers: Array<{
     userId: string;
     name: string | null;
     email: string;
     updatedAt: Date;
     visibleUntil: Date;
+    presenceLocationNote: string | null;
   }>;
 };
 
@@ -112,6 +129,7 @@ export type SinglesHerePresencePerson = {
   name: string | null;
   image: string | null;
   visibleUntil: Date;
+  presenceLocationNote: string | null;
 };
 
 export type SinglesHerePresence = {
@@ -121,6 +139,7 @@ export type SinglesHerePresence = {
   age: number | null;
   currentUserStatus: EventPresenceStatus | null;
   currentUserVisibleUntil: Date | null;
+  currentUserPresenceLocationNote: string | null;
   matchingPeople: SinglesHerePresencePerson[];
   checkedInCount: number;
 };
@@ -132,6 +151,7 @@ type EventPresenceRow = {
   visibleUntil: Date;
   name: string | null;
   email: string;
+  presenceLocationNote: string | null;
 };
 
 export class RepositoryValidationError extends Error {
@@ -3030,6 +3050,7 @@ export async function getEventPresenceSummary(input: {
       visibleUntil: eventPresences.visibleUntil,
       name: users.name,
       email: users.email,
+      presenceLocationNote: eventPresences.presenceLocationNote,
     })
     .from(eventPresences)
     .innerJoin(users, eq(eventPresences.userId, users.id))
@@ -3063,19 +3084,19 @@ export function buildEventPresenceSummary(input: {
     return {
       currentUserStatus: null,
       currentUserVisibleUntil: null,
+      currentUserPresenceLocationNote: null,
       checkedInUsers: [],
     };
   }
 
   const currentUserRow =
     input.rows.find((row) => row.userId === input.userId) ?? null;
-  const currentUserIsActive =
-    currentUserRow?.status === "checked_in" &&
-    currentUserRow.visibleUntil.getTime() > referenceNow.getTime();
 
   return {
     currentUserStatus: currentUserRow?.status ?? null,
     currentUserVisibleUntil: currentUserRow?.visibleUntil ?? null,
+    currentUserPresenceLocationNote:
+      currentUserRow?.presenceLocationNote ?? null,
     checkedInUsers: input.rows
       .filter(
         (row) =>
@@ -3088,6 +3109,7 @@ export function buildEventPresenceSummary(input: {
         email: row.email,
         updatedAt: row.updatedAt,
         visibleUntil: row.visibleUntil,
+        presenceLocationNote: row.presenceLocationNote ?? null,
       })),
   };
 }
@@ -3097,6 +3119,8 @@ export async function setEventPresenceStatus(input: {
   eventId: string;
   status: EventPresenceStatus;
   visibleUntil?: Date;
+  /** Nur gesetzt, wenn der Client den Hinweis mitschicken will; `undefined` lässt den gespeicherten Wert unverändert. */
+  locationNote?: string | null;
   now?: Date;
 }) {
   const visibleEvent = await getVisibleEventForUserById({
@@ -3151,6 +3175,29 @@ export async function setEventPresenceStatus(input: {
     }
   }
 
+  const normalizedLocationNote =
+    input.locationNote !== undefined
+      ? normalizePresenceLocationNote(input.locationNote)
+      : undefined;
+
+  const insertLocationNote =
+    input.status === "left"
+      ? null
+      : normalizedLocationNote !== undefined
+        ? normalizedLocationNote
+        : null;
+
+  const conflictSet = {
+    status: input.status,
+    visibleUntil: nextVisibleUntil ?? now,
+    updatedAt: now,
+    ...(input.status === "left"
+      ? { presenceLocationNote: null as string | null }
+      : normalizedLocationNote !== undefined
+        ? { presenceLocationNote: normalizedLocationNote }
+        : {}),
+  };
+
   const db = getDb();
 
   await db
@@ -3161,14 +3208,11 @@ export async function setEventPresenceStatus(input: {
       status: input.status,
       visibleUntil: nextVisibleUntil ?? now,
       updatedAt: now,
+      presenceLocationNote: insertLocationNote,
     })
     .onConflictDoUpdate({
       target: [eventPresences.eventId, eventPresences.userId],
-      set: {
-        status: input.status,
-        visibleUntil: nextVisibleUntil ?? now,
-        updatedAt: now,
-      },
+      set: conflictSet,
     });
 
   const rows = await db
@@ -3179,6 +3223,7 @@ export async function setEventPresenceStatus(input: {
       visibleUntil: eventPresences.visibleUntil,
       name: users.name,
       email: users.email,
+      presenceLocationNote: eventPresences.presenceLocationNote,
     })
     .from(eventPresences)
     .innerJoin(users, eq(eventPresences.userId, users.id))
@@ -3192,6 +3237,130 @@ export async function setEventPresenceStatus(input: {
     endsAt: visibleEvent.endsAt,
     now,
   });
+}
+
+export async function updateEventPresenceLocationNote(input: {
+  userId: string;
+  eventId: string;
+  locationNote: string | null;
+  now?: Date;
+}): Promise<EventPresenceSummary> {
+  const visibleEvent = await getVisibleEventForUserById({
+    userId: input.userId,
+    eventId: input.eventId,
+  });
+
+  if (!visibleEvent) {
+    throw new RepositoryValidationError("Event nicht gefunden oder nicht sichtbar.");
+  }
+
+  if (!visibleEvent.allowOnSiteVisibility) {
+    throw new RepositoryValidationError(
+      "Für dieses Event ist Vor-Ort-Sichtbarkeit nicht freigeschaltet.",
+    );
+  }
+
+  const now = input.now ?? new Date();
+  const db = getDb();
+  const [row] = await db
+    .select({
+      status: eventPresences.status,
+      visibleUntil: eventPresences.visibleUntil,
+    })
+    .from(eventPresences)
+    .where(
+      and(
+        eq(eventPresences.eventId, input.eventId),
+        eq(eventPresences.userId, input.userId),
+      ),
+    )
+    .limit(1);
+
+  if (!row) {
+    throw new RepositoryValidationError(
+      "Du bist für dieses Event nicht als vor Ort sichtbar eingetragen.",
+    );
+  }
+  if (row.status !== "checked_in") {
+    throw new RepositoryValidationError(
+      "Treffpunkt-Hinweis ist nur während aktiver Vor-Ort-Sichtbarkeit möglich.",
+    );
+  }
+  if (row.visibleUntil.getTime() <= now.getTime()) {
+    throw new RepositoryValidationError(
+      "Dein Sichtbarkeitsfenster ist abgelaufen. Bitte check erneut ein.",
+    );
+  }
+
+  const note = normalizePresenceLocationNote(input.locationNote);
+
+  await db
+    .update(eventPresences)
+    .set({
+      presenceLocationNote: note,
+      updatedAt: now,
+    })
+    .where(
+      and(
+        eq(eventPresences.eventId, input.eventId),
+        eq(eventPresences.userId, input.userId),
+      ),
+    );
+
+  return getEventPresenceSummary({
+    userId: input.userId,
+    eventId: input.eventId,
+    now,
+  });
+}
+
+/**
+ * Aktives Singles-hier-Check-in: Nutzer ist eingecheckt, Sichtbarkeit noch nicht abgelaufen,
+ * Vor-Ort-Fenster des Events ist laut Kalender noch aktiv.
+ */
+export async function getActiveSinglesHereCheckedInSlugForUser(input: {
+  userId: string;
+  now?: Date;
+}): Promise<string | null> {
+  const now = input.now ?? new Date();
+  const db = getDb();
+  const rows = await db
+    .select({
+      slug: events.sourceEventId,
+      startsAt: events.startsAt,
+      endsAt: events.endsAt,
+    })
+    .from(eventPresences)
+    .innerJoin(events, eq(eventPresences.eventId, events.id))
+    .where(
+      and(
+        eq(eventPresences.userId, input.userId),
+        eq(eventPresences.status, "checked_in" as const),
+        gt(eventPresences.visibleUntil, now),
+        eq(events.sourceProvider, SINGLES_HERE_SOURCE_PROVIDER),
+      ),
+    )
+    .orderBy(desc(eventPresences.updatedAt))
+    .limit(1);
+
+  const row = rows[0];
+  const rawSlug = row?.slug?.trim() ?? "";
+  if (!rawSlug) {
+    return null;
+  }
+  const normalized = normalizeSinglesHereSlug(rawSlug);
+  if (!isValidSinglesHereSlug(normalized)) {
+    return null;
+  }
+  const window = getEventPresenceWindow({
+    startsAt: row.startsAt,
+    endsAt: row.endsAt,
+    now,
+  });
+  if (!window.showsPresence) {
+    return null;
+  }
+  return normalized;
 }
 
 export async function getSinglesHerePresence(input: {
@@ -3249,6 +3418,7 @@ export async function getSinglesHerePresence(input: {
     age: profileStatus.age,
     currentUserStatus: summary.currentUserStatus,
     currentUserVisibleUntil: summary.currentUserVisibleUntil,
+    currentUserPresenceLocationNote: summary.currentUserPresenceLocationNote,
     checkedInCount: summary.checkedInUsers.length,
     matchingPeople: await Promise.all(
       summary.checkedInUsers
@@ -3261,6 +3431,7 @@ export async function getSinglesHerePresence(input: {
             name: person?.name ?? entry.name,
             image: await resolveProfileImageReadUrl(rawImage),
             visibleUntil: entry.visibleUntil,
+            presenceLocationNote: entry.presenceLocationNote ?? null,
           };
         }),
     ),

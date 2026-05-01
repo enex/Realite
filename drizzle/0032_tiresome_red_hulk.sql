@@ -1,0 +1,1 @@
+ALTER TABLE "event_presences" ADD COLUMN "presence_location_note" text;

@@ -25,6 +25,7 @@ type PresenceUser = {
   name: string | null;
   email: string;
   visibleUntilIso: string;
+  presenceLocationNote?: string | null;
 };
 
 type EventPresencePanelProps = {
@@ -232,6 +233,12 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
                   })}
                 </span>{" "}
                 · sichtbar bis {formatEventPresenceTime(new Date(user.visibleUntilIso))}
+                {user.presenceLocationNote ? (
+                  <span className="text-muted-foreground">
+                    {" "}
+                    · Treffpunkt: {user.presenceLocationNote}
+                  </span>
+                ) : null}
               </li>
             ))}
           </ul>

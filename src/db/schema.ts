@@ -398,6 +398,8 @@ export const eventPresences = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
+    /** Freitext: wo man sich am Event trifft (nur für eingecheckte Sichtbarkeit, kein GPS). */
+    presenceLocationNote: text("presence_location_note"),
   },
   (table) => [
     uniqueIndex().on(table.eventId, table.userId),

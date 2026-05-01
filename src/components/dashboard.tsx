@@ -41,6 +41,7 @@ import {
   type EventVisibility,
 } from "@/src/lib/event-visibility";
 import { titleContainsDateTag } from "@/src/lib/dating";
+import { SINGLES_HERE_SOURCE_PROVIDER } from "@/src/lib/singles-here";
 import { DASHBOARD_QUERY_KEY, fetchDashboard as fetchDashboardApi } from "@/src/lib/dashboard-query";
 import { getEventsViewMessaging } from "@/src/lib/calendar-messaging";
 import { useQueryErrorToast } from "@/src/lib/use-query-error-toast";
@@ -67,6 +68,7 @@ type EventItem = {
   linkPreviewImageUrl: string | null;
   createdBy: string;
   sourceProvider: string | null;
+  sourceEventId: string | null;
 };
 
 type Suggestion = {
@@ -188,6 +190,16 @@ async function fetchDashboard(): Promise<DashboardPayload> {
 
 function titleContainsFriendsPlusTag(title: string) {
   return /(^|\s)#freunde\+(\b|$)/iu.test(title);
+}
+
+function eventDetailHref(event: EventItem): string {
+  if (
+    event.sourceProvider === SINGLES_HERE_SOURCE_PROVIDER &&
+    event.sourceEventId
+  ) {
+    return `/singles/${encodeURIComponent(event.sourceEventId)}`;
+  }
+  return `/e/${shortenUUID(event.id)}`;
 }
 
 const emptyPayload: DashboardPayload = {
@@ -1048,7 +1060,7 @@ function NowFeed({
         return (
           <a
             key={event.id}
-            href={`/e/${shortenUUID(event.id)}`}
+            href={eventDetailHref(event)}
             className="flex gap-3 rounded-xl border border-border bg-card p-3 transition hover:border-teal-200 hover:shadow-sm dark:hover:border-primary/45"
             style={{ borderLeftWidth: "4px", borderLeftColor: borderColor }}
           >
@@ -1157,7 +1169,7 @@ function EventsSections({
                 return (
                   <a
                     key={event.id}
-                    href={`/e/${shortenUUID(event.id)}`}
+                    href={eventDetailHref(event)}
                     className="flex gap-3 rounded-xl border border-border bg-card p-3 transition hover:border-teal-200 hover:shadow-sm dark:hover:border-primary/45"
                     style={{ borderLeftWidth: "4px", borderLeftColor: borderColor }}
                   >

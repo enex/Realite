@@ -35,6 +35,7 @@ type Participant = {
   image: string | null;
   presenceStatus: string;
   visibleUntilIso: string;
+  presenceLocationNote: string | null;
   unlockedProfile: boolean;
   gender: string | null;
   age: number | null;
@@ -966,6 +967,11 @@ function EventDetailView(props: {
               {p.gender ? ` · ${p.gender}` : ""}
               {p.age != null ? ` · ${p.age} J.` : ""}
             </p>
+            {p.presenceLocationNote ? (
+              <p className="text-foreground mt-1 text-[11px] leading-snug">
+                Treffpunkt: {p.presenceLocationNote}
+              </p>
+            ) : null}
             <div className="mt-3 flex flex-wrap gap-2">
               <button
                 type="button"

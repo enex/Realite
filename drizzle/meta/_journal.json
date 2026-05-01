@@ -225,6 +225,13 @@
       "when": 1777626228029,
       "tag": "0031_superb_jean_grey",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1777654203345,
+      "tag": "0032_tiresome_red_hulk",
+      "breakpoints": true
     }
   ]
 }

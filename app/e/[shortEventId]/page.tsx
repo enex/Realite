@@ -228,6 +228,7 @@ export default async function EventShortcutPage({
             name: entry.name,
             email: entry.email,
             visibleUntilIso: entry.visibleUntil.toISOString(),
+            presenceLocationNote: entry.presenceLocationNote,
           }))}
         />
       ) : null}

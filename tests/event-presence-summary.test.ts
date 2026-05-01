@@ -13,6 +13,7 @@ describe("event presence summary", () => {
           visibleUntil: new Date("2026-03-27T18:15:00.000Z"),
           name: "A",
           email: "a@example.com",
+          presenceLocationNote: null,
         },
       ],
       userId: "user-1",
@@ -38,6 +39,7 @@ describe("event presence summary", () => {
           visibleUntil: new Date("2026-03-27T19:00:00.000Z"),
           name: "A",
           email: "a@example.com",
+          presenceLocationNote: null,
         },
         {
           userId: "user-2",
@@ -46,6 +48,7 @@ describe("event presence summary", () => {
           visibleUntil: new Date("2026-03-27T18:10:00.000Z"),
           name: "B",
           email: "b@example.com",
+          presenceLocationNote: "Vor der Bühne",
         },
       ],
       userId: "user-1",

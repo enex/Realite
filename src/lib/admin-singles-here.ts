@@ -24,6 +24,7 @@ export type SinglesHereAdminParticipant = {
   image: string | null;
   presenceStatus: EventPresenceStatus;
   visibleUntilIso: string;
+  presenceLocationNote: string | null;
   unlockedProfile: boolean;
   gender: DatingGender | null;
   age: number | null;
@@ -259,6 +260,7 @@ export async function getSinglesHereEventAdminDetail(input: {
       userId: eventPresences.userId,
       status: eventPresences.status,
       visibleUntil: eventPresences.visibleUntil,
+      presenceLocationNote: eventPresences.presenceLocationNote,
       name: users.name,
       email: users.email,
       image: users.image,
@@ -303,6 +305,7 @@ export async function getSinglesHereEventAdminDetail(input: {
         image,
         presenceStatus: row.status,
         visibleUntilIso: row.visibleUntil.toISOString(),
+        presenceLocationNote: row.presenceLocationNote ?? null,
         unlockedProfile: st?.unlocked ?? false,
         gender: prof?.gender ?? null,
         age,
@@ -377,6 +380,7 @@ export async function adminForceLeaveSinglesHerePresence(input: {
         status: "left",
         visibleUntil: now,
         updatedAt: now,
+        presenceLocationNote: null,
       },
     });
 

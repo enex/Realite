@@ -1,6 +1,7 @@
 "use client";
 
-import { PencilSimple, UserCircle } from "@phosphor-icons/react";
+import { CaretLeft, PencilSimple, UserCircle } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -183,6 +184,7 @@ export function SinglesHerePage({
   currentUserName,
   currentUserId,
 }: SinglesHerePageProps) {
+  const router = useRouter();
   const [payload, setPayload] = useState(initialPayload);
   const [name, setName] = useState(currentUserName ?? "");
   const [profileImageStorageUrl, setProfileImageStorageUrl] = useState<
@@ -207,6 +209,11 @@ export function SinglesHerePage({
     initialPayload.profile.soughtAgeMax?.toString() ?? "45",
   );
   const [busy, setBusy] = useState(false);
+  const [presenceLocationNoteInput, setPresenceLocationNoteInput] = useState(
+    initialPayload.currentUserPresenceLocationNote ?? "",
+  );
+  const presenceNoteFieldFocusedRef = useRef(false);
+  const noteSaveInFlightRef = useRef(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [profileEditorOpen, setProfileEditorOpen] = useState(
     !initialPayload.profileUnlocked,
@@ -292,6 +299,9 @@ export function SinglesHerePage({
     setPayload(data);
     setProfileImageStorageUrl(data.viewerProfileImageStorageUrl ?? null);
     setProfileImageDisplayUrl(data.viewerProfileImageDisplayUrl ?? null);
+    if (!presenceNoteFieldFocusedRef.current) {
+      setPresenceLocationNoteInput(data.currentUserPresenceLocationNote ?? "");
+    }
   }, [payload.event.slug]);
 
   useEffect(() => {
@@ -300,6 +310,54 @@ export function SinglesHerePage({
     }, 5_000);
     return () => window.clearInterval(timer);
   }, [refresh]);
+
+  useEffect(() => {
+    if (!payload.profileUnlocked || !isCheckedIn) {
+      return;
+    }
+    const normalized =
+      presenceLocationNoteInput.trim() === ""
+        ? null
+        : presenceLocationNoteInput.trim();
+    if (normalized === (payload.currentUserPresenceLocationNote ?? null)) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        if (noteSaveInFlightRef.current) {
+          return;
+        }
+        noteSaveInFlightRef.current = true;
+        try {
+          const response = await fetch(
+            `/api/singles/events/${payload.event.slug}/presence-location`,
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ locationNote: normalized }),
+            },
+          );
+          const data = (await response.json()) as SinglesHereClientPayload & {
+            error?: string;
+          };
+          if (!response.ok) {
+            toast.error(data.error ?? "Treffpunkt konnte nicht gespeichert werden.");
+            return;
+          }
+          setPayload(data);
+        } finally {
+          noteSaveInFlightRef.current = false;
+        }
+      })();
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [
+    isCheckedIn,
+    payload.profileUnlocked,
+    payload.event.slug,
+    payload.currentUserPresenceLocationNote,
+    presenceLocationNoteInput,
+  ]);
 
   useEffect(() => {
     if (imageUploading || busy) {
@@ -550,6 +608,10 @@ export function SinglesHerePage({
     setBusy(true);
 
     try {
+      const noteForCheckIn =
+        presenceLocationNoteInput.trim() === ""
+          ? null
+          : presenceLocationNoteInput.trim();
       const response = await fetch(`/api/events/${payload.event.id}/presence`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -557,6 +619,8 @@ export function SinglesHerePage({
           status,
           visibleUntilIso:
             status === "checked_in" ? visibleUntilIso : undefined,
+          locationNote:
+            status === "checked_in" ? noteForCheckIn : undefined,
         }),
       });
       const result = (await response.json()) as { error?: string };
@@ -585,7 +649,17 @@ export function SinglesHerePage({
 
   return (
     <main className="min-h-dvh bg-background text-foreground">
-      <section className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
+      <div className="mx-auto w-full max-w-6xl px-4 pt-4 sm:px-6 lg:px-8">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="inline-flex items-center gap-1 rounded-lg px-1 py-1 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <CaretLeft size={20} weight="bold" aria-hidden />
+          Zurück
+        </button>
+      </div>
+      <section className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8 lg:pt-2">
         <div className="flex flex-wrap items-start justify-between gap-4 lg:col-span-2">
           <div>
             <p className="text-sm font-semibold text-teal-700">
@@ -858,13 +932,21 @@ export function SinglesHerePage({
                           {(person.name ?? "?").slice(0, 1).toUpperCase()}
                         </div>
                       )}
-                      <div>
+                      <div className="min-w-0">
                         <p className="font-semibold">
                           {person.name ?? "Vor Ort"}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           sichtbar bis {formatTime(person.visibleUntilIso)}
                         </p>
+                        {person.presenceLocationNote ? (
+                          <p className="mt-1 text-xs leading-snug text-foreground">
+                            <span className="font-medium text-muted-foreground">
+                              Treffpunkt:{" "}
+                            </span>
+                            {person.presenceLocationNote}
+                          </p>
+                        ) : null}
                       </div>
                     </article>
                   ))}
@@ -880,6 +962,36 @@ export function SinglesHerePage({
                 <h3 className="text-sm font-semibold text-foreground">
                   Dein Vor-Ort-Status
                 </h3>
+                {payload.profileUnlocked &&
+                (isCheckedIn || presenceWindow.canCheckIn) ? (
+                  <label className="mt-4 grid gap-1.5 text-sm">
+                    <span className="font-medium text-foreground">
+                      Treffpunkt am Event (optional)
+                    </span>
+                    <textarea
+                      value={presenceLocationNoteInput}
+                      onChange={(e) =>
+                        setPresenceLocationNoteInput(e.target.value)
+                      }
+                      onFocus={() => {
+                        presenceNoteFieldFocusedRef.current = true;
+                      }}
+                      onBlur={() => {
+                        presenceNoteFieldFocusedRef.current = false;
+                      }}
+                      maxLength={200}
+                      rows={2}
+                      placeholder='z. B. „beim Haupteingang“, „blauer Pavillon links"'
+                      className="resize-y rounded-lg border border-input bg-card px-3 py-2 text-sm leading-relaxed"
+                      disabled={busy}
+                    />
+                    <span className="text-xs leading-5 text-muted-foreground">
+                      Nur Freitext, kein Live-Standort. Sichtbar für andere, die
+                      zu dir passen und ebenfalls eingecheckt sind — nicht für
+                      alle Eventbesucher.
+                    </span>
+                  </label>
+                ) : null}
                 {isCheckedIn ? (
                   <div className="mt-3 grid gap-4">
                     <div className="rounded-lg border border-teal-200 bg-teal-50 p-4 dark:border-teal-800 dark:bg-teal-950/40">
