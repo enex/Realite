@@ -244,6 +244,8 @@ export function SinglesHerePage({
     setError(null);
     setMessage(null);
 
+    const isFirstSave = !payload.profileUnlocked;
+
     try {
       const response = await fetch(
         `/api/singles/events/${payload.event.slug}/profile`,
@@ -277,8 +279,40 @@ export function SinglesHerePage({
         profileUnlocked: Boolean(result.profileUnlocked),
         age: result.age ?? null,
       }));
-      setMessage("Dein Profil ist gespeichert.");
       setProfileEditorOpen(false);
+
+      if (isFirstSave && presenceWindow.canCheckIn) {
+        try {
+          const presenceResponse = await fetch(
+            `/api/events/${payload.event.id}/presence`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                status: "checked_in",
+                visibleUntilIso: endsAt.toISOString(),
+              }),
+            },
+          );
+          const presenceResult = (await presenceResponse.json()) as {
+            error?: string;
+          };
+          if (!presenceResponse.ok) {
+            throw new Error(
+              presenceResult.error ??
+                "Status konnte nicht gespeichert werden.",
+            );
+          }
+          setMessage(
+            "Dein Profil ist gespeichert. Du bist jetzt bis Eventende vor Ort sichtbar.",
+          );
+        } catch {
+          setMessage("Dein Profil ist gespeichert.");
+        }
+      } else {
+        setMessage("Dein Profil ist gespeichert.");
+      }
+
       await refresh();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Unbekannter Fehler");
@@ -592,8 +626,9 @@ export function SinglesHerePage({
             </button>
           </form>
           <p className="mt-3 text-xs leading-5 text-muted-foreground">
-            Realite setzt dich nicht automatisch sichtbar. Sichtbar wirst du erst
-            durch den Button "Ich bin hier" und nur bis zum gewählten Zeitfenster.
+            {!payload.profileUnlocked && presenceWindow.canCheckIn
+              ? "Wenn du dein Profil speicherst, wirst du automatisch bis Eventende vor Ort sichtbar. Du kannst das jederzeit über den Button „Nicht mehr da" rückgängig machen."
+              : "Sichtbar bist du nur, solange du aktiv eingecheckt bist. Du kannst das jederzeit über den Button „Nicht mehr da" rückgängig machen."}
           </p>
         </section>
         ) : null}
