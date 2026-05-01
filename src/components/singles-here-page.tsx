@@ -282,7 +282,7 @@ export function SinglesHerePage({
       }));
       setProfileEditorOpen(false);
 
-      if (isFirstSave && presenceWindow.canCheckIn) {
+      if (isNewProfile && presenceWindow.canCheckIn) {
         try {
           const presenceResponse = await fetch(
             `/api/events/${payload.event.id}/presence`,
@@ -308,7 +308,8 @@ export function SinglesHerePage({
           setMessage(
             "Dein Profil ist gespeichert. Du bist jetzt bis Eventende vor Ort sichtbar.",
           );
-        } catch {
+        } catch (autoCheckInError) {
+          console.error("Auto-check-in fehlgeschlagen:", autoCheckInError);
           setMessage("Dein Profil ist gespeichert.");
         }
       } else {

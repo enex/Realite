@@ -13,7 +13,7 @@ Unter `/singles/<slug>/qr` gibt es zusätzlich eine Druckvorlage. Dort kannst du
 1. Event-QR-Code scannen.
 2. Anmelden.
 3. Name, Bild und Single-Infos ausfüllen. Optional: Sitzplatz oder Standort angeben.
-4. Profil speichern. Realite checkt dich beim ersten Speichern automatisch bis Eventende ein.
+4. Profil speichern. Wenn das Event gerade läuft, checkt Realite dich beim ersten Speichern automatisch bis Eventende ein.
 5. Die Seite zeigt passende andere Personen, die ebenfalls eingecheckt sind – mit ihrem Sitzplatz, falls angegeben.
 
 Passend bedeutet hier: Beide Dating-Profile akzeptieren gegenseitig Geschlecht und Altersbereich.
