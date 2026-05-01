@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, gt, inArray, or, sql } from "drizzle-orm";
 
 import { getDb } from "@/src/db/client";
+import { resolveSyncedAppUserName } from "@/src/lib/anonymous-session";
 import {
   calendarConnections,
   calendarWatchChannels,
@@ -526,7 +527,7 @@ export async function upsertUser(input: {
       .update(users)
       .set({
         email: normalizedEmail,
-        name: input.name ?? existing[0].name,
+        name: resolveSyncedAppUserName(input.name, existing[0].name),
         image: existingImage && isStoredProfileImageUrl(existingImage)
           ? existingImage
           : (input.image ?? existingImage),
@@ -542,7 +543,7 @@ export async function upsertUser(input: {
     .insert(users)
     .values({
       email: normalizedEmail,
-      name: input.name ?? null,
+      name: resolveSyncedAppUserName(input.name, null),
       image: input.image ?? null,
       updatedAt: new Date(),
     })

@@ -3,10 +3,12 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import {
+  canonicalizeProfileImageUrlForPersistence,
   PROFILE_IMAGE_PATH_PREFIX,
   resolveProfileImageReadUrl,
   uploadProfileImage,
 } from "@/src/lib/profile-image-storage";
+import { updateUserProfileImage } from "@/src/lib/repository";
 import { requireAppUser } from "@/src/lib/session";
 
 const MAX_IMAGE_BYTES = 1_500_000;
@@ -51,9 +53,17 @@ export async function POST(request: Request) {
       body: Buffer.from(await file.arrayBuffer()),
     });
 
-    const viewerImageUrl = (await resolveProfileImageReadUrl(imageUrl)) ?? imageUrl;
+    const persistedUrl =
+      canonicalizeProfileImageUrlForPersistence(imageUrl) ?? imageUrl;
+    await updateUserProfileImage({
+      userId: user.id,
+      image: persistedUrl,
+    });
 
-    return NextResponse.json({ imageUrl, viewerImageUrl });
+    const viewerImageUrl =
+      (await resolveProfileImageReadUrl(persistedUrl)) ?? persistedUrl;
+
+    return NextResponse.json({ imageUrl: persistedUrl, viewerImageUrl });
   } catch (error) {
     const message =
       error instanceof Error

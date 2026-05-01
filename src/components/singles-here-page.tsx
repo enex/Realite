@@ -1,7 +1,7 @@
 "use client";
 
 import { PencilSimple, UserCircle } from "@phosphor-icons/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   getEventPresenceDisplayState,
@@ -10,7 +10,7 @@ import {
   type EventPresenceStatus,
   type EventPresenceWindowOption,
 } from "@/src/lib/event-presence";
-import type { DatingGender } from "@/src/lib/dating";
+import { DATE_MIN_AGE, type DatingGender } from "@/src/lib/dating";
 import { SinglesProfileImageField } from "@/src/components/singles-profile-image-field";
 import { toast } from "@/src/components/toaster";
 import type { SinglesHereClientPayload } from "@/src/lib/singles-here-payload";
@@ -81,6 +81,102 @@ function resolvePresenceWindowChoiceValue(
   return options[0]!.value;
 }
 
+function canPersistSinglesProfileForm(input: {
+  name: string;
+  birthDate: string;
+  gender: DatingGender | "";
+  soughtGenders: DatingGender[];
+  soughtAgeMin: string;
+  soughtAgeMax: string;
+}) {
+  const trimmedName = input.name.trim();
+  if (trimmedName.length < 2 || trimmedName.length > 80) {
+    return false;
+  }
+  if (!input.birthDate || input.birthDate.length < 10) {
+    return false;
+  }
+  const birthYear = Number(input.birthDate.slice(0, 4));
+  if (!Number.isFinite(birthYear)) {
+    return false;
+  }
+  if (new Date().getUTCFullYear() - birthYear < DATE_MIN_AGE) {
+    return false;
+  }
+  if (!input.gender) {
+    return false;
+  }
+  if (input.soughtGenders.length === 0) {
+    return false;
+  }
+  const min = Number(input.soughtAgeMin);
+  const max = Number(input.soughtAgeMax);
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    return false;
+  }
+  if (min < DATE_MIN_AGE || max > 99 || min > max) {
+    return false;
+  }
+  return true;
+}
+
+function serializeSinglesProfileFormState(input: {
+  name: string;
+  profileImageStorageUrl: string | null;
+  birthDate: string;
+  gender: DatingGender | "";
+  soughtGenders: DatingGender[];
+  soughtAgeMin: string;
+  soughtAgeMax: string;
+}) {
+  return JSON.stringify({
+    name: input.name.trim(),
+    imageUrl: input.profileImageStorageUrl,
+    birthDate: input.birthDate,
+    gender: input.gender,
+    soughtGenders: input.soughtGenders,
+    soughtAgeMin: Number(input.soughtAgeMin),
+    soughtAgeMax: Number(input.soughtAgeMax),
+  });
+}
+
+async function requestSinglesProfilePatch(
+  slug: string,
+  body: {
+    name: string;
+    imageUrl: string | null;
+    birthDate: string;
+    gender: DatingGender;
+    soughtGenders: DatingGender[];
+    soughtAgeMin: number;
+    soughtAgeMax: number;
+  },
+) {
+  const response = await fetch(`/api/singles/events/${slug}/profile`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const result = (await response.json()) as {
+    error?: string;
+    profile?: SinglesHereClientPayload["profile"];
+    profileUnlocked?: boolean;
+    age?: number | null;
+  };
+  if (!response.ok || !result.profile) {
+    return {
+      ok: false as const,
+      error: result.error ?? "Profil konnte nicht gespeichert werden.",
+    };
+  }
+  return {
+    ok: true as const,
+    profile: result.profile,
+    profileUnlocked: Boolean(result.profileUnlocked),
+    age: result.age ?? null,
+  };
+}
+
 export function SinglesHerePage({
   initialPayload,
   currentUserName,
@@ -115,6 +211,9 @@ export function SinglesHerePage({
     !initialPayload.profileUnlocked,
   );
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const lastPersistedProfileKeyRef = useRef<string | null>(null);
+  const profileAutoSavePrimedRef = useRef(false);
+  const profilePatchInFlightRef = useRef(false);
 
   useEffect(() => {
     if (!currentUserName) {
@@ -177,7 +276,7 @@ export function SinglesHerePage({
   });
   const isCheckedIn = displayState === "checked_in";
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     const response = await fetch(`/api/singles/events/${payload.event.slug}`, {
       cache: "no-store",
     });
@@ -188,14 +287,102 @@ export function SinglesHerePage({
     setPayload(data);
     setProfileImageStorageUrl(data.viewerProfileImageStorageUrl ?? null);
     setProfileImageDisplayUrl(data.viewerProfileImageDisplayUrl ?? null);
-  }
+  }, [payload.event.slug]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
       void refresh();
     }, 5_000);
     return () => window.clearInterval(timer);
-  });
+  }, [refresh]);
+
+  useEffect(() => {
+    if (imageUploading || busy) {
+      return;
+    }
+
+    const formSnapshot = {
+      name,
+      profileImageStorageUrl,
+      birthDate,
+      gender,
+      soughtGenders,
+      soughtAgeMin,
+      soughtAgeMax,
+    };
+    const key = serializeSinglesProfileFormState(formSnapshot);
+
+    if (!profileAutoSavePrimedRef.current) {
+      profileAutoSavePrimedRef.current = true;
+      lastPersistedProfileKeyRef.current = key;
+      return;
+    }
+
+    if (key === lastPersistedProfileKeyRef.current) {
+      return;
+    }
+
+    if (!canPersistSinglesProfileForm(formSnapshot)) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        if (profilePatchInFlightRef.current) {
+          return;
+        }
+        if (!canPersistSinglesProfileForm(formSnapshot)) {
+          return;
+        }
+        if (key === lastPersistedProfileKeyRef.current) {
+          return;
+        }
+
+        profilePatchInFlightRef.current = true;
+        try {
+          const patch = await requestSinglesProfilePatch(
+            payload.event.slug,
+            {
+              name: formSnapshot.name.trim(),
+              imageUrl: formSnapshot.profileImageStorageUrl,
+              birthDate: formSnapshot.birthDate,
+              gender: formSnapshot.gender as DatingGender,
+              soughtGenders: formSnapshot.soughtGenders,
+              soughtAgeMin: Number(formSnapshot.soughtAgeMin),
+              soughtAgeMax: Number(formSnapshot.soughtAgeMax),
+            },
+          );
+          if (!patch.ok) {
+            return;
+          }
+          lastPersistedProfileKeyRef.current = key;
+          setPayload((current) => ({
+            ...current,
+            profile: patch.profile,
+            profileUnlocked: patch.profileUnlocked,
+            age: patch.age ?? null,
+          }));
+          await refresh();
+        } finally {
+          profilePatchInFlightRef.current = false;
+        }
+      })();
+    }, 900);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    name,
+    profileImageStorageUrl,
+    birthDate,
+    gender,
+    soughtGenders,
+    soughtAgeMin,
+    soughtAgeMax,
+    imageUploading,
+    busy,
+    payload.event.slug,
+    refresh,
+  ]);
 
   function toggleSoughtGender(option: DatingGender) {
     setSoughtGenders((current) =>
@@ -234,9 +421,7 @@ export function SinglesHerePage({
       setProfileImageDisplayUrl(
         payload.viewerImageUrl ?? payload.imageUrl ?? null,
       );
-      toast.success(
-        "Bild hochgeladen. Speichere dein Profil, damit andere es sehen.",
-      );
+      toast.success("Profilbild gespeichert.");
     } catch (uploadError) {
       toast.error(
         uploadError instanceof Error
@@ -253,39 +438,41 @@ export function SinglesHerePage({
     setBusy(true);
 
     try {
-      const response = await fetch(
-        `/api/singles/events/${payload.event.slug}/profile`,
+      const formSnapshot = {
+        name,
+        profileImageStorageUrl,
+        birthDate,
+        gender,
+        soughtGenders,
+        soughtAgeMin,
+        soughtAgeMax,
+      };
+      if (!canPersistSinglesProfileForm(formSnapshot)) {
+        throw new Error("Bitte fülle alle Pflichtfelder aus.");
+      }
+      const patch = await requestSinglesProfilePatch(
+        payload.event.slug,
         {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name,
-            imageUrl: profileImageStorageUrl,
-            birthDate,
-            gender,
-            soughtGenders,
-            soughtAgeMin: Number(soughtAgeMin),
-            soughtAgeMax: Number(soughtAgeMax),
-          }),
+          name: formSnapshot.name.trim(),
+          imageUrl: formSnapshot.profileImageStorageUrl,
+          birthDate: formSnapshot.birthDate,
+          gender: formSnapshot.gender as DatingGender,
+          soughtGenders: formSnapshot.soughtGenders,
+          soughtAgeMin: Number(formSnapshot.soughtAgeMin),
+          soughtAgeMax: Number(formSnapshot.soughtAgeMax),
         },
       );
-      const result = (await response.json()) as {
-        error?: string;
-        profile?: SinglesHereClientPayload["profile"];
-        profileUnlocked?: boolean;
-        age?: number | null;
-      };
-      if (!response.ok || !result.profile) {
-        throw new Error(
-          result.error ?? "Profil konnte nicht gespeichert werden.",
-        );
+      if (!patch.ok) {
+        throw new Error(patch.error);
       }
 
+      lastPersistedProfileKeyRef.current =
+        serializeSinglesProfileFormState(formSnapshot);
       setPayload((current) => ({
         ...current,
-        profile: result.profile!,
-        profileUnlocked: Boolean(result.profileUnlocked),
-        age: result.age ?? null,
+        profile: patch.profile,
+        profileUnlocked: patch.profileUnlocked,
+        age: patch.age ?? null,
       }));
       toast.success("Dein Profil ist gespeichert.");
       setProfileEditorOpen(false);
@@ -539,6 +726,7 @@ export function SinglesHerePage({
                 onError={(msg) => {
                   toast.error(msg);
                 }}
+                helpText="Das Profilbild wird direkt auf deinem Konto gespeichert. Name und Suchangaben sichert Realite kurz nach deinen Änderungen automatisch."
               />
               <label className="grid gap-1 text-sm">
                 <span>Geburtstag</span>
@@ -620,6 +808,11 @@ export function SinglesHerePage({
                 Profil speichern
               </button>
             </form>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              Gültige Eingaben werden etwa eine Sekunde nach der letzten Änderung
+              automatisch übernommen — der Button ist optional, wenn du sofort
+              eine Bestätigung möchtest oder das Bearbeiten beenden willst.
+            </p>
             <p className="mt-3 text-xs leading-5 text-muted-foreground">
               Realite setzt dich nicht automatisch sichtbar. Sichtbar wirst du
               erst durch den Button "Ich bin hier" und nur bis zum gewählten

@@ -8,6 +8,7 @@ import { headers } from "next/headers";
 
 import * as authSchema from "@/src/db/auth-schema";
 import { getDb } from "@/src/db/client";
+import { ANONYMOUS_SESSION_DISPLAY_NAME } from "@/src/lib/anonymous-session";
 import {
   APPLE_AUTH_PROVIDER,
   GOOGLE_AUTH_PROVIDER,
@@ -78,7 +79,7 @@ function createAuth() {
       nextCookies(),
       anonymous({
         emailDomainName: "guest.realite.local",
-        generateName: () => "Gast",
+        generateName: () => ANONYMOUS_SESSION_DISPLAY_NAME,
       }),
       jwt({
         disableSettingJwtHeader: true,
