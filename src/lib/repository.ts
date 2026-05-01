@@ -51,6 +51,13 @@ import {
   inferEventCategory,
 } from "@/src/lib/event-categories";
 import {
+  SINGLES_HERE_SOURCE_PROVIDER,
+  buildSinglesHereEventTitle,
+  filterSinglesHereMatches,
+  isValidSinglesHereSlug,
+  normalizeSinglesHereSlug,
+} from "@/src/lib/singles-here";
+import {
   type DeclineReason,
   createLocationPreferenceTag,
   createPersonPreferenceTag,
@@ -83,6 +90,34 @@ export type EventPresenceSummary = {
     updatedAt: Date;
     visibleUntil: Date;
   }>;
+};
+
+export type SinglesHereEvent = {
+  id: string;
+  slug: string;
+  name: string;
+  location: string | null;
+  startsAt: Date;
+  endsAt: Date;
+  createdBy: string;
+};
+
+export type SinglesHerePresencePerson = {
+  userId: string;
+  name: string | null;
+  image: string | null;
+  visibleUntil: Date;
+};
+
+export type SinglesHerePresence = {
+  event: SinglesHereEvent;
+  profile: UserDatingProfile;
+  profileUnlocked: boolean;
+  age: number | null;
+  currentUserStatus: EventPresenceStatus | null;
+  currentUserVisibleUntil: Date | null;
+  matchingPeople: SinglesHerePresencePerson[];
+  checkedInCount: number;
 };
 
 type EventPresenceRow = {
@@ -527,6 +562,25 @@ export async function getUserById(userId: string) {
     .from(users)
     .where(eq(users.id, userId))
     .limit(1);
+  return user ?? null;
+}
+
+export async function updateUserDisplayProfile(input: {
+  userId: string;
+  name: string;
+  image?: string | null;
+}) {
+  const db = getDb();
+  const [user] = await db
+    .update(users)
+    .set({
+      name: input.name.trim(),
+      image: input.image ?? null,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, input.userId))
+    .returning();
+
   return user ?? null;
 }
 
@@ -2247,6 +2301,122 @@ export async function createEvent(input: {
   });
 }
 
+function mapSinglesHereEventRow(row: {
+  id: string;
+  title: string;
+  location: string | null;
+  startsAt: Date;
+  endsAt: Date;
+  createdBy: string;
+  sourceEventId: string | null;
+}): SinglesHereEvent {
+  return {
+    id: row.id,
+    slug: row.sourceEventId ?? "",
+    name: row.title.replace(/#[^\s]+/gi, "").trim(),
+    location: row.location,
+    startsAt: row.startsAt,
+    endsAt: row.endsAt,
+    createdBy: row.createdBy,
+  };
+}
+
+export async function getSinglesHereEventBySlug(slug: string) {
+  const normalizedSlug = normalizeSinglesHereSlug(slug);
+  if (!isValidSinglesHereSlug(normalizedSlug)) {
+    return null;
+  }
+
+  const db = getDb();
+  const [event] = await db
+    .select({
+      id: events.id,
+      title: events.title,
+      location: events.location,
+      startsAt: events.startsAt,
+      endsAt: events.endsAt,
+      createdBy: events.createdBy,
+      sourceEventId: events.sourceEventId,
+    })
+    .from(events)
+    .where(
+      and(
+        eq(events.sourceProvider, SINGLES_HERE_SOURCE_PROVIDER),
+        eq(events.sourceEventId, normalizedSlug),
+      ),
+    )
+    .limit(1);
+
+  return event ? mapSinglesHereEventRow(event) : null;
+}
+
+export async function createSinglesHereEvent(input: {
+  userId: string;
+  slug: string;
+  name: string;
+  location?: string | null;
+  startsAt: Date;
+  endsAt: Date;
+}) {
+  const slug = normalizeSinglesHereSlug(input.slug);
+  const name = input.name.trim();
+
+  if (!isValidSinglesHereSlug(slug)) {
+    throw new RepositoryValidationError(
+      "Der Slug darf nur Kleinbuchstaben, Zahlen und Bindestriche enthalten.",
+    );
+  }
+
+  if (name.length < 2 || name.length > 80) {
+    throw new RepositoryValidationError("Der Eventname muss 2 bis 80 Zeichen lang sein.");
+  }
+
+  if (input.endsAt <= input.startsAt) {
+    throw new RepositoryValidationError("Ende muss nach Start liegen.");
+  }
+
+  const existing = await getSinglesHereEventBySlug(slug);
+  if (existing) {
+    throw new RepositoryValidationError("Dieser Slug ist bereits vergeben.");
+  }
+
+  const db = getDb();
+  const [event] = await db
+    .insert(events)
+    .values({
+      title: buildSinglesHereEventTitle(name),
+      description:
+        "Singles-hier Experiment: bewusstes Check-in vor Ort, Matching nur bei gegenseitig passenden Dating-Infos.",
+      location: input.location?.trim() || null,
+      startsAt: input.startsAt,
+      endsAt: input.endsAt,
+      visibility: "public",
+      joinMode: "direct",
+      allowOnSiteVisibility: true,
+      groupId: null,
+      sourceProvider: SINGLES_HERE_SOURCE_PROVIDER,
+      sourceEventId: slug,
+      category: "date",
+      createdBy: input.userId,
+    })
+    .returning({
+      id: events.id,
+      title: events.title,
+      location: events.location,
+      startsAt: events.startsAt,
+      endsAt: events.endsAt,
+      createdBy: events.createdBy,
+      sourceEventId: events.sourceEventId,
+    });
+
+  await db
+    .insert(eventTags)
+    .values({ eventId: event.id, tag: DATE_TAG })
+    .onConflictDoNothing({ target: [eventTags.eventId, eventTags.tag] });
+
+  return mapSinglesHereEventRow(event);
+}
+
 export async function upsertExternalPublicEvent(input: {
   userId: string;
   sourceProvider: string;
@@ -2937,6 +3107,76 @@ export async function setEventPresenceStatus(input: {
     endsAt: visibleEvent.endsAt,
     now,
   });
+}
+
+export async function getSinglesHerePresence(input: {
+  userId: string;
+  slug: string;
+  now?: Date;
+}): Promise<SinglesHerePresence | null> {
+  const event = await getSinglesHereEventBySlug(input.slug);
+  if (!event) {
+    return null;
+  }
+
+  const profile = await getUserDatingProfile(input.userId);
+  const profileStatus = getDatingProfileStatus(profile, input.now);
+  const summary = await getEventPresenceSummary({
+    userId: input.userId,
+    eventId: event.id,
+    now: input.now,
+  });
+
+  const activeUserIds = summary.checkedInUsers.map((entry) => entry.userId);
+  const profileMap = await getDatingProfileMapForUsers([
+    input.userId,
+    ...activeUserIds,
+  ]);
+  const matchingCandidates = filterSinglesHereMatches({
+    viewerProfile: profile,
+    candidates: activeUserIds.map((userId) => ({
+      userId,
+      profile: profileMap.get(userId) ?? createDefaultDatingProfile(userId),
+    })),
+    now: input.now,
+  });
+  const matchingUserIds = new Set(
+    matchingCandidates.map((candidate) => candidate.userId),
+  );
+
+  const db = getDb();
+  const peopleRows = activeUserIds.length
+    ? await db
+        .select({
+          userId: users.id,
+          name: users.name,
+          image: users.image,
+        })
+        .from(users)
+        .where(inArray(users.id, activeUserIds))
+    : [];
+  const peopleById = new Map(peopleRows.map((person) => [person.userId, person]));
+
+  return {
+    event,
+    profile,
+    profileUnlocked: profileStatus.unlocked,
+    age: profileStatus.age,
+    currentUserStatus: summary.currentUserStatus,
+    currentUserVisibleUntil: summary.currentUserVisibleUntil,
+    checkedInCount: summary.checkedInUsers.length,
+    matchingPeople: summary.checkedInUsers
+      .filter((entry) => matchingUserIds.has(entry.userId))
+      .map((entry) => {
+        const person = peopleById.get(entry.userId);
+        return {
+          userId: entry.userId,
+          name: person?.name ?? entry.name,
+          image: person?.image ?? null,
+          visibleUntil: entry.visibleUntil,
+        };
+      }),
+  };
 }
 
 export type EventCommentRow = {

@@ -61,6 +61,12 @@ const DOCS_PAGES: DocsPage[] = [
     fileName: "vor-ort-sichtbarkeit.md"
   },
   {
+    slug: "singles-hier-experiment",
+    title: "Singles-hier Experiment",
+    description: "Wie QR-Code, Check-in und passende Personen auf einer Event-Unterseite zusammenlaufen.",
+    fileName: "singles-hier-experiment.md"
+  },
+  {
     slug: "sicherheit-bei-vor-ort-und-festival-kontexten",
     title: "Sicherheit bei Vor-Ort- und Festival-Kontexten",
     description: "Welche Schutzregeln für spätere On-Site- und Socializing-Fälle gelten sollen.",
