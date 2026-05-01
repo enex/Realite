@@ -244,7 +244,7 @@ export function SinglesHerePage({
     setError(null);
     setMessage(null);
 
-    const isFirstSave = !payload.profileUnlocked;
+    const isNewProfile = !payload.profileUnlocked;
 
     try {
       const response = await fetch(
