@@ -9,21 +9,34 @@ import {
   ensureUserDatingProfile,
   ensureUserSuggestionSettings,
   getUserById,
+  getGoogleConnection,
   upsertGoogleConnection,
-  upsertUser
+  upsertUser,
 } from "@/src/lib/repository";
+import {
+  hasRequiredCalendarScopes,
+  hasRequiredContactsScopes,
+} from "@/src/lib/provider-adapters";
 
-async function syncGoogleConnectionFromAuthAccount(input: { authUserId: string; appUserId: string }) {
+async function syncGoogleConnectionFromAuthAccount(input: {
+  authUserId: string;
+  appUserId: string;
+}) {
   const db = getDb();
   const [googleAccount] = await db
     .select({
       accessToken: authAccount.accessToken,
       refreshToken: authAccount.refreshToken,
       accessTokenExpiresAt: authAccount.accessTokenExpiresAt,
-      scope: authAccount.scope
+      scope: authAccount.scope,
     })
     .from(authAccount)
-    .where(and(eq(authAccount.userId, input.authUserId), eq(authAccount.providerId, "google")))
+    .where(
+      and(
+        eq(authAccount.userId, input.authUserId),
+        eq(authAccount.providerId, "google"),
+      ),
+    )
     .orderBy(desc(authAccount.updatedAt))
     .limit(1);
 
@@ -38,14 +51,47 @@ async function syncGoogleConnectionFromAuthAccount(input: { authUserId: string; 
         ? new Date(googleAccount.accessTokenExpiresAt)
         : null;
 
+  const newScope = googleAccount.scope;
+  const newScopeHasExtended =
+    hasRequiredCalendarScopes(newScope, "google") ||
+    hasRequiredContactsScopes(newScope);
+
+  // Schutzmechanismus: Wenn der neue Token nur minimale Login-Scopes hat,
+  // darf er die bestehende Kalender/Kontakte-Verbindung nicht überschreiben.
+  // Das verhindert, dass ein Re-Login den Kalender-Zugriff entfernt, den der
+  // Nutzer zuvor über den separaten Connect-Flow erteilt hat.
+  if (!newScopeHasExtended) {
+    const existingConnection = await getGoogleConnection(input.appUserId);
+    const existingHasExtended =
+      existingConnection &&
+      (hasRequiredCalendarScopes(existingConnection.scope, "google") ||
+        hasRequiredContactsScopes(existingConnection.scope));
+
+    if (existingHasExtended) {
+      // Nur Access-Token und Ablaufzeit aktualisieren, Scope und Refresh-Token beibehalten
+      await upsertGoogleConnection({
+        userId: input.appUserId,
+        accessToken: googleAccount.accessToken,
+        refreshToken: existingConnection.refreshToken,
+        expiresAt:
+          parsedTokenExpiry && !Number.isNaN(parsedTokenExpiry.getTime())
+            ? Math.floor(parsedTokenExpiry.getTime() / 1000)
+            : null,
+        scope: existingConnection.scope,
+      });
+      return;
+    }
+  }
+
   await upsertGoogleConnection({
     userId: input.appUserId,
     accessToken: googleAccount.accessToken,
     refreshToken: googleAccount.refreshToken,
-    expiresAt: parsedTokenExpiry && !Number.isNaN(parsedTokenExpiry.getTime())
-      ? Math.floor(parsedTokenExpiry.getTime() / 1000)
-      : null,
-    scope: googleAccount.scope
+    expiresAt:
+      parsedTokenExpiry && !Number.isNaN(parsedTokenExpiry.getTime())
+        ? Math.floor(parsedTokenExpiry.getTime() / 1000)
+        : null,
+    scope: newScope,
   });
 }
 
@@ -61,9 +107,9 @@ async function ensureAppUserReady(input: {
     input.authUserId
       ? syncGoogleConnectionFromAuthAccount({
           authUserId: input.authUserId,
-          appUserId: input.appUserId
+          appUserId: input.appUserId,
         })
-      : Promise.resolve()
+      : Promise.resolve(),
   ]);
 }
 
@@ -76,12 +122,12 @@ async function getOrCreateAppUserFromIdentity(input: {
   const user = await upsertUser({
     email: input.email,
     name: input.name,
-    image: input.image
+    image: input.image,
   });
 
   await ensureAppUserReady({
     appUserId: user.id,
-    authUserId: input.authUserId
+    authUserId: input.authUserId,
   });
 
   return user;
@@ -94,7 +140,7 @@ export async function requireAppUserFromAuthUserId(authUserId: string) {
       id: authUser.id,
       email: authUser.email,
       name: authUser.name,
-      image: authUser.image
+      image: authUser.image,
     })
     .from(authUser)
     .where(eq(authUser.id, authUserId))
@@ -108,7 +154,7 @@ export async function requireAppUserFromAuthUserId(authUserId: string) {
     authUserId: userRecord.id,
     email: userRecord.email,
     name: userRecord.name,
-    image: userRecord.image
+    image: userRecord.image,
   });
 }
 
@@ -119,7 +165,7 @@ export async function requireExistingAppUser(userId: string) {
   }
 
   await ensureAppUserReady({
-    appUserId: user.id
+    appUserId: user.id,
   });
 
   return user;
@@ -138,6 +184,6 @@ export async function requireAppUser() {
     authUserId,
     email,
     name: session.user.name,
-    image: session.user.image
+    image: session.user.image,
   });
 }

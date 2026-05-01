@@ -8,6 +8,9 @@ import {
   ANONYMOUS_AUTH_PROVIDER,
   DEV_AUTH_PROVIDER,
   GOOGLE_AUTH_PROVIDER,
+  GOOGLE_CALENDAR_REQUIRED_SCOPES,
+  GOOGLE_CONTACTS_REQUIRED_SCOPES,
+  GOOGLE_LOGIN_SCOPES,
   MICROSOFT_AUTH_PROVIDER,
   buildAuthStartPath,
   buildLoginPath,
@@ -18,32 +21,51 @@ import {
 } from "@/src/lib/provider-adapters";
 
 describe("provider adapters", () => {
-  test("keeps Google auth scopes in the central provider definition", () => {
-    expect(GOOGLE_AUTH_PROVIDER.scopes).toContain(
+  test("Google login scopes are minimal (only identity, no calendar or contacts)", () => {
+    // Der Login fragt nur die nötigsten Scopes an.
+    // Kalender und Kontakte werden separat über /api/auth/connect/google angefragt.
+    expect(GOOGLE_AUTH_PROVIDER.scopes).toContain("openid");
+    expect(GOOGLE_AUTH_PROVIDER.scopes).toContain("email");
+    expect(GOOGLE_AUTH_PROVIDER.scopes).toContain("profile");
+    expect(GOOGLE_AUTH_PROVIDER.scopes).not.toContain(
       "https://www.googleapis.com/auth/calendar",
     );
-    expect(GOOGLE_AUTH_PROVIDER.scopes).toContain(
+    expect(GOOGLE_AUTH_PROVIDER.scopes).not.toContain(
       "https://www.googleapis.com/auth/contacts",
     );
   });
 
+  test("GOOGLE_LOGIN_SCOPES matches the login provider scopes", () => {
+    expect(GOOGLE_AUTH_PROVIDER.scopes).toEqual([...GOOGLE_LOGIN_SCOPES]);
+  });
+
+  test("calendar and contacts scopes are separately defined constants", () => {
+    expect(GOOGLE_CALENDAR_REQUIRED_SCOPES).toContain(
+      "https://www.googleapis.com/auth/calendar",
+    );
+    expect(GOOGLE_CONTACTS_REQUIRED_SCOPES).toContain(
+      "https://www.googleapis.com/auth/contacts",
+    );
+    expect(GOOGLE_CONTACTS_REQUIRED_SCOPES).toContain(
+      "https://www.googleapis.com/auth/contacts.readonly",
+    );
+  });
+
   test("lists supported auth providers and planned calendar adapters in one place", () => {
-    expect(AUTH_PROVIDER_DEFINITIONS.map((definition) => definition.id)).toEqual([
-      "anonymous",
-      "google",
-      "apple",
-      "microsoft",
-      "dev",
-    ]);
-    expect(ANONYMOUS_AUTH_PROVIDER.loginStartPath).toBe("/api/auth/signin/anonymous");
+    expect(
+      AUTH_PROVIDER_DEFINITIONS.map((definition) => definition.id),
+    ).toEqual(["anonymous", "google", "apple", "microsoft", "dev"]);
+    expect(ANONYMOUS_AUTH_PROVIDER.loginStartPath).toBe(
+      "/api/auth/signin/anonymous",
+    );
     expect(ANONYMOUS_AUTH_PROVIDER.ctaLabel).toBe("Ohne Konto starten");
-    expect(CALENDAR_ADAPTER_DEFINITIONS.map((definition) => definition.id)).toEqual([
-      "google",
-      "apple",
-      "microsoft",
-    ]);
+    expect(
+      CALENDAR_ADAPTER_DEFINITIONS.map((definition) => definition.id),
+    ).toEqual(["google", "apple", "microsoft"]);
     expect(APPLE_AUTH_PROVIDER.loginStartPath).toBe("/api/auth/signin/apple");
-    expect(MICROSOFT_AUTH_PROVIDER.loginStartPath).toBe("/api/auth/signin/microsoft");
+    expect(MICROSOFT_AUTH_PROVIDER.loginStartPath).toBe(
+      "/api/auth/signin/microsoft",
+    );
     expect(DEV_AUTH_PROVIDER.status).toBe("dev_only");
   });
 
@@ -54,7 +76,9 @@ describe("provider adapters", () => {
         "google",
       ),
     ).toBe(true);
-    expect(hasRequiredCalendarScopes("openid email profile", "google")).toBe(false);
+    expect(hasRequiredCalendarScopes("openid email profile", "google")).toBe(
+      false,
+    );
   });
 
   test("accepts comma-separated scopes as stored by Better Auth", () => {
@@ -77,15 +101,16 @@ describe("provider adapters", () => {
   });
 
   test("keeps shared calendar core separate from provider-specific extras", () => {
-    expect(getCalendarCapabilitiesByLayer("shared_core").map((definition) => definition.id)).toEqual([
-      "availability_context",
-      "calendar_copies",
-      "event_import",
-    ]);
-    expect(getCalendarCapabilitiesByLayer("provider_extra").map((definition) => definition.id)).toEqual([
-      "calendar_invites",
-      "calendar_edit_links",
-    ]);
+    expect(
+      getCalendarCapabilitiesByLayer("shared_core").map(
+        (definition) => definition.id,
+      ),
+    ).toEqual(["availability_context", "calendar_copies", "event_import"]);
+    expect(
+      getCalendarCapabilitiesByLayer("provider_extra").map(
+        (definition) => definition.id,
+      ),
+    ).toEqual(["calendar_invites", "calendar_edit_links"]);
 
     const inviteCapability = CALENDAR_CAPABILITY_DEFINITIONS.find(
       (definition) => definition.id === "calendar_invites",
@@ -95,9 +120,15 @@ describe("provider adapters", () => {
   });
 
   test("builds provider-specific and generic login paths from one helper layer", () => {
-    expect(buildAuthStartPath("anonymous", "/now")).toBe("/api/auth/signin/anonymous?callbackUrl=%2Fnow");
-    expect(buildAuthStartPath("google", "/now")).toBe("/api/auth/signin/google?callbackUrl=%2Fnow");
-    expect(buildAuthStartPath("dev", "/s/abc")).toBe("/api/auth/signin/dev?callbackUrl=%2Fs%2Fabc");
+    expect(buildAuthStartPath("anonymous", "/now")).toBe(
+      "/api/auth/signin/anonymous?callbackUrl=%2Fnow",
+    );
+    expect(buildAuthStartPath("google", "/now")).toBe(
+      "/api/auth/signin/google?callbackUrl=%2Fnow",
+    );
+    expect(buildAuthStartPath("dev", "/s/abc")).toBe(
+      "/api/auth/signin/dev?callbackUrl=%2Fs%2Fabc",
+    );
     expect(buildLoginPath("/e/demo")).toBe("/login?callbackUrl=%2Fe%2Fdemo");
     expect(buildLoginPath()).toBe("/login");
   });
@@ -105,21 +136,36 @@ describe("provider adapters", () => {
   test("keeps Apple visible as a standard login path while Microsoft stays feature-gated", () => {
     expect(
       getVisibleAuthProviders(
-        [ANONYMOUS_AUTH_PROVIDER, GOOGLE_AUTH_PROVIDER, APPLE_AUTH_PROVIDER, MICROSOFT_AUTH_PROVIDER],
+        [
+          ANONYMOUS_AUTH_PROVIDER,
+          GOOGLE_AUTH_PROVIDER,
+          APPLE_AUTH_PROVIDER,
+          MICROSOFT_AUTH_PROVIDER,
+        ],
         { microsoftEnabled: false },
       ).map((provider) => provider.id),
     ).toEqual(["anonymous", "google", "apple"]);
 
     expect(
       getVisibleAuthProviders(
-        [ANONYMOUS_AUTH_PROVIDER, GOOGLE_AUTH_PROVIDER, APPLE_AUTH_PROVIDER, MICROSOFT_AUTH_PROVIDER],
+        [
+          ANONYMOUS_AUTH_PROVIDER,
+          GOOGLE_AUTH_PROVIDER,
+          APPLE_AUTH_PROVIDER,
+          MICROSOFT_AUTH_PROVIDER,
+        ],
         { anonymousEnabled: false, microsoftEnabled: false },
       ).map((provider) => provider.id),
     ).toEqual(["google", "apple"]);
 
     expect(
       getVisibleAuthProviders(
-        [ANONYMOUS_AUTH_PROVIDER, GOOGLE_AUTH_PROVIDER, APPLE_AUTH_PROVIDER, MICROSOFT_AUTH_PROVIDER],
+        [
+          ANONYMOUS_AUTH_PROVIDER,
+          GOOGLE_AUTH_PROVIDER,
+          APPLE_AUTH_PROVIDER,
+          MICROSOFT_AUTH_PROVIDER,
+        ],
         { microsoftEnabled: true },
       ).map((provider) => provider.id),
     ).toEqual(["anonymous", "google", "apple", "microsoft"]);

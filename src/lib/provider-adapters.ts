@@ -1,4 +1,9 @@
-export type AuthProviderId = "anonymous" | "google" | "apple" | "microsoft" | "dev";
+export type AuthProviderId =
+  | "anonymous"
+  | "google"
+  | "apple"
+  | "microsoft"
+  | "dev";
 export type CalendarAdapterId = "google" | "apple" | "microsoft";
 
 export type AuthProviderDefinition = {
@@ -29,7 +34,10 @@ export type CalendarAdapterDefinition = {
   };
 };
 
-export type CalendarCapabilityAvailability = "available" | "planned" | "fallback_only";
+export type CalendarCapabilityAvailability =
+  | "available"
+  | "planned"
+  | "fallback_only";
 
 export type CalendarCapabilityDefinition = {
   id:
@@ -54,19 +62,24 @@ export const GOOGLE_CONTACTS_REQUIRED_SCOPES = [
   "https://www.googleapis.com/auth/contacts.readonly",
 ] as const;
 
+/**
+ * Minimale Login-Scopes: nur Konto-Basis (Name, E-Mail, Profilbild).
+ * Kalender- und Kontakte-Berechtigungen werden separat über /api/auth/connect/google
+ * angefragt, wenn der Nutzer sie aktiv nutzen möchte.
+ */
+export const GOOGLE_LOGIN_SCOPES = ["openid", "email", "profile"] as const;
+
+/** Basis-Pfad für den inkrementellen Berechtigungs-Connect. */
+export const GOOGLE_CONNECT_BASE_PATH = "/api/auth/connect/google";
+
 export const GOOGLE_AUTH_PROVIDER: AuthProviderDefinition = {
   id: "google",
   label: "Google",
   status: "active",
   loginStartPath: "/api/auth/signin/google",
-  scopes: [
-    "openid",
-    "email",
-    "profile",
-    ...GOOGLE_CALENDAR_REQUIRED_SCOPES,
-    ...GOOGLE_CONTACTS_REQUIRED_SCOPES,
-  ],
-  description: "Konto-Login plus optionaler Kalender- und Kontakte-Kontext.",
+  scopes: [...GOOGLE_LOGIN_SCOPES],
+  description:
+    "Konto-Login mit E-Mail, Name und Profilbild. Kalender und Kontakte verbindest du danach optional.",
 };
 
 export const ANONYMOUS_AUTH_PROVIDER: AuthProviderDefinition = {
@@ -252,10 +265,14 @@ export function getCalendarAdapterDefinition(
     return null;
   }
 
-  return calendarAdapterDefinitionsById.get(providerId as CalendarAdapterId) ?? null;
+  return (
+    calendarAdapterDefinitionsById.get(providerId as CalendarAdapterId) ?? null
+  );
 }
 
-export function getRequiredCalendarScopes(providerId: string | null | undefined) {
+export function getRequiredCalendarScopes(
+  providerId: string | null | undefined,
+) {
   return getCalendarAdapterDefinition(providerId)?.requiredScopes ?? [];
 }
 
@@ -263,6 +280,23 @@ export function getCalendarCapabilitiesByLayer(
   layer: CalendarCapabilityDefinition["layer"],
 ) {
   return calendarCapabilityDefinitionsByLayer.get(layer) ?? [];
+}
+
+export function hasRequiredContactsScopes(scope: string | null | undefined) {
+  if (!scope) {
+    return false;
+  }
+
+  const grantedScopes = new Set(
+    scope
+      .split(/[\s,]+/)
+      .map((entry) => entry.trim())
+      .filter(Boolean),
+  );
+
+  return GOOGLE_CONTACTS_REQUIRED_SCOPES.every((requiredScope) =>
+    grantedScopes.has(requiredScope),
+  );
 }
 
 export function hasRequiredCalendarScopes(
@@ -281,19 +315,30 @@ export function hasRequiredCalendarScopes(
       .filter(Boolean),
   );
 
-  return requiredScopes.every((requiredScope) => grantedScopes.has(requiredScope));
+  return requiredScopes.every((requiredScope) =>
+    grantedScopes.has(requiredScope),
+  );
 }
 
 function hasGoogleAuthCredentials() {
-  return Boolean(process.env.GOOGLE_CLIENT_ID?.trim() && process.env.GOOGLE_CLIENT_SECRET?.trim());
+  return Boolean(
+    process.env.GOOGLE_CLIENT_ID?.trim() &&
+    process.env.GOOGLE_CLIENT_SECRET?.trim(),
+  );
 }
 
 function hasAppleAuthCredentials() {
-  return Boolean(process.env.APPLE_CLIENT_ID?.trim() && process.env.APPLE_CLIENT_SECRET?.trim());
+  return Boolean(
+    process.env.APPLE_CLIENT_ID?.trim() &&
+    process.env.APPLE_CLIENT_SECRET?.trim(),
+  );
 }
 
 function hasMicrosoftAuthCredentials() {
-  return Boolean(process.env.MICROSOFT_CLIENT_ID?.trim() && process.env.MICROSOFT_CLIENT_SECRET?.trim());
+  return Boolean(
+    process.env.MICROSOFT_CLIENT_ID?.trim() &&
+    process.env.MICROSOFT_CLIENT_SECRET?.trim(),
+  );
 }
 
 export function isDevelopmentAuthMode() {
@@ -318,7 +363,9 @@ export function isAuthProviderEnabled(providerId: AuthProviderId) {
 }
 
 export function getAvailableAuthProviders() {
-  return AUTH_PROVIDER_DEFINITIONS.filter((definition) => isAuthProviderEnabled(definition.id));
+  return AUTH_PROVIDER_DEFINITIONS.filter((definition) =>
+    isAuthProviderEnabled(definition.id),
+  );
 }
 
 export function getVisibleAuthProviders(
@@ -347,7 +394,9 @@ export function buildAuthStartPath(
   callbackUrl?: string | null,
   oauthQuery?: string | null,
 ) {
-  const provider = AUTH_PROVIDER_DEFINITIONS.find((definition) => definition.id === providerId);
+  const provider = AUTH_PROVIDER_DEFINITIONS.find(
+    (definition) => definition.id === providerId,
+  );
   if (!provider?.loginStartPath) {
     return null;
   }

@@ -22,13 +22,26 @@ Sobald du in Realite eingeloggt bist, kannst du den Kern des Produkts nutzen:
 - Events direkt beitreten, anfragen oder Interesse zeigen
 - öffentliche Eventseiten öffnen
 
-Dafür brauchst du **keinen verbundenen Kalender**.
+Dafür brauchst du **keinen verbundenen Kalender und keine verbundenen Kontakte**.
+
+Der Login mit Google fragt beim ersten Anmelden nur die nötigsten Berechtigungen an: Name, E-Mail und Profilbild. Kalender und Kontakte werden **nicht** automatisch beim Login freigegeben – du entscheidest später selbst, ob und wann du sie verbindest.
 
 Wenn dein Login-Anbieter ein Profilbild liefert, übernimmt Realite es als Startwert, solange du noch kein eigenes Realite-Profilbild gespeichert hast. Ein später hochgeladenes Profilbild wird im konfigurierten S3-kompatiblen Speicher abgelegt und im Realite-Profil gespeichert.
 
 Für einen schnellen ersten Blick gibt es zusätzlich **Ohne Konto starten**. Das ist ein temporärer Gastzugang ohne Google, Apple oder Microsoft. Er verbindet keinen Kalender und keine Kontakte; du solltest später einen echten Login verbinden, wenn du Realite dauerhaft nutzen willst.
 
 Wenn du Realite bewusst erst ohne Kalender nutzen willst, hilft dir zusätzlich **[Ohne Kalender starten](/docs/ohne-kalender-starten)**.
+
+## Kalender und Kontakte später verbinden
+
+Nach dem Login kannst du unter **Profil & Einstellungen → Verbindungen** jederzeit Kalender oder Kontakte separat verbinden.
+
+Beide Verbindungen sind optional:
+
+- **Google Kalender**: Gibt Realite Zugriff auf Verfügbarkeitsabgleich, automatische Kalender-Vormerkungen und Import markierter Termine. Ohne diese Verbindung bleiben Events, Gruppen und Vorschläge nutzbar.
+- **Google Kontakte**: Importiert deine Google-Kontaktgruppen als Kreise in Realite. Ohne diese Verbindung bleiben Gruppen und Kreise direkt über Realite nutzbar.
+
+Beide Verbindungen können jederzeit in deinen [Google-Konto-Einstellungen](https://myaccount.google.com/connections) widerrufen werden.
 
 ## Was zusätzlichen Kalenderzugriff braucht
 
@@ -122,13 +135,12 @@ Solange diese Pfade noch fehlen, bleibt der wichtigste Unterschied:
 
 ## Woran du deinen aktuellen Zustand erkennst
 
-Unter **Profil & Einstellungen** zeigt Realite den Kalenderstatus bewusst getrennt an:
+Unter **Profil & Einstellungen** zeigt Realite den Verbindungsstatus getrennt an:
 
-- **Kalenderzugriff aktiv**
-- **Später verbinden**
-- **Kalenderzugriff prüfen**
+- **Verbindungen**: Kalender und Kontakte mit Status „Verbunden“ oder „Nicht verbunden“ sowie je einem direkten Verbinden-Button
+- **Kalender-Einstellungen**: Zeigt „Kalenderzugriff aktiv“, „Kalenderzugriff prüfen“ oder „Calendar später verbinden“
 
-So siehst du direkt, ob gerade nur der optionale Kalenderkontext fehlt oder ob du ihn aktiv neu freigeben musst.
+So siehst du direkt, was gerade aktiv ist und was du optional ergänzen kannst.
 
 ## Was nicht automatisch passiert
 

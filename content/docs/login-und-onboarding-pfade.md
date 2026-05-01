@@ -55,11 +55,17 @@ Google ist ein voll unterstützter Login-Pfad und heute auch der einzige ausgeba
 
 Das bedeutet aktuell:
 
-- Google kann als Login genutzt werden
-- Google Kalender kann optional als Planungskontext verbunden werden
-- Google Kontakte können als Relevanz- und Gruppenkontext synchronisiert werden
+- Google kann als Login genutzt werden. Beim ersten Anmelden werden nur Name, E-Mail und Profilbild angefragt – keine Kalender- oder Kontakte-Berechtigung.
+- Google Kalender kann **nach dem Login** optional unter **Profil & Einstellungen → Verbindungen** als Planungskontext verbunden werden.
+- Google Kontakte können ebenso separat verbunden werden, um Kontaktgruppen als Kreise zu importieren.
 
-Produktlogisch bleibt aber auch hier derselbe Kern:
+Was sich dabei **nicht** ändert:
+
+- der Login selbst braucht keine Kalender- oder Kontakte-Berechtigung
+- Realite fragt nie automatisch mehr, als der Nutzer aktiv freigibt
+- beide Verbindungen können unabhängig voneinander verbunden oder jederzeit widerrufen werden
+
+Produktlogisch bleibt auch hier derselbe Kern:
 
 - zuerst Aktivitäten, Kreise und Reaktionen
 - danach optional Kalender- und Kontaktkontext

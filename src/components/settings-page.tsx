@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { toast } from "@/src/components/toaster";
 import { AppShell } from "@/src/components/app-shell";
 import { SinglesProfileImageField } from "@/src/components/singles-profile-image-field";
+import { GoogleConnectCard } from "@/src/components/settings/google-connect-card";
 import { AccountDeleteCard } from "@/src/components/settings/account-delete-card";
 import { DatingSettingsCard } from "@/src/components/settings/dating-settings-card";
 import { MpcSettingsCard } from "@/src/components/settings/mcp-settings-card";
@@ -16,7 +17,10 @@ import {
   type SuggestionSettingsForm,
 } from "@/src/components/settings/suggestion-settings-card";
 import { ThemeSettingsCard } from "@/src/components/settings/theme-settings-card";
-import type { CalendarConnectionState } from "@/src/lib/calendar-connection-state";
+import type {
+  CalendarConnectionState,
+  ContactsConnectionState,
+} from "@/src/lib/calendar-connection-state";
 import { getSuggestionSettingsMessaging } from "@/src/lib/calendar-messaging";
 import {
   getPageIntentMeta,
@@ -67,6 +71,8 @@ type SettingsPayload = {
   readableCalendars: ReadableCalendar[];
   calendarConnected: boolean;
   calendarConnectionState: CalendarConnectionState;
+  contactsConnectionState: ContactsConnectionState;
+  isGoogleUser: boolean;
   error?: string;
 };
 
@@ -95,6 +101,8 @@ const emptySettings: SettingsPayload = {
   readableCalendars: [],
   calendarConnected: false,
   calendarConnectionState: "not_connected",
+  contactsConnectionState: "not_connected",
+  isGoogleUser: false,
 };
 
 const SETTINGS_QUERY_KEY = ["settings"] as const;
@@ -340,6 +348,12 @@ export function SettingsPage({
             </div>
           </section>
         ) : null}
+
+        <GoogleConnectCard
+          isGoogleUser={data.isGoogleUser}
+          calendarConnectionState={data.calendarConnectionState}
+          contactsConnectionState={data.contactsConnectionState}
+        />
 
         <ThemeSettingsCard />
 

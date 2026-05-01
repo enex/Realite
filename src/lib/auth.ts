@@ -13,16 +13,26 @@ import {
   GOOGLE_AUTH_PROVIDER,
   MICROSOFT_AUTH_PROVIDER,
   isDevelopmentAuthMode,
-  isAuthProviderEnabled
+  isAuthProviderEnabled,
 } from "@/src/lib/provider-adapters";
 
-const authBaseUrl = process.env.BETTER_AUTH_URL ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000";
-const authSecret = process.env.BETTER_AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+const authBaseUrl =
+  process.env.BETTER_AUTH_URL ??
+  process.env.NEXTAUTH_URL ??
+  "http://localhost:3000";
+const authSecret =
+  process.env.BETTER_AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
 export const AUTH_ISSUER = process.env.BETTER_AUTH_ISSUER ?? authBaseUrl;
 export const MCP_RESOURCE_AUDIENCE = `${authBaseUrl}/api/mcp`;
 export const MCP_RESOURCE_ALIAS_AUDIENCE = `${authBaseUrl}/mcp`;
 const mcpScopes = ["realite:read", "realite:write"] as const;
-const oauthScopes = ["openid", "profile", "email", "offline_access", ...mcpScopes] as const;
+const oauthScopes = [
+  "openid",
+  "profile",
+  "email",
+  "offline_access",
+  ...mcpScopes,
+] as const;
 
 function createAuth() {
   const socialProviders: Record<string, Record<string, unknown>> = {};
@@ -31,9 +41,11 @@ function createAuth() {
     socialProviders.google = {
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+      // Nur minimale Login-Scopes. Kalender und Kontakte werden separat
+      // über /api/auth/connect/google inkrementell angefragt.
       scope: [...GOOGLE_AUTH_PROVIDER.scopes],
       accessType: "offline",
-      prompt: "consent"
+      prompt: "consent",
     };
   }
 
@@ -41,7 +53,7 @@ function createAuth() {
     socialProviders.apple = {
       clientId: process.env.APPLE_CLIENT_ID ?? "",
       clientSecret: process.env.APPLE_CLIENT_SECRET ?? "",
-      scope: [...APPLE_AUTH_PROVIDER.scopes]
+      scope: [...APPLE_AUTH_PROVIDER.scopes],
     };
   }
 
@@ -50,7 +62,7 @@ function createAuth() {
       clientId: process.env.MICROSOFT_CLIENT_ID ?? "",
       clientSecret: process.env.MICROSOFT_CLIENT_SECRET ?? "",
       tenantId: process.env.MICROSOFT_TENANT_ID ?? "common",
-      scope: [...MICROSOFT_AUTH_PROVIDER.scopes]
+      scope: [...MICROSOFT_AUTH_PROVIDER.scopes],
     };
   }
 
@@ -60,19 +72,19 @@ function createAuth() {
     database: drizzleAdapter(getDb(), {
       provider: "pg",
       schema: authSchema,
-      camelCase: true
+      camelCase: true,
     }),
     plugins: [
       nextCookies(),
       anonymous({
         emailDomainName: "guest.realite.local",
-        generateName: () => "Gast"
+        generateName: () => "Gast",
       }),
       jwt({
         disableSettingJwtHeader: true,
         jwt: {
-          issuer: AUTH_ISSUER
-        }
+          issuer: AUTH_ISSUER,
+        },
       }),
       oauthProvider({
         loginPage: "/mcp/oauth/login",
@@ -82,29 +94,29 @@ function createAuth() {
         clientRegistrationDefaultScopes: [...oauthScopes],
         clientRegistrationAllowedScopes: [...oauthScopes],
         allowDynamicClientRegistration: true,
-        allowUnauthenticatedClientRegistration: true
-      })
+        allowUnauthenticatedClientRegistration: true,
+      }),
     ],
     user: {
-      modelName: "authUser"
+      modelName: "authUser",
     },
     session: {
       modelName: "authSession",
-      storeSessionInDatabase: true
+      storeSessionInDatabase: true,
     },
     account: {
-      modelName: "authAccount"
+      modelName: "authAccount",
     },
     verification: {
-      modelName: "authVerification"
+      modelName: "authVerification",
     },
     emailAndPassword: isDevelopmentAuthMode()
       ? {
           enabled: true,
-          autoSignIn: false
+          autoSignIn: false,
         }
       : undefined,
-    socialProviders
+    socialProviders,
   });
 }
 
@@ -122,7 +134,7 @@ export function getAuth() {
 
 export async function getAuthSessionFromHeaders(requestHeaders: Headers) {
   return getAuth().api.getSession({
-    headers: requestHeaders
+    headers: requestHeaders,
   });
 }
 

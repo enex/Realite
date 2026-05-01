@@ -1,5 +1,6 @@
 "use client";
 
+import { GOOGLE_CONNECT_BASE_PATH } from "@/src/lib/provider-adapters";
 import { useMemo } from "react";
 import type { CalendarConnectionState } from "@/src/lib/calendar-connection-state";
 import { getSuggestionSettingsMessaging } from "@/src/lib/calendar-messaging";
@@ -51,12 +52,12 @@ export function SuggestionSettingsCard({
   form,
   busy,
   onFormChange,
-  onSubmit
+  onSubmit,
 }: SuggestionSettingsCardProps) {
-  const reconnectHref = "/api/auth/signin/google?callbackUrl=%2Fsettings";
+  const reconnectHref = `${GOOGLE_CONNECT_BASE_PATH}?scope_set=calendar&callbackUrl=%2Fsettings`;
   const blockedPeopleById = useMemo(
     () => new Map(blockedPeople.map((entry) => [entry.id, entry.label])),
-    [blockedPeople]
+    [blockedPeople],
   );
   const messaging = getSuggestionSettingsMessaging(calendarConnectionState);
   const warningClassName =
@@ -70,34 +71,48 @@ export function SuggestionSettingsCard({
       ...form,
       matchingCalendarIds: exists
         ? form.matchingCalendarIds.filter((id) => id !== calendarId)
-        : [...form.matchingCalendarIds, calendarId]
+        : [...form.matchingCalendarIds, calendarId],
     });
   }
 
   function removeBlockedCreator(creatorId: string) {
     onFormChange({
       ...form,
-      blockedCreatorIds: form.blockedCreatorIds.filter((id) => id !== creatorId)
+      blockedCreatorIds: form.blockedCreatorIds.filter(
+        (id) => id !== creatorId,
+      ),
     });
   }
 
   function removeBlockedActivity(tag: string) {
     onFormChange({
       ...form,
-      blockedActivityTags: form.blockedActivityTags.filter((entry) => entry !== tag)
+      blockedActivityTags: form.blockedActivityTags.filter(
+        (entry) => entry !== tag,
+      ),
     });
   }
 
   return (
     <section className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-foreground">Vorschlags-Einstellungen</h2>
+      <h2 className="text-lg font-semibold text-foreground">
+        Vorschlags-Einstellungen
+      </h2>
       <div className="mt-3 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3">
-        <p className="text-xs font-medium uppercase tracking-wide text-teal-700">Automatisch vorgemerkt</p>
-        <p className="mt-1 text-2xl font-semibold text-teal-900">{autoInsertedSuggestionCount}</p>
-        <p className="text-xs text-teal-700">{messaging.autoInsertDescription}</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-teal-700">
+          Automatisch vorgemerkt
+        </p>
+        <p className="mt-1 text-2xl font-semibold text-teal-900">
+          {autoInsertedSuggestionCount}
+        </p>
+        <p className="text-xs text-teal-700">
+          {messaging.autoInsertDescription}
+        </p>
       </div>
       <div className="mt-3 rounded-lg border border-border bg-muted px-4 py-3">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{messaging.supportTitle}</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {messaging.supportTitle}
+        </p>
         <p className="mt-1 text-sm text-foreground">{messaging.supportBody}</p>
       </div>
       {messaging.warning ? (
@@ -111,7 +126,9 @@ export function SuggestionSettingsCard({
               >
                 Kalenderzugriff erneut freigeben
               </a>
-              <p className="text-xs text-rose-600">Führt über Google und bringt dich danach wieder hierher.</p>
+              <p className="text-xs text-rose-600">
+                Führt über Google und bringt dich danach wieder hierher.
+              </p>
             </div>
           ) : null}
         </div>
@@ -125,17 +142,20 @@ export function SuggestionSettingsCard({
             onChange={(event) =>
               onFormChange({
                 ...form,
-                autoInsertSuggestions: event.target.checked
+                autoInsertSuggestions: event.target.checked,
               })
             }
             disabled={busy}
           />
-          <span className="text-sm text-foreground">Potenzielle Events zusätzlich in meinen Kalender eintragen</span>
+          <span className="text-sm text-foreground">
+            Potenzielle Events zusätzlich in meinen Kalender eintragen
+          </span>
         </label>
 
         <div className="rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground sm:col-span-2">
-          Wenn Kalenderzugriff aktiv ist, werden Vorschläge als Kalendereintrag mit Realite-Link erstellt. Zu-/Absage
-          läuft weiterhin direkt über die Realite-Seite.
+          Wenn Kalenderzugriff aktiv ist, werden Vorschläge als Kalendereintrag
+          mit Realite-Link erstellt. Zu-/Absage läuft weiterhin direkt über die
+          Realite-Seite.
         </div>
 
         <select
@@ -143,24 +163,31 @@ export function SuggestionSettingsCard({
           onChange={(event) =>
             onFormChange({
               ...form,
-              suggestionCalendarId: event.target.value
+              suggestionCalendarId: event.target.value,
             })
           }
           className="w-full rounded-lg border border-input px-3 py-2 text-sm"
           disabled={!calendarConnected || calendars.length === 0 || busy}
         >
-          {calendars.length === 0 ? <option value="primary">Primary</option> : null}
+          {calendars.length === 0 ? (
+            <option value="primary">Primary</option>
+          ) : null}
           {calendars.map((calendar) => (
             <option key={calendar.id} value={calendar.id}>
-              {calendar.primary ? `${calendar.summary} (Primary)` : calendar.summary}
+              {calendar.primary
+                ? `${calendar.summary} (Primary)`
+                : calendar.summary}
             </option>
           ))}
         </select>
 
         <div className="rounded-lg border border-border p-3 text-sm sm:col-span-2">
-          <p className="font-medium text-foreground">Optionaler Kalenderkontext für Matching und Event-Fund</p>
+          <p className="font-medium text-foreground">
+            Optionaler Kalenderkontext für Matching und Event-Fund
+          </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Nur diese Kalender werden für Verfügbarkeit und #alle-Sync des aktuellen Nutzers verwendet.
+            Nur diese Kalender werden für Verfügbarkeit und #alle-Sync des
+            aktuellen Nutzers verwendet.
           </p>
           <div className="mt-2 flex gap-2">
             <button
@@ -168,7 +195,9 @@ export function SuggestionSettingsCard({
               onClick={() =>
                 onFormChange({
                   ...form,
-                  matchingCalendarIds: readableCalendars.map((calendar) => calendar.id)
+                  matchingCalendarIds: readableCalendars.map(
+                    (calendar) => calendar.id,
+                  ),
                 })
               }
               disabled={busy || !calendarConnected}
@@ -181,7 +210,7 @@ export function SuggestionSettingsCard({
               onClick={() =>
                 onFormChange({
                   ...form,
-                  matchingCalendarIds: []
+                  matchingCalendarIds: [],
                 })
               }
               disabled={busy || !calendarConnected}
@@ -192,7 +221,10 @@ export function SuggestionSettingsCard({
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {readableCalendars.map((calendar) => (
-              <label key={calendar.id} className="flex items-center gap-2 rounded border border-border px-2 py-1">
+              <label
+                key={calendar.id}
+                className="flex items-center gap-2 rounded border border-border px-2 py-1"
+              >
                 <input
                   type="checkbox"
                   checked={form.matchingCalendarIds.includes(calendar.id)}
@@ -200,17 +232,25 @@ export function SuggestionSettingsCard({
                   disabled={busy || !calendarConnected}
                 />
                 <span className="text-xs text-foreground">
-                  {calendar.primary ? `${calendar.summary} (Primary)` : calendar.summary}
+                  {calendar.primary
+                    ? `${calendar.summary} (Primary)`
+                    : calendar.summary}
                 </span>
               </label>
             ))}
           </div>
-          {messaging.disabledHint ? <p className="mt-3 text-xs text-muted-foreground">{messaging.disabledHint}</p> : null}
+          {messaging.disabledHint ? (
+            <p className="mt-3 text-xs text-muted-foreground">
+              {messaging.disabledHint}
+            </p>
+          ) : null}
         </div>
 
         <div className="rounded-lg border border-border p-3 text-sm">
           <p className="font-medium text-foreground">Maximal pro Tag</p>
-          <p className="mt-1 text-xs text-muted-foreground">Wie viele Vorschläge an einem Tag höchstens bleiben.</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Wie viele Vorschläge an einem Tag höchstens bleiben.
+          </p>
           <input
             type="number"
             min={1}
@@ -219,7 +259,8 @@ export function SuggestionSettingsCard({
             onChange={(event) =>
               onFormChange({
                 ...form,
-                suggestionLimitPerDay: Number.parseInt(event.target.value || "1", 10) || 1
+                suggestionLimitPerDay:
+                  Number.parseInt(event.target.value || "1", 10) || 1,
               })
             }
             className="mt-2 w-full rounded border border-input px-2 py-1"
@@ -229,7 +270,9 @@ export function SuggestionSettingsCard({
 
         <div className="rounded-lg border border-border p-3 text-sm">
           <p className="font-medium text-foreground">Maximal pro Woche</p>
-          <p className="mt-1 text-xs text-muted-foreground">Wie viele Vorschläge in einer Woche höchstens bleiben.</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Wie viele Vorschläge in einer Woche höchstens bleiben.
+          </p>
           <input
             type="number"
             min={1}
@@ -238,7 +281,8 @@ export function SuggestionSettingsCard({
             onChange={(event) =>
               onFormChange({
                 ...form,
-                suggestionLimitPerWeek: Number.parseInt(event.target.value || "1", 10) || 1
+                suggestionLimitPerWeek:
+                  Number.parseInt(event.target.value || "1", 10) || 1,
               })
             }
             className="mt-2 w-full rounded border border-input px-2 py-1"
@@ -249,14 +293,19 @@ export function SuggestionSettingsCard({
         <div className="rounded-lg border border-border p-3 text-sm sm:col-span-2">
           <p className="font-medium text-foreground">Feste Ausschlüsse</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Diese Einträge entstehen über Absagegründe und werden künftig nicht mehr vorgeschlagen.
+            Diese Einträge entstehen über Absagegründe und werden künftig nicht
+            mehr vorgeschlagen.
           </p>
 
           <div className="mt-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Personen</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Personen
+            </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {form.blockedCreatorIds.length === 0 ? (
-                <span className="text-xs text-muted-foreground">Keine blockierten Personen.</span>
+                <span className="text-xs text-muted-foreground">
+                  Keine blockierten Personen.
+                </span>
               ) : null}
               {form.blockedCreatorIds.map((creatorId) => (
                 <button
@@ -266,17 +315,22 @@ export function SuggestionSettingsCard({
                   className="rounded-full border border-input px-2 py-1 text-xs text-foreground hover:bg-muted"
                   disabled={busy}
                 >
-                  {blockedPeopleById.get(creatorId) ?? creatorId.slice(0, 8)} · Entfernen
+                  {blockedPeopleById.get(creatorId) ?? creatorId.slice(0, 8)} ·
+                  Entfernen
                 </button>
               ))}
             </div>
           </div>
 
           <div className="mt-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Aktivitäten</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Aktivitäten
+            </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {form.blockedActivityTags.length === 0 ? (
-                <span className="text-xs text-muted-foreground">Keine blockierten Aktivitäten.</span>
+                <span className="text-xs text-muted-foreground">
+                  Keine blockierten Aktivitäten.
+                </span>
               ) : null}
               {form.blockedActivityTags.map((tag) => (
                 <button
