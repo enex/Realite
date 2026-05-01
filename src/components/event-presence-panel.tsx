@@ -18,6 +18,7 @@ import {
 } from "@/src/lib/event-presence";
 import { type EventVisibility } from "@/src/lib/event-visibility";
 import { getPersonDisplayLabel } from "@/src/lib/person-display";
+import { toast } from "@/src/components/toaster";
 
 type PresenceUser = {
   userId: string;
@@ -60,8 +61,6 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
   );
   const [checkedInUsers, setCheckedInUsers] = useState(props.initialCheckedInUsers);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [savedMessage, setSavedMessage] = useState<string | null>(null);
   const [seatNote, setSeatNote] = useState("");
   const startsAt = new Date(props.startsAtIso);
   const endsAt = new Date(props.endsAtIso);
@@ -110,8 +109,6 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
 
   async function updateStatus(nextStatus: EventPresenceStatus) {
     setBusy(true);
-    setError(null);
-    setSavedMessage(null);
 
     try {
       const response = await fetch(`/api/events/${props.eventId}/presence`, {
@@ -147,11 +144,9 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
       if (payload.summary.currentUserVisibleUntilIso) {
         setSelectedVisibleUntilIso(payload.summary.currentUserVisibleUntilIso);
       }
-      setSavedMessage(
-        getEventPresenceToggleCopy(nextStatus === "checked_in").successMessage,
-      );
+      toast(getEventPresenceToggleCopy(nextStatus === "checked_in").successMessage);
     } catch (requestError) {
-      setError(
+      toast.error(
         requestError instanceof Error ? requestError.message : "Unbekannter Fehler",
       );
     } finally {
@@ -262,17 +257,6 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
           <p className="mt-2 text-sm leading-relaxed text-foreground">{audienceCopy.description}</p>
         ) : null}
       </div>
-
-      {savedMessage ? (
-        <p className="mt-4 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-800 dark:border-teal-500/35 dark:bg-teal-950/50">
-          {savedMessage}
-        </p>
-      ) : null}
-      {error ? (
-        <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-500/40 dark:bg-red-950/45">
-          {error}
-        </p>
-      ) : null}
     </section>
   );
 }
