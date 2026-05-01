@@ -7,11 +7,13 @@ import { useMemo, useState } from "react";
 import { AppShell } from "@/src/components/app-shell";
 import { CalendarReconnectBanner } from "@/src/components/calendar-reconnect-banner";
 import { UserAvatar } from "@/src/components/user-avatar";
+import { toast } from "@/src/components/toaster";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
 import type { CalendarConnectionState } from "@/src/lib/calendar-connection-state";
 import { getGroupManagementState, sortGroupsForManagement } from "@/src/lib/group-management";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
+import { useQueryErrorToast } from "@/src/lib/use-query-error-toast";
 
 type GroupContact = {
   groupId: string;
@@ -86,8 +88,9 @@ export function GroupsPage({
   });
   const data = queryData ?? emptyPayload;
 
+  useQueryErrorToast(queryError);
+
   const [busy, setBusy] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [showGroupForm, setShowGroupForm] = useState(false);
   const [groupForm, setGroupForm] = useState({
     name: "",
@@ -108,7 +111,6 @@ export function GroupsPage({
   async function createGroup(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setSubmitError(null);
     try {
       const hashtags = groupForm.hashtags
         .split(",")
@@ -140,8 +142,9 @@ export function GroupsPage({
       setGroupForm({ name: "", description: "", hashtags: "#alle", visibility: "private" });
       setShowGroupForm(false);
       await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+      toast.success("Gruppe erstellt.");
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Unbekannter Fehler");
+      toast.error(err instanceof Error ? err.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -160,11 +163,6 @@ export function GroupsPage({
           </button>
         </div>
 
-        {(queryError || submitError) ? (
-          <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {submitError ?? (queryError instanceof Error ? queryError.message : String(queryError))}
-          </div>
-        ) : null}
         <CalendarReconnectBanner calendarConnectionState={data.me.calendarConnectionState} />
         {data.sync.warning ? (
           <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">

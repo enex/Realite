@@ -2,6 +2,8 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+
+import { toast } from "@/src/components/toaster";
 import { AppShell } from "@/src/components/app-shell";
 import { UserAvatar } from "@/src/components/user-avatar";
 import { AccountDeleteCard } from "@/src/components/settings/account-delete-card";
@@ -16,6 +18,7 @@ import { getSuggestionSettingsMessaging } from "@/src/lib/calendar-messaging";
 import { getPageIntentMeta, pageLeadClassName, pageMetaClassName, pageShellClassName, pageTitleClassName } from "@/src/lib/page-hierarchy";
 import { useDatingSettings } from "@/src/components/settings/use-dating-settings";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
+import { useQueryErrorToast } from "@/src/lib/use-query-error-toast";
 import { MCP_SERVER_FLAG } from "@/src/lib/posthog/flag-keys";
 
 type WritableCalendar = {
@@ -110,13 +113,12 @@ export function SettingsPage({
   const data = queryData ?? emptySettings;
   const settingsMessaging = getSuggestionSettingsMessaging(data.calendarConnectionState);
 
+  useQueryErrorToast(queryError);
+
   const [busy, setBusy] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState(userImage);
   const [profileImageBusy, setProfileImageBusy] = useState(false);
-  const [profileImageMessage, setProfileImageMessage] = useState<string | null>(null);
   const [suggestionForm, setSuggestionForm] = useState<SuggestionSettingsForm>(emptySettings.settings);
 
   const dating = useDatingSettings();
@@ -132,7 +134,6 @@ export function SettingsPage({
   async function saveSuggestionSettings(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setSubmitError(null);
 
     try {
       const response = await fetch("/api/settings", {
@@ -150,8 +151,9 @@ export function SettingsPage({
         prev ? { ...prev, ...payload } : payload
       );
       setSuggestionForm(payload.settings);
+      toast.success("Einstellungen gespeichert.");
     } catch (settingsError) {
-      setSubmitError(settingsError instanceof Error ? settingsError.message : "Unbekannter Fehler");
+      toast.error(settingsError instanceof Error ? settingsError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -166,8 +168,6 @@ export function SettingsPage({
     if (!file) return;
 
     setProfileImageBusy(true);
-    setSubmitError(null);
-    setProfileImageMessage(null);
 
     try {
       const formData = new FormData();
@@ -198,9 +198,9 @@ export function SettingsPage({
       }
 
       setProfileImage(savePayload.profile.image);
-      setProfileImageMessage("Profilbild gespeichert.");
+      toast.success("Profilbild gespeichert.");
     } catch (imageError) {
-      setSubmitError(imageError instanceof Error ? imageError.message : "Unbekannter Fehler");
+      toast.error(imageError instanceof Error ? imageError.message : "Unbekannter Fehler");
     } finally {
       setProfileImageBusy(false);
     }
@@ -215,7 +215,6 @@ export function SettingsPage({
     }
 
     setDeleteBusy(true);
-    setDeleteError(null);
 
     try {
       const response = await fetch("/api/settings/account", {
@@ -229,7 +228,9 @@ export function SettingsPage({
 
       window.location.href = "/";
     } catch (accountDeleteError) {
-      setDeleteError(accountDeleteError instanceof Error ? accountDeleteError.message : "Unbekannter Fehler");
+      toast.error(
+        accountDeleteError instanceof Error ? accountDeleteError.message : "Unbekannter Fehler",
+      );
     } finally {
       setDeleteBusy(false);
     }
@@ -268,23 +269,12 @@ export function SettingsPage({
                       onChange={(event) => uploadProfileImage(event.target.files?.[0])}
                     />
                   </label>
-                  {profileImageMessage ? (
-                    <span className="text-sm text-teal-700">{profileImageMessage}</span>
-                  ) : null}
                 </div>
               </div>
             </div>
           </div>
         </header>
 
-        {(queryError || submitError) ? (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {submitError ?? (queryError instanceof Error ? queryError.message : String(queryError))}
-          </div>
-        ) : null}
-        {datingModeEnabled && dating.error ? (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{dating.error}</div>
-        ) : null}
         {loading ? <p className="mt-6 text-muted-foreground">Lade Einstellungen...</p> : null}
 
         {isAnonymous ? (
@@ -342,7 +332,7 @@ export function SettingsPage({
 
         {mcpServerEnabled ? <MpcSettingsCard /> : null}
 
-        <AccountDeleteCard busy={deleteBusy} error={deleteError} onDelete={deleteAccount} />
+        <AccountDeleteCard busy={deleteBusy} onDelete={deleteAccount} />
       </main>
     </AppShell>
   );

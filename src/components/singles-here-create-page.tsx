@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 
+import { toast } from "@/src/components/toaster";
 import { normalizeSinglesHereSlug } from "@/src/lib/singles-here";
 
 function toLocalInputValue(date: Date) {
@@ -18,7 +19,6 @@ export function SinglesHereCreatePage() {
     toLocalInputValue(new Date(Date.now() + 3 * 60 * 60_000)),
   );
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const slug = useMemo(
     () => normalizeSinglesHereSlug(slugInput || name),
@@ -28,7 +28,6 @@ export function SinglesHereCreatePage() {
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setError(null);
 
     try {
       const response = await fetch("/api/singles/events", {
@@ -52,7 +51,7 @@ export function SinglesHereCreatePage() {
 
       window.location.href = `/singles/${encodeURIComponent(payload.event.slug)}`;
     } catch (submitError) {
-      setError(
+      toast.error(
         submitError instanceof Error ? submitError.message : "Unbekannter Fehler",
       );
     } finally {
@@ -137,11 +136,6 @@ export function SinglesHereCreatePage() {
         >
           Event erstellen
         </button>
-        {error ? (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-            {error}
-          </p>
-        ) : null}
       </form>
     </main>
   );

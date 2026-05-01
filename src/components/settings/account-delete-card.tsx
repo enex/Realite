@@ -2,11 +2,10 @@
 
 type AccountDeleteCardProps = {
   busy: boolean;
-  error: string | null;
   onDelete: () => void;
 };
 
-export function AccountDeleteCard({ busy, error, onDelete }: AccountDeleteCardProps) {
+export function AccountDeleteCard({ busy, onDelete }: AccountDeleteCardProps) {
   return (
     <section className="mt-6 rounded-2xl border border-red-200 bg-red-50/60 p-6 shadow-sm">
       <h2 className="text-lg font-semibold text-red-900">Account löschen</h2>
@@ -16,10 +15,6 @@ export function AccountDeleteCard({ busy, error, onDelete }: AccountDeleteCardPr
       <p className="mt-1 text-sm text-red-800">
         Zusätzlich werden zuvor von Realite angelegte Kalendereinträge aus deinem Kalender entfernt.
       </p>
-
-      {error ? (
-        <div className="mt-4 rounded-lg border border-red-300 bg-card/70 px-4 py-3 text-sm text-red-800">{error}</div>
-      ) : null}
 
       <div className="mt-4">
         <button

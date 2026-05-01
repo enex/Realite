@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { toast } from "@/src/components/toaster";
+
 export type DatingGender = "woman" | "man" | "non_binary";
 
 export type DatingSettingsPayload = {
@@ -69,7 +71,9 @@ export function useDatingSettings() {
       setData(payload);
       setForm(payload.profile);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Unbekannter Fehler");
+      const msg = loadError instanceof Error ? loadError.message : "Unbekannter Fehler";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -96,9 +100,12 @@ export function useDatingSettings() {
 
       setData(payload);
       setForm(payload.profile);
+      toast.success("Dating-Einstellungen gespeichert.");
       return true;
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Unbekannter Fehler");
+      const msg = saveError instanceof Error ? saveError.message : "Unbekannter Fehler";
+      setError(msg);
+      toast.error(msg);
       return false;
     } finally {
       setBusy(false);

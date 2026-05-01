@@ -12,6 +12,7 @@ import {
 } from "@/src/lib/event-presence";
 import type { DatingGender } from "@/src/lib/dating";
 import { SinglesProfileImageField } from "@/src/components/singles-profile-image-field";
+import { toast } from "@/src/components/toaster";
 import type { SinglesHereClientPayload } from "@/src/lib/singles-here-payload";
 
 type SinglesHerePageProps = {
@@ -109,8 +110,6 @@ export function SinglesHerePage({
     initialPayload.profile.soughtAgeMax?.toString() ?? "45",
   );
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [profileEditorOpen, setProfileEditorOpen] = useState(
     !initialPayload.profileUnlocked,
@@ -205,8 +204,6 @@ export function SinglesHerePage({
     }
 
     setImageUploading(true);
-    setError(null);
-    setMessage(null);
 
     try {
       const formData = new FormData();
@@ -228,11 +225,9 @@ export function SinglesHerePage({
       setProfileImageDisplayUrl(
         payload.viewerImageUrl ?? payload.imageUrl ?? null,
       );
-      setMessage("Bild hochgeladen. Speichere dein Profil, damit andere es sehen.");
+      toast.success("Bild hochgeladen. Speichere dein Profil, damit andere es sehen.");
     } catch (uploadError) {
-      setError(
-        uploadError instanceof Error ? uploadError.message : "Unbekannter Fehler",
-      );
+      toast.error(uploadError instanceof Error ? uploadError.message : "Unbekannter Fehler");
     } finally {
       setImageUploading(false);
     }
@@ -241,8 +236,6 @@ export function SinglesHerePage({
   async function saveProfile(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setError(null);
-    setMessage(null);
 
     try {
       const response = await fetch(
@@ -277,11 +270,11 @@ export function SinglesHerePage({
         profileUnlocked: Boolean(result.profileUnlocked),
         age: result.age ?? null,
       }));
-      setMessage("Dein Profil ist gespeichert.");
+      toast.success("Dein Profil ist gespeichert.");
       setProfileEditorOpen(false);
       await refresh();
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Unbekannter Fehler");
+      toast.error(saveError instanceof Error ? saveError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -290,8 +283,6 @@ export function SinglesHerePage({
   async function saveEvent(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setError(null);
-    setMessage(null);
 
     try {
       const response = await fetch(
@@ -326,10 +317,10 @@ export function SinglesHerePage({
           endsAt: updatedEvent.endsAt,
         },
       }));
-      setMessage("Event gespeichert.");
+      toast.success("Event gespeichert.");
       setEventEditorOpen(false);
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Unbekannter Fehler");
+      toast.error(saveError instanceof Error ? saveError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -337,8 +328,6 @@ export function SinglesHerePage({
 
   async function updatePresence(status: EventPresenceStatus) {
     setBusy(true);
-    setError(null);
-    setMessage(null);
 
     try {
       const response = await fetch(`/api/events/${payload.event.id}/presence`, {
@@ -354,14 +343,14 @@ export function SinglesHerePage({
         throw new Error(result.error ?? "Status konnte nicht gespeichert werden.");
       }
 
-      setMessage(
+      toast.success(
         status === "checked_in"
           ? "Du bist jetzt für dieses Event sichtbar."
           : "Du bist nicht mehr vor Ort sichtbar.",
       );
       await refresh();
     } catch (presenceError) {
-      setError(
+      toast.error(
         presenceError instanceof Error
           ? presenceError.message
           : "Unbekannter Fehler",
@@ -512,8 +501,7 @@ export function SinglesHerePage({
               busy={imageUploading}
               onFileReady={(file) => void handleImageChange(file)}
               onError={(msg) => {
-                setError(msg);
-                setMessage(null);
+                toast.error(msg);
               }}
             />
             <label className="grid gap-1 text-sm">
@@ -713,17 +701,6 @@ export function SinglesHerePage({
           </div>
         ) : null}
 
-        {(error || message) && (
-          <section
-            className={`rounded-lg border px-3 py-2 text-sm lg:col-span-2 ${
-              error
-                ? "border-red-200 bg-red-50 text-red-800"
-                : "border-teal-200 bg-teal-50 text-teal-800"
-            }`}
-          >
-            {error ?? message}
-          </section>
-        )}
       </section>
     </main>
   );

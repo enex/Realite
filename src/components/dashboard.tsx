@@ -43,6 +43,7 @@ import {
 import { titleContainsDateTag } from "@/src/lib/dating";
 import { DASHBOARD_QUERY_KEY, fetchDashboard as fetchDashboardApi } from "@/src/lib/dashboard-query";
 import { getEventsViewMessaging } from "@/src/lib/calendar-messaging";
+import { useQueryErrorToast } from "@/src/lib/use-query-error-toast";
 
 type Group = {
   id: string;
@@ -248,9 +249,9 @@ export function Dashboard({
   });
   const data = queryData ?? emptyPayload;
 
+  useQueryErrorToast(queryError);
+
   const [busy, setBusy] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [quickShareError, setQuickShareError] = useState<string | null>(null);
   const [showEventForm, setShowEventForm] = useState(false);
   const [quickShareOpen, setQuickShareOpen] = useState(false);
   const [quickShareForm, setQuickShareForm] = useState({
@@ -370,11 +371,10 @@ export function Dashboard({
   async function createEvent(event: React.FormEvent) {
     event.preventDefault();
     if (eventForm.visibility === "group" && !eventForm.groupId) {
-      setSubmitError("Bitte wähle eine Gruppe aus.");
+      toast.error("Bitte wähle eine Gruppe aus.");
       return;
     }
     setBusy(true);
-    setSubmitError(null);
     try {
       const response = await fetch("/api/events", {
         method: "POST",
@@ -404,8 +404,9 @@ export function Dashboard({
       setEventForm({ title: "", description: "", location: "", startsAt: "", endsAt: "", visibility: "public", joinMode: "direct", allowOnSiteVisibility: false, groupId: "", color: "", category: "default" });
       setShowEventForm(false);
       await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+      toast.success("Event erstellt.");
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Unbekannter Fehler");
+      toast.error(err instanceof Error ? err.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -414,13 +415,12 @@ export function Dashboard({
   async function createQuickShare(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setQuickShareError(null);
 
     const now = new Date();
     const endsAt = new Date(now.getTime() + quickShareForm.durationMinutes * 60_000);
 
     if (quickShareForm.audience === "group" && !quickShareForm.groupId) {
-      setQuickShareError("Bitte wähle eine Gruppe.");
+      toast.error("Bitte wähle eine Gruppe.");
       setBusy(false);
       return;
     }
@@ -473,8 +473,9 @@ export function Dashboard({
       setQuickShareForm({ activity: "", location: "", durationMinutes: 120, mode: quickShareForm.mode, audience: quickShareForm.audience, groupId: "" });
       setQuickShareOpen(false);
       await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+      toast.success("Aktivität geteilt.");
     } catch (err) {
-      setQuickShareError(err instanceof Error ? err.message : "Unbekannter Fehler");
+      toast.error(err instanceof Error ? err.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -548,11 +549,6 @@ export function Dashboard({
         </div>
 
         {/* Warnings */}
-        {(queryError || (submitError && !showEventForm)) ? (
-          <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-950/45 dark:text-red-100">
-            {submitError && !showEventForm ? submitError : queryError instanceof Error ? queryError.message : String(queryError)}
-          </div>
-        ) : null}
         <CalendarReconnectBanner calendarConnectionState={data.me.calendarConnectionState} />
         {data.sync.warning ? <SyncWarning>{data.sync.warning}</SyncWarning> : null}
         {data.sync.contactsWarning ? <SyncWarning>{data.sync.contactsWarning}</SyncWarning> : null}
@@ -566,7 +562,7 @@ export function Dashboard({
 
         {/* Quick Share (nur /now) */}
         {!isEventsView ? (
-          <Dialog open={quickShareOpen} onOpenChange={(open) => { setQuickShareOpen(open); if (!open) setQuickShareError(null); }}>
+          <Dialog open={quickShareOpen} onOpenChange={setQuickShareOpen}>
             <DialogTrigger asChild>
               <button
                 type="button"
@@ -592,7 +588,6 @@ export function Dashboard({
                   form={quickShareForm}
                   groups={visibleGroups}
                   busy={busy}
-                  error={quickShareError}
                   onChange={(updates) => setQuickShareForm((s) => ({ ...s, ...updates }))}
                   onSubmit={createQuickShare}
                 />
@@ -636,7 +631,6 @@ export function Dashboard({
             smartMeetings={data.smartMeetings}
             pendingSuggestionCount={pendingCount}
             onCreated={() => queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY })}
-            onError={(message) => setSubmitError(message)}
           />
         ) : null}
 
@@ -648,9 +642,6 @@ export function Dashboard({
               <DialogTitle>Neues Event</DialogTitle>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 md:px-6 md:pt-5">
-              {submitError ? (
-                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-950/45 dark:text-red-100">{submitError}</div>
-              ) : null}
               <EventForm
                 form={eventForm}
                 groups={visibleGroups}
@@ -763,14 +754,12 @@ function QuickShareForm({
   form,
   groups,
   busy,
-  error,
   onChange,
   onSubmit,
 }: {
   form: { activity: string; location: string; durationMinutes: number; mode: QuickShareMode; audience: QuickShareAudience; groupId: string };
   groups: Group[];
   busy: boolean;
-  error: string | null;
   onChange: (updates: Partial<typeof form>) => void;
   onSubmit: (e: React.FormEvent) => void;
 }) {
@@ -862,7 +851,6 @@ function QuickShareForm({
       >
         Teilen
       </button>
-      {error ? <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
     </form>
   );
 }

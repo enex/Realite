@@ -8,6 +8,7 @@ import {
   type DeclineReason
 } from "@/src/lib/suggestion-feedback";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
+import { toast } from "@/src/components/toaster";
 
 type SuggestionDecisionPanelProps = {
   suggestionId: string;
@@ -22,8 +23,6 @@ export function SuggestionDecisionPanel(props: SuggestionDecisionPanelProps) {
   const [selectedReasons, setSelectedReasons] = useState<DeclineReason[]>(props.initialReasons);
   const [note, setNote] = useState(props.initialNote ?? "");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [savedMessage, setSavedMessage] = useState<string | null>(null);
 
   const showDeclineForm = status === "declined" || selectedReasons.length > 0;
   const sortedReasons = useMemo(() => [...DECLINE_REASON_VALUES], []);
@@ -48,8 +47,6 @@ export function SuggestionDecisionPanel(props: SuggestionDecisionPanelProps) {
 
   async function sendDecision(decision: "accepted" | "declined") {
     setBusy(true);
-    setError(null);
-    setSavedMessage(null);
 
     try {
       const response = await fetch(`/api/suggestions/${props.suggestionId}/decision`, {
@@ -77,13 +74,13 @@ export function SuggestionDecisionPanel(props: SuggestionDecisionPanelProps) {
       }
 
       setStatus(decision);
-      setSavedMessage(
+      toast.success(
         decision === "accepted"
           ? "Zusage gespeichert und für künftige Vorschläge berücksichtigt."
-          : "Absagegründe gespeichert und für künftige Vorschläge berücksichtigt."
+          : "Absagegründe gespeichert und für künftige Vorschläge berücksichtigt.",
       );
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unbekannter Fehler");
+      toast.error(requestError instanceof Error ? requestError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -109,7 +106,6 @@ export function SuggestionDecisionPanel(props: SuggestionDecisionPanelProps) {
           type="button"
           onClick={() => {
             setStatus("declined");
-            setSavedMessage(null);
           }}
           disabled={busy}
           className="rounded-lg border border-input px-4 py-2 text-sm font-semibold text-foreground disabled:opacity-50"
@@ -158,10 +154,6 @@ export function SuggestionDecisionPanel(props: SuggestionDecisionPanelProps) {
         </div>
       ) : null}
 
-      {savedMessage ? (
-        <p className="mt-4 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-700">{savedMessage}</p>
-      ) : null}
-      {error ? <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
     </section>
   );
 }

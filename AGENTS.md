@@ -173,17 +173,6 @@ Update the right layer:
 - change `content/docs/*` when user behavior, product flows, permissions, or visible wording changes
 - change `README.md` or `AGENTS.md` when product framing, architecture expectations, or contributor guidance becomes unclear or outdated
 
-### AI-Hub Tasks (Implementierungsaufträge)
-
-When the user asks to implement, fix, or add a feature (e.g. “implement X”, “fix Y”):
-
-1. **Before implementing**: Use **`ai-hub-cli`**, not the in-editor MCP bridge, for task workflow. List work with `ai-hub-cli task list` (adjust `--limit`), then `ai-hub-cli task get <task-id> --full-json` for the spec (`name`, `description`). If your hub exposes search tools, you can call them with `ai-hub-cli call <tool-name> --params '<json>'` (see `ai-hub-cli tools`). Note: in some API payloads, `subtasks` denotes the **parent/supertask** of a task (inverted semantics).
-2. **After implementing**: `ai-hub-cli task complete <task-id> --message "…"`, or `ai-hub-cli task update <task-id> --json-file …` for partial progress or field changes.
-
-Auth: `AI_HUB_URL` and `AI_HUB_API_KEY` (or pass `--url` / `--api-key`). See `.cursor/rules/ai-hub-tasks.mdc` for the German step-by-step rule.
-
-If `ai-hub-cli` or hub credentials are unavailable, continue from local repo context and mention that limitation in the final summary.
-
 ### GitHub Workflow
 
 - `.github/workflows/docker-build.yml` builds the Docker image for pushes to `main` and `develop`, and for tags matching `v*`.

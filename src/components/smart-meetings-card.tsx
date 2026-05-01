@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { toast } from "@/src/components/toaster";
 import { getCardSurfaceMeta } from "@/src/lib/card-system";
 import { getPageIntentMeta } from "@/src/lib/page-hierarchy";
 import { getSmartMeetingOverview } from "@/src/lib/smart-meeting-overview";
@@ -221,14 +222,12 @@ export function SmartMeetingsCard({
   groups,
   smartMeetings,
   pendingSuggestionCount,
-  onCreated,
-  onError
+  onCreated
 }: {
   groups: Group[];
   smartMeetings: SmartMeeting[];
   pendingSuggestionCount: number;
   onCreated: () => Promise<void>;
-  onError: (message: string) => void;
 }) {
   const smartMeetingCard = getCardSurfaceMeta("smart_meeting");
   const discoverPage = getPageIntentMeta("discover");
@@ -380,13 +379,16 @@ export function SmartMeetingsCard({
         setExpanded(false);
       }
       await onCreated();
+      toast.success(
+        editingId ? "Smart-Treffen gespeichert." : "Smart-Treffen angelegt.",
+      );
     } catch (error) {
-      onError(
+      toast.error(
         error instanceof Error
           ? error.message
           : editingId
             ? "Smart-Treffen konnte nicht gespeichert werden"
-            : "Smart-Treffen konnte nicht erstellt werden"
+            : "Smart-Treffen konnte nicht erstellt werden",
       );
     } finally {
       setBusy(false);
@@ -428,8 +430,13 @@ export function SmartMeetingsCard({
       }
 
       await onCreated();
+      toast.success(
+        action === "approve" ? "Freigabe gesendet." : "Versand abgelehnt.",
+      );
     } catch (error) {
-      onError(error instanceof Error ? error.message : "Smart-Treffen konnte nicht aktualisiert werden");
+      toast.error(
+        error instanceof Error ? error.message : "Smart-Treffen konnte nicht aktualisiert werden",
+      );
     } finally {
       setApprovalBusyRunId(null);
     }

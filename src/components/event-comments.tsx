@@ -1,8 +1,9 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
+import { toast } from "@/src/components/toaster";
 import { getPersonDisplayLabel } from "@/src/lib/person-display";
 import { buildLoginPath } from "@/src/lib/provider-adapters";
 
@@ -105,7 +106,19 @@ export function EventComments({
 
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const lastQueryErrorToast = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!queryError) {
+      lastQueryErrorToast.current = null;
+      return;
+    }
+    const msg =
+      queryError instanceof Error ? queryError.message : "Laden fehlgeschlagen";
+    if (lastQueryErrorToast.current === msg) return;
+    lastQueryErrorToast.current = msg;
+    toast.error(msg);
+  }, [queryError]);
 
   const timelineSeed = useMemo(() => {
     if (!eventCreatedAtIso?.trim()) return null;
@@ -124,7 +137,6 @@ export function EventComments({
     if (!trimmed || submitting) return;
 
     setSubmitting(true);
-    setSubmitError(null);
     try {
       const res = await fetch(`/api/events/${encodeURIComponent(eventId)}/comments`, {
         method: "POST",
@@ -141,8 +153,9 @@ export function EventComments({
         );
       }
       setBody("");
+      toast.success("Nachricht gesendet.");
     } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : "Speichern fehlgeschlagen");
+      toast.error(e instanceof Error ? e.message : "Speichern fehlgeschlagen");
     } finally {
       setSubmitting(false);
     }
@@ -157,9 +170,7 @@ export function EventComments({
         {loading ? (
           <p className="text-sm text-muted-foreground">Wird geladen…</p>
         ) : queryError ? (
-          <p className="text-sm text-red-600 dark:text-red-400">
-            {queryError instanceof Error ? queryError.message : "Laden fehlgeschlagen"}
-          </p>
+          <p className="text-sm text-muted-foreground">Verlauf konnte nicht geladen werden.</p>
         ) : timeline.length === 0 ? (
           <p className="text-sm text-muted-foreground">Noch keine Nachrichten.</p>
         ) : (
@@ -239,9 +250,6 @@ export function EventComments({
                 {submitting ? "…" : "Senden"}
               </button>
             </div>
-            {submitError ? (
-              <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>
-            ) : null}
           </form>
         )}
       </div>

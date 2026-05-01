@@ -6,10 +6,12 @@ import { AppShell } from "@/src/components/app-shell";
 import { CalendarReconnectBanner } from "@/src/components/calendar-reconnect-banner";
 import { EventImage } from "@/src/components/event-image";
 import { UserAvatar } from "@/src/components/user-avatar";
+import { toast } from "@/src/components/toaster";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
 import type { CalendarConnectionState } from "@/src/lib/calendar-connection-state";
 import { type EventVisibility } from "@/src/lib/event-visibility";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
+import { useQueryErrorToast } from "@/src/lib/use-query-error-toast";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
 type GroupContact = {
@@ -120,8 +122,9 @@ export function GroupDetail({
   });
   const data = queryData ?? emptyPayload;
 
+  useQueryErrorToast(queryError);
+
   const [busy, setBusy] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [memberEmail, setMemberEmail] = useState("");
   const [hashtagsInput, setHashtagsInput] = useState("");
   const [inviteLink, setInviteLink] = useState<string | null>(null);
@@ -168,7 +171,6 @@ export function GroupDetail({
     }
 
     setManualSyncBusy(true);
-    setSubmitError(null);
 
     try {
       const response = await fetch("/api/dashboard", { method: "POST" });
@@ -179,13 +181,12 @@ export function GroupDetail({
       await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
     } catch (syncError) {
       setManualSyncBusy(false);
-      setSubmitError(syncError instanceof Error ? syncError.message : "Unbekannter Fehler");
+      toast.error(syncError instanceof Error ? syncError.message : "Unbekannter Fehler");
     }
   }
 
   async function createInvite() {
     setBusy(true);
-    setSubmitError(null);
 
     try {
       const response = await fetch(`/api/groups/${groupId}/invite-link`, { method: "POST" });
@@ -196,8 +197,9 @@ export function GroupDetail({
       }
 
       setInviteLink(payload.inviteUrl);
+      toast.success("Einladungslink erstellt.");
     } catch (inviteError) {
-      setSubmitError(inviteError instanceof Error ? inviteError.message : "Unbekannter Fehler");
+      toast.error(inviteError instanceof Error ? inviteError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -211,7 +213,6 @@ export function GroupDetail({
     }
 
     setBusy(true);
-    setSubmitError(null);
 
     try {
       const response = await fetch(`/api/groups/${groupId}/members`, {
@@ -228,10 +229,12 @@ export function GroupDetail({
       setMemberEmail("");
       await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
       if (payload.warning) {
-        setSubmitError(payload.warning);
+        toast.warning(payload.warning);
+      } else {
+        toast.success("Mitglied hinzugefügt.");
       }
     } catch (memberError) {
-      setSubmitError(memberError instanceof Error ? memberError.message : "Unbekannter Fehler");
+      toast.error(memberError instanceof Error ? memberError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -241,7 +244,6 @@ export function GroupDetail({
     event.preventDefault();
 
     setBusy(true);
-    setSubmitError(null);
 
     try {
       const response = await fetch(`/api/groups/${groupId}`, {
@@ -256,8 +258,9 @@ export function GroupDetail({
       }
 
       await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+      toast.success("Hashtags gespeichert.");
     } catch (updateError) {
-      setSubmitError(updateError instanceof Error ? updateError.message : "Unbekannter Fehler");
+      toast.error(updateError instanceof Error ? updateError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -269,7 +272,6 @@ export function GroupDetail({
     }
 
     setBusy(true);
-    setSubmitError(null);
 
     try {
       const response = await fetch(`/api/groups/${groupId}`, {
@@ -284,8 +286,9 @@ export function GroupDetail({
       }
 
       await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+      toast.success(group.isHidden ? "Gruppe wird wieder angezeigt." : "Gruppe ist jetzt verborgen.");
     } catch (toggleError) {
-      setSubmitError(toggleError instanceof Error ? toggleError.message : "Unbekannter Fehler");
+      toast.error(toggleError instanceof Error ? toggleError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -304,7 +307,6 @@ export function GroupDetail({
     }
 
     setBusy(true);
-    setSubmitError(null);
 
     try {
       const response = await fetch(`/api/groups/${groupId}`, {
@@ -318,7 +320,7 @@ export function GroupDetail({
 
       window.location.href = "/groups";
     } catch (deleteError) {
-      setSubmitError(deleteError instanceof Error ? deleteError.message : "Unbekannter Fehler");
+      toast.error(deleteError instanceof Error ? deleteError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -333,11 +335,6 @@ export function GroupDetail({
       }}
     >
       <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
-        {(queryError || submitError) ? (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {submitError ?? (queryError instanceof Error ? queryError.message : String(queryError))}
-        </div>
-      ) : null}
         <CalendarReconnectBanner calendarConnectionState={data.me.calendarConnectionState} />
       {data.sync.warning ? (
         <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">

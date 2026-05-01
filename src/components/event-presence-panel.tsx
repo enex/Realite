@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { toast } from "@/src/components/toaster";
 import {
   getEventPresenceAudienceCopy,
   getEventPresenceAudienceRuleCopy,
@@ -59,8 +60,6 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
   );
   const [checkedInUsers, setCheckedInUsers] = useState(props.initialCheckedInUsers);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [savedMessage, setSavedMessage] = useState<string | null>(null);
   const startsAt = new Date(props.startsAtIso);
   const endsAt = new Date(props.endsAtIso);
   const presenceWindow = getEventPresenceWindow({ startsAt, endsAt });
@@ -108,8 +107,6 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
 
   async function updateStatus(nextStatus: EventPresenceStatus) {
     setBusy(true);
-    setError(null);
-    setSavedMessage(null);
 
     try {
       const response = await fetch(`/api/events/${props.eventId}/presence`, {
@@ -144,11 +141,11 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
       if (payload.summary.currentUserVisibleUntilIso) {
         setSelectedVisibleUntilIso(payload.summary.currentUserVisibleUntilIso);
       }
-      setSavedMessage(
+      toast.success(
         getEventPresenceToggleCopy(nextStatus === "checked_in").successMessage,
       );
     } catch (requestError) {
-      setError(
+      toast.error(
         requestError instanceof Error ? requestError.message : "Unbekannter Fehler",
       );
     } finally {
@@ -243,16 +240,6 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
         ) : null}
       </div>
 
-      {savedMessage ? (
-        <p className="mt-4 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-800 dark:border-teal-500/35 dark:bg-teal-950/50">
-          {savedMessage}
-        </p>
-      ) : null}
-      {error ? (
-        <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-500/40 dark:bg-red-950/45">
-          {error}
-        </p>
-      ) : null}
     </section>
   );
 }

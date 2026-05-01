@@ -12,6 +12,7 @@ import type { CalendarConnectionState } from "@/src/lib/calendar-connection-stat
 import { getPersonDisplayLabel } from "@/src/lib/person-display";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
+import { useQueryErrorToast } from "@/src/lib/use-query-error-toast";
 import { shortenUUID } from "@/src/lib/utils/short-uuid";
 
 type Suggestion = {
@@ -84,8 +85,9 @@ export function SuggestionsPage({
   });
   const data = queryData ?? emptyPayload;
 
+  useQueryErrorToast(queryError);
+
   const [busy, setBusy] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [autoDecisionHandled, setAutoDecisionHandled] = useState(false);
 
   const actionableSuggestions = useMemo(
@@ -139,14 +141,14 @@ export function SuggestionsPage({
 
   async function runSuggestions() {
     setBusy(true);
-    setSubmitError(null);
     try {
       const response = await fetch("/api/suggestions/run", { method: "POST" });
       const payload = (await response.json()) as { error?: string };
       if (!response.ok) throw new Error(payload.error ?? "Matching fehlgeschlagen");
       await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+      toast.success("Matching aktualisiert.");
     } catch (runError) {
-      setSubmitError(runError instanceof Error ? runError.message : "Unbekannter Fehler");
+      toast.error(runError instanceof Error ? runError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -158,7 +160,6 @@ export function SuggestionsPage({
     source: "suggestions_page" | "query_auto" = "suggestions_page"
   ) {
     setBusy(true);
-    setSubmitError(null);
     try {
       const response = await fetch(`/api/suggestions/${suggestionId}/decision`, {
         method: "POST",
@@ -171,8 +172,9 @@ export function SuggestionsPage({
         captureProductEvent("suggestion_accepted", { suggestion_id: suggestionId, source });
       }
       await queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+      toast.success("Entscheidung gespeichert.");
     } catch (decisionError) {
-      setSubmitError(decisionError instanceof Error ? decisionError.message : "Unbekannter Fehler");
+      toast.error(decisionError instanceof Error ? decisionError.message : "Unbekannter Fehler");
     } finally {
       setBusy(false);
     }
@@ -205,11 +207,6 @@ export function SuggestionsPage({
           </button>
         </div>
 
-        {(queryError || submitError) ? (
-          <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {submitError ?? (queryError instanceof Error ? queryError.message : String(queryError))}
-          </div>
-        ) : null}
         <CalendarReconnectBanner calendarConnectionState={data.me.calendarConnectionState} />
         {loading && data.suggestions.length === 0 ? <p className="mt-6 text-sm text-muted-foreground">Lade Vorschläge…</p> : null}
 

@@ -18,6 +18,10 @@ Realite nutzt Google-Kalender-Webhooks: Sobald sich in deinen ausgewählten Kale
 
 Wichtig: Auch dabei werden Kalenderdaten nicht automatisch öffentlich gemacht. Sichtbar wird nur, was du in Realite ausdrücklich freigibst.
 
+## Wo sehe ich kurze Bestätigungen oder Fehler?
+
+Wenn du z. B. etwas speicherst, eine Entscheidung bestätigst oder ein Aufruf fehlschlägt, zeigt Realite die Meldung in der Regel unten mittig für einige Sekunden als **kurzen Hinweis** („Toast“). Längerfristige Hinweise wie Kalender-Verbindungen, Sync-Warnungen oder strukturierte Karten auf dem Dashboard bleiben weiterhin fest auf der Seite sichtbar, solange sie relevant sind.
+
 ## Ich sehe meine Kalender-Events nicht
 
 Prüfe bitte:
