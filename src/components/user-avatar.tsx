@@ -10,14 +10,15 @@ const SIZE_STYLES: Record<NonNullable<UserAvatarProps["size"]>, string> = {
   xs: "h-7 w-7 text-[10px]",
   sm: "h-9 w-9 text-xs",
   md: "h-11 w-11 text-sm",
-  lg: "h-14 w-14 text-base"
+  lg: "h-14 w-14 text-base",
 };
 
 function getInitials(name?: string | null, email?: string | null) {
   const trimmedName = name?.trim();
   if (trimmedName) {
     const parts = trimmedName.split(/\s+/u).filter(Boolean);
-    const initials = `${parts[0]?.[0] ?? ""}${parts[1]?.[0] ?? ""}`.toUpperCase();
+    const initials =
+      `${parts[0]?.[0] ?? ""}${parts[1]?.[0] ?? ""}`.toUpperCase();
     if (initials) {
       return initials;
     }
@@ -31,16 +32,27 @@ function getInitials(name?: string | null, email?: string | null) {
   return "R";
 }
 
-export function UserAvatar({ name, email, image, size = "md", className = "" }: UserAvatarProps) {
+export function UserAvatar({
+  name,
+  email,
+  image,
+  size = "md",
+  className = "",
+}: UserAvatarProps) {
   const initials = getInitials(name, email);
 
   return (
     <span
-      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted font-semibold text-foreground ${SIZE_STYLES[size]} ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted font-semibold text-foreground ${SIZE_STYLES[size]} ${className}`}
       aria-hidden="true"
     >
       {image ? (
-        <img src={image} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+        <img
+          src={image}
+          alt=""
+          className="h-full w-full object-cover"
+          referrerPolicy="no-referrer"
+        />
       ) : (
         <span>{initials}</span>
       )}

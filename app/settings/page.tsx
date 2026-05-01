@@ -1,26 +1,26 @@
 import { redirect } from "next/navigation";
 
 import { SettingsPage } from "@/src/components/settings-page";
-import { getAuthSession } from "@/src/lib/auth";
 import { resolveProfileImageReadUrl } from "@/src/lib/profile-image-storage";
+import { requireAppUser } from "@/src/lib/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function UserSettingsPage() {
-  const session = await getAuthSession();
+  const user = await requireAppUser();
 
-  if (!session?.user.email) {
+  if (!user) {
     redirect("/");
   }
 
-  const userImage = await resolveProfileImageReadUrl(session.user.image ?? null);
+  const userImage = await resolveProfileImageReadUrl(user.image);
 
   return (
     <SettingsPage
-      userName={session.user.name ?? session.user.email}
-      userEmail={session.user.email}
+      userName={user.name ?? user.email}
+      userEmail={user.email}
       userImage={userImage}
-      isAnonymous={session.user.isAnonymous === true}
+      isAnonymous={user.email.toLowerCase().endsWith("@guest.realite.local")}
     />
   );
 }
