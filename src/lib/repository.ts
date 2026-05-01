@@ -922,7 +922,7 @@ export async function getDateHashtagStatus(
   };
 }
 
-async function getDatingProfileMapForUsers(userIds: string[]) {
+export async function getDatingProfileMapForUsers(userIds: string[]) {
   const normalizedIds = Array.from(
     new Set(userIds.map((id) => id.trim()).filter(Boolean)),
   );
