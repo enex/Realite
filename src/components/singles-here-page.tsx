@@ -304,7 +304,7 @@ export function SinglesHerePage({
         } catch (autoCheckInError) {
           console.error("Auto-check-in fehlgeschlagen:", autoCheckInError);
           toast("Dein Profil ist gespeichert.");
-          toast.error("Automatischer Check-in fehlgeschlagen. Bitte nutze den Button „Ich bin hier".");
+          toast.error("Automatischer Check-in fehlgeschlagen. Bitte nutze den Button \u201EIch bin hier\u201C.");
         }
       } else {
         toast("Dein Profil ist gespeichert.");
