@@ -1,1 +1,0 @@
-DROP TABLE "placeholder_qr_codes" CASCADE;
