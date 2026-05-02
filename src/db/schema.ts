@@ -46,7 +46,11 @@ export const eventCategoryEnum = pgEnum("event_category", [
   "birthday",
   "date",
 ]);
-export const datingGenderEnum = pgEnum("dating_gender", ["woman", "man", "non_binary"]);
+export const datingGenderEnum = pgEnum("dating_gender", [
+  "woman",
+  "man",
+  "non_binary",
+]);
 export const suggestionStatusEnum = pgEnum("suggestion_status", [
   "pending",
   "calendar_inserted",
@@ -118,15 +122,27 @@ export const userSettings = pgTable("user_settings", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" })
     .primaryKey(),
-  autoInsertSuggestions: boolean("auto_insert_suggestions").notNull().default(true),
-  suggestionCalendarId: text("suggestion_calendar_id").notNull().default("primary"),
-  suggestionDeliveryMode: text("suggestion_delivery_mode").notNull().default("calendar_copy"),
-  shareEmailInSourceInvites: boolean("share_email_in_source_invites").notNull().default(true),
+  autoInsertSuggestions: boolean("auto_insert_suggestions")
+    .notNull()
+    .default(true),
+  suggestionCalendarId: text("suggestion_calendar_id")
+    .notNull()
+    .default("primary"),
+  suggestionDeliveryMode: text("suggestion_delivery_mode")
+    .notNull()
+    .default("calendar_copy"),
+  shareEmailInSourceInvites: boolean("share_email_in_source_invites")
+    .notNull()
+    .default(true),
   matchingCalendarIds: text("matching_calendar_ids").notNull().default(""),
   blockedCreatorIds: text("blocked_creator_ids").notNull().default(""),
   blockedActivityTags: text("blocked_activity_tags").notNull().default(""),
-  suggestionLimitPerDay: integer("suggestion_limit_per_day").notNull().default(4),
-  suggestionLimitPerWeek: integer("suggestion_limit_per_week").notNull().default(16),
+  suggestionLimitPerDay: integer("suggestion_limit_per_day")
+    .notNull()
+    .default(4),
+  suggestionLimitPerWeek: integer("suggestion_limit_per_week")
+    .notNull()
+    .default(16),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -160,25 +176,29 @@ export const datingProfiles = pgTable(
   (table) => [index().on(table.gender), index().on(table.enabled)],
 );
 
-export const groups = pgTable("groups", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  name: text("name").notNull(),
-  description: text("description"),
-  hashtag: text("hashtag").notNull().default("#alle"),
-  visibility: groupVisibilityEnum("visibility").notNull().default("private"),
-  syncProvider: text("sync_provider"),
-  syncReference: text("sync_reference"),
-  syncEnabled: boolean("sync_enabled").notNull().default(false),
-  isHidden: boolean("is_hidden").notNull().default(false),
-  createdBy: uuid("created_by")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-}, (table) => [
-  uniqueIndex().on(table.syncProvider, table.syncReference, table.createdBy)
-]);
+export const groups = pgTable(
+  "groups",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    description: text("description"),
+    hashtag: text("hashtag").notNull().default("#alle"),
+    visibility: groupVisibilityEnum("visibility").notNull().default("private"),
+    syncProvider: text("sync_provider"),
+    syncReference: text("sync_reference"),
+    syncEnabled: boolean("sync_enabled").notNull().default(false),
+    isHidden: boolean("is_hidden").notNull().default(false),
+    createdBy: uuid("created_by")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex().on(table.syncProvider, table.syncReference, table.createdBy),
+  ],
+);
 
 export const groupMemberships = pgTable(
   "group_memberships",
@@ -470,8 +490,12 @@ export const smartMeetingPlans = pgTable(
     responseWindowHours: integer("response_window_hours").notNull().default(24),
     slotIntervalMinutes: integer("slot_interval_minutes").notNull().default(30),
     maxAttempts: integer("max_attempts").notNull().default(3),
-    searchWindowStart: timestamp("search_window_start", { withTimezone: true }).notNull(),
-    searchWindowEnd: timestamp("search_window_end", { withTimezone: true }).notNull(),
+    searchWindowStart: timestamp("search_window_start", {
+      withTimezone: true,
+    }).notNull(),
+    searchWindowEnd: timestamp("search_window_end", {
+      withTimezone: true,
+    }).notNull(),
     status: smartMeetingPlanStatusEnum("status").notNull().default("active"),
     latestRunId: uuid("latest_run_id"),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -481,7 +505,11 @@ export const smartMeetingPlans = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [index().on(table.createdBy), index().on(table.groupId), index().on(table.status)],
+  (table) => [
+    index().on(table.createdBy),
+    index().on(table.groupId),
+    index().on(table.status),
+  ],
 );
 
 export const smartMeetingRuns = pgTable(
@@ -492,10 +520,14 @@ export const smartMeetingRuns = pgTable(
       .notNull()
       .references(() => smartMeetingPlans.id, { onDelete: "cascade" }),
     attempt: integer("attempt").notNull(),
-    eventId: uuid("event_id").references(() => events.id, { onDelete: "set null" }),
+    eventId: uuid("event_id").references(() => events.id, {
+      onDelete: "set null",
+    }),
     startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
     endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
-    responseDeadlineAt: timestamp("response_deadline_at", { withTimezone: true }).notNull(),
+    responseDeadlineAt: timestamp("response_deadline_at", {
+      withTimezone: true,
+    }).notNull(),
     calendarEventId: text("calendar_event_id"),
     invitedEmails: text("invited_emails").notNull().default(""),
     participantCount: integer("participant_count").notNull().default(0),
@@ -530,7 +562,9 @@ export const smartMeetingMemberStats = pgTable(
       .notNull()
       .references(() => groups.id, { onDelete: "cascade" }),
     email: text("email").notNull(),
-    registeredUserId: uuid("registered_user_id").references(() => users.id, { onDelete: "set null" }),
+    registeredUserId: uuid("registered_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
     acceptCount: integer("accept_count").notNull().default(0),
     declineCount: integer("decline_count").notNull().default(0),
     noResponseCount: integer("no_response_count").notNull().default(0),
@@ -596,8 +630,26 @@ export const jobQueue = pgTable(
     startedAt: timestamp("started_at", { withTimezone: true }),
     completedAt: timestamp("completed_at", { withTimezone: true }),
   },
-  (table) => [
-    index().on(table.status),
-    index().on(table.createdAt),
-  ],
+  (table) => [index().on(table.status), index().on(table.createdAt)],
+);
+
+export const placeholderQrCodes = pgTable(
+  "placeholder_qr_codes",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    slug: text("slug").notNull(),
+    ownedBy: uuid("owned_by").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    /** Slug des verknüpften Singles-hier-Events (sourceEventId). */
+    singlesSlug: text("singles_slug"),
+    label: text("label"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [uniqueIndex().on(table.slug), index().on(table.ownedBy)],
 );

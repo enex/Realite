@@ -232,6 +232,13 @@
       "when": 1777654203345,
       "tag": "0032_tiresome_red_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1777741830571,
+      "tag": "0033_fresh_thunderbolt_ross",
+      "breakpoints": true
     }
   ]
 }

@@ -380,11 +380,9 @@ function normalizeEmail(value: string) {
 }
 
 export function getWeeklyShareWeekStart(now = new Date()) {
-  const weekStart = new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate(),
-  ));
+  const weekStart = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  );
   const day = weekStart.getUTCDay();
   const mondayOffset = day === 0 ? -6 : 1 - day;
   weekStart.setUTCDate(weekStart.getUTCDate() + mondayOffset);
@@ -548,9 +546,10 @@ export async function upsertUser(input: {
       .set({
         email: normalizedEmail,
         name: resolveSyncedAppUserName(input.name, existing[0].name),
-        image: existingImage && isStoredProfileImageUrl(existingImage)
-          ? existingImage
-          : (input.image ?? existingImage),
+        image:
+          existingImage && isStoredProfileImageUrl(existingImage)
+            ? existingImage
+            : (input.image ?? existingImage),
         updatedAt: new Date(),
       })
       .where(eq(users.id, existing[0].id))
@@ -759,7 +758,9 @@ export async function insertCalendarWatchChannel(input: {
   });
 }
 
-export async function getUserIdByCalendarChannelId(channelId: string): Promise<string | null> {
+export async function getUserIdByCalendarChannelId(
+  channelId: string,
+): Promise<string | null> {
   const db = getDb();
   const [row] = await db
     .select({ userId: calendarWatchChannels.userId })
@@ -785,17 +786,23 @@ export async function listCalendarWatchChannelsByUserId(userId: string) {
 
 export async function deleteCalendarWatchChannelById(id: string) {
   const db = getDb();
-  await db.delete(calendarWatchChannels).where(eq(calendarWatchChannels.id, id));
+  await db
+    .delete(calendarWatchChannels)
+    .where(eq(calendarWatchChannels.id, id));
 }
 
 export async function deleteCalendarWatchChannelsByUserId(userId: string) {
   const db = getDb();
-  await db.delete(calendarWatchChannels).where(eq(calendarWatchChannels.userId, userId));
+  await db
+    .delete(calendarWatchChannels)
+    .where(eq(calendarWatchChannels.userId, userId));
 }
 
 export async function deleteCalendarWatchChannelByChannelId(channelId: string) {
   const db = getDb();
-  await db.delete(calendarWatchChannels).where(eq(calendarWatchChannels.channelId, channelId));
+  await db
+    .delete(calendarWatchChannels)
+    .where(eq(calendarWatchChannels.channelId, channelId));
 }
 
 export async function ensureUserSuggestionSettings(userId: string) {
@@ -1353,7 +1360,9 @@ export async function getOrCreateCurrentWeeklyShareCampaign(input: {
     .returning();
 
   if (!campaign) {
-    throw new RepositoryValidationError("Wochenlink konnte nicht erstellt werden");
+    throw new RepositoryValidationError(
+      "Wochenlink konnte nicht erstellt werden",
+    );
   }
 
   return campaign;
@@ -1483,7 +1492,9 @@ export async function recordWeeklyShareVisit(input: {
       .limit(1);
 
     if (visitor) {
-      const kontakteGroup = await ensureKontakteGroupForUser(campaign.ownerUserId);
+      const kontakteGroup = await ensureKontakteGroupForUser(
+        campaign.ownerUserId,
+      );
       await db
         .insert(groupContacts)
         .values({
@@ -1514,7 +1525,10 @@ export async function recordWeeklyShareVisit(input: {
           referredUserId: visitor.id,
         })
         .onConflictDoNothing({
-          target: [weeklyShareReferrals.ownerUserId, weeklyShareReferrals.referredUserId],
+          target: [
+            weeklyShareReferrals.ownerUserId,
+            weeklyShareReferrals.referredUserId,
+          ],
         });
     }
   }
@@ -1522,50 +1536,53 @@ export async function recordWeeklyShareVisit(input: {
   return campaign;
 }
 
-export async function getWeeklyShareCampaignSummary(userId: string): Promise<WeeklyShareCampaignSummary> {
+export async function getWeeklyShareCampaignSummary(
+  userId: string,
+): Promise<WeeklyShareCampaignSummary> {
   const db = getDb();
   const campaign = await getOrCreateCurrentWeeklyShareCampaign({ userId });
 
-  const [visitCountRow, knownVisitRows, pendingReferralRows] = await Promise.all([
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(weeklyShareVisits)
-      .where(eq(weeklyShareVisits.campaignId, campaign.id)),
-    db
-      .select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        image: users.image,
-        firstVisitedAt: sql<Date>`min(${weeklyShareVisits.createdAt})`,
-        lastVisitedAt: sql<Date>`max(${weeklyShareVisits.createdAt})`,
-      })
-      .from(weeklyShareVisits)
-      .innerJoin(users, eq(weeklyShareVisits.visitorUserId, users.id))
-      .where(eq(weeklyShareVisits.campaignId, campaign.id))
-      .groupBy(users.id, users.name, users.email, users.image)
-      .orderBy(sql`max(${weeklyShareVisits.createdAt}) desc`)
-      .limit(12),
-    db
-      .select({
-        id: weeklyShareReferrals.id,
-        userId: users.id,
-        name: users.name,
-        email: users.email,
-        image: users.image,
-        createdAt: weeklyShareReferrals.createdAt,
-      })
-      .from(weeklyShareReferrals)
-      .innerJoin(users, eq(weeklyShareReferrals.referredUserId, users.id))
-      .where(
-        and(
-          eq(weeklyShareReferrals.ownerUserId, userId),
-          sql`${weeklyShareReferrals.acknowledgedAt} is null`,
-        ),
-      )
-      .orderBy(desc(weeklyShareReferrals.createdAt))
-      .limit(6),
-  ]);
+  const [visitCountRow, knownVisitRows, pendingReferralRows] =
+    await Promise.all([
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(weeklyShareVisits)
+        .where(eq(weeklyShareVisits.campaignId, campaign.id)),
+      db
+        .select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+          image: users.image,
+          firstVisitedAt: sql<Date>`min(${weeklyShareVisits.createdAt})`,
+          lastVisitedAt: sql<Date>`max(${weeklyShareVisits.createdAt})`,
+        })
+        .from(weeklyShareVisits)
+        .innerJoin(users, eq(weeklyShareVisits.visitorUserId, users.id))
+        .where(eq(weeklyShareVisits.campaignId, campaign.id))
+        .groupBy(users.id, users.name, users.email, users.image)
+        .orderBy(sql`max(${weeklyShareVisits.createdAt}) desc`)
+        .limit(12),
+      db
+        .select({
+          id: weeklyShareReferrals.id,
+          userId: users.id,
+          name: users.name,
+          email: users.email,
+          image: users.image,
+          createdAt: weeklyShareReferrals.createdAt,
+        })
+        .from(weeklyShareReferrals)
+        .innerJoin(users, eq(weeklyShareReferrals.referredUserId, users.id))
+        .where(
+          and(
+            eq(weeklyShareReferrals.ownerUserId, userId),
+            sql`${weeklyShareReferrals.acknowledgedAt} is null`,
+          ),
+        )
+        .orderBy(desc(weeklyShareReferrals.createdAt))
+        .limit(6),
+    ]);
 
   return {
     id: campaign.id,
@@ -1581,7 +1598,9 @@ export async function getWeeklyShareCampaignSummary(userId: string): Promise<Wee
   };
 }
 
-export async function listWeeklySharePublicActivities(ownerUserId: string): Promise<WeeklyShareActivity[]> {
+export async function listWeeklySharePublicActivities(
+  ownerUserId: string,
+): Promise<WeeklyShareActivity[]> {
   const db = getDb();
   const rows = await db
     .select({
@@ -2308,7 +2327,8 @@ export async function createEvent(input: {
       : (input.groupId ?? null);
 
   const category: EventCategory =
-    input.category ?? inferEventCategory({
+    input.category ??
+    inferEventCategory({
       title: input.title,
       description: input.description,
       tags: finalTags,
@@ -2395,6 +2415,31 @@ export async function getSinglesHereEventBySlug(slug: string) {
   return event ? mapSinglesHereEventRow(event) : null;
 }
 
+export async function listSinglesHereEventsForUser(
+  userId: string,
+): Promise<SinglesHereEvent[]> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: events.id,
+      title: events.title,
+      location: events.location,
+      startsAt: events.startsAt,
+      endsAt: events.endsAt,
+      createdBy: events.createdBy,
+      sourceEventId: events.sourceEventId,
+    })
+    .from(events)
+    .where(
+      and(
+        eq(events.sourceProvider, SINGLES_HERE_SOURCE_PROVIDER),
+        eq(events.createdBy, userId),
+      ),
+    )
+    .orderBy(desc(events.startsAt));
+  return rows.map(mapSinglesHereEventRow);
+}
+
 export async function createSinglesHereEvent(input: {
   userId: string;
   slug: string;
@@ -2413,7 +2458,9 @@ export async function createSinglesHereEvent(input: {
   }
 
   if (name.length < 2 || name.length > 80) {
-    throw new RepositoryValidationError("Der Eventname muss 2 bis 80 Zeichen lang sein.");
+    throw new RepositoryValidationError(
+      "Der Eventname muss 2 bis 80 Zeichen lang sein.",
+    );
   }
 
   if (input.endsAt <= input.startsAt) {
@@ -2474,7 +2521,9 @@ export async function updateSinglesHereEvent(input: {
   const name = input.name.trim();
 
   if (name.length < 2 || name.length > 80) {
-    throw new RepositoryValidationError("Der Eventname muss 2 bis 80 Zeichen lang sein.");
+    throw new RepositoryValidationError(
+      "Der Eventname muss 2 bis 80 Zeichen lang sein.",
+    );
   }
 
   if (input.endsAt <= input.startsAt) {
@@ -2487,7 +2536,9 @@ export async function updateSinglesHereEvent(input: {
   }
 
   if (existing.createdBy !== input.userId) {
-    throw new RepositoryValidationError("Nur der Ersteller kann dieses Event bearbeiten.");
+    throw new RepositoryValidationError(
+      "Nur der Ersteller kann dieses Event bearbeiten.",
+    );
   }
 
   const db = getDb();
@@ -2516,7 +2567,9 @@ export async function updateSinglesHereEvent(input: {
     });
 
   if (!updated) {
-    throw new RepositoryValidationError("Event konnte nicht aktualisiert werden.");
+    throw new RepositoryValidationError(
+      "Event konnte nicht aktualisiert werden.",
+    );
   }
 
   return mapSinglesHereEventRow(updated);
@@ -2644,9 +2697,14 @@ export async function updateEventImageUrls(
   input: { placeImageUrl?: string | null; linkPreviewImageUrl?: string | null },
 ) {
   const db = getDb();
-  const updates: Partial<{ placeImageUrl: string | null; linkPreviewImageUrl: string | null }> = {};
-  if (input.placeImageUrl !== undefined) updates.placeImageUrl = input.placeImageUrl;
-  if (input.linkPreviewImageUrl !== undefined) updates.linkPreviewImageUrl = input.linkPreviewImageUrl;
+  const updates: Partial<{
+    placeImageUrl: string | null;
+    linkPreviewImageUrl: string | null;
+  }> = {};
+  if (input.placeImageUrl !== undefined)
+    updates.placeImageUrl = input.placeImageUrl;
+  if (input.linkPreviewImageUrl !== undefined)
+    updates.linkPreviewImageUrl = input.linkPreviewImageUrl;
   if (Object.keys(updates).length === 0) return;
   await db.update(events).set(updates).where(eq(events.id, eventId));
 }
@@ -3038,7 +3096,9 @@ export async function getEventPresenceSummary(input: {
   });
 
   if (!visibleEvent) {
-    throw new RepositoryValidationError("Event nicht gefunden oder nicht sichtbar.");
+    throw new RepositoryValidationError(
+      "Event nicht gefunden oder nicht sichtbar.",
+    );
   }
 
   const db = getDb();
@@ -3129,7 +3189,9 @@ export async function setEventPresenceStatus(input: {
   });
 
   if (!visibleEvent) {
-    throw new RepositoryValidationError("Event nicht gefunden oder nicht sichtbar.");
+    throw new RepositoryValidationError(
+      "Event nicht gefunden oder nicht sichtbar.",
+    );
   }
 
   if (!visibleEvent.allowOnSiteVisibility) {
@@ -3153,7 +3215,8 @@ export async function setEventPresenceStatus(input: {
     );
   }
 
-  const nextVisibleUntil = input.status === "checked_in" ? input.visibleUntil : now;
+  const nextVisibleUntil =
+    input.status === "checked_in" ? input.visibleUntil : now;
 
   if (input.status === "checked_in") {
     if (!nextVisibleUntil) {
@@ -3251,7 +3314,9 @@ export async function updateEventPresenceLocationNote(input: {
   });
 
   if (!visibleEvent) {
-    throw new RepositoryValidationError("Event nicht gefunden oder nicht sichtbar.");
+    throw new RepositoryValidationError(
+      "Event nicht gefunden oder nicht sichtbar.",
+    );
   }
 
   if (!visibleEvent.allowOnSiteVisibility) {
@@ -3409,7 +3474,9 @@ export async function getSinglesHerePresence(input: {
         .from(users)
         .where(inArray(users.id, activeUserIds))
     : [];
-  const peopleById = new Map(peopleRows.map((person) => [person.userId, person]));
+  const peopleById = new Map(
+    peopleRows.map((person) => [person.userId, person]),
+  );
 
   return {
     event,
@@ -3448,7 +3515,9 @@ export type EventCommentRow = {
   authorEmail: string;
 };
 
-export async function listEventComments(eventId: string): Promise<EventCommentRow[]> {
+export async function listEventComments(
+  eventId: string,
+): Promise<EventCommentRow[]> {
   const db = getDb();
   const rows = await db
     .select({
@@ -3498,7 +3567,9 @@ export async function createEventComment(input: {
     });
 
   if (!row) {
-    throw new RepositoryValidationError("Kommentar konnte nicht erstellt werden");
+    throw new RepositoryValidationError(
+      "Kommentar konnte nicht erstellt werden",
+    );
   }
 
   const [author] = await db
