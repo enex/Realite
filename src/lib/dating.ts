@@ -4,12 +4,19 @@ export const DATE_MIN_AGE = 18;
 
 export const DATING_GENDERS = ["woman", "man", "non_binary"] as const;
 export type DatingGender = (typeof DATING_GENDERS)[number];
+export const DATING_INTENTS = [
+  "dating_only",
+  "dating_and_social",
+  "not_dating",
+] as const;
+export type DatingIntent = (typeof DATING_INTENTS)[number];
 
 export type DateMissingRequirement =
   | "enable_mode"
   | "birth_year"
   | "adult"
   | "gender"
+  | "dating_intent"
   | "must_be_single"
   | "sought_genders"
   | "sought_age_range";
@@ -19,6 +26,7 @@ export type DatingProfile = {
   enabled: boolean;
   birthYear: number | null;
   gender: DatingGender | null;
+  datingIntent: DatingIntent | null;
   isSingle: boolean;
   soughtGenders: DatingGender[];
   soughtAgeMin: number | null;
@@ -36,6 +44,7 @@ export const EMPTY_DATING_PROFILE: Omit<DatingProfile, "userId"> = {
   enabled: false,
   birthYear: null,
   gender: null,
+  datingIntent: null,
   isSingle: false,
   soughtGenders: [],
   soughtAgeMin: null,
@@ -95,6 +104,11 @@ export function parseDatingGenders(value: string | null | undefined) {
   return normalizeDatingGenders(value.split(","));
 }
 
+export function normalizeDatingIntent(value: string | null | undefined) {
+  const normalized = value?.trim();
+  return DATING_INTENTS.find((intent) => intent === normalized) ?? null;
+}
+
 export function getAgeFromBirthYear(birthYear: number, now = new Date()) {
   return now.getUTCFullYear() - birthYear;
 }
@@ -118,6 +132,10 @@ export function getDatingProfileStatus(profile: DatingProfile, now = new Date())
 
   if (!profile.gender) {
     missing.push("gender");
+  }
+
+  if (!profile.datingIntent) {
+    missing.push("dating_intent");
   }
 
   if (!profile.isSingle) {
@@ -188,5 +206,34 @@ export function isDatingMutualMatch(
     return false;
   }
 
+  if (
+    !profileDatingIntentAllows(viewerProfile.datingIntent, creatorProfile) ||
+    !profileDatingIntentAllows(creatorProfile.datingIntent, viewerProfile)
+  ) {
+    return false;
+  }
+
   return true;
+}
+
+function profileHasDatingInterest(profile: DatingProfile) {
+  return (
+    profile.datingIntent === "dating_only" ||
+    profile.datingIntent === "dating_and_social"
+  );
+}
+
+function profileDatingIntentAllows(
+  ownIntent: DatingIntent | null,
+  otherProfile: DatingProfile,
+) {
+  if (ownIntent === "dating_only") {
+    return profileHasDatingInterest(otherProfile);
+  }
+
+  if (ownIntent === "not_dating") {
+    return otherProfile.datingIntent !== "dating_only";
+  }
+
+  return ownIntent === "dating_and_social";
 }

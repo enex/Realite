@@ -35,11 +35,13 @@ import {
   isDatingMutualMatch,
   normalizeDateTags,
   normalizeDatingGenders,
+  normalizeDatingIntent,
   parseDatingGenders,
   serializeDatingGenders,
   titleContainsDateTag,
   type DateMissingRequirement,
   type DatingGender,
+  type DatingIntent,
   type DatingProfile,
 } from "@/src/lib/dating";
 import { type EventJoinMode } from "@/src/lib/event-join-modes";
@@ -140,6 +142,7 @@ export type SinglesHerePresencePerson = {
   userId: string;
   name: string | null;
   image: string | null;
+  datingIntent: DatingIntent | null;
   visibleUntil: Date;
   presenceLocationNote: string | null;
 };
@@ -515,6 +518,7 @@ function mapDatingProfileRow(row: {
   enabled: boolean;
   birthYear: number | null;
   gender: DatingGender | null;
+  datingIntent: string | null;
   isSingle: boolean;
   soughtGenders: string;
   soughtAgeMin: number | null;
@@ -526,6 +530,7 @@ function mapDatingProfileRow(row: {
     enabled: row.enabled,
     birthYear: row.birthYear,
     gender: row.gender,
+    datingIntent: normalizeDatingIntent(row.datingIntent),
     isSingle: row.isSingle,
     soughtGenders: parseDatingGenders(row.soughtGenders),
     soughtAgeMin: row.soughtAgeMin,
@@ -848,6 +853,7 @@ export async function ensureUserDatingProfile(userId: string) {
       enabled: false,
       birthYear: null,
       gender: null,
+      datingIntent: null,
       isSingle: false,
       soughtGenders: "",
       soughtAgeMin: null,
@@ -870,6 +876,7 @@ export async function getUserDatingProfile(
       enabled: datingProfiles.enabled,
       birthYear: datingProfiles.birthYear,
       gender: datingProfiles.gender,
+      datingIntent: datingProfiles.datingIntent,
       isSingle: datingProfiles.isSingle,
       soughtGenders: datingProfiles.soughtGenders,
       soughtAgeMin: datingProfiles.soughtAgeMin,
@@ -892,6 +899,7 @@ export async function updateUserDatingProfile(input: {
   enabled: boolean;
   birthYear: number | null;
   gender: DatingGender | null;
+  datingIntent: DatingIntent | null;
   isSingle: boolean;
   soughtGenders: DatingGender[];
   soughtAgeMin: number | null;
@@ -908,6 +916,7 @@ export async function updateUserDatingProfile(input: {
       enabled: input.enabled,
       birthYear: input.birthYear,
       gender: input.gender,
+      datingIntent: input.datingIntent,
       isSingle: input.isSingle,
       soughtGenders: serializeDatingGenders(normalizedSoughtGenders),
       soughtAgeMin: input.soughtAgeMin,
@@ -921,6 +930,7 @@ export async function updateUserDatingProfile(input: {
         enabled: input.enabled,
         birthYear: input.birthYear,
         gender: input.gender,
+        datingIntent: input.datingIntent,
         isSingle: input.isSingle,
         soughtGenders: serializeDatingGenders(normalizedSoughtGenders),
         soughtAgeMin: input.soughtAgeMin,
@@ -934,6 +944,7 @@ export async function updateUserDatingProfile(input: {
       enabled: datingProfiles.enabled,
       birthYear: datingProfiles.birthYear,
       gender: datingProfiles.gender,
+      datingIntent: datingProfiles.datingIntent,
       isSingle: datingProfiles.isSingle,
       soughtGenders: datingProfiles.soughtGenders,
       soughtAgeMin: datingProfiles.soughtAgeMin,
@@ -977,6 +988,7 @@ export async function getDatingProfileMapForUsers(userIds: string[]) {
       enabled: datingProfiles.enabled,
       birthYear: datingProfiles.birthYear,
       gender: datingProfiles.gender,
+      datingIntent: datingProfiles.datingIntent,
       isSingle: datingProfiles.isSingle,
       soughtGenders: datingProfiles.soughtGenders,
       soughtAgeMin: datingProfiles.soughtAgeMin,
@@ -3566,6 +3578,8 @@ export async function getSinglesHerePresence(input: {
             userId: entry.userId,
             name: person?.name ?? entry.name,
             image: await resolveProfileImageReadUrl(rawImage),
+            datingIntent:
+              profileMap.get(entry.userId)?.datingIntent ?? null,
             visibleUntil: entry.visibleUntil,
             presenceLocationNote: entry.presenceLocationNote ?? null,
           };

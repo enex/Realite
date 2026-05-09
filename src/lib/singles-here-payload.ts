@@ -23,6 +23,7 @@ export type SinglesHereClientPayload = {
     userId: string;
     name: string | null;
     image: string | null;
+    datingIntent: SinglesHerePresence["matchingPeople"][number]["datingIntent"];
     visibleUntilIso: string;
     presenceLocationNote: string | null;
   }>;
@@ -59,6 +60,7 @@ export async function buildSinglesHereClientPayload(
       userId: person.userId,
       name: person.name,
       image: person.image,
+      datingIntent: person.datingIntent,
       visibleUntilIso: person.visibleUntil.toISOString(),
       presenceLocationNote: person.presenceLocationNote,
     })),

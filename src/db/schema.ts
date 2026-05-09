@@ -182,6 +182,7 @@ export const datingProfiles = pgTable(
     enabled: boolean("enabled").notNull().default(false),
     birthYear: integer("birth_year"),
     gender: datingGenderEnum("gender"),
+    datingIntent: text("dating_intent"),
     isSingle: boolean("is_single").notNull().default(false),
     soughtGenders: text("sought_genders").notNull().default(""),
     soughtAgeMin: integer("sought_age_min"),

@@ -64,6 +64,7 @@ type DatingProfileRow = {
   enabled: boolean;
   birthYear: number | null;
   gender: string | null;
+  datingIntent: string | null;
   isSingle: boolean;
   soughtGenders: string;
   profileUpdatedAt: string;

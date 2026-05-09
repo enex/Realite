@@ -12,7 +12,11 @@ import {
   type EventPresenceStatus,
   type EventPresenceWindowOption,
 } from "@/src/lib/event-presence";
-import { DATE_MIN_AGE, type DatingGender } from "@/src/lib/dating";
+import {
+  DATE_MIN_AGE,
+  type DatingGender,
+  type DatingIntent,
+} from "@/src/lib/dating";
 import { SinglesProfileImageField } from "@/src/components/singles-profile-image-field";
 import { toast } from "@/src/components/toaster";
 import { WebPushCheckInCard } from "@/src/components/web-push-check-in-card";
@@ -31,6 +35,34 @@ const genderLabels: Record<DatingGender, string> = {
 };
 
 const genderOptions: DatingGender[] = ["woman", "man", "non_binary"];
+
+const datingIntentOptions: Array<{
+  value: DatingIntent;
+  label: string;
+  description: string;
+}> = [
+  {
+    value: "dating_only",
+    label: "Nur Dating",
+    description: "Zeig mir nur Personen, die auch Dating offen haben.",
+  },
+  {
+    value: "dating_and_social",
+    label: "Dating und auch so",
+    description: "Zeig mir passende Personen, auch wenn sie nicht daten wollen.",
+  },
+  {
+    value: "not_dating",
+    label: "Nicht Dating",
+    description: "Zeig mir niemanden, der nur für Dating sichtbar ist.",
+  },
+];
+
+const datingIntentLabels: Record<DatingIntent, string> = {
+  dating_only: "Dating exklusiv",
+  dating_and_social: "Dating zusätzlich",
+  not_dating: "Nicht Dating",
+};
 
 function toDateInputValue(birthYear: number | null) {
   return birthYear ? `${birthYear}-01-01` : "";
@@ -88,6 +120,7 @@ function canPersistSinglesProfileForm(input: {
   name: string;
   birthDate: string;
   gender: DatingGender | "";
+  datingIntent: DatingIntent | "";
   soughtGenders: DatingGender[];
   soughtAgeMin: string;
   soughtAgeMax: string;
@@ -109,6 +142,9 @@ function canPersistSinglesProfileForm(input: {
   if (!input.gender) {
     return false;
   }
+  if (!input.datingIntent) {
+    return false;
+  }
   if (input.soughtGenders.length === 0) {
     return false;
   }
@@ -128,6 +164,7 @@ function serializeSinglesProfileFormState(input: {
   profileImageStorageUrl: string | null;
   birthDate: string;
   gender: DatingGender | "";
+  datingIntent: DatingIntent | "";
   soughtGenders: DatingGender[];
   soughtAgeMin: string;
   soughtAgeMax: string;
@@ -137,6 +174,7 @@ function serializeSinglesProfileFormState(input: {
     imageUrl: input.profileImageStorageUrl,
     birthDate: input.birthDate,
     gender: input.gender,
+    datingIntent: input.datingIntent,
     soughtGenders: input.soughtGenders,
     soughtAgeMin: Number(input.soughtAgeMin),
     soughtAgeMax: Number(input.soughtAgeMax),
@@ -150,6 +188,7 @@ async function requestSinglesProfilePatch(
     imageUrl: string | null;
     birthDate: string;
     gender: DatingGender;
+    datingIntent: DatingIntent;
     soughtGenders: DatingGender[];
     soughtAgeMin: number;
     soughtAgeMax: number;
@@ -199,6 +238,9 @@ export function SinglesHerePage({
   );
   const [gender, setGender] = useState<DatingGender | "">(
     initialPayload.profile.gender ?? "",
+  );
+  const [datingIntent, setDatingIntent] = useState<DatingIntent | "">(
+    initialPayload.profile.datingIntent ?? "",
   );
   const [soughtGenders, setSoughtGenders] = useState<DatingGender[]>(
     initialPayload.profile.soughtGenders,
@@ -370,6 +412,7 @@ export function SinglesHerePage({
       profileImageStorageUrl,
       birthDate,
       gender,
+      datingIntent,
       soughtGenders,
       soughtAgeMin,
       soughtAgeMax,
@@ -411,6 +454,7 @@ export function SinglesHerePage({
               imageUrl: formSnapshot.profileImageStorageUrl,
               birthDate: formSnapshot.birthDate,
               gender: formSnapshot.gender as DatingGender,
+              datingIntent: formSnapshot.datingIntent as DatingIntent,
               soughtGenders: formSnapshot.soughtGenders,
               soughtAgeMin: Number(formSnapshot.soughtAgeMin),
               soughtAgeMax: Number(formSnapshot.soughtAgeMax),
@@ -439,6 +483,7 @@ export function SinglesHerePage({
     profileImageStorageUrl,
     birthDate,
     gender,
+    datingIntent,
     soughtGenders,
     soughtAgeMin,
     soughtAgeMax,
@@ -507,6 +552,7 @@ export function SinglesHerePage({
         profileImageStorageUrl,
         birthDate,
         gender,
+        datingIntent,
         soughtGenders,
         soughtAgeMin,
         soughtAgeMax,
@@ -521,6 +567,7 @@ export function SinglesHerePage({
           imageUrl: formSnapshot.profileImageStorageUrl,
           birthDate: formSnapshot.birthDate,
           gender: formSnapshot.gender as DatingGender,
+          datingIntent: formSnapshot.datingIntent as DatingIntent,
           soughtGenders: formSnapshot.soughtGenders,
           soughtAgeMin: Number(formSnapshot.soughtAgeMin),
           soughtAgeMax: Number(formSnapshot.soughtAgeMax),
@@ -836,6 +883,36 @@ export function SinglesHerePage({
                   ))}
                 </select>
               </label>
+              <fieldset className="rounded-lg border border-border p-3">
+                <legend className="px-1 text-sm font-medium">
+                  Wonach bist du hier offen?
+                </legend>
+                <div className="mt-2 grid gap-2">
+                  {datingIntentOptions.map((option) => (
+                    <label
+                      key={option.value}
+                      className="flex items-start gap-2 rounded border border-border px-2 py-2 text-sm"
+                    >
+                      <input
+                        type="radio"
+                        name="datingIntent"
+                        value={option.value}
+                        checked={datingIntent === option.value}
+                        onChange={() => setDatingIntent(option.value)}
+                        required
+                      />
+                      <span>
+                        <span className="block font-medium">
+                          {option.label}
+                        </span>
+                        <span className="block text-xs leading-5 text-muted-foreground">
+                          {option.description}
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
               <div className="rounded-lg border border-border p-3">
                 <p className="text-sm font-medium">Ich suche</p>
                 <div className="mt-2 grid gap-2">
@@ -937,6 +1014,12 @@ export function SinglesHerePage({
                         <p className="font-semibold">
                           {person.name ?? "Vor Ort"}
                         </p>
+                        {person.datingIntent === "dating_only" ||
+                        person.datingIntent === "dating_and_social" ? (
+                          <p className="mt-0.5 text-xs font-medium text-teal-700">
+                            {datingIntentLabels[person.datingIntent]}
+                          </p>
+                        ) : null}
                         <p className="text-xs text-muted-foreground">
                           sichtbar bis {formatTime(person.visibleUntilIso)}
                         </p>

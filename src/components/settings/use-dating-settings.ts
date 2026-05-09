@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "@/src/components/toaster";
 
 export type DatingGender = "woman" | "man" | "non_binary";
+export type DatingIntent = "dating_only" | "dating_and_social" | "not_dating";
 
 export type DatingSettingsPayload = {
   profile: {
@@ -12,6 +13,7 @@ export type DatingSettingsPayload = {
     enabled: boolean;
     birthYear: number | null;
     gender: DatingGender | null;
+    datingIntent: DatingIntent | null;
     isSingle: boolean;
     soughtGenders: DatingGender[];
     soughtAgeMin: number | null;
@@ -29,6 +31,7 @@ export const MISSING_REQUIREMENT_LABELS: Record<string, string> = {
   birth_year: "Geburtsjahr setzen",
   adult: "mindestens 18 Jahre",
   gender: "Geschlecht auswählen",
+  dating_intent: "Dating-Interesse auswählen",
   must_be_single: "Single-Status auf single setzen",
   sought_genders: "gesuchte Geschlechter auswählen",
   sought_age_range: "gesuchten Altersbereich vollständig setzen"
@@ -40,6 +43,7 @@ const emptyDating: DatingSettingsPayload = {
     enabled: false,
     birthYear: null,
     gender: null,
+    datingIntent: null,
     isSingle: false,
     soughtGenders: [],
     soughtAgeMin: null,

@@ -22,6 +22,7 @@ export async function listDatingProfilesForAdmin(input: {
       enabled: datingProfiles.enabled,
       birthYear: datingProfiles.birthYear,
       gender: datingProfiles.gender,
+      datingIntent: datingProfiles.datingIntent,
       isSingle: datingProfiles.isSingle,
       soughtGenders: datingProfiles.soughtGenders,
       soughtAgeMin: datingProfiles.soughtAgeMin,

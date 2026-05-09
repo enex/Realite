@@ -1,6 +1,10 @@
 "use client";
 
-import type { DatingGender, DatingSettingsPayload } from "@/src/components/settings/use-dating-settings";
+import type {
+  DatingGender,
+  DatingIntent,
+  DatingSettingsPayload,
+} from "@/src/components/settings/use-dating-settings";
 
 type DatingSettingsCardProps = {
   form: DatingSettingsPayload["profile"];
@@ -22,6 +26,28 @@ const GENDER_LABELS: Record<DatingGender, string> = {
 };
 
 const GENDER_OPTIONS: DatingGender[] = ["woman", "man", "non_binary"];
+
+const DATING_INTENT_OPTIONS: Array<{
+  value: DatingIntent;
+  label: string;
+  description: string;
+}> = [
+  {
+    value: "dating_only",
+    label: "Nur Dating",
+    description: "Du siehst nur Personen, die auch Dating offen haben.",
+  },
+  {
+    value: "dating_and_social",
+    label: "Dating und auch so",
+    description: "Du siehst passende Personen unabhängig von deren Dating-Fokus.",
+  },
+  {
+    value: "not_dating",
+    label: "Nicht Dating",
+    description: "Du siehst keine Personen, die nur für Dating sichtbar sein wollen.",
+  },
+];
 
 export function DatingSettingsCard({
   form,
@@ -145,6 +171,39 @@ export function DatingSettingsCard({
           />
           <span className="text-sm text-foreground">Ich suche nur Singles</span>
         </label>
+
+        <fieldset className="rounded-lg border border-border p-3 sm:col-span-2">
+          <legend className="px-1 text-sm font-medium text-foreground">
+            Wonach bist du hier offen?
+          </legend>
+          <div className="mt-2 grid gap-2">
+            {DATING_INTENT_OPTIONS.map((option) => (
+              <label
+                key={option.value}
+                className="flex items-start gap-2 rounded border border-border px-2 py-2 text-sm"
+              >
+                <input
+                  type="radio"
+                  name="datingIntent"
+                  value={option.value}
+                  checked={form.datingIntent === option.value}
+                  onChange={() =>
+                    onFormChange({ ...form, datingIntent: option.value })
+                  }
+                  disabled={busy}
+                />
+                <span>
+                  <span className="block font-medium text-foreground">
+                    {option.label}
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    {option.description}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
 
         <div className="rounded-lg border border-border p-3 sm:col-span-2">
           <p className="text-sm font-medium text-foreground">Ich suche</p>
