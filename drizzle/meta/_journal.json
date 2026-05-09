@@ -239,6 +239,13 @@
       "when": 1777742000000,
       "tag": "0033_placeholder_qr_codes",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1778330309020,
+      "tag": "0034_free_psylocke",
+      "breakpoints": true
     }
   ]
 }

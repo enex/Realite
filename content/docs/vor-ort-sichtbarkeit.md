@@ -31,6 +31,10 @@ Wenn die Option aktiv ist:
 - auf der Eventseite erscheint zusätzlich ein eigener Bereich **Vor Ort Status**
 - dort kannst du dich bewusst mit einem begrenzten Zeitfenster auf **Jetzt vor Ort sichtbar sein** setzen oder wieder ausblenden
 - dieser Check-in ist erst **90 Minuten vor Eventbeginn** möglich und endet automatisch mit dem Event
+- bei **Singles hier** erklärt Realite nach einem aktiven Check-in zusätzlich Push-Benachrichtigungen: Du kannst sie aktivieren, damit Realite dich informiert, wenn eine gegenseitig passende Person beim selben Event sichtbar wird
+- Push ändert nichts an deiner Sichtbarkeit und veröffentlicht keinen Standort; es speichert nur die Benachrichtigungsfreigabe deines Geräts
+- auf iPhone und iPad funktionieren diese Web-Push-Benachrichtigungen nur, wenn Realite als App zum Home-Bildschirm hinzugefügt und von dort geöffnet wurde
+- wenn du Push noch nicht aktivierst, fragt Realite frühestens am nächsten Tag erneut; **Nicht mehr fragen** beendet die Nachfrage
 - wenn dein gewähltes Zeitfenster abläuft, zeigt Realite das auf der Eventseite ausdrücklich als **Zeitfenster abgelaufen** statt weiter so zu wirken, als wärst du noch sichtbar
 - der Hauptstatus im Bereich **Vor Ort Status** kippt dann ebenfalls auf den Schutz-Zustand und bietet erst danach wieder bewusst ein neues Zeitfenster an
 - dieser Schutz-Zustand bleibt auch nach einem späteren Neuladen der Eventseite erkennbar, bis du bewusst ein neues Zeitfenster setzt oder dich ausblendest
@@ -49,6 +53,7 @@ Die Freigabe bedeutet ausdrücklich **nicht**:
 - dass andere sofort sehen, ob du schon da bist
 - dass du außerhalb des Events sichtbar wirst
 - dass Realite eine offene Liste anwesender Personen veröffentlicht
+- dass Push-Benachrichtigungen ohne deine Browserfreigabe aktiviert werden
 
 Die Freigabe markiert also nicht einfach nur einen Rahmen: Sie erlaubt einen späteren, expliziten Check-in direkt auf der Eventseite. Auch dieser Check-in bleibt freiwillig, eventgebunden und zeitlich begrenzt.
 

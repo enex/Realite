@@ -6,6 +6,7 @@ import {
   setEventPresenceStatus,
 } from "@/src/lib/repository";
 import { requireAppUser } from "@/src/lib/session";
+import { notifySinglesHereMatchesForCheckIn } from "@/src/lib/singles-here-push";
 
 const eventPresenceSchema = z.object({
   status: z.enum(["checked_in", "left"]),
@@ -45,6 +46,15 @@ export async function POST(
         : undefined,
       locationNote: parsed.data.locationNote,
     });
+
+    if (parsed.data.status === "checked_in") {
+      await notifySinglesHereMatchesForCheckIn({
+        eventId,
+        checkedInUserId: user.id,
+      }).catch((notificationError) => {
+        console.error("Failed to send Singles-hier push notification", notificationError);
+      });
+    }
 
     return NextResponse.json({
       ok: true,

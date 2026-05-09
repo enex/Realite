@@ -15,6 +15,7 @@ import {
 import { DATE_MIN_AGE, type DatingGender } from "@/src/lib/dating";
 import { SinglesProfileImageField } from "@/src/components/singles-profile-image-field";
 import { toast } from "@/src/components/toaster";
+import { WebPushCheckInCard } from "@/src/components/web-push-check-in-card";
 import type { SinglesHereClientPayload } from "@/src/lib/singles-here-payload";
 
 type SinglesHerePageProps = {
@@ -1008,6 +1009,7 @@ export function SinglesHerePage({
                         anderen angezeigt (sofern ihr zueinander passt).
                       </p>
                     </div>
+                    <WebPushCheckInCard active={isCheckedIn} />
                     <button
                       type="button"
                       disabled={busy}

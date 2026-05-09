@@ -18,6 +18,7 @@ import {
   tagPreferences,
   userSettings,
   users,
+  webPushSubscriptions,
   weeklyShareCampaigns,
   weeklyShareReferrals,
   weeklyShareVisits,
@@ -86,6 +87,17 @@ export type SuggestionStatus =
 export type SuggestionDeclineReason = DeclineReason;
 
 export const PRESENCE_LOCATION_NOTE_MAX_LENGTH = 200;
+
+export type StoredWebPushSubscription = {
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+};
+
+export type WebPushSubscriptionInput = StoredWebPushSubscription & {
+  userId: string;
+  userAgent?: string | null;
+};
 
 export function normalizePresenceLocationNote(
   value: string | null | undefined,
@@ -1144,6 +1156,63 @@ export async function updateUserSuggestionSettings(input: {
       16,
     ),
   };
+}
+
+export async function upsertWebPushSubscription(
+  input: WebPushSubscriptionInput,
+) {
+  const now = new Date();
+  const db = getDb();
+
+  await db
+    .insert(webPushSubscriptions)
+    .values({
+      userId: input.userId,
+      endpoint: input.endpoint,
+      p256dh: input.p256dh,
+      auth: input.auth,
+      userAgent: input.userAgent ?? null,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: [webPushSubscriptions.endpoint],
+      set: {
+        userId: input.userId,
+        p256dh: input.p256dh,
+        auth: input.auth,
+        userAgent: input.userAgent ?? null,
+        updatedAt: now,
+      },
+    });
+}
+
+export async function deleteWebPushSubscription(endpoint: string) {
+  const normalized = endpoint.trim();
+  if (!normalized) {
+    return;
+  }
+  await getDb()
+    .delete(webPushSubscriptions)
+    .where(eq(webPushSubscriptions.endpoint, normalized));
+}
+
+export async function listWebPushSubscriptionsForUsers(userIds: string[]) {
+  const normalizedIds = Array.from(
+    new Set(userIds.map((id) => id.trim()).filter(Boolean)),
+  );
+  if (!normalizedIds.length) {
+    return [];
+  }
+
+  return getDb()
+    .select({
+      userId: webPushSubscriptions.userId,
+      endpoint: webPushSubscriptions.endpoint,
+      p256dh: webPushSubscriptions.p256dh,
+      auth: webPushSubscriptions.auth,
+    })
+    .from(webPushSubscriptions)
+    .where(inArray(webPushSubscriptions.userId, normalizedIds));
 }
 
 export async function createGroup(input: {
