@@ -48,7 +48,7 @@ export async function PATCH(
     const message =
       error instanceof RepositoryValidationError
         ? error.message
-        : "Treffpunkt konnte nicht gespeichert werden.";
+        : "Aufenthaltsort konnte nicht gespeichert werden.";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 

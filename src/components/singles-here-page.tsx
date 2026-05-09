@@ -384,7 +384,9 @@ export function SinglesHerePage({
             error?: string;
           };
           if (!response.ok) {
-            toast.error(data.error ?? "Treffpunkt konnte nicht gespeichert werden.");
+            toast.error(
+              data.error ?? "Aufenthaltsort konnte nicht gespeichert werden.",
+            );
             return;
           }
           setPayload(data);
@@ -1026,7 +1028,7 @@ export function SinglesHerePage({
                         {person.presenceLocationNote ? (
                           <p className="mt-1 text-xs leading-snug text-foreground">
                             <span className="font-medium text-muted-foreground">
-                              Treffpunkt:{" "}
+                              Aktueller Aufenthaltsort:{" "}
                             </span>
                             {person.presenceLocationNote}
                           </p>
@@ -1050,7 +1052,7 @@ export function SinglesHerePage({
                 (isCheckedIn || presenceWindow.canCheckIn) ? (
                   <label className="mt-4 grid gap-1.5 text-sm">
                     <span className="font-medium text-foreground">
-                      Treffpunkt am Event (optional)
+                      Aktueller Aufenthaltsort am Event (optional)
                     </span>
                     <textarea
                       value={presenceLocationNoteInput}
@@ -1070,9 +1072,11 @@ export function SinglesHerePage({
                       disabled={busy}
                     />
                     <span className="text-xs leading-5 text-muted-foreground">
-                      Nur Freitext, kein Live-Standort. Sichtbar für andere, die
-                      zu dir passen und ebenfalls eingecheckt sind — nicht für
-                      alle Eventbesucher.
+                      Sag kurz, wo du gerade bist, damit passende eingecheckte
+                      Personen wissen, dass sie dich jetzt dort finden können.
+                      Nur Freitext, kein Live-Standort. Sichtbar nur für andere,
+                      die zu dir passen und ebenfalls eingecheckt sind — nicht
+                      für alle Eventbesucher.
                     </span>
                   </label>
                 ) : null}

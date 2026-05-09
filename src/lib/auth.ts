@@ -44,9 +44,8 @@ function createAuth() {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
       // Nur minimale Login-Scopes. Kalender und Kontakte werden separat
       // über /api/auth/connect/google inkrementell angefragt.
+      disableDefaultScope: true,
       scope: [...GOOGLE_AUTH_PROVIDER.scopes],
-      accessType: "offline",
-      prompt: "consent",
     };
   }
 

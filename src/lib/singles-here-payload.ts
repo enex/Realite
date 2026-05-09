@@ -16,7 +16,7 @@ export type SinglesHereClientPayload = {
   age: number | null;
   currentUserStatus: SinglesHerePresence["currentUserStatus"];
   currentUserVisibleUntilIso: string | null;
-  /** Freitext-Treffpunkt am Event; nur sichtbar für passende eingecheckte Personen. */
+  /** Freitext-Aufenthaltsort am Event; nur sichtbar für passende eingecheckte Personen. */
   currentUserPresenceLocationNote: string | null;
   checkedInCount: number;
   matchingPeople: Array<{

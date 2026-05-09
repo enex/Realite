@@ -1,5 +1,8 @@
 import { getDashboardSyncSnapshot, triggerDashboardBackgroundSync } from "@/src/lib/background-sync";
-import { deriveCalendarConnectionState } from "@/src/lib/calendar-connection-state";
+import {
+  deriveCalendarConnectionState,
+  deriveContactsConnectionState,
+} from "@/src/lib/calendar-connection-state";
 import { ensureCalendarWatchesForUser, listReadableCalendars, listWritableCalendars } from "@/src/lib/google-calendar";
 import {
   getAcceptedUsersForEventIds,
@@ -58,6 +61,9 @@ export async function buildDashboardPayload(user: DashboardUser) {
     writableCalendarCount: writableCalendars.length,
     readableCalendarCount: readableCalendars.length
   });
+  const contactsConnectionState = deriveContactsConnectionState(
+    connection?.scope ?? null,
+  );
 
   const acceptedByEventId = await getAcceptedUsersForEventIds(events.map((event) => event.id));
   const acceptedByEventIdJson: Record<string, { name: string | null; email: string }[]> = {};
@@ -112,6 +118,7 @@ export async function buildDashboardPayload(user: DashboardUser) {
       image: await resolveProfileImageReadUrl(user.image),
       calendarConnected: calendarConnectionState === "connected",
       calendarConnectionState,
+      contactsConnectionState,
       calendarScope: connection?.scope ?? null
     },
     sync: {

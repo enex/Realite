@@ -3481,7 +3481,7 @@ export async function updateEventPresenceLocationNote(input: {
   }
   if (row.status !== "checked_in") {
     throw new RepositoryValidationError(
-      "Treffpunkt-Hinweis ist nur während aktiver Vor-Ort-Sichtbarkeit möglich.",
+      "Aufenthaltsort-Hinweis ist nur während aktiver Vor-Ort-Sichtbarkeit möglich.",
     );
   }
   if (row.visibleUntil.getTime() <= now.getTime()) {

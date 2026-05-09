@@ -32,6 +32,12 @@ Prüfe bitte:
 
 Wenn es weiter nicht klappt: einmal abmelden und neu anmelden.
 
+## Warum fragt Google beim Login nicht nach Kalender oder Kontakten?
+
+Realite trennt Login und Zusatzverbindungen bewusst. Beim Google-Login werden nur Name, E-Mail und Profilbild angefragt. Kalender und Kontakte gibst du später separat frei, zum Beispiel unter **Profil & Einstellungen → Verbindungen** oder beim Kontakte-Import in **Gruppen**.
+
+Wenn du Realite früher schon Kalender- oder Kontakte-Zugriff gegeben hast, bleibt diese Verbindung bestehen, bis du sie in deinen Google-Konto-Einstellungen widerrufst. Ein normaler erneuter Login erweitert die Berechtigungen aber nicht automatisch.
+
 ## Was bedeuten in den Einstellungen `Später verbinden` und `Kalenderzugriff prüfen`?
 
 Realite unterscheidet dort jetzt bewusst drei Zustände:

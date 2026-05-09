@@ -236,7 +236,7 @@ export function EventPresencePanel(props: EventPresencePanelProps) {
                 {user.presenceLocationNote ? (
                   <span className="text-muted-foreground">
                     {" "}
-                    · Treffpunkt: {user.presenceLocationNote}
+                    · aktueller Aufenthaltsort: {user.presenceLocationNote}
                   </span>
                 ) : null}
               </li>

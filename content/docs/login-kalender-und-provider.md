@@ -35,6 +35,7 @@ Wenn du Realite bewusst erst ohne Kalender nutzen willst, hilft dir zusätzlich 
 ## Kalender und Kontakte später verbinden
 
 Nach dem Login kannst du unter **Profil & Einstellungen → Verbindungen** jederzeit Kalender oder Kontakte separat verbinden.
+Wenn du direkt in **Gruppen** arbeitest, zeigt Realite den Kontakte-Import dort ebenfalls als optionalen nächsten Schritt an.
 
 Beide Verbindungen sind optional:
 

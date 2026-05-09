@@ -18,7 +18,7 @@ Unter `/singles/<slug>/qr` gibt es zusätzlich eine Druckvorlage. Dort kannst du
 4. Bewusst **Ich bin hier** wählen.
 5. Die Seite zeigt passende andere Personen, die ebenfalls eingecheckt sind.
 
-Optional kannst du unter **Treffpunkt am Event** in eigenen Worten beschreiben, wo du dich befindest (z. B. „beim Haupteingang“, „beim Stand mit den blauen Ballons“). Das ist **nur Freitext**, kein automatischer Standort und kein GPS. Der Hinweis wird **nur** anderen angezeigt, die für dasselbe Event eingecheckt sind **und** zu dir passen — nicht allen Eventbesuchern. Du kannst den Text anpassen, solange du eingecheckt bist; Änderungen werden kurz nach dem Tippen gespeichert. Beim ersten **Ich bin hier** wird der aktuelle Text mitgeschickt, wenn du ihn vorher ausgefüllt hast.
+Optional kannst du unter **Aktueller Aufenthaltsort am Event** in eigenen Worten beschreiben, wo du gerade bist (z. B. „beim Haupteingang“, „beim Stand mit den blauen Ballons“). So wissen passende eingecheckte Personen, dass sie dich jetzt dort finden oder ansprechen können. Das ist **nur Freitext**, kein automatischer Standort und kein GPS. Der Hinweis wird **nur** anderen angezeigt, die für dasselbe Event eingecheckt sind **und** zu dir passen — nicht allen Eventbesuchern. Du kannst den Text anpassen, solange du eingecheckt bist; Änderungen werden kurz nach dem Tippen gespeichert. Beim ersten **Ich bin hier** wird der aktuelle Text mitgeschickt, wenn du ihn vorher ausgefüllt hast.
 
 Auf der Eventseite siehst du immer nur **einen** klaren Schritt: Entweder du bist noch nicht eingetragen und kannst dich mit **Ich bin hier** sichtbar machen — oder du bist bereits eingecheckt und kannst mit **Nicht mehr da** die Sichtbarkeit beenden. Beides gleichzeitig als gleichwertige Aktionen gibt es nicht.
 
@@ -36,7 +36,7 @@ Die Druckvorlage erreichst du aus diesem QR-Bereich über **Druckvorlage öffnen
 
 - Der Scan macht dich nicht automatisch sichtbar.
 - Gedruckte QR-Codes verknüpfen niemanden automatisch als Kontakt.
-- Dein Standort wird nicht live geteilt und nicht per Karte veröffentlicht. Ein Treffpunkt-Hinweis erscheint nur als von dir eingegebener Text und nur bei passenden eingecheckten Personen.
+- Dein Standort wird nicht live geteilt und nicht per Karte veröffentlicht. Dein Aufenthaltsort-Hinweis erscheint nur als von dir eingegebener Text und nur bei passenden eingecheckten Personen.
 - Andere sehen dich erst, wenn du **Ich bin hier** wählst.
 - Deine Sichtbarkeit endet mit dem gewählten Zeitfenster oder spätestens mit dem Eventende.
 - Wenn du **Nicht mehr da** wählst, verschwindest du aus der Vor-Ort-Liste.

@@ -970,7 +970,7 @@ function EventDetailView(props: {
             </p>
             {p.presenceLocationNote ? (
               <p className="text-foreground mt-1 text-[11px] leading-snug">
-                Treffpunkt: {p.presenceLocationNote}
+                Aufenthaltsort: {p.presenceLocationNote}
               </p>
             ) : null}
             <div className="mt-3 flex flex-wrap gap-2">

@@ -273,22 +273,22 @@ function ComparisonSection() {
   return (
     <section className="mt-12 sm:mt-14">
       <div className="realite-reveal grid gap-4 sm:grid-cols-2" style={{ animationDelay: "340ms" }}>
-        <div className="rounded-2xl border border-rose-200 bg-card/74 p-5 shadow-[0_22px_60px_-40px_rgba(244,63,94,0.32)] dark:border-rose-500/25 dark:bg-rose-950/20 dark:shadow-[0_22px_60px_-40px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-6">
-          <p className="text-xs font-bold uppercase tracking-widest text-rose-700 dark:text-red-700">😩 Bisher</p>
-          <ul className="mt-4 space-y-2.5 text-sm leading-6 text-rose-950/75 dark:text-red-800">
-            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-rose-500">✗</span>30+ Nachrichten für ein einziges Treffen</li>
-            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-rose-500">✗</span>Keiner weiß, wer gerade Zeit hat</li>
-            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-rose-500">✗</span>Spontanität stirbt in der Abstimmung</li>
-            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-rose-500">✗</span>Apps, die Fremde statt Freunde zeigen</li>
+        <div className="rounded-2xl border border-rose-200 bg-card/74 p-5 shadow-[0_22px_60px_-40px_rgba(244,63,94,0.32)] dark:border-rose-400/35 dark:bg-rose-950/18 dark:shadow-[0_22px_60px_-40px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-6">
+          <p className="text-xs font-bold uppercase tracking-widest text-rose-700 dark:text-rose-300">😩 Bisher</p>
+          <ul className="mt-4 space-y-2.5 text-sm leading-6 text-rose-950/75 dark:text-rose-100/88">
+            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-rose-500 dark:text-rose-300">✗</span>30+ Nachrichten für ein einziges Treffen</li>
+            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-rose-500 dark:text-rose-300">✗</span>Keiner weiß, wer gerade Zeit hat</li>
+            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-rose-500 dark:text-rose-300">✗</span>Spontanität stirbt in der Abstimmung</li>
+            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-rose-500 dark:text-rose-300">✗</span>Apps, die Fremde statt Freunde zeigen</li>
           </ul>
         </div>
-        <div className="rounded-2xl border border-emerald-200 bg-[#edf6f1] p-5 shadow-[0_22px_60px_-40px_rgba(16,185,129,0.35)] dark:border-emerald-500/22 dark:bg-emerald-950/30 dark:shadow-[0_22px_60px_-40px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-6">
-          <p className="text-xs font-bold uppercase tracking-widest text-emerald-800">✨ Mit Realite</p>
-          <ul className="mt-4 space-y-2.5 text-sm leading-6 text-emerald-950/78 dark:text-emerald-900">
-            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-emerald-600 dark:text-emerald-700">✓</span>Aktivität in Sekunden erstellt, Freunde sehen sie sofort</li>
-            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-emerald-600 dark:text-emerald-700">✓</span>Sichtbar, wer gerade frei und dabei ist</li>
-            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-emerald-600 dark:text-emerald-700">✓</span>Einfach dazustoßen – kein langer Chat</li>
-            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-emerald-600 dark:text-emerald-700">✓</span>Dein Freundeskreis – kein Fremde-Leute-Feed</li>
+        <div className="rounded-2xl border border-emerald-200 bg-[#edf6f1] p-5 shadow-[0_22px_60px_-40px_rgba(16,185,129,0.35)] dark:border-emerald-400/35 dark:bg-emerald-950/20 dark:shadow-[0_22px_60px_-40px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-6">
+          <p className="text-xs font-bold uppercase tracking-widest text-emerald-800 dark:text-emerald-200">✨ Mit Realite</p>
+          <ul className="mt-4 space-y-2.5 text-sm leading-6 text-emerald-950/78 dark:text-emerald-50/88">
+            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-emerald-600 dark:text-emerald-300">✓</span>Aktivität in Sekunden erstellt, Freunde sehen sie sofort</li>
+            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-emerald-600 dark:text-emerald-300">✓</span>Sichtbar, wer gerade frei und dabei ist</li>
+            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-emerald-600 dark:text-emerald-300">✓</span>Einfach dazustoßen – kein langer Chat</li>
+            <li className="flex items-start gap-2.5"><span className="mt-0.5 shrink-0 font-bold text-emerald-600 dark:text-emerald-300">✓</span>Dein Freundeskreis – kein Fremde-Leute-Feed</li>
           </ul>
         </div>
       </div>

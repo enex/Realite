@@ -10,8 +10,12 @@ import { UserAvatar } from "@/src/components/user-avatar";
 import { toast } from "@/src/components/toaster";
 import { captureProductEvent } from "@/src/lib/posthog/capture";
 import { DASHBOARD_QUERY_KEY, fetchDashboard } from "@/src/lib/dashboard-query";
-import type { CalendarConnectionState } from "@/src/lib/calendar-connection-state";
+import type {
+  CalendarConnectionState,
+  ContactsConnectionState,
+} from "@/src/lib/calendar-connection-state";
 import { getGroupManagementState, sortGroupsForManagement } from "@/src/lib/group-management";
+import { GOOGLE_CONNECT_BASE_PATH } from "@/src/lib/provider-adapters";
 import { useRealiteFeatureFlag } from "@/src/lib/posthog/feature-flags";
 import { useQueryErrorToast } from "@/src/lib/use-query-error-toast";
 
@@ -48,6 +52,7 @@ type GroupsPayload = {
     name: string | null;
     image: string | null;
     calendarConnectionState: CalendarConnectionState;
+    contactsConnectionState: ContactsConnectionState;
   };
   sync: {
     warning: string | null;
@@ -62,7 +67,13 @@ type GroupsPayload = {
 };
 
 const emptyPayload: GroupsPayload = {
-  me: { email: "", name: null, image: null, calendarConnectionState: "not_connected" },
+  me: {
+    email: "",
+    name: null,
+    image: null,
+    calendarConnectionState: "not_connected",
+    contactsConnectionState: "not_connected",
+  },
   sync: { warning: null, contactsWarning: null },
   dating: { enabled: false, unlocked: false, missingRequirements: [] },
   groups: []
@@ -103,6 +114,7 @@ export function GroupsPage({
   const visibleGroups = useMemo(() => data.groups.filter((g) => !g.isHidden), [data.groups]);
   const hiddenGroups = useMemo(() => data.groups.filter((g) => g.isHidden), [data.groups]);
   const orderedVisibleGroups = useMemo(() => sortGroupsForManagement(visibleGroups), [visibleGroups]);
+  const contactsConnectUrl = `${GOOGLE_CONNECT_BASE_PATH}?scope_set=contacts&callbackUrl=%2Fgroups`;
 
   const profileName = data.me.name ?? userName;
   const profileEmail = data.me.email || userEmail;
@@ -173,6 +185,25 @@ export function GroupsPage({
           <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
             {data.sync.contactsWarning}
           </div>
+        ) : null}
+        {data.me.contactsConnectionState === "not_connected" ? (
+          <section className="mt-4 rounded-xl border border-dashed border-teal-300 bg-teal-50/75 px-4 py-4 text-sm text-teal-900 dark:border-teal-800 dark:bg-teal-950/30 dark:text-teal-100">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="font-semibold">Google Kontakte optional verbinden</p>
+                <p className="mt-1 text-xs text-teal-800/80 dark:text-teal-100/75">
+                  Realite importiert Kontakte erst, wenn du es hier freigibst. Ohne
+                  Kontakte-Sync kannst du Gruppen weiter manuell pflegen.
+                </p>
+              </div>
+              <a
+                href={contactsConnectUrl}
+                className="inline-flex w-fit shrink-0 items-center justify-center rounded-md bg-teal-700 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-teal-800"
+              >
+                Kontakte verbinden
+              </a>
+            </div>
+          </section>
         ) : null}
 
         {showGroupForm ? (

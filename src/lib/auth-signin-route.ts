@@ -18,11 +18,40 @@ function createRedirectResponse(location: string, setCookieHeader: string | null
   });
 }
 
-async function toRedirectResponse(signInResponse: Response, requestUrl: URL) {
+export function getGoogleLoginAuthorizationLocation(location: string, requestUrl: URL) {
+  const url = new URL(location, requestUrl.origin);
+
+  if (url.hostname === "accounts.google.com") {
+    // Better Auth enables incremental Google auth by default. For the plain
+    // login step Realite must not merge previously granted Calendar/Contacts
+    // scopes; those are requested only through /api/auth/connect/google.
+    url.searchParams.delete("include_granted_scopes");
+  }
+
+  return url.toString();
+}
+
+function getSocialSignInLocation(
+  location: string,
+  requestUrl: URL,
+  provider: "google" | "apple" | "microsoft" | "dev",
+) {
+  if (provider === "google") {
+    return getGoogleLoginAuthorizationLocation(location, requestUrl);
+  }
+
+  return new URL(location, requestUrl.origin).toString();
+}
+
+async function toRedirectResponse(
+  signInResponse: Response,
+  requestUrl: URL,
+  provider: "google" | "apple" | "microsoft" | "dev",
+) {
   const locationHeader = signInResponse.headers.get("location");
   if (locationHeader) {
     return createRedirectResponse(
-      new URL(locationHeader, requestUrl.origin).toString(),
+      getSocialSignInLocation(locationHeader, requestUrl, provider),
       signInResponse.headers.get("set-cookie")
     );
   }
@@ -31,7 +60,7 @@ async function toRedirectResponse(signInResponse: Response, requestUrl: URL) {
     const payload = (await signInResponse.clone().json()) as { url?: string };
     if (payload.url) {
       return createRedirectResponse(
-        new URL(payload.url, requestUrl.origin).toString(),
+        getSocialSignInLocation(payload.url, requestUrl, provider),
         signInResponse.headers.get("set-cookie")
       );
     }
@@ -69,7 +98,7 @@ export async function handleSocialSignInRequest(request: Request, provider: "goo
     asResponse: true
   });
 
-  return toRedirectResponse(signInResponse, requestUrl);
+  return toRedirectResponse(signInResponse, requestUrl, provider);
 }
 
 function createAuthRequestHeaders(request: Request, requestUrl: URL) {
@@ -157,5 +186,5 @@ export async function handleDevSignInRequest(request: Request) {
     signInResponse = await signIn();
   }
 
-  return toRedirectResponse(signInResponse, requestUrl);
+  return toRedirectResponse(signInResponse, requestUrl, "dev");
 }
