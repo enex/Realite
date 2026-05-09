@@ -74,6 +74,29 @@ export default async function SinglesHereQrPrintRoute({
       eventUrl={`${origin}${eventPath}`}
       qrImagePath={`${eventPath}/qr/code`}
       backHref={eventPath}
+      copyVariants={[
+        {
+          code: "a",
+          label: "Klassisch",
+          headline: "Neue Leute treffen?",
+          benefit: "Scanne den Code und sieh, wer hier gerade auch offen ist.",
+          footer: "Bewusst sichtbar",
+        },
+        {
+          code: "b",
+          label: "Direkt",
+          headline: "Single hier?",
+          benefit: "Einchecken, sichtbar werden und passende Personen vor Ort sehen.",
+          footer: "Ohne Rumraten",
+        },
+        {
+          code: "c",
+          label: "Offen",
+          headline: "Ansprechen okay?",
+          benefit: "Scannen und nur zeigen, wenn du hier wirklich offen dafür bist.",
+          footer: "Opt-in vor Ort",
+        },
+      ]}
     />
   );
 }

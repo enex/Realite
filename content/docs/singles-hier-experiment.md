@@ -8,7 +8,7 @@ Eine Person legt ein Event mit eindeutigem Slug an. Realite erzeugt daraus eine 
 
 Wenn du **eingecheckt** bist und die App neu öffnest (z. B. über die installierte Web-App), landest du über `/start` direkt wieder auf deiner `/singles/<slug>`-Seite. Ohne aktives Check-in führt `/start` zur gewohnten Aktivitäten-Ansicht. In der **Aktivitäten-Liste** öffnen Singles-hier-Events die Singles-Seite statt der kurzen Event-URL. Mit **Zurück** verlässt du die Singles-Ansicht wie gewohnt.
 
-Unter `/singles/<slug>/qr` gibt es zusätzlich eine Druckvorlage. Dort kannst du einstellen, wie viele QR-Codes nebeneinander und insgesamt auf dem Blatt stehen. Die Vorlage ist zum Ausdrucken und Ausschneiden gedacht; die einzelnen Codes verweisen weiterhin nur auf dieselbe `/singles/<slug>`-Eventseite. Der Pitch auf dem Schnipsel macht den Mehrwert klar: scannen, bewusst einchecken und nur gegenseitig passende Personen vor Ort sehen.
+Unter `/singles/<slug>/qr` gibt es zusätzlich eine Druckvorlage. Dort kannst du einstellen, wie viele QR-Codes nebeneinander und insgesamt auf dem Blatt stehen und welche Stil- und Botschaftsvariante gedruckt wird. Die Vorlage ist zum Ausdrucken und Ausschneiden gedacht; die einzelnen Codes verweisen weiterhin auf dieselbe `/singles/<slug>`-Eventseite, ergänzt um eine kurze Variantenkennung wie `?s=a`, `?s=b` oder `?s=c`. Der Pitch auf dem Schnipsel macht den Mehrwert klar: scannen, bewusst einchecken und nur gegenseitig passende Personen vor Ort sehen.
 
 ## Was Teilnehmende tun
 

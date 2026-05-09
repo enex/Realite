@@ -101,6 +101,29 @@ export default async function EventQrPrintRoute({
       eventUrl={eventUrl}
       qrImagePath={qrImagePath}
       backHref={eventPath}
+      copyVariants={[
+        {
+          code: "a",
+          label: "Klassisch",
+          headline: "Kommst du mit?",
+          benefit: "Scannen, Event öffnen und direkt zusagen. So weiß die Gruppe, dass du dabei bist.",
+          footer: "Mitmachen statt suchen",
+        },
+        {
+          code: "b",
+          label: "Direkt",
+          headline: "Heute dabei?",
+          benefit: "Scannen und mit einem Tap zeigen, ob du dabei bist.",
+          footer: "Schneller planen",
+        },
+        {
+          code: "c",
+          label: "Spontan",
+          headline: "Was geht hier?",
+          benefit: "Scanne den Code und finde direkt zur gemeinsamen Aktivität.",
+          footer: "Einfach dazukommen",
+        },
+      ]}
     />
   );
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import QRCode from "qrcode";
 
 import { getPlaceholderQrBySlug } from "@/src/lib/placeholder-qr";
+import { appendQrPrintVariant, normalizeQrPrintVariant } from "@/src/lib/qr-print-variants";
 import { getRequestOrigin } from "@/src/lib/request-origin";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +18,9 @@ export async function GET(
     return new NextResponse("QR-Code nicht gefunden", { status: 404 });
   }
 
-  const url = `${getRequestOrigin(request)}/q/${slug}`;
+  const requestUrl = new URL(request.url);
+  const variant = normalizeQrPrintVariant(requestUrl.searchParams.get("s"));
+  const url = appendQrPrintVariant(`${getRequestOrigin(request)}/q/${slug}`, variant);
   const svg = await QRCode.toString(url, {
     type: "svg",
     margin: 1,

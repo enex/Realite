@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import QRCode from "qrcode";
 
 import { getPublicEventSharePreviewByShortId } from "@/src/lib/event-share";
+import { appendQrPrintVariant, normalizeQrPrintVariant } from "@/src/lib/qr-print-variants";
 import { getRequestOrigin } from "@/src/lib/request-origin";
 import { getVisibleEventForUserById } from "@/src/lib/repository";
 import { requireAppUser } from "@/src/lib/session";
@@ -39,7 +40,9 @@ export async function GET(
     return new NextResponse("Event nicht gefunden", { status: 404 });
   }
 
-  const url = `${getRequestOrigin(request)}${eventPath}`;
+  const requestUrl = new URL(request.url);
+  const variant = normalizeQrPrintVariant(requestUrl.searchParams.get("s"));
+  const url = appendQrPrintVariant(`${getRequestOrigin(request)}${eventPath}`, variant);
   const svg = await QRCode.toString(url, {
     type: "svg",
     margin: 1,

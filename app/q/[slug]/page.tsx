@@ -5,16 +5,20 @@ import {
   claimPlaceholderQr,
   getPlaceholderQrBySlug,
 } from "@/src/lib/placeholder-qr";
+import { appendQrPrintVariant, normalizeQrPrintVariant } from "@/src/lib/qr-print-variants";
 import { requireAppUser } from "@/src/lib/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function QrScanPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ s?: string }>;
 }) {
   const { slug } = await params;
+  const { s } = await searchParams;
   const qr = await getPlaceholderQrBySlug(slug);
 
   if (!qr) {
@@ -22,7 +26,11 @@ export default async function QrScanPage({
   }
 
   if (qr.singlesSlug) {
-    redirect(`/singles/${encodeURIComponent(qr.singlesSlug)}`);
+    const singlesPath = `/singles/${encodeURIComponent(qr.singlesSlug)}`;
+    const redirectPath = s
+      ? appendQrPrintVariant(singlesPath, normalizeQrPrintVariant(s))
+      : singlesPath;
+    redirect(redirectPath as never);
   }
 
   const user = await requireAppUser();

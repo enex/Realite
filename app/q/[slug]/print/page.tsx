@@ -78,6 +78,29 @@ export default async function QrPrintPage({
       eventUrl={qrUrl}
       qrImagePath={qrImagePath}
       backHref={`/q/${slug}/manage`}
+      copyVariants={[
+        {
+          code: "a",
+          label: "Klassisch",
+          headline: "Offen für Gespräche?",
+          benefit: "Scanne den Code und sieh, wer hier gerade auch ansprechbar ist.",
+          footer: "Bewusst sichtbar",
+        },
+        {
+          code: "b",
+          label: "Direkt",
+          headline: "Wer ist offen?",
+          benefit: "Scannen, einchecken und relevante Personen am Ort sehen.",
+          footer: "Ohne Rumraten",
+        },
+        {
+          code: "c",
+          label: "Locker",
+          headline: "Kurz hallo sagen?",
+          benefit: "Der Code zeigt nur Personen, die sich hier bewusst sichtbar machen.",
+          footer: "Opt-in vor Ort",
+        },
+      ]}
     />
   );
 }
