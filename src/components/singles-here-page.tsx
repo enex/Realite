@@ -1201,7 +1201,7 @@ export function SinglesHerePage({
             <section className="rounded-xl border border-border bg-card p-5">
               <div className="grid gap-4 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
                 <img
-                  src={`/singles/${payload.event.slug}/qr/code`}
+                  src={`/singles/${payload.event.slug}/qr/lift-code`}
                   alt={`QR-Code für ${payload.event.name}`}
                   className="aspect-square w-full max-w-[220px] rounded-lg border border-border bg-white p-2"
                 />
@@ -1211,8 +1211,10 @@ export function SinglesHerePage({
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
                     Wenn ihr als Gruppe vor Ort seid, können andere diesen Code
-                    scannen und auf derselben Eventseite einchecken. Erst nach
-                    eigenem Profil und bewusstem Check-in werden sie sichtbar.
+                    scannen und auf derselben Eventseite einchecken. Angemeldete
+                    Scanner werden als Kontakt mit dir verknüpft; der Code läuft
+                    nach 30 Minuten ab. Erst nach eigenem Profil und bewusstem
+                    Check-in werden sie sichtbar.
                   </p>
                   <p className="mt-3 break-all text-xs text-muted-foreground">
                     /singles/{payload.event.slug}

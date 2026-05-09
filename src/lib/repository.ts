@@ -1617,6 +1617,57 @@ export async function recordWeeklyShareVisit(input: {
   return campaign;
 }
 
+export async function addUserToKontakteGroupFromLift(input: {
+  ownerUserId: string;
+  visitorUserId: string;
+}) {
+  if (input.ownerUserId === input.visitorUserId) {
+    return null;
+  }
+
+  const db = getDb();
+  const [visitor] = await db
+    .select({
+      id: users.id,
+      email: users.email,
+      name: users.name,
+      image: users.image,
+    })
+    .from(users)
+    .where(eq(users.id, input.visitorUserId))
+    .limit(1);
+
+  if (!visitor) {
+    throw new RepositoryValidationError("Kontakt konnte nicht gefunden werden");
+  }
+
+  const kontakteGroup = await ensureKontakteGroupForUser(input.ownerUserId);
+  const [contact] = await db
+    .insert(groupContacts)
+    .values({
+      groupId: kontakteGroup.id,
+      email: normalizeEmail(visitor.email),
+      name: visitor.name,
+      image: visitor.image,
+      source: "qr_lift",
+      sourceReference: visitor.id,
+      updatedAt: new Date(),
+    })
+    .onConflictDoUpdate({
+      target: [groupContacts.groupId, groupContacts.email],
+      set: {
+        name: visitor.name,
+        image: visitor.image,
+        source: "qr_lift",
+        sourceReference: visitor.id,
+        updatedAt: new Date(),
+      },
+    })
+    .returning();
+
+  return contact ?? null;
+}
+
 export async function getWeeklyShareCampaignSummary(
   userId: string,
 ): Promise<WeeklyShareCampaignSummary> {
@@ -2369,6 +2420,7 @@ export async function createEvent(input: {
         birth_year: "Geburtsjahr ausfüllen",
         adult: "mindestens 18 Jahre alt sein",
         gender: "dein Geschlecht auswählen",
+        dating_intent: "Dating-Offenheit auswählen",
         must_be_single: "Single-Status auf 'single' setzen",
         sought_genders: "gesuchte Geschlechter auswählen",
         sought_age_range: "gesuchten Altersbereich vollständig setzen",

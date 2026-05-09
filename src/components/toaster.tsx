@@ -1,13 +1,14 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { Toaster as SonnerToaster } from "sonner";
+
+import { useRealiteTheme } from "@/src/lib/theme";
 
 const REVALIDATING_TOAST_ID = "revalidating";
 
 /** Theme-erhaltender Toaster (Sonner). Für globale Toasts, z. B. „Aktualisierung im Hintergrund". */
 export function Toaster() {
-  const { resolvedTheme } = useTheme();
+  const { resolvedTheme } = useRealiteTheme();
 
   return (
     <SonnerToaster

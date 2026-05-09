@@ -16,6 +16,7 @@ function profile(overrides: Partial<DatingProfile>): DatingProfile {
     enabled: true,
     birthYear: 1995,
     gender: "woman",
+    datingIntent: "dating_only",
     isSingle: true,
     soughtGenders: ["man"],
     soughtAgeMin: 25,

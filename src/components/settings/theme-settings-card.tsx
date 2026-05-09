@@ -1,8 +1,9 @@
 "use client";
 
 import { Monitor, Moon, Sun } from "@phosphor-icons/react";
-import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+
+import { useRealiteTheme } from "@/src/lib/theme";
 
 type ThemeOption = {
   value: string;
@@ -33,7 +34,7 @@ const THEME_OPTIONS: ThemeOption[] = [
 ];
 
 export function ThemeSettingsCard() {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useRealiteTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

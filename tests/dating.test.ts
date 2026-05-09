@@ -16,6 +16,7 @@ function buildProfile(overrides: Partial<DatingProfile>): DatingProfile {
     enabled: true,
     birthYear: 1995,
     gender: "woman",
+    datingIntent: "dating_only",
     isSingle: true,
     soughtGenders: ["man"],
     soughtAgeMin: 22,
@@ -31,6 +32,7 @@ describe("dating profile status", () => {
       enabled: false,
       birthYear: null,
       gender: null,
+      datingIntent: null,
       isSingle: false,
       soughtGenders: [],
       soughtAgeMin: null,
@@ -42,6 +44,7 @@ describe("dating profile status", () => {
     expect(status.missingRequirements).toContain("enable_mode");
     expect(status.missingRequirements).toContain("birth_year");
     expect(status.missingRequirements).toContain("gender");
+    expect(status.missingRequirements).toContain("dating_intent");
     expect(status.missingRequirements).toContain("must_be_single");
     expect(status.missingRequirements).toContain("sought_genders");
     expect(status.missingRequirements).toContain("sought_age_range");
@@ -93,6 +96,31 @@ describe("mutual matching", () => {
     });
 
     expect(isDatingMutualMatch(viewer, creator, NOW)).toBe(false);
+  });
+
+  test("respects dating intent on both sides", () => {
+    const datingOnly = buildProfile({
+      userId: "dating-only",
+      gender: "woman",
+      datingIntent: "dating_only",
+      soughtGenders: ["man"],
+    });
+    const socialOnly = buildProfile({
+      userId: "social-only",
+      gender: "woman",
+      datingIntent: "not_dating",
+      soughtGenders: ["man"],
+    });
+    const datingAndSocial = buildProfile({
+      userId: "dating-and-social",
+      gender: "man",
+      datingIntent: "dating_and_social",
+      soughtGenders: ["woman"],
+    });
+
+    expect(isDatingMutualMatch(datingOnly, socialOnly, NOW)).toBe(false);
+    expect(isDatingMutualMatch(socialOnly, datingAndSocial, NOW)).toBe(true);
+    expect(isDatingMutualMatch(datingOnly, datingAndSocial, NOW)).toBe(true);
   });
 });
 

@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* shadcn/ui: Dark Mode über Klasse am Root (next-themes) */
+/* shadcn/ui: Dark Mode über Klasse am Root */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

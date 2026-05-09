@@ -14,7 +14,7 @@ Unter `/singles/<slug>/qr` gibt es zusätzlich eine Druckvorlage. Dort kannst du
 
 1. Event-QR-Code scannen.
 2. Anmelden.
-3. Zuerst Name, Bild und Single-Infos ausfüllen.
+3. Zuerst Name, Bild, Single-Infos und Dating-Offenheit ausfüllen.
 4. Bewusst **Ich bin hier** wählen.
 5. Die Seite zeigt passende andere Personen, die ebenfalls eingecheckt sind.
 
@@ -22,19 +22,20 @@ Optional kannst du unter **Treffpunkt am Event** in eigenen Worten beschreiben, 
 
 Auf der Eventseite siehst du immer nur **einen** klaren Schritt: Entweder du bist noch nicht eingetragen und kannst dich mit **Ich bin hier** sichtbar machen — oder du bist bereits eingecheckt und kannst mit **Nicht mehr da** die Sichtbarkeit beenden. Beides gleichzeitig als gleichwertige Aktionen gibt es nicht.
 
-Passend bedeutet hier: Beide Dating-Profile akzeptieren gegenseitig Geschlecht und Altersbereich.
+Passend bedeutet hier: Beide Profile akzeptieren gegenseitig Geschlecht, Altersbereich und Dating-Offenheit. Bei **Nur Dating** werden nur Personen angezeigt, die ebenfalls Dating offen haben. Bei **Dating und auch so** können auch passende Personen ohne Dating-Interesse erscheinen. Bei **Nicht Dating** werden keine Personen angezeigt, die nur für Dating sichtbar sein wollen.
 
-Erst nach dem gespeicherten Profil zeigt Realite die Vor-Ort-Ansicht mit passenden Personen. Darunter steht der QR-Code mit dem Hinweis, dass du damit weitere Personen aus deiner Gruppe oder vor Ort auf dieselbe Eventseite einladen kannst.
+Erst nach dem gespeicherten Profil zeigt Realite die Vor-Ort-Ansicht mit passenden Personen. Darunter steht ein persönlicher QR-Code. Wenn eine angemeldete Person ihn scannt, wird sie mit dir als Kontakt verknüpft und danach auf dieselbe Eventseite geführt. Dieser persönliche Code ist nur kurz gültig und läuft nach etwa 30 Minuten ab.
 
 Wenn dein Profil gespeichert ist, bleibt es über den Profil-Button oben auf der Seite bearbeitbar. Das Formular steht dann nicht dauerhaft im Mittelpunkt.
 
-Das Profilbild lädst du über eine gut sichtbare Fläche hoch — per Tipp oder indem du ein Bild dort ablegst. Am Handy kannst du dafür oft direkt ein Selfie aufnehmen oder ein Foto aus der Galerie wählen und den Ausschnitt noch anpassen. So können andere dich vor Ort leichter wiedererkennen. Nach dem Hochladen wird das Profilbild sofort auf deinem Realite-Konto gespeichert. Name, Geburtstag und Suchpräferenzen sichert Realite kurz nach deiner letzten Änderung automatisch, sobald alle Pflichtfelder gültig ausgefüllt sind; der Button „Profil speichern“ bleibt für eine sofortige Bestätigung oder wenn du das Bearbeiten schließen willst. Passende eingecheckte Personen sehen dein Bild, sobald du eingecheckt bist und sie es sehen dürfen. Wenn du dich über Google anmeldest und noch kein eigenes Realite-Profilbild gespeichert hast, übernimmt Realite zunächst das Google-Profilbild.
+Das Profilbild lädst du über eine gut sichtbare Fläche hoch — per Tipp oder indem du ein Bild dort ablegst. Am Handy kannst du dafür oft direkt ein Selfie aufnehmen oder ein Foto aus der Galerie wählen und den Ausschnitt noch anpassen. So können andere dich vor Ort leichter wiedererkennen. Nach dem Hochladen wird das Profilbild sofort auf deinem Realite-Konto gespeichert. Name, Geburtstag, Dating-Offenheit und Suchpräferenzen sichert Realite kurz nach deiner letzten Änderung automatisch, sobald alle Pflichtfelder gültig ausgefüllt sind; der Button „Profil speichern“ bleibt für eine sofortige Bestätigung oder wenn du das Bearbeiten schließen willst. Passende eingecheckte Personen sehen dein Bild, sobald du eingecheckt bist und sie es sehen dürfen. Wenn du dich über Google anmeldest und noch kein eigenes Realite-Profilbild gespeichert hast, übernimmt Realite zunächst das Google-Profilbild.
 
-Die Druckvorlage erreichst du aus diesem QR-Bereich über **Druckvorlage öffnen**.
+Die Druckvorlage erreichst du aus diesem QR-Bereich über **Druckvorlage öffnen**. Gedruckte QR-Codes enthalten keinen persönlichen Kontakt-Token. Sie verweisen dauerhaft nur auf die Eventseite, weil sie von mehreren Personen und über längere Zeit genutzt werden können.
 
 ## Was nicht automatisch passiert
 
 - Der Scan macht dich nicht automatisch sichtbar.
+- Gedruckte QR-Codes verknüpfen niemanden automatisch als Kontakt.
 - Dein Standort wird nicht live geteilt und nicht per Karte veröffentlicht. Ein Treffpunkt-Hinweis erscheint nur als von dir eingegebener Text und nur bei passenden eingecheckten Personen.
 - Andere sehen dich erst, wenn du **Ich bin hier** wählst.
 - Deine Sichtbarkeit endet mit dem gewählten Zeitfenster oder spätestens mit dem Eventende.
@@ -59,5 +60,6 @@ Das Experiment bleibt an ein konkretes Event gebunden. Realite zeigt keine offen
 - für dieses Event aktiv eingecheckt sind
 - ein vollständiges Single-Profil gespeichert haben
 - gegenseitig zu deinen Suchangaben passen
+- nach eurer Dating-Offenheit gegenseitig sichtbar sein dürfen
 
 Damit bleibt Presence ein ausdrücklicher Event-Check-in und kein allgemeines People-Browsing.
