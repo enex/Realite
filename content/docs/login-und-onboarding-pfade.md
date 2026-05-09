@@ -83,6 +83,16 @@ Dabei gilt:
 
 Der Gastzugang ist bewusst ein niedriger Einstieg. Wenn du Realite dauerhaft nutzen willst, kannst du ihn später unter **Profil & Einstellungen** mit einem echten Login verbinden, damit dein Zugang nicht nur an die aktuelle Sitzung gebunden bleibt.
 
+## QR-Code, Login und App-Installation
+
+Wenn du einen Realite-QR-Code öffnest, bleibt dieser Einstieg der Zielpfad:
+
+- führt der QR-Code zu einem Event, kommst du nach Login oder Registrierung wieder dorthin zurück
+- installierst du Realite während dieses Einstiegs als App, öffnet der erste App-Start wieder den gescannten Event- oder QR-Pfad statt nur die allgemeine Startseite
+- ein noch freier QR-Code kann nach dem Login direkt beansprucht werden
+
+Realite speichert dafür nur kurz den konkreten Rückkehrpfad. Daraus entsteht keine automatische Sichtbarkeit, kein Check-in und keine automatische Nachricht an Kontakte.
+
 ## Apple
 
 Apple erscheint jetzt als normaler Login-Pfad, sobald dieses Deployment Apple-Anmeldung technisch freigeschaltet hat.

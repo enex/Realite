@@ -2,6 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import {
+  PWA_RETURN_PATH_COOKIE,
+  PWA_RETURN_PATH_MAX_AGE_SECONDS,
+  getSafePwaReturnPath,
+} from "@/src/lib/pwa-return-path";
+
 const PWA_DISMISS_KEY = "realite-pwa-install-dismissed";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -20,6 +26,25 @@ function isStandalone(): boolean {
     window.matchMedia("(display-mode: standalone)").matches ||
     (window.navigator as Navigator & { standalone?: boolean }).standalone === true
   );
+}
+
+function getCurrentReturnPath(): string | null {
+  const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  if (window.location.pathname === "/login") {
+    const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
+    return getSafePwaReturnPath(callbackUrl) ?? getSafePwaReturnPath(currentPath);
+  }
+
+  return getSafePwaReturnPath(currentPath);
+}
+
+function setPwaReturnPathCookie(path: string) {
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${PWA_RETURN_PATH_COOKIE}=${encodeURIComponent(path)}; Max-Age=${PWA_RETURN_PATH_MAX_AGE_SECONDS}; Path=/; SameSite=Lax${secure}`;
+}
+
+function clearPwaReturnPathCookie() {
+  document.cookie = `${PWA_RETURN_PATH_COOKIE}=; Max-Age=0; Path=/; SameSite=Lax`;
 }
 
 export function PwaInstallBanner() {
@@ -48,11 +73,17 @@ export function PwaInstallBanner() {
 
   const handleInstall = useCallback(async () => {
     if (!deferredPrompt) return;
+    const returnPath = getCurrentReturnPath();
+    if (returnPath) {
+      setPwaReturnPathCookie(returnPath);
+    }
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === "accepted") {
       setDeferredPrompt(null);
       setDismissed(true);
+    } else {
+      clearPwaReturnPathCookie();
     }
   }, [deferredPrompt]);
 

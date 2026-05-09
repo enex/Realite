@@ -5,6 +5,7 @@ import {
   claimPlaceholderQr,
   getPlaceholderQrBySlug,
 } from "@/src/lib/placeholder-qr";
+import { buildLoginPath } from "@/src/lib/provider-adapters";
 import { appendQrPrintVariant, normalizeQrPrintVariant } from "@/src/lib/qr-print-variants";
 import { requireAppUser } from "@/src/lib/session";
 
@@ -36,7 +37,10 @@ export default async function QrScanPage({
   const user = await requireAppUser();
 
   if (!user) {
-    redirect("/");
+    const callbackPath = s
+      ? appendQrPrintVariant(`/q/${encodeURIComponent(slug)}`, normalizeQrPrintVariant(s))
+      : `/q/${encodeURIComponent(slug)}`;
+    redirect(buildLoginPath(callbackPath) as never);
   }
 
   if (qr.ownedBy === user.id) {
