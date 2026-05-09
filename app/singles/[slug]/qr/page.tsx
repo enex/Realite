@@ -96,6 +96,41 @@ export default async function SinglesHereQrPrintRoute({
           benefit: "Scannen und nur zeigen, wenn du hier wirklich offen dafür bist.",
           footer: "Opt-in vor Ort",
         },
+        {
+          code: "d",
+          label: "Minimal",
+          headline: "Hier offen?",
+          benefit: "Ein Scan reicht, um bewusst sichtbar zu werden.",
+          footer: "Kurz einchecken",
+        },
+        {
+          code: "e",
+          label: "Mutig",
+          headline: "Mach es leichter.",
+          benefit: "Zeig nur hier, dass du offen für ein Gespräch bist.",
+          footer: "Weniger Raten",
+        },
+        {
+          code: "f",
+          label: "Neugier",
+          headline: "Wer passt hier?",
+          benefit: "Scannen und passende Personen vor Ort entdecken.",
+          footer: "Erst ansehen",
+        },
+        {
+          code: "g",
+          label: "Diskret",
+          headline: "Nur wenn du willst.",
+          benefit: "Du entscheidest selbst, ob du hier sichtbar wirst.",
+          footer: "Privat gesteuert",
+        },
+        {
+          code: "h",
+          label: "Locker",
+          headline: "Sag einfacher hallo.",
+          benefit: "Der Code hilft, wenn beide wirklich offen dafür sind.",
+          footer: "Low pressure",
+        },
       ]}
     />
   );

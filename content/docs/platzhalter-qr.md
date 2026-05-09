@@ -44,7 +44,7 @@ Du brauchst mindestens ein [Singles-hier-Event](/singles/new), um einen QR-Code 
 
 ## QR-Code drucken
 
-Über „QR-Code drucken" öffnet sich eine Druckvorlage mit mehreren Codes auf einer A4-Seite. Du kannst die Anzahl, das Layout und die Stil- und Botschaftsvariante anpassen, bevor du druckst. Jede Variante hängt nur eine kurze Kennung wie `?s=a`, `?s=b` oder `?s=c` an die Scan-URL an. Der Code zeigt beim Scan immer auf die aktuelle Verknüpfung – nicht auf ein fest gedrucktes Ziel.
+Über „QR-Code drucken" öffnet sich eine Druckvorlage mit mehreren Codes auf einer A4-Seite. Du kannst die Anzahl, das Layout und die Stil- und Botschaftsvariante anpassen, bevor du druckst. Jede Variante hängt nur eine kurze Kennung wie `?s=a`, `?s=b` oder `?s=h` an die Scan-URL an. Der Code zeigt beim Scan immer auf die aktuelle Verknüpfung – nicht auf ein fest gedrucktes Ziel.
 
 ## QR-Code löschen
 

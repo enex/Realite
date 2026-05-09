@@ -1,4 +1,4 @@
-export const QR_PRINT_VARIANT_CODES = ["a", "b", "c"] as const;
+export const QR_PRINT_VARIANT_CODES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
 
 export type QrPrintVariantCode = (typeof QR_PRINT_VARIANT_CODES)[number];
 

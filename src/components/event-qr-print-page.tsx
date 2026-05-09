@@ -66,6 +66,56 @@ const variantStyles: Record<
     qrFrame: "border-cyan-700 bg-white",
     footer: "text-cyan-800",
   },
+  d: {
+    card:
+      "border-zinc-900 bg-[#f7f7f4] text-zinc-950",
+    bar: "bg-zinc-900",
+    badge: "bg-amber-300 text-zinc-950",
+    brand: "text-zinc-700",
+    headline: "text-zinc-950",
+    qrFrame: "border-zinc-900 bg-white",
+    footer: "text-zinc-700",
+  },
+  e: {
+    card:
+      "border-emerald-700/60 bg-[#f0fdf4] text-slate-950",
+    bar: "bg-emerald-700",
+    badge: "bg-slate-950 text-white",
+    brand: "text-emerald-800",
+    headline: "text-emerald-950",
+    qrFrame: "border-emerald-700 bg-white",
+    footer: "text-emerald-800",
+  },
+  f: {
+    card:
+      "border-fuchsia-700/60 bg-[#fdf4ff] text-slate-950",
+    bar: "bg-fuchsia-700",
+    badge: "bg-orange-400 text-slate-950",
+    brand: "text-fuchsia-800",
+    headline: "text-fuchsia-950",
+    qrFrame: "border-fuchsia-700 bg-white",
+    footer: "text-fuchsia-800",
+  },
+  g: {
+    card:
+      "border-sky-800/60 bg-[#f8fafc] text-slate-950",
+    bar: "bg-sky-800",
+    badge: "bg-yellow-300 text-sky-950",
+    brand: "text-sky-800",
+    headline: "text-sky-950",
+    qrFrame: "border-sky-800 bg-white",
+    footer: "text-sky-800",
+  },
+  h: {
+    card:
+      "border-red-700/60 bg-[#fff7ed] text-slate-950",
+    bar: "bg-red-700",
+    badge: "bg-cyan-300 text-red-950",
+    brand: "text-red-800",
+    headline: "text-red-950",
+    qrFrame: "border-red-700 bg-white",
+    footer: "text-red-800",
+  },
 };
 
 function clamp(value: number, min: number, max: number) {
@@ -112,6 +162,41 @@ export function EventQrPrintPage({
               headline: "Was geht hier?",
               benefit: "Scanne den Code und finde direkt zur gemeinsamen Aktivität.",
               footer: "Einfach dazukommen",
+            },
+            {
+              code: "d",
+              label: "Minimal",
+              headline: "Kurz mitkommen?",
+              benefit: "Ein Scan reicht, um das Event zu öffnen und dabei zu sein.",
+              footer: "Wenig Aufwand",
+            },
+            {
+              code: "e",
+              label: "Gemeinsam",
+              headline: "Wer ist dabei?",
+              benefit: "Öffnen, zusagen und der Gruppe Planungssicherheit geben.",
+              footer: "Mehr Überblick",
+            },
+            {
+              code: "f",
+              label: "Neugierig",
+              headline: "Schon gesehen?",
+              benefit: "Scanne den Code und schau, ob die Aktivität zu dir passt.",
+              footer: "Erst ansehen",
+            },
+            {
+              code: "g",
+              label: "Klar",
+              headline: "Plan steht.",
+              benefit: "Scannen, Details öffnen und direkt entscheiden.",
+              footer: "Ohne Chat-Chaos",
+            },
+            {
+              code: "h",
+              label: "Warm",
+              headline: "Komm vorbei.",
+              benefit: "Der Link führt dich direkt zur Aktivität und zur Zusage.",
+              footer: "Einladung öffnen",
             },
           ],
     [copyVariants, scanBenefit, scanHeadline],
@@ -179,7 +264,7 @@ export function EventQrPrintPage({
             Du steuerst nur diese Druckvorlage, keine Sichtbarkeit in Realite.
           </p>
 
-          <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_1fr_1.4fr]">
+          <div className="mt-4 grid gap-4 lg:grid-cols-3">
             <label className="block">
               <span className="text-xs font-semibold text-muted-foreground">Codes nebeneinander</span>
               <div className="mt-2 flex h-11 items-center overflow-hidden rounded-lg border border-input bg-background">
@@ -240,32 +325,24 @@ export function EventQrPrintPage({
               </div>
             </label>
 
-            <fieldset>
-              <legend className="text-xs font-semibold text-muted-foreground">Stil und Botschaft</legend>
-              <div className="mt-2 grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
+            <label className="block">
+              <span className="text-xs font-semibold text-muted-foreground">Stil und Botschaft</span>
+              <select
+                value={activeVariant.code}
+                onChange={(event) => setSelectedVariant(event.target.value as QrPrintVariantCode)}
+                className="mt-2 h-11 w-full rounded-lg border border-input bg-background px-3 text-sm font-semibold text-foreground outline-none"
+              >
                 {variants.map((variant) => (
-                  <button
-                    key={variant.code}
-                    type="button"
-                    onClick={() => setSelectedVariant(variant.code)}
-                    className={`rounded-lg border px-3 py-2 text-left text-sm transition ${
-                      activeVariant.code === variant.code
-                        ? "border-teal-700 bg-teal-50 text-teal-950"
-                        : "border-input bg-background text-foreground hover:bg-muted"
-                    }`}
-                    aria-pressed={activeVariant.code === variant.code}
-                  >
-                    <span className="flex items-center justify-between gap-2 font-semibold">
-                      {variant.label}
-                      <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-                        ?s={variant.code}
-                      </span>
-                    </span>
-                    <span className="mt-1 block text-xs text-muted-foreground">{variant.headline}</span>
-                  </button>
+                  <option key={variant.code} value={variant.code}>
+                    {variant.label} (?s={variant.code}) - {variant.headline}
+                  </option>
                 ))}
-              </div>
-            </fieldset>
+              </select>
+              <span className="mt-2 block rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground">{activeVariant.headline}</span>{" "}
+                {activeVariant.benefit}
+              </span>
+            </label>
           </div>
         </div>
       </section>

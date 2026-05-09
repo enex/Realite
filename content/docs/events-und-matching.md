@@ -229,7 +229,7 @@ Du kannst einstellen:
 - wie viele Codes insgesamt gedruckt werden
 - welche Stil- und Botschaftsvariante gedruckt wird
 
-Jede Variante ergänzt die Scan-URL nur um eine kurze Kennung wie `?s=a`, `?s=b` oder `?s=c`. So kannst du später vergleichen, welche Gestaltung oder Botschaft besser funktioniert, ohne lange Links auf die Schnipsel zu drucken.
+Jede Variante ergänzt die Scan-URL nur um eine kurze Kennung wie `?s=a`, `?s=b` oder `?s=h`. So kannst du später vergleichen, welche Gestaltung oder Botschaft besser funktioniert, ohne lange Links auf die Schnipsel zu drucken.
 
 Beim Drucken blendet Realite die Einstellungen aus und zeigt nur die QR-Karten mit Titel, klarem Scan-Pitch und Link. Ort und Zeit stehen bewusst nicht auf den Schnipseln. Der Pitch erklärt den Mehrwert: Event öffnen, direkt zusagen und der Gruppe zeigen, dass man dabei ist. So kannst du die Seite ausdrucken, ausschneiden und z. B. bei einem Event auslegen.
 

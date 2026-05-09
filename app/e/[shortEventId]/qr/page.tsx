@@ -123,6 +123,41 @@ export default async function EventQrPrintRoute({
           benefit: "Scanne den Code und finde direkt zur gemeinsamen Aktivität.",
           footer: "Einfach dazukommen",
         },
+        {
+          code: "d",
+          label: "Minimal",
+          headline: "Kurz mitkommen?",
+          benefit: "Ein Scan reicht, um das Event zu öffnen und dabei zu sein.",
+          footer: "Wenig Aufwand",
+        },
+        {
+          code: "e",
+          label: "Gruppe",
+          headline: "Wer ist dabei?",
+          benefit: "Öffnen, zusagen und der Gruppe Planungssicherheit geben.",
+          footer: "Mehr Überblick",
+        },
+        {
+          code: "f",
+          label: "Neugier",
+          headline: "Schon gesehen?",
+          benefit: "Scanne den Code und schau, ob die Aktivität zu dir passt.",
+          footer: "Erst ansehen",
+        },
+        {
+          code: "g",
+          label: "Klar",
+          headline: "Plan steht.",
+          benefit: "Scannen, Details öffnen und direkt entscheiden.",
+          footer: "Ohne Chat-Chaos",
+        },
+        {
+          code: "h",
+          label: "Einladung",
+          headline: "Komm vorbei.",
+          benefit: "Der Link führt dich direkt zur Aktivität und zur Zusage.",
+          footer: "Einladung öffnen",
+        },
       ]}
     />
   );
