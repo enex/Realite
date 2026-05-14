@@ -11,6 +11,24 @@ function toLocalInputValue(date: Date) {
 }
 
 export function SinglesHereCreatePage() {
+  return <SinglesHereCreatePageWithConfig />;
+}
+
+type SinglesHereCreatePageWithConfigProps = {
+  routeBasePath?: string;
+  apiBasePath?: string;
+  contextLabel?: string;
+  heading?: string;
+  introText?: string;
+};
+
+export function SinglesHereCreatePageWithConfig({
+  routeBasePath = "/singles",
+  apiBasePath = "/api/singles/events",
+  contextLabel = "Realite Experiment",
+  heading = "Singles-hier Event anlegen",
+  introText = "Lege eine einfache Scan-Seite für ein konkretes Event an. Der Slug wird Teil der URL und muss eindeutig sein.",
+}: SinglesHereCreatePageWithConfigProps = {}) {
   const [name, setName] = useState("");
   const [slugInput, setSlugInput] = useState("");
   const [location, setLocation] = useState("");
@@ -30,7 +48,7 @@ export function SinglesHereCreatePage() {
     setBusy(true);
 
     try {
-      const response = await fetch("/api/singles/events", {
+      const response = await fetch(apiBasePath, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -49,7 +67,7 @@ export function SinglesHereCreatePage() {
         throw new Error(payload.error ?? "Event konnte nicht erstellt werden.");
       }
 
-      window.location.href = `/singles/${encodeURIComponent(payload.event.slug)}`;
+      window.location.href = `${routeBasePath}/${encodeURIComponent(payload.event.slug)}`;
     } catch (submitError) {
       toast.error(
         submitError instanceof Error ? submitError.message : "Unbekannter Fehler",
@@ -61,13 +79,12 @@ export function SinglesHereCreatePage() {
 
   return (
     <main className="mx-auto min-h-dvh w-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-      <p className="text-sm font-semibold text-teal-700">Realite Experiment</p>
+      <p className="text-sm font-semibold text-teal-700">{contextLabel}</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight">
-        Singles-hier Event anlegen
+        {heading}
       </h1>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
-        Lege eine einfache Scan-Seite für ein konkretes Event an. Der Slug wird
-        Teil der URL und muss eindeutig sein.
+        {introText}
       </p>
 
       <form
@@ -95,7 +112,7 @@ export function SinglesHereCreatePage() {
             maxLength={80}
           />
           <span className="text-xs text-muted-foreground">
-            URL: /singles/{slug || "event-slug"}
+            URL: {routeBasePath}/{slug || "event-slug"}
           </span>
         </label>
         <label className="grid gap-1 text-sm">

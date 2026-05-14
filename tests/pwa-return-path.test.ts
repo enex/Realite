@@ -7,8 +7,8 @@ describe("pwa return path", () => {
     expect(getSafePwaReturnPath("/q/abc123?s=poster#join")).toBe(
       "/q/abc123?s=poster#join",
     );
-    expect(getSafePwaReturnPath("https://realite.app/singles/festival")).toBe(
-      "/singles/festival",
+    expect(getSafePwaReturnPath("https://realite.app/events/festival")).toBe(
+      "/events/festival",
     );
   });
 

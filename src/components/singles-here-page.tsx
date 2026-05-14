@@ -26,6 +26,9 @@ type SinglesHerePageProps = {
   initialPayload: SinglesHereClientPayload;
   currentUserName: string | null;
   currentUserId: string;
+  routeBasePath?: string;
+  apiBasePath?: string;
+  contextLabel?: string;
 };
 
 const genderLabels: Record<DatingGender, string> = {
@@ -182,6 +185,7 @@ function serializeSinglesProfileFormState(input: {
 }
 
 async function requestSinglesProfilePatch(
+  apiBasePath: string,
   slug: string,
   body: {
     name: string;
@@ -194,7 +198,7 @@ async function requestSinglesProfilePatch(
     soughtAgeMax: number;
   },
 ) {
-  const response = await fetch(`/api/singles/events/${slug}/profile`, {
+  const response = await fetch(`${apiBasePath}/${slug}/profile`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -223,6 +227,9 @@ export function SinglesHerePage({
   initialPayload,
   currentUserName,
   currentUserId,
+  routeBasePath = "/singles",
+  apiBasePath = "/api/singles/events",
+  contextLabel = "Realite Singles hier",
 }: SinglesHerePageProps) {
   const router = useRouter();
   const [payload, setPayload] = useState(initialPayload);
@@ -332,7 +339,7 @@ export function SinglesHerePage({
   }).description;
 
   const refresh = useCallback(async () => {
-    const response = await fetch(`/api/singles/events/${payload.event.slug}`, {
+    const response = await fetch(`${apiBasePath}/${payload.event.slug}`, {
       cache: "no-store",
     });
     if (!response.ok) {
@@ -345,7 +352,7 @@ export function SinglesHerePage({
     if (!presenceNoteFieldFocusedRef.current) {
       setPresenceLocationNoteInput(data.currentUserPresenceLocationNote ?? "");
     }
-  }, [payload.event.slug]);
+  }, [apiBasePath, payload.event.slug]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -373,7 +380,7 @@ export function SinglesHerePage({
         noteSaveInFlightRef.current = true;
         try {
           const response = await fetch(
-            `/api/singles/events/${payload.event.slug}/presence-location`,
+            `${apiBasePath}/${payload.event.slug}/presence-location`,
             {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
@@ -450,6 +457,7 @@ export function SinglesHerePage({
         profilePatchInFlightRef.current = true;
         try {
           const patch = await requestSinglesProfilePatch(
+            apiBasePath,
             payload.event.slug,
             {
               name: formSnapshot.name.trim(),
@@ -563,6 +571,7 @@ export function SinglesHerePage({
         throw new Error("Bitte fülle alle Pflichtfelder aus.");
       }
       const patch = await requestSinglesProfilePatch(
+        apiBasePath,
         payload.event.slug,
         {
           name: formSnapshot.name.trim(),
@@ -605,7 +614,7 @@ export function SinglesHerePage({
 
     try {
       const response = await fetch(
-        `/api/singles/events/${payload.event.slug}`,
+        `${apiBasePath}/${payload.event.slug}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -713,7 +722,7 @@ export function SinglesHerePage({
         <div className="flex flex-wrap items-start justify-between gap-4 lg:col-span-2">
           <div>
             <p className="text-sm font-semibold text-teal-700">
-              Realite Singles hier
+              {contextLabel}
             </p>
             <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
               {payload.event.name}
@@ -1205,7 +1214,7 @@ export function SinglesHerePage({
             <section className="rounded-xl border border-border bg-card p-5">
               <div className="grid gap-4 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
                 <img
-                  src={`/singles/${payload.event.slug}/qr/lift-code`}
+                  src={`${routeBasePath}/${payload.event.slug}/qr/lift-code`}
                   alt={`QR-Code für ${payload.event.name}`}
                   className="aspect-square w-full max-w-[220px] rounded-lg border border-border bg-white p-2"
                 />
@@ -1220,11 +1229,9 @@ export function SinglesHerePage({
                     nach 30 Minuten ab. Erst nach eigenem Profil und bewusstem
                     Check-in werden sie sichtbar.
                   </p>
-                  <p className="mt-3 break-all text-xs text-muted-foreground">
-                    /singles/{payload.event.slug}
-                  </p>
+                  <p className="mt-3 break-all text-xs text-muted-foreground">{`${routeBasePath}/${payload.event.slug}`}</p>
                   <a
-                    href={`/singles/${payload.event.slug}/qr`}
+                    href={`${routeBasePath}/${payload.event.slug}/qr`}
                     className="mt-4 inline-flex rounded-lg border border-input px-4 py-2 text-sm font-semibold hover:bg-muted"
                   >
                     Druckvorlage öffnen

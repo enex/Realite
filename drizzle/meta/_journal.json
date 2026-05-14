@@ -253,6 +253,13 @@
       "when": 1778332000000,
       "tag": "0035_dating_intent",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1778787600000,
+      "tag": "0036_organizer_mvp",
+      "breakpoints": true
     }
   ]
 }

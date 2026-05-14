@@ -14,6 +14,7 @@ import { buildLoginPath } from "@/src/lib/provider-adapters";
 import {
   getAcceptedUsersForEventIds,
   getEventPresenceSummary,
+  recordOrganizerAnalyticsEvent,
   getSuggestionForEventForUser,
   getVisibleEventForUserById
 } from "@/src/lib/repository";
@@ -77,6 +78,13 @@ export default async function EventShortcutPage({
     if (!preview) {
       notFound();
     }
+    await recordOrganizerAnalyticsEvent({
+      organizerUserId: preview.createdById,
+      eventId: preview.id,
+      metric: "event_page_view",
+      sourcePath: eventPath,
+      actorUserId: null,
+    }).catch(() => {});
     const signInUrl = buildLoginPath(eventPath);
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
@@ -102,6 +110,7 @@ export default async function EventShortcutPage({
           linkPreviewImageUrl={preview.linkPreviewImageUrl}
           createdByName={preview.createdByName}
           createdByEmail={preview.createdByEmail}
+          createdByShortId={shortenUUID(preview.createdById)}
           showCreatorEmail={false}
         />
 
@@ -142,6 +151,14 @@ export default async function EventShortcutPage({
   if (!event) {
     notFound();
   }
+
+  await recordOrganizerAnalyticsEvent({
+    organizerUserId: event.createdBy,
+    eventId: event.id,
+    metric: "event_page_view",
+    sourcePath: eventPath,
+    actorUserId: user.id,
+  }).catch(() => {});
 
   const presenceSummary = event.allowOnSiteVisibility
     ? await getEventPresenceSummary({ userId: user.id, eventId })

@@ -6,9 +6,9 @@ Das Singles-hier Experiment ist eine einfache Event-Unterseite für Orte, an den
 
 Eine Person legt ein Event mit eindeutigem Slug an. Realite erzeugt daraus eine URL und einen QR-Code. Wer den Code scannt, kommt auf dieselbe Eventseite.
 
-Wenn du **eingecheckt** bist und die App neu öffnest (z. B. über die installierte Web-App), landest du über `/start` direkt wieder auf deiner `/singles/<slug>`-Seite. Ohne aktives Check-in führt `/start` zur gewohnten Aktivitäten-Ansicht. In der **Aktivitäten-Liste** öffnen Singles-hier-Events die Singles-Seite statt der kurzen Event-URL. Mit **Zurück** verlässt du die Singles-Ansicht wie gewohnt.
+Wenn du **eingecheckt** bist und die App neu öffnest (z. B. über die installierte Web-App), landest du über `/start` direkt wieder auf deiner `/events/<slug>`-Seite. Ohne aktives Check-in führt `/start` zur gewohnten Aktivitäten-Ansicht. In der **Aktivitäten-Liste** öffnen diese Event-Entries die Event-Seite statt der kurzen Event-URL. Mit **Zurück** verlässt du die Ansicht wie gewohnt.
 
-Unter `/singles/<slug>/qr` gibt es zusätzlich eine Druckvorlage. Dort kannst du einstellen, wie viele QR-Codes nebeneinander und insgesamt auf dem Blatt stehen und welche Stil- und Botschaftsvariante gedruckt wird. Die Vorlage ist zum Ausdrucken und Ausschneiden gedacht; die einzelnen Codes verweisen weiterhin auf dieselbe `/singles/<slug>`-Eventseite, ergänzt um eine kurze Variantenkennung wie `?s=a`, `?s=b` oder `?s=h`. Der Pitch auf dem Schnipsel macht den Mehrwert klar: scannen, bewusst einchecken und nur gegenseitig passende Personen vor Ort sehen.
+Unter `/events/<slug>/qr` gibt es zusätzlich eine Druckvorlage. Dort kannst du einstellen, wie viele QR-Codes nebeneinander und insgesamt auf dem Blatt stehen, ob du Sticker oder Poster drucken willst, welches Papierformat (DIN A4 oder DIN A3) genutzt wird und welche eigenen Texte auf der Vorlage stehen. Die einzelnen Codes verweisen weiterhin auf dieselbe `/events/<slug>`-Eventseite, ergänzt um eine kurze Variantenkennung wie `?s=a`, `?s=b` oder `?s=h`.
 
 ## Was Teilnehmende tun
 
@@ -43,7 +43,7 @@ Die Druckvorlage erreichst du aus diesem QR-Bereich über **Druckvorlage öffnen
 
 ## Wer Events erstellen kann
 
-Nur angemeldete Nutzer können unter `/singles/new` ein Experiment-Event anlegen.
+Nur angemeldete Nutzer können unter `/events/new` ein Event-Entry anlegen.
 
 Beim Erstellen werden vorhandene Realite-Event-Strukturen genutzt:
 

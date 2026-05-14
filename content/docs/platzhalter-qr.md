@@ -40,7 +40,7 @@ Auf der Verwalten-Seite (`/q/{code}/manage`) kannst du:
 - **Event trennen:** Klicke auf „Trennen", um die Verknüpfung zu lösen. Scans landen danach wieder auf der Startseite.
 - **Bezeichnung vergeben:** Ein interner Name, der dir bei der Verwaltung hilft.
 
-Du brauchst mindestens ein [Singles-hier-Event](/singles/new), um einen QR-Code zu verknüpfen.
+Du brauchst mindestens ein [Event-Entry](/events/new), um einen QR-Code zu verknüpfen.
 
 ## QR-Code drucken
 

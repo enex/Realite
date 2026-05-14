@@ -23,7 +23,7 @@ export default async function StartPage() {
   });
 
   if (slug) {
-    redirect(`/singles/${encodeURIComponent(slug)}`, RedirectType.replace);
+    redirect(`/events/${encodeURIComponent(slug)}`, RedirectType.replace);
   }
 
   redirect("/events");

@@ -27,7 +27,7 @@ export default async function QrScanPage({
   }
 
   if (qr.singlesSlug) {
-    const singlesPath = `/singles/${encodeURIComponent(qr.singlesSlug)}`;
+    const singlesPath = `/events/${encodeURIComponent(qr.singlesSlug)}`;
     const redirectPath = s
       ? appendQrPrintVariant(singlesPath, normalizeQrPrintVariant(s))
       : singlesPath;

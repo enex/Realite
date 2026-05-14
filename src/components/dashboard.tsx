@@ -197,7 +197,7 @@ function eventDetailHref(event: EventItem): string {
     event.sourceProvider === SINGLES_HERE_SOURCE_PROVIDER &&
     event.sourceEventId
   ) {
-    return `/singles/${encodeURIComponent(event.sourceEventId)}`;
+    return `/events/${encodeURIComponent(event.sourceEventId)}`;
   }
   return `/e/${shortenUUID(event.id)}`;
 }

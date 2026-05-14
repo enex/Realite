@@ -78,6 +78,7 @@ export default async function QrPrintPage({
       eventUrl={qrUrl}
       qrImagePath={qrImagePath}
       backHref={`/q/${slug}/manage`}
+      persistenceKey={`placeholder-qr:${slug}`}
       copyVariants={[
         {
           code: "a",

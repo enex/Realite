@@ -341,7 +341,7 @@ export async function getSinglesHereEventAdminDetail(input: {
       endsAtIso: ev.endsAt.toISOString(),
       createdBy: ev.createdBy,
       presenceWindowState: window.state,
-      publicPath: `/singles/${encodeURIComponent(ev.slug)}`,
+      publicPath: `/events/${encodeURIComponent(ev.slug)}`,
     },
     activeCheckedInCount: activeIds.length,
     mutualMatchPairCount: mutualPairs,

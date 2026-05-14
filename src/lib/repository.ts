@@ -14,6 +14,8 @@ import {
   groupMemberships,
   groups,
   inviteLinks,
+  organizerAnalyticsEvents,
+  organizerProfiles,
   suggestions,
   tagPreferences,
   userSettings,
@@ -226,6 +228,7 @@ export type VisibleEvent = {
 
 export type PublicEventSharePreview = {
   id: string;
+  createdById: string;
   title: string;
   description: string | null;
   location: string | null;
@@ -281,6 +284,29 @@ export type UserProfileOverview = {
   events: UserProfileEvent[];
 };
 
+export type OrganizerAnalyticsMetric =
+  | "event_page_view"
+  | "event_share_copy"
+  | "event_share_native"
+  | "event_qr_print_view";
+
+export type OrganizerProfile = {
+  userId: string;
+  enabled: boolean;
+  displayName: string | null;
+  bio: string | null;
+  websiteUrl: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type OrganizerAnalyticsSummary = {
+  eventId: string;
+  views: number;
+  shares: number;
+  qrPrintViews: number;
+};
+
 export type WeeklyShareCampaignSummary = {
   id: string;
   token: string;
@@ -329,6 +355,12 @@ export type DateHashtagStatus = {
 const GOOGLE_CONTACTS_PROVIDER = "google_contacts";
 const MY_CONTACTS_SYNC_REFERENCE = "contactGroups/myContacts";
 const WEEKLY_SHARE_TOKEN = makeConvertor(makeConvertor.constants.flickrBase58);
+const ORGANIZER_ANALYTICS_METRICS: OrganizerAnalyticsMetric[] = [
+  "event_page_view",
+  "event_share_copy",
+  "event_share_native",
+  "event_qr_print_view",
+];
 
 function normalizeTags(tags: string[]) {
   const normalized = normalizeDateTags(
@@ -392,6 +424,36 @@ function isKontakteGroupName(name: string) {
 
 function normalizeEmail(value: string) {
   return value.trim().toLowerCase();
+}
+
+function normalizeOrganizerText(
+  value: string | null | undefined,
+  maxLength: number,
+): string | null {
+  const trimmed = value?.trim() ?? "";
+  if (!trimmed) {
+    return null;
+  }
+  return trimmed.slice(0, maxLength);
+}
+
+function normalizeOrganizerWebsiteUrl(
+  value: string | null | undefined,
+): string | null {
+  const raw = value?.trim() ?? "";
+  if (!raw) {
+    return null;
+  }
+  const withProtocol =
+    raw.startsWith("http://") || raw.startsWith("https://")
+      ? raw
+      : `https://${raw}`;
+  try {
+    const parsed = new URL(withProtocol);
+    return parsed.toString().slice(0, 500);
+  } catch {
+    throw new RepositoryValidationError("Ungültige Website-URL.");
+  }
 }
 
 export function getWeeklyShareWeekStart(now = new Date()) {
@@ -1737,6 +1799,7 @@ export async function listWeeklySharePublicActivities(
   const rows = await db
     .select({
       id: events.id,
+      createdById: events.createdBy,
       title: events.title,
       description: events.description,
       location: events.location,
@@ -2529,6 +2592,7 @@ export async function getSinglesHereEventBySlug(slug: string) {
   const [event] = await db
     .select({
       id: events.id,
+      createdById: events.createdBy,
       title: events.title,
       location: events.location,
       startsAt: events.startsAt,
@@ -3044,6 +3108,7 @@ export async function getPublicEventSharePreviewById(
   const [event] = await db
     .select({
       id: events.id,
+      createdById: events.createdBy,
       title: events.title,
       description: events.description,
       location: events.location,
@@ -3982,6 +4047,164 @@ export async function getUserProfileOverview(input: {
     visibility: "matched",
     events: matchedEvents,
   };
+}
+
+export async function getOrganizerProfileByUserId(
+  userId: string,
+): Promise<OrganizerProfile | null> {
+  const db = getDb();
+  const [row] = await db
+    .select()
+    .from(organizerProfiles)
+    .where(eq(organizerProfiles.userId, userId))
+    .limit(1);
+  return row ?? null;
+}
+
+export async function upsertOrganizerProfile(input: {
+  userId: string;
+  enabled: boolean;
+  displayName?: string | null;
+  bio?: string | null;
+  websiteUrl?: string | null;
+}): Promise<OrganizerProfile> {
+  const db = getDb();
+  const displayName = normalizeOrganizerText(input.displayName, 80);
+  const bio = normalizeOrganizerText(input.bio, 600);
+  const websiteUrl = normalizeOrganizerWebsiteUrl(input.websiteUrl);
+
+  const [row] = await db
+    .insert(organizerProfiles)
+    .values({
+      userId: input.userId,
+      enabled: input.enabled,
+      displayName,
+      bio,
+      websiteUrl,
+    })
+    .onConflictDoUpdate({
+      target: organizerProfiles.userId,
+      set: {
+        enabled: input.enabled,
+        displayName,
+        bio,
+        websiteUrl,
+        updatedAt: new Date(),
+      },
+    })
+    .returning();
+
+  if (!row) {
+    throw new RepositoryValidationError(
+      "Veranstalterprofil konnte nicht gespeichert werden.",
+    );
+  }
+  return row;
+}
+
+export async function getOrganizerOverview(input: {
+  profileUserId: string;
+  viewerUserId?: string | null;
+}): Promise<{
+  profile: UserProfileOverview["profile"];
+  visibility: UserProfileVisibility;
+  events: UserProfileEvent[];
+  organizerProfile: OrganizerProfile | null;
+} | null> {
+  const [overview, organizerProfile] = await Promise.all([
+    getUserProfileOverview({
+      profileUserId: input.profileUserId,
+      viewerUserId: input.viewerUserId ?? null,
+    }),
+    getOrganizerProfileByUserId(input.profileUserId),
+  ]);
+  if (!overview) {
+    return null;
+  }
+  return {
+    profile: overview.profile,
+    visibility: overview.visibility,
+    events: overview.events,
+    organizerProfile,
+  };
+}
+
+export async function recordOrganizerAnalyticsEvent(input: {
+  organizerUserId: string;
+  eventId: string;
+  metric: OrganizerAnalyticsMetric;
+  sourcePath?: string | null;
+  actorUserId?: string | null;
+}) {
+  if (!ORGANIZER_ANALYTICS_METRICS.includes(input.metric)) {
+    return;
+  }
+  const db = getDb();
+  await db.insert(organizerAnalyticsEvents).values({
+    organizerUserId: input.organizerUserId,
+    eventId: input.eventId,
+    metric: input.metric,
+    sourcePath: input.sourcePath?.trim() || null,
+    actorUserId: input.actorUserId ?? null,
+  });
+}
+
+export async function getOrganizerAnalyticsSummaryForEvents(input: {
+  organizerUserId: string;
+  eventIds: string[];
+  days?: number;
+}): Promise<Map<string, OrganizerAnalyticsSummary>> {
+  if (!input.eventIds.length) {
+    return new Map();
+  }
+  const db = getDb();
+  const days = Math.max(1, Math.min(365, input.days ?? 30));
+  const threshold = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  const rows = await db
+    .select({
+      eventId: organizerAnalyticsEvents.eventId,
+      metric: organizerAnalyticsEvents.metric,
+      count: sql<number>`count(*)`,
+    })
+    .from(organizerAnalyticsEvents)
+    .where(
+      and(
+        eq(organizerAnalyticsEvents.organizerUserId, input.organizerUserId),
+        inArray(organizerAnalyticsEvents.eventId, input.eventIds),
+        gt(organizerAnalyticsEvents.createdAt, threshold),
+      ),
+    )
+    .groupBy(organizerAnalyticsEvents.eventId, organizerAnalyticsEvents.metric);
+
+  const summary = new Map<string, OrganizerAnalyticsSummary>();
+  for (const eventId of input.eventIds) {
+    summary.set(eventId, {
+      eventId,
+      views: 0,
+      shares: 0,
+      qrPrintViews: 0,
+    });
+  }
+
+  for (const row of rows) {
+    const current = summary.get(row.eventId);
+    if (!current) {
+      continue;
+    }
+    const count = Number(row.count ?? 0);
+    if (row.metric === "event_page_view") {
+      current.views += count;
+    } else if (
+      row.metric === "event_share_copy" ||
+      row.metric === "event_share_native"
+    ) {
+      current.shares += count;
+    } else if (row.metric === "event_qr_print_view") {
+      current.qrPrintViews += count;
+    }
+  }
+
+  return summary;
 }
 
 export async function listSuggestionStatesForUser(userId: string) {
