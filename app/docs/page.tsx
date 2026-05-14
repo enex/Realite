@@ -29,7 +29,7 @@ export default function DocsIndexPage() {
             href="/events/new"
             className="rounded-lg border border-input px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted"
           >
-            Event-Entry erstellen
+            Event erstellen
           </a>
         </div>
       </header>

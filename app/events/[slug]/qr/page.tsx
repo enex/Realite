@@ -20,7 +20,7 @@ export async function generateMetadata({
 
   return {
     title: event ? `${event.name} QR-Codes` : "Event QR-Codes",
-    description: "Druckvorlage für QR-Codes und Poster zur Event-Entry-Seite in Realite.",
+    description: "Druckvorlage für QR-Codes und Poster zur Event-Seite in Realite.",
   };
 }
 

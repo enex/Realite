@@ -661,7 +661,7 @@ function OrganizerSection({ signInHref }: { signInHref: string }) {
             href="/events/new"
             className="inline-flex min-h-[46px] items-center justify-center rounded-xl border border-indigo-300 bg-card/70 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-card dark:border-indigo-500/35 dark:bg-card/10"
           >
-            Event-Entry anlegen
+            Event anlegen
           </a>
           <a
             href={signInHref}

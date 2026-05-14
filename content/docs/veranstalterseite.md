@@ -1,65 +1,44 @@
-# Veranstalterseite (kostenloses MVP)
+# Veranstalterseite
 
-Die Veranstalterseite zeigt deine kommenden Events an einem Ort und gibt dir direkte Tools zum Teilen, Drucken und Auswerten.
+Mit der Veranstalterseite kannst du deine Events sichtbar machen, schnell teilen und als QR oder Poster ausgeben.
 
-## So aktivierst du sie
+## Schnell starten
 
-1. Öffne dein Profil und gehe auf **Veranstalterseite**.
-2. Aktiviere **Als Veranstalter sichtbar**.
-3. Hinterlege optional:
-   - Anzeigename
-   - Kurzbeschreibung
-   - Website
+1. [Event erstellen](/events/new)
+2. Event öffnen und auf **QR & Poster drucken** klicken
+3. Auf deiner [Veranstalterseite](/docs/veranstalterseite) Profiltext und Sichtbarkeit anpassen
 
-Erst nach der Aktivierung ist die Seite für andere sichtbar.
+## Was du als Veranstalter bekommst
 
-## Schnelleinstieg für Veranstalter
+- **Event teilen:** Link kopieren oder direkt teilen
+- **QR & Poster drucken:** für Aushang, Flyer oder Check-in
+- **Sichtbarkeit steuern:** du entscheidest, was öffentlich ist
+- **Einfache Zahlen:** Aufrufe, Shares, Druckansichten und Zusagen
 
-- Veranstalter-Doku: `/docs/veranstalterseite`
-- Event-Entry anlegen: `/events/new`
-- Veranstalterseite (Profil): `/u/<dein-kurzcode>/veranstalter`
-- Öffentliche Event-Entry: `/events/<slug>`
+![Illustration: Event starten und teilen](/landing/start-anything.svg)
 
-## Event-Entry statt Singles-Route
+## QR- und Poster-Druck
 
-Der bisherige Singles-Entry läuft jetzt über:
+In der Druckansicht kannst du:
 
-- `/events/new` für neue Event-Entries
-- `/events/<slug>` für die öffentliche Event-Entry-Seite
-
-Alte `/singles/...` Links bleiben in der Übergangsphase erreichbar und werden weitergeleitet.
-
-## Teilen und Sichtbarkeit
-
-Auf deiner Veranstalterseite hat jedes Event direkte Aktionen:
-
-- **Link kopieren**
-- **Teilen** (native Share-Funktion, falls verfügbar)
-- **QR & Poster drucken**
-
-Die Event-Sichtbarkeit bleibt kontrolliert: Realite veröffentlicht nichts automatisch.
-
-## QR- und Poster-Studio
-
-In der Druckansicht kannst du zwischen zwei Modi wechseln:
-
-- **Sticker / mehrere QR-Codes** zum Ausschneiden
-- **Poster** für größere Aushänge
-
-Zusätzlich kannst du:
-
-- Texte anpassen (Headline, Benefit, CTA, Footer)
+- zwischen **Sticker-Bogen** und **Poster** wechseln
+- Texte anpassen (z. B. Headline, CTA, Footer)
 - Format wählen: **DIN A4** oder **DIN A3**
 
-Die letzte Vorlage wird pro Event gespeichert, damit du sie beim nächsten Mal direkt weiterverwenden kannst.
+Die letzte Druckvorlage bleibt für dein Event gespeichert, damit du sie später direkt wieder nutzen kannst.
 
-## Basic Analytics (kostenlos)
+![Illustration: Menschen kommen über Events zusammen](/landing/new-people.svg)
 
-Für Events auf deiner Veranstalterseite siehst du Basiswerte wie:
+## Sichtbarkeit und Kontrolle
 
-- Event-Aufrufe (30 Tage)
-- Shares (30 Tage)
-- QR-/Poster-Druckansichten (30 Tage)
-- Zusagen
+Realite veröffentlicht nichts automatisch.
 
-Das ist bewusst ein leichtes MVP-Dashboard. Erweiterte Auswertungen können später im Kostenmodell folgen.
+- Du aktivierst deine Veranstalterseite selbst.
+- Du entscheidest pro Event, wer es sehen kann.
+- Du kannst Texte und Darstellung jederzeit ändern.
+
+## Hinweise zu alten Singles-Links
+
+Frühere Singles-Links funktionieren in der Übergangszeit weiter und leiten auf die neuen Event-Seiten um.
+
+Wenn du neu startest, nutze direkt den neuen Einstieg: [Event erstellen](/events/new).

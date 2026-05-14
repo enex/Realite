@@ -43,7 +43,7 @@ Die Druckvorlage erreichst du aus diesem QR-Bereich über **Druckvorlage öffnen
 
 ## Wer Events erstellen kann
 
-Nur angemeldete Nutzer können unter `/events/new` ein Event-Entry anlegen.
+Nur angemeldete Nutzer können unter `/events/new` ein Event anlegen.
 
 Beim Erstellen werden vorhandene Realite-Event-Strukturen genutzt:
 
