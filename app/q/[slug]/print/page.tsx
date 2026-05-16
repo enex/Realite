@@ -68,7 +68,7 @@ export default async function QrPrintPage({
   const origin = getOriginFromHeaders(requestHeaders);
   const qrUrl = `${origin}/q/${slug}`;
   const qrImagePath = `/q/${slug}/print/code`;
-  const title = qr.label ?? qr.singlesEventName ?? "Realite QR-Code";
+  const title = qr.label ?? qr.singlesEventName ?? "";
 
   return (
     <EventQrPrintPage
