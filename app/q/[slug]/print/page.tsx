@@ -74,7 +74,7 @@ export default async function QrPrintPage({
     <EventQrPrintPage
       eventTitle={title}
       scanHeadline="Offen für Gespräche?"
-      scanBenefit="Scanne den Code und sieh, wer hier gerade auch ansprechbar ist."
+      scanBenefit="Scanne den Code und sieh, wer hier bewusst ansprechbar ist und ob Dating oder Social im Profil aktiviert wurde."
       eventUrl={qrUrl}
       qrImagePath={qrImagePath}
       backHref={`/q/${slug}/manage`}
@@ -84,43 +84,49 @@ export default async function QrPrintPage({
           code: "a",
           label: "Klassisch",
           headline: "Offen für Gespräche?",
-          benefit: "Scanne den Code und sieh, wer hier gerade auch ansprechbar ist.",
-          footer: "Bewusst sichtbar",
+          benefit:
+            "Scanne den Code und sieh passende Personen, die sich vor Ort bewusst sichtbar gemacht haben.",
+          footer: "Bewusst sichtbar vor Ort",
         },
         {
           code: "b",
           label: "Direkt",
           headline: "Wer ist offen?",
-          benefit: "Scannen, einchecken und relevante Personen am Ort sehen.",
+          benefit:
+            "Scannen, einchecken und nur Personen sehen, die gerade aktiv ansprechbar sind.",
           footer: "Ohne Rumraten",
         },
         {
           code: "c",
           label: "Locker",
           headline: "Kurz hallo sagen?",
-          benefit: "Der Code zeigt nur Personen, die sich hier bewusst sichtbar machen.",
+          benefit:
+            "Der Code zeigt nur Personen, die sich hier bewusst sichtbar machen und gerade da sind.",
           footer: "Opt-in vor Ort",
         },
         {
           code: "d",
           label: "Minimal",
           headline: "Hier offen?",
-          benefit: "Ein Scan reicht, um bewusst sichtbar zu werden.",
+          benefit:
+            "Ein Scan reicht: Profil öffnen, Status wählen und sichtbar werden, wenn du willst.",
           footer: "Kurz einchecken",
         },
         {
           code: "e",
           label: "Mutig",
           headline: "Mach es leichter.",
-          benefit: "Zeig nur hier, dass du offen für ein Gespräch bist.",
-          footer: "Weniger Raten",
+          benefit:
+            "Zeig nur hier am Ort, dass du offen für Austausch bist - ohne dauerhafte Sichtbarkeit.",
+          footer: "Weniger Raten, mehr Klarheit",
         },
         {
           code: "f",
           label: "Neugier",
           headline: "Wer passt hier?",
-          benefit: "Scannen und passende Personen am Ort entdecken.",
-          footer: "Erst ansehen",
+          benefit:
+            "Scannen und sehen, wer zu dir passt - inklusive Dating-Kontext, falls gewünscht.",
+          footer: "Erst ansehen, dann ansprechen",
         },
         {
           code: "g",
@@ -135,6 +141,38 @@ export default async function QrPrintPage({
           headline: "Sag einfacher hallo.",
           benefit: "Der Code hilft, wenn beide wirklich offen dafür sind.",
           footer: "Low pressure",
+        },
+        {
+          code: "i",
+          label: "Dating-Klarheit",
+          headline: "Dating oder lieber nur social?",
+          benefit:
+            "Beim Scan siehst du, ob passende Personen Dating aktiviert haben oder nur locker quatschen wollen.",
+          footer: "Kontext statt Missverständnis",
+        },
+        {
+          code: "j",
+          label: "Social First",
+          headline: "Nicht jeder ist hier fürs Dating.",
+          benefit:
+            "Der Check-in trennt klar zwischen Dating und nicht Dating - so bleibt Ansprechen respektvoll.",
+          footer: "Respektvoll begegnen",
+        },
+        {
+          code: "k",
+          label: "Aushang",
+          headline: "Wer möchte heute angesprochen werden?",
+          benefit:
+            "Scanne den Code: sichtbar sind nur aktiv eingecheckte Personen mit passendem Offenheits-Status.",
+          footer: "Nur opt-in, kein Zufall",
+        },
+        {
+          code: "l",
+          label: "Festival",
+          headline: "Schnell sehen, was passt.",
+          benefit:
+            "Vor Ort zeigt Realite, wer jetzt offen ist - Dating exklusiv, Dating plus Social oder nur Social.",
+          footer: "Direkt vor Ort klären",
         },
       ]}
     />

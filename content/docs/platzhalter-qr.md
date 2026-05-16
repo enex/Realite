@@ -44,7 +44,17 @@ Du brauchst mindestens ein [Event](/events/new), um einen QR-Code zu verknüpfen
 
 ## QR-Code drucken
 
-Über „QR-Code drucken" öffnet sich eine Druckvorlage mit mehreren Codes auf einer A4-Seite. Du kannst die Anzahl, das Layout und die Stil- und Botschaftsvariante anpassen, bevor du druckst. Jede Variante hängt nur eine kurze Kennung wie `?s=a`, `?s=b` oder `?s=h` an die Scan-URL an. Der Code zeigt beim Scan immer auf die aktuelle Verknüpfung – nicht auf ein fest gedrucktes Ziel.
+Über „QR-Code drucken" öffnet sich ein QR- und Poster-Studio.
+
+Du kannst dort:
+
+- zwischen **Sticker-Bogen**, **Poster** und **A4-Poster (vollflächig zum Aushängen)** wechseln
+- das Papierformat wählen (DIN A4 oder DIN A3; Vollbild-Poster ist DIN A4)
+- mehrere Stil- und Textvarianten auswählen oder eigene Texte eintragen
+
+Die Varianten helfen beim richtigen Erwartungsabgleich vor Ort, z. B. ob jemand eher für Dating oder eher für Social offen ist. Beim Scan sieht man nur Personen, die sich bewusst eingecheckt haben und im Moment sichtbar sind.
+
+Jede Stilvariante hängt nur eine kurze Kennung wie `?s=a`, `?s=b` oder `?s=l` an die Scan-URL an. Der Code zeigt beim Scan immer auf die aktuelle Verknüpfung – nicht auf ein fest gedrucktes Ziel.
 
 ## QR-Code löschen
 

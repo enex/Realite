@@ -20,7 +20,7 @@ type EventQrPrintPageProps = {
   persistenceKey?: string;
 };
 
-type PrintLayoutMode = "stickers" | "poster";
+type PrintLayoutMode = "stickers" | "poster" | "poster_full_a4";
 type PrintPaperFormat = "a4" | "a3";
 
 const MIN_COLUMNS = 1;
@@ -119,6 +119,46 @@ const variantStyles: Record<
     headline: "text-red-950",
     qrFrame: "border-red-700 bg-white",
     footer: "text-red-800",
+  },
+  i: {
+    card:
+      "border-indigo-700/60 bg-[#eef2ff] text-slate-950",
+    bar: "bg-indigo-700",
+    badge: "bg-emerald-300 text-indigo-950",
+    brand: "text-indigo-800",
+    headline: "text-indigo-950",
+    qrFrame: "border-indigo-700 bg-white",
+    footer: "text-indigo-800",
+  },
+  j: {
+    card:
+      "border-amber-700/60 bg-[#fffbeb] text-slate-950",
+    bar: "bg-amber-700",
+    badge: "bg-slate-900 text-amber-100",
+    brand: "text-amber-800",
+    headline: "text-amber-950",
+    qrFrame: "border-amber-700 bg-white",
+    footer: "text-amber-800",
+  },
+  k: {
+    card:
+      "border-violet-700/60 bg-[#f5f3ff] text-slate-950",
+    bar: "bg-violet-700",
+    badge: "bg-cyan-200 text-violet-950",
+    brand: "text-violet-800",
+    headline: "text-violet-950",
+    qrFrame: "border-violet-700 bg-white",
+    footer: "text-violet-800",
+  },
+  l: {
+    card:
+      "border-lime-700/60 bg-[#f7fee7] text-slate-950",
+    bar: "bg-lime-700",
+    badge: "bg-fuchsia-300 text-lime-950",
+    brand: "text-lime-800",
+    headline: "text-lime-950",
+    qrFrame: "border-lime-700 bg-white",
+    footer: "text-lime-800",
   },
 };
 
@@ -219,6 +259,8 @@ export function EventQrPrintPage({
   const selectedStyle = variantStyles[activeVariant.code];
   const codes = useMemo(() => Array.from({ length: count }, (_, index) => index), [count]);
   const storageKey = `realite:print-template:${persistenceKey ?? eventUrl}`;
+  const printPageSize = layoutMode === "poster_full_a4" ? "A4 portrait" : paperFormat.toUpperCase();
+  const printPageMarginMm = layoutMode === "poster_full_a4" ? 0 : 10;
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -301,8 +343,8 @@ export function EventQrPrintPage({
     <main className="min-h-dvh bg-background text-foreground print:bg-white print:text-black">
       <style>{`
         @page {
-          size: ${paperFormat.toUpperCase()};
-          margin: 10mm;
+          size: ${printPageSize};
+          margin: ${printPageMarginMm}mm;
         }
 
         @media print {
@@ -318,6 +360,14 @@ export function EventQrPrintPage({
             break-inside: avoid;
             border-color: #9ca3af !important;
             box-shadow: none !important;
+          }
+
+          .qr-print-full-a4 {
+            width: 210mm !important;
+            min-height: 297mm !important;
+            max-width: 210mm !important;
+            border-radius: 0 !important;
+            margin: 0 auto !important;
           }
         }
       `}</style>
@@ -343,6 +393,11 @@ export function EventQrPrintPage({
             Passe Texte frei an, wechsle zwischen Sticker-Bogen und Poster und drucke in DIN A4 oder DIN A3.
             Die Stilvariante landet als kurze Kennung in der Scan-URL, zum Beispiel <code>?s=a</code>.
           </p>
+          <p className="mt-2 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-xs leading-5 text-teal-900">
+            Der QR-Code hilft vor Ort beim Einordnen: Personen wählen im Profil bewusst, ob sie nur fürs Dating,
+            für Dating und Social oder nur für Social offen sind. Beim Scan sieht man nur passende, aktiv
+            eingecheckte Personen.
+          </p>
 
           <div className="mt-4 grid gap-4 lg:grid-cols-4">
             <label className="block">
@@ -354,6 +409,7 @@ export function EventQrPrintPage({
               >
                 <option value="stickers">Sticker / mehrere QR-Codes</option>
                 <option value="poster">Poster</option>
+                <option value="poster_full_a4">A4 Poster (vollflächig zum Aushängen)</option>
               </select>
             </label>
             <label className="block">
@@ -535,7 +591,7 @@ export function EventQrPrintPage({
               </article>
             ))}
           </div>
-        ) : (
+        ) : layoutMode === "poster" ? (
           <article className={`qr-print-card relative mx-auto flex min-h-[72vh] max-w-3xl flex-col items-center justify-between overflow-hidden rounded-2xl border p-8 text-center shadow-sm ${selectedStyle.card}`}>
             <div className={`absolute inset-x-0 top-0 h-3 ${selectedStyle.bar}`} aria-hidden="true" />
             <div className="w-full">
@@ -550,6 +606,29 @@ export function EventQrPrintPage({
               <p className="text-sm font-black uppercase tracking-[0.14em] text-foreground">{customCta}</p>
               <p className={`mt-2 text-base font-semibold ${selectedStyle.footer}`}>{customFooter}</p>
               <p className="mt-2 break-all text-xs text-neutral-600">{selectedEventUrl}</p>
+            </div>
+          </article>
+        ) : (
+          <article
+            className={`qr-print-card qr-print-full-a4 relative mx-auto flex aspect-[210/297] w-full max-w-[800px] flex-col items-center justify-between overflow-hidden border p-10 text-center shadow-sm ${selectedStyle.card}`}
+          >
+            <div className={`absolute inset-x-0 top-0 h-5 ${selectedStyle.bar}`} aria-hidden="true" />
+            <div className="w-full pt-6">
+              <p className={`text-sm font-black uppercase tracking-[0.2em] ${selectedStyle.brand}`}>Realite vor Ort</p>
+              <h2 className="mx-auto mt-10 max-w-3xl text-5xl font-black leading-tight text-foreground">
+                {customHeadline}
+              </h2>
+              <p className="mx-auto mt-6 max-w-3xl text-2xl font-semibold leading-relaxed text-neutral-800">
+                {customBenefit}
+              </p>
+            </div>
+            <div className={`mt-10 grid aspect-square w-full max-w-[420px] place-items-center rounded-3xl border-2 bg-white p-6 ${selectedStyle.qrFrame}`}>
+              <img src={selectedQrImagePath} alt={`QR-Code für ${eventTitle}`} className="aspect-square w-full" />
+            </div>
+            <div className="w-full pb-4">
+              <p className="text-xl font-black uppercase tracking-[0.14em] text-foreground">{customCta}</p>
+              <p className={`mt-3 text-2xl font-semibold ${selectedStyle.footer}`}>{customFooter}</p>
+              <p className="mx-auto mt-5 max-w-3xl break-all text-sm text-neutral-600">{selectedEventUrl}</p>
             </div>
           </article>
         )}
