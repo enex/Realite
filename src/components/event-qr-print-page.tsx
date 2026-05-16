@@ -628,11 +628,11 @@ export function EventQrPrintPage({
                 </div>
                 <div className="my-3 w-full">
                   <p
-                    className={`mx-auto max-w-44 text-[15px] font-black leading-tight ${selectedStyle.headline}`}
+                    className={`mx-auto max-w80 text-[15px] font-black leading-tight ${selectedStyle.headline}`}
                   >
                     {customHeadline}
                   </p>
-                  <p className="mx-auto mt-1 max-w-48 text-[11px] font-semibold leading-snug text-neutral-800">
+                  <p className="mx-auto mt-1 max-w-80 text-[11px] font-semibold leading-snug text-neutral-800">
                     {customBenefit}
                   </p>
                   <div
