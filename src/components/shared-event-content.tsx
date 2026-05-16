@@ -208,7 +208,7 @@ export function SharedEventContent(props: SharedEventContentProps) {
           Von{" "}
           {props.createdByShortId ? (
             <a
-              href={`/u/${props.createdByShortId}`}
+              href={`/u/${props.createdByShortId}/veranstalter`}
               className="font-medium text-teal-600 hover:text-teal-700"
             >
               {creatorLabel}

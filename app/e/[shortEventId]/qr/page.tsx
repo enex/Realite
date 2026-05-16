@@ -7,7 +7,7 @@ import {
   getEventShareCopy,
   getPublicEventSharePreviewByShortId,
 } from "@/src/lib/event-share";
-import { getVisibleEventForUserById } from "@/src/lib/repository";
+import { getVisibleEventForUserById, recordOrganizerAnalyticsEvent } from "@/src/lib/repository";
 import { requireAppUser } from "@/src/lib/session";
 import { enlargeUUID } from "@/src/lib/utils/short-uuid";
 
@@ -65,7 +65,9 @@ export default async function EventQrPrintRoute({
   const { shortEventId } = await params;
   const eventPath = `/e/${encodeURIComponent(shortEventId)}`;
   const publicPreview = await getPublicEventSharePreviewByShortId(shortEventId);
-  let event = publicPreview;
+  let event:
+    | Awaited<ReturnType<typeof getPublicEventSharePreviewByShortId>>
+    | Awaited<ReturnType<typeof getVisibleEventForUserById>> = publicPreview;
 
   if (!event) {
     let eventId = "";
@@ -90,8 +92,23 @@ export default async function EventQrPrintRoute({
   const requestHeaders = await headers();
   const origin = getOriginFromHeaders(requestHeaders);
   const eventUrl = `${origin}${eventPath}`;
-  const copy = getEventShareCopy(event);
+  const copy = getEventShareCopy(
+    event
+      ? "createdById" in event
+        ? event
+        : { ...event, createdById: event.createdBy }
+      : null,
+  );
   const qrImagePath = `${eventPath}/qr/code`;
+  const organizerUserId = "createdById" in event ? event.createdById : event.createdBy;
+
+  await recordOrganizerAnalyticsEvent({
+    organizerUserId,
+    eventId: event.id,
+    metric: "event_qr_print_view",
+    sourcePath: `${eventPath}/qr`,
+    actorUserId: null,
+  }).catch(() => {});
 
   return (
     <EventQrPrintPage
@@ -101,6 +118,7 @@ export default async function EventQrPrintRoute({
       eventUrl={eventUrl}
       qrImagePath={qrImagePath}
       backHref={eventPath}
+      persistenceKey={`event:${event.id}`}
       copyVariants={[
         {
           code: "a",

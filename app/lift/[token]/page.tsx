@@ -27,7 +27,7 @@ export default async function LiftTokenPage({
     redirect("/");
   }
 
-  const eventPath = `/singles/${encodeURIComponent(event.slug)}`;
+  const eventPath = `/events/${encodeURIComponent(event.slug)}`;
   const user = await requireAppUser();
   if (!user) {
     redirect(buildLoginPath(`/lift/${encodeURIComponent(token)}`) as never);

@@ -11,6 +11,7 @@ describe("qr print variants", () => {
     expect(normalizeQrPrintVariant("b")).toBe("b");
     expect(normalizeQrPrintVariant("c")).toBe("c");
     expect(normalizeQrPrintVariant("h")).toBe("h");
+    expect(normalizeQrPrintVariant("l")).toBe("l");
     expect(normalizeQrPrintVariant("x")).toBe("a");
     expect(normalizeQrPrintVariant(null)).toBe("a");
   });

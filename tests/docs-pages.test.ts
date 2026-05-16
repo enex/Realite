@@ -40,4 +40,17 @@ describe("docs pages", () => {
     expect(rendered?.html).toContain("du kannst sofort starten");
     expect(rendered?.html).toContain("Ohne Konto starten");
   });
+
+  test("lists and renders the organizer guide", async () => {
+    const page = getDocsPageBySlug("veranstalterseite");
+    expect(page === null).toBe(false);
+    expect(page?.title).toBe("Veranstalterseite");
+    expect(listDocsPages().some((entry) => entry.slug === "veranstalterseite")).toBe(true);
+
+    const rendered = await renderDocsPageHtml("veranstalterseite");
+    expect(rendered === null).toBe(false);
+    expect(rendered?.html).toContain("Veranstalterseite");
+    expect(rendered?.html).toContain("DIN A4");
+    expect(rendered?.html).toContain("DIN A3");
+  });
 });

@@ -145,10 +145,10 @@ export function ManageQrContent({
         </div>
       </div>
 
-      {/* Linked singles event */}
+      {/* Linked event */}
       <div className="rounded-xl border border-border bg-card p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Verknüpftes Singles-hier-Event
+          Verknüpftes Event
         </p>
 
         {singlesSlug && singlesEventName ? (
@@ -157,10 +157,7 @@ export function ManageQrContent({
               <p className="font-semibold text-foreground">
                 {singlesEventName}
               </p>
-              <a
-                href={`/singles/${singlesSlug}`}
-                className="mt-1 inline-block text-xs text-teal-600 hover:underline"
-              >
+              <a href={`/events/${singlesSlug}`} className="mt-1 inline-block text-xs text-teal-600 hover:underline">
                 Event ansehen →
               </a>
             </div>
@@ -187,8 +184,8 @@ export function ManageQrContent({
 
           {singlesOptions.length === 0 ? (
             <p className="mt-2 text-sm text-muted-foreground">
-              Du hast noch keine Singles-hier-Events.{" "}
-              <a href="/singles/new" className="text-teal-600 hover:underline">
+              Du hast noch keine Event-Entries.{" "}
+              <a href="/events/new" className="text-teal-600 hover:underline">
                 Jetzt erstellen →
               </a>
             </p>

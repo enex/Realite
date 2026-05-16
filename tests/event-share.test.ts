@@ -7,6 +7,7 @@ describe("event share privacy", () => {
     expect(
       formatEventShareOwner({
         id: "event-1",
+        createdById: "user-1",
         title: "Abendessen",
         description: null,
         location: null,
@@ -27,6 +28,7 @@ describe("event share privacy", () => {
     expect(
       formatEventShareOwner({
         id: "event-1",
+        createdById: "user-1",
         title: "Abendessen",
         description: null,
         location: null,

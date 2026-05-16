@@ -211,6 +211,12 @@ export default async function UserProfilePage({
         </div>
 
         <p className="mt-4 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground">{modeHint}</p>
+        <a
+          href={`/u/${encodeURIComponent(shortUserId)}/veranstalter`}
+          className="mt-3 inline-flex text-sm font-semibold text-teal-700 hover:text-teal-800"
+        >
+          Zur Veranstalterseite
+        </a>
       </header>
 
       <section className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm">

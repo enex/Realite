@@ -675,3 +675,50 @@ export const placeholderQrCodes = pgTable(
   },
   (table) => [uniqueIndex().on(table.slug), index().on(table.ownedBy)],
 );
+
+export const organizerProfiles = pgTable(
+  "organizer_profiles",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" })
+      .primaryKey(),
+    enabled: boolean("enabled").notNull().default(false),
+    displayName: text("display_name"),
+    bio: text("bio"),
+    websiteUrl: text("website_url"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index().on(table.enabled)],
+);
+
+export const organizerAnalyticsEvents = pgTable(
+  "organizer_analytics_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    organizerUserId: uuid("organizer_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    metric: text("metric").notNull(),
+    sourcePath: text("source_path"),
+    actorUserId: uuid("actor_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index().on(table.organizerUserId, table.createdAt),
+    index().on(table.eventId, table.metric),
+    index().on(table.metric),
+  ],
+);

@@ -49,6 +49,12 @@ const DOCS_PAGES: DocsPage[] = [
     fileName: "events-und-matching.md"
   },
   {
+    slug: "veranstalterseite",
+    title: "Veranstalterseite",
+    description: "Wie du als Veranstalter Events teilst, Poster druckst und Basis-Analytics nutzt.",
+    fileName: "veranstalterseite.md"
+  },
+  {
     slug: "sichtbarkeit-und-relevanz",
     title: "Sichtbarkeit und Relevanz",
     description: "Wie Realite soziale Kreise, Matching und Freigaben sauber trennt.",

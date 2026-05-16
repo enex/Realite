@@ -49,6 +49,7 @@ export default async function HomePage({
             <DatingSpotlightSection />
           </LandingDatingGate>
           <AudienceSection />
+          <OrganizerSection signInHref={signInHref} />
           <HowItWorksSection signInHref={signInHref} />
         </div>
       </main>
@@ -87,7 +88,13 @@ function LandingHeader({ signInHref }: { signInHref: string }) {
       >
         REALITE
       </a>
-      <nav className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center sm:gap-3">
+      <nav className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:items-center sm:gap-3">
+        <a
+          href="/docs/veranstalterseite"
+          className="rounded-full border border-emerald-950/15 px-4 py-2.5 text-center text-xs font-semibold tracking-wide text-foreground transition hover:border-emerald-950/25 hover:bg-emerald-950/5 dark:border-white/18 dark:text-foreground dark:hover:border-white/25 dark:hover:bg-card/6 sm:px-4 sm:py-2"
+        >
+          Für Veranstalter
+        </a>
         <a
           href="/docs"
           className="rounded-full border border-emerald-950/15 px-4 py-2.5 text-center text-xs font-semibold tracking-wide text-foreground transition hover:border-emerald-950/25 hover:bg-emerald-950/5 dark:border-white/18 dark:text-foreground dark:hover:border-white/25 dark:hover:bg-card/6 sm:px-4 sm:py-2"
@@ -620,6 +627,50 @@ function AudienceSection() {
           ))}
         </div>
       </div>
+    </section>
+  );
+}
+
+function OrganizerSection({ signInHref }: { signInHref: string }) {
+  return (
+    <section className="mt-12 sm:mt-14 lg:mt-16" aria-labelledby="organizer-flow">
+      <article
+        className="realite-reveal overflow-hidden rounded-[28px] border border-indigo-200 bg-[linear-gradient(145deg,rgba(238,242,255,0.96),rgba(224,231,255,0.7))] p-5 shadow-[0_24px_70px_-42px_rgba(79,70,229,0.4)] dark:border-indigo-500/25 dark:bg-[linear-gradient(145deg,rgba(27,29,52,0.95),rgba(24,27,45,0.65))] dark:shadow-[0_24px_70px_-42px_rgba(0,0,0,0.5)] sm:p-6"
+        style={{ animationDelay: "1260ms" }}
+      >
+        <p className="inline-flex rounded-lg border border-indigo-300 bg-card/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-indigo-800 dark:border-indigo-500/35 dark:bg-card/8 dark:text-indigo-700 sm:text-xs">
+          Für Veranstalter
+        </p>
+        <h2
+          id="organizer-flow"
+          className="mt-4 text-xl font-black text-foreground sm:text-2xl [font-family:var(--font-heading,Space_Grotesk),Avenir_Next,sans-serif]"
+        >
+          Mach aus deinem Event ein soziales Erlebnis.
+        </h2>
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-foreground sm:text-base">
+          Realite gibt dir im kostenlosen MVP eine Veranstalterseite, teilbare Event-Links, anpassbare QR-/Poster-Druckvorlagen (DIN A4 & DIN A3) und Basic Analytics.
+        </p>
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <a
+            href="/docs/veranstalterseite"
+            className="inline-flex min-h-[46px] items-center justify-center rounded-xl bg-indigo-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-600"
+          >
+            Veranstalter-Doku öffnen
+          </a>
+          <a
+            href="/events/new"
+            className="inline-flex min-h-[46px] items-center justify-center rounded-xl border border-indigo-300 bg-card/70 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-card dark:border-indigo-500/35 dark:bg-card/10"
+          >
+            Event anlegen
+          </a>
+          <a
+            href={signInHref}
+            className="inline-flex min-h-[46px] items-center justify-center rounded-xl border border-border bg-card/70 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-card"
+          >
+            Kostenlos starten
+          </a>
+        </div>
+      </article>
     </section>
   );
 }

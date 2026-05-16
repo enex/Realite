@@ -60,7 +60,7 @@ export async function notifySinglesHereMatchesForCheckIn(input: {
     payload: {
       title: "Neues Match vor Ort",
       body: `${name} ist jetzt bei ${event.title.replace(/#[^\s]+/gi, "").trim() || "deinem Event"} sichtbar.`,
-      url: `/singles/${encodeURIComponent(event.sourceEventId)}`,
+      url: `/events/${encodeURIComponent(event.sourceEventId)}`,
       tag: `singles-here-${event.id}`,
     },
   });

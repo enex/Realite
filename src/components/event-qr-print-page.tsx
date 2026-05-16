@@ -1,7 +1,7 @@
 "use client";
 
 import { Minus, Plus, Printer } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   appendQrPrintVariant,
@@ -17,7 +17,11 @@ type EventQrPrintPageProps = {
   qrImagePath: string;
   backHref: string;
   copyVariants?: QrPrintCopyVariant[];
+  persistenceKey?: string;
 };
+
+type PrintLayoutMode = "stickers" | "poster" | "poster_full_a4";
+type PrintPaperFormat = "a4" | "a3";
 
 const MIN_COLUMNS = 1;
 const MAX_COLUMNS = 5;
@@ -116,6 +120,46 @@ const variantStyles: Record<
     qrFrame: "border-red-700 bg-white",
     footer: "text-red-800",
   },
+  i: {
+    card:
+      "border-indigo-700/60 bg-[#eef2ff] text-slate-950",
+    bar: "bg-indigo-700",
+    badge: "bg-emerald-300 text-indigo-950",
+    brand: "text-indigo-800",
+    headline: "text-indigo-950",
+    qrFrame: "border-indigo-700 bg-white",
+    footer: "text-indigo-800",
+  },
+  j: {
+    card:
+      "border-amber-700/60 bg-[#fffbeb] text-slate-950",
+    bar: "bg-amber-700",
+    badge: "bg-slate-900 text-amber-100",
+    brand: "text-amber-800",
+    headline: "text-amber-950",
+    qrFrame: "border-amber-700 bg-white",
+    footer: "text-amber-800",
+  },
+  k: {
+    card:
+      "border-violet-700/60 bg-[#f5f3ff] text-slate-950",
+    bar: "bg-violet-700",
+    badge: "bg-cyan-200 text-violet-950",
+    brand: "text-violet-800",
+    headline: "text-violet-950",
+    qrFrame: "border-violet-700 bg-white",
+    footer: "text-violet-800",
+  },
+  l: {
+    card:
+      "border-lime-700/60 bg-[#f7fee7] text-slate-950",
+    bar: "bg-lime-700",
+    badge: "bg-fuchsia-300 text-lime-950",
+    brand: "text-lime-800",
+    headline: "text-lime-950",
+    qrFrame: "border-lime-700 bg-white",
+    footer: "text-lime-800",
+  },
 };
 
 function clamp(value: number, min: number, max: number) {
@@ -134,6 +178,7 @@ export function EventQrPrintPage({
   qrImagePath,
   backHref,
   copyVariants,
+  persistenceKey,
 }: EventQrPrintPageProps) {
   const [columns, setColumns] = useState(3);
   const [count, setCount] = useState(12);
@@ -202,11 +247,89 @@ export function EventQrPrintPage({
     [copyVariants, scanBenefit, scanHeadline],
   );
   const [selectedVariant, setSelectedVariant] = useState<QrPrintVariantCode>(variants[0]?.code ?? "a");
+  const [layoutMode, setLayoutMode] = useState<PrintLayoutMode>("stickers");
+  const [paperFormat, setPaperFormat] = useState<PrintPaperFormat>("a4");
   const activeVariant = variants.find((variant) => variant.code === selectedVariant) ?? variants[0];
+  const [customHeadline, setCustomHeadline] = useState(activeVariant.headline);
+  const [customBenefit, setCustomBenefit] = useState(activeVariant.benefit);
+  const [customFooter, setCustomFooter] = useState(activeVariant.footer);
+  const [customCta, setCustomCta] = useState("Jetzt scannen");
   const selectedEventUrl = appendQrPrintVariant(eventUrl, activeVariant.code);
   const selectedQrImagePath = appendQrPrintVariant(qrImagePath, activeVariant.code);
   const selectedStyle = variantStyles[activeVariant.code];
   const codes = useMemo(() => Array.from({ length: count }, (_, index) => index), [count]);
+  const storageKey = `realite:print-template:${persistenceKey ?? eventUrl}`;
+  const printPageSize = layoutMode === "poster_full_a4" ? "A4 portrait" : paperFormat.toUpperCase();
+  const printPageMarginMm = layoutMode === "poster_full_a4" ? 0 : 10;
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      if (!raw) {
+        return;
+      }
+      const parsed = JSON.parse(raw) as {
+        selectedVariant?: QrPrintVariantCode;
+        layoutMode?: PrintLayoutMode;
+        paperFormat?: PrintPaperFormat;
+        customHeadline?: string;
+        customBenefit?: string;
+        customFooter?: string;
+        customCta?: string;
+      };
+      if (parsed.selectedVariant) {
+        setSelectedVariant(parsed.selectedVariant);
+      }
+      if (parsed.layoutMode) {
+        setLayoutMode(parsed.layoutMode);
+      }
+      if (parsed.paperFormat) {
+        setPaperFormat(parsed.paperFormat);
+      }
+      if (typeof parsed.customHeadline === "string") {
+        setCustomHeadline(parsed.customHeadline);
+      }
+      if (typeof parsed.customBenefit === "string") {
+        setCustomBenefit(parsed.customBenefit);
+      }
+      if (typeof parsed.customFooter === "string") {
+        setCustomFooter(parsed.customFooter);
+      }
+      if (typeof parsed.customCta === "string") {
+        setCustomCta(parsed.customCta);
+      }
+    } catch {
+      // ignore invalid persisted state
+    }
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const payload = {
+      selectedVariant,
+      layoutMode,
+      paperFormat,
+      customHeadline,
+      customBenefit,
+      customFooter,
+      customCta,
+    };
+    window.localStorage.setItem(storageKey, JSON.stringify(payload));
+  }, [
+    customBenefit,
+    customCta,
+    customFooter,
+    customHeadline,
+    layoutMode,
+    paperFormat,
+    selectedVariant,
+    storageKey,
+  ]);
 
   function updateColumns(value: number) {
     setColumns(clamp(value, MIN_COLUMNS, MAX_COLUMNS));
@@ -220,8 +343,8 @@ export function EventQrPrintPage({
     <main className="min-h-dvh bg-background text-foreground print:bg-white print:text-black">
       <style>{`
         @page {
-          size: A4;
-          margin: 10mm;
+          size: ${printPageSize};
+          margin: ${printPageMarginMm}mm;
         }
 
         @media print {
@@ -237,6 +360,14 @@ export function EventQrPrintPage({
             break-inside: avoid;
             border-color: #9ca3af !important;
             box-shadow: none !important;
+          }
+
+          .qr-print-full-a4 {
+            width: 210mm !important;
+            min-height: 297mm !important;
+            max-width: 210mm !important;
+            border-radius: 0 !important;
+            margin: 0 auto !important;
           }
         }
       `}</style>
@@ -257,14 +388,41 @@ export function EventQrPrintPage({
         </div>
 
         <div className="mt-6 rounded-xl border border-border bg-card p-4 shadow-sm">
-          <p className="text-sm font-semibold text-foreground">QR-Codes zum Ausschneiden</p>
+          <p className="text-sm font-semibold text-foreground">QR- und Poster-Studio</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Die Codes pitchen direkt den Mehrwert des Scans und verweisen auf den Event-Link.
+            Passe Texte frei an, wechsle zwischen Sticker-Bogen und Poster und drucke in DIN A4 oder DIN A3.
             Die Stilvariante landet als kurze Kennung in der Scan-URL, zum Beispiel <code>?s=a</code>.
-            Du steuerst nur diese Druckvorlage, keine Sichtbarkeit in Realite.
+          </p>
+          <p className="mt-2 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-xs leading-5 text-teal-900">
+            Der QR-Code hilft vor Ort beim Einordnen: Personen wählen im Profil bewusst, ob sie nur fürs Dating,
+            für Dating und Social oder nur für Social offen sind. Beim Scan sieht man nur passende, aktiv
+            eingecheckte Personen.
           </p>
 
-          <div className="mt-4 grid gap-4 lg:grid-cols-3">
+          <div className="mt-4 grid gap-4 lg:grid-cols-4">
+            <label className="block">
+              <span className="text-xs font-semibold text-muted-foreground">Layout</span>
+              <select
+                value={layoutMode}
+                onChange={(event) => setLayoutMode(event.target.value as PrintLayoutMode)}
+                className="mt-2 h-11 w-full rounded-lg border border-input bg-background px-3 text-sm font-semibold text-foreground outline-none"
+              >
+                <option value="stickers">Sticker / mehrere QR-Codes</option>
+                <option value="poster">Poster</option>
+                <option value="poster_full_a4">A4 Poster (vollflächig zum Aushängen)</option>
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-xs font-semibold text-muted-foreground">Papierformat</span>
+              <select
+                value={paperFormat}
+                onChange={(event) => setPaperFormat(event.target.value as PrintPaperFormat)}
+                className="mt-2 h-11 w-full rounded-lg border border-input bg-background px-3 text-sm font-semibold text-foreground outline-none"
+              >
+                <option value="a4">DIN A4</option>
+                <option value="a3">DIN A3</option>
+              </select>
+            </label>
             <label className="block">
               <span className="text-xs font-semibold text-muted-foreground">Codes nebeneinander</span>
               <div className="mt-2 flex h-11 items-center overflow-hidden rounded-lg border border-input bg-background">
@@ -329,7 +487,16 @@ export function EventQrPrintPage({
               <span className="text-xs font-semibold text-muted-foreground">Stil und Botschaft</span>
               <select
                 value={activeVariant.code}
-                onChange={(event) => setSelectedVariant(event.target.value as QrPrintVariantCode)}
+                onChange={(event) => {
+                  const code = event.target.value as QrPrintVariantCode;
+                  const next = variants.find((variant) => variant.code === code);
+                  setSelectedVariant(code);
+                  if (next) {
+                    setCustomHeadline(next.headline);
+                    setCustomBenefit(next.benefit);
+                    setCustomFooter(next.footer);
+                  }
+                }}
                 className="mt-2 h-11 w-full rounded-lg border border-input bg-background px-3 text-sm font-semibold text-foreground outline-none"
               >
                 {variants.map((variant) => (
@@ -344,49 +511,127 @@ export function EventQrPrintPage({
               </span>
             </label>
           </div>
+
+          <div className="mt-4 grid gap-3 lg:grid-cols-2">
+            <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
+              Headline
+              <input
+                value={customHeadline}
+                onChange={(event) => setCustomHeadline(event.target.value.slice(0, 90))}
+                className="rounded-lg border border-input bg-background px-3 py-2 text-sm font-semibold text-foreground"
+              />
+            </label>
+            <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
+              CTA
+              <input
+                value={customCta}
+                onChange={(event) => setCustomCta(event.target.value.slice(0, 60))}
+                className="rounded-lg border border-input bg-background px-3 py-2 text-sm font-semibold text-foreground"
+              />
+            </label>
+            <label className="grid gap-1 text-xs font-semibold text-muted-foreground lg:col-span-2">
+              Benefit-Text
+              <textarea
+                value={customBenefit}
+                onChange={(event) => setCustomBenefit(event.target.value.slice(0, 180))}
+                rows={2}
+                className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+              />
+            </label>
+            <label className="grid gap-1 text-xs font-semibold text-muted-foreground lg:col-span-2">
+              Footer
+              <input
+                value={customFooter}
+                onChange={(event) => setCustomFooter(event.target.value.slice(0, 80))}
+                className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+              />
+            </label>
+          </div>
         </div>
       </section>
 
       <section className="mx-auto w-full max-w-6xl px-4 pb-8 sm:px-6 lg:px-8 print:max-w-none print:px-0 print:pb-0">
-        <div
-          className="qr-print-sheet grid gap-3"
-          style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
-        >
-          {codes.map((index) => (
-            <article
-              key={index}
-              className={`qr-print-card relative flex min-h-64 flex-col items-center justify-between overflow-hidden border border-dashed p-3 text-center shadow-sm ${selectedStyle.card}`}
-            >
-              <div className={`absolute inset-x-0 top-0 h-2 ${selectedStyle.bar}`} aria-hidden="true" />
-              <div className={`absolute right-2 top-3 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] ${selectedStyle.badge}`} aria-hidden="true">
-                Scan mich
-              </div>
-              <div className="w-full">
-                <p className={`pr-20 text-[10px] font-black uppercase tracking-[0.16em] ${selectedStyle.brand}`}>Realite</p>
-                <p className="mt-3 line-clamp-2 text-sm font-black leading-snug">{eventTitle}</p>
-              </div>
-              <div className="my-3 w-full">
-                <p className={`mx-auto max-w-44 text-[15px] font-black leading-tight ${selectedStyle.headline}`}>
-                  {activeVariant.headline}
-                </p>
-                <p className="mx-auto mt-1 max-w-48 text-[11px] font-semibold leading-snug text-neutral-800">{activeVariant.benefit}</p>
-                <div className={`mx-auto mt-3 grid aspect-square w-full max-w-32 place-items-center rounded-2xl border-2 p-2 ${selectedStyle.qrFrame}`}>
-                  <img
-                    src={selectedQrImagePath}
-                    alt={`QR-Code für ${eventTitle}`}
-                    className="aspect-square w-full"
-                  />
+        {layoutMode === "stickers" ? (
+          <div
+            className="qr-print-sheet grid gap-3"
+            style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+          >
+            {codes.map((index) => (
+              <article
+                key={index}
+                className={`qr-print-card relative flex min-h-64 flex-col items-center justify-between overflow-hidden border border-dashed p-3 text-center shadow-sm ${selectedStyle.card}`}
+              >
+                <div className={`absolute inset-x-0 top-0 h-2 ${selectedStyle.bar}`} aria-hidden="true" />
+                <div className={`absolute right-2 top-3 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] ${selectedStyle.badge}`} aria-hidden="true">
+                  {customCta || "Scan mich"}
                 </div>
-              </div>
-              <div className="w-full">
-                <p className={`text-[10px] font-black uppercase tracking-[0.14em] ${selectedStyle.footer}`}>
-                  {activeVariant.footer}
-                </p>
-                <p className="mt-1 break-all text-[10px] leading-tight text-neutral-600">{selectedEventUrl}</p>
-              </div>
-            </article>
-          ))}
-        </div>
+                <div className="w-full">
+                  <p className={`pr-20 text-[10px] font-black uppercase tracking-[0.16em] ${selectedStyle.brand}`}>Realite</p>
+                  <p className="mt-3 line-clamp-2 text-sm font-black leading-snug">{eventTitle}</p>
+                </div>
+                <div className="my-3 w-full">
+                  <p className={`mx-auto max-w-44 text-[15px] font-black leading-tight ${selectedStyle.headline}`}>
+                    {customHeadline}
+                  </p>
+                  <p className="mx-auto mt-1 max-w-48 text-[11px] font-semibold leading-snug text-neutral-800">{customBenefit}</p>
+                  <div className={`mx-auto mt-3 grid aspect-square w-full max-w-32 place-items-center rounded-2xl border-2 p-2 ${selectedStyle.qrFrame}`}>
+                    <img
+                      src={selectedQrImagePath}
+                      alt={`QR-Code für ${eventTitle}`}
+                      className="aspect-square w-full"
+                    />
+                  </div>
+                </div>
+                <div className="w-full">
+                  <p className={`text-[10px] font-black uppercase tracking-[0.14em] ${selectedStyle.footer}`}>
+                    {customFooter}
+                  </p>
+                  <p className="mt-1 break-all text-[10px] leading-tight text-neutral-600">{selectedEventUrl}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : layoutMode === "poster" ? (
+          <article className={`qr-print-card relative mx-auto flex min-h-[72vh] max-w-3xl flex-col items-center justify-between overflow-hidden rounded-2xl border p-8 text-center shadow-sm ${selectedStyle.card}`}>
+            <div className={`absolute inset-x-0 top-0 h-3 ${selectedStyle.bar}`} aria-hidden="true" />
+            <div className="w-full">
+              <p className={`text-xs font-black uppercase tracking-[0.16em] ${selectedStyle.brand}`}>Realite Event</p>
+              <h2 className="mt-6 text-3xl font-black leading-tight text-foreground">{customHeadline}</h2>
+              <p className="mx-auto mt-3 max-w-xl text-lg font-semibold text-neutral-800">{customBenefit}</p>
+            </div>
+            <div className={`mt-8 grid aspect-square w-full max-w-72 place-items-center rounded-3xl border-2 bg-white p-4 ${selectedStyle.qrFrame}`}>
+              <img src={selectedQrImagePath} alt={`QR-Code für ${eventTitle}`} className="aspect-square w-full" />
+            </div>
+            <div className="w-full">
+              <p className="text-sm font-black uppercase tracking-[0.14em] text-foreground">{customCta}</p>
+              <p className={`mt-2 text-base font-semibold ${selectedStyle.footer}`}>{customFooter}</p>
+              <p className="mt-2 break-all text-xs text-neutral-600">{selectedEventUrl}</p>
+            </div>
+          </article>
+        ) : (
+          <article
+            className={`qr-print-card qr-print-full-a4 relative mx-auto flex aspect-[210/297] w-full max-w-[800px] flex-col items-center justify-between overflow-hidden border p-10 text-center shadow-sm ${selectedStyle.card}`}
+          >
+            <div className={`absolute inset-x-0 top-0 h-5 ${selectedStyle.bar}`} aria-hidden="true" />
+            <div className="w-full pt-6">
+              <p className={`text-sm font-black uppercase tracking-[0.2em] ${selectedStyle.brand}`}>Realite vor Ort</p>
+              <h2 className="mx-auto mt-10 max-w-3xl text-5xl font-black leading-tight text-foreground">
+                {customHeadline}
+              </h2>
+              <p className="mx-auto mt-6 max-w-3xl text-2xl font-semibold leading-relaxed text-neutral-800">
+                {customBenefit}
+              </p>
+            </div>
+            <div className={`mt-10 grid aspect-square w-full max-w-[420px] place-items-center rounded-3xl border-2 bg-white p-6 ${selectedStyle.qrFrame}`}>
+              <img src={selectedQrImagePath} alt={`QR-Code für ${eventTitle}`} className="aspect-square w-full" />
+            </div>
+            <div className="w-full pb-4">
+              <p className="text-xl font-black uppercase tracking-[0.14em] text-foreground">{customCta}</p>
+              <p className={`mt-3 text-2xl font-semibold ${selectedStyle.footer}`}>{customFooter}</p>
+              <p className="mx-auto mt-5 max-w-3xl break-all text-sm text-neutral-600">{selectedEventUrl}</p>
+            </div>
+          </article>
+        )}
       </section>
     </main>
   );

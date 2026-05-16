@@ -18,6 +18,20 @@ export default function DocsIndexPage() {
           Diese Dokumentation erklärt, was Realite ist und wie du Gruppen, Kontakte, Events und Matching effektiv
           einsetzt.
         </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <a
+            href="/docs/veranstalterseite"
+            className="rounded-lg bg-teal-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-800"
+          >
+            Für Veranstalter
+          </a>
+          <a
+            href="/events/new"
+            className="rounded-lg border border-input px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted"
+          >
+            Event erstellen
+          </a>
+        </div>
       </header>
 
       <DocsIndexContent pages={pages} />
